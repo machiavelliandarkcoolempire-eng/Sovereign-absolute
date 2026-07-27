@@ -24,6 +24,16 @@
         html, body { background-color: #000000 !important; }
         body { visibility: hidden; }
         body.app-ready { visibility: visible; }
+        
+        /* SEC Compliance Override via CSS (Zero JS Modification) */
+        #displayCouncilPool span {
+            font-size: 0 !important;
+        }
+        #displayCouncilPool span::after {
+            content: "ETH (Ecosystem Vault Allocation)";
+            font-size: 0.75rem; /* text-xs */
+            letter-spacing: normal;
+        }
     </style>
     
     <!-- 📦 ETHERS V6 & WALLETCONNECT & HLS -->
@@ -437,7 +447,7 @@
             The Forensic Laboratory is strictly Token-Gated. Please review the Sovereign Dashboard operational guide before executing the scan.
         </p>
 
-        <div class="bg-black/80 border border-stone-800 rounded-xl p-4 mb-4 overflow-y-auto scroll-dark text-[10px] font-mono text-slate-300 space-y-5 flex-grow shadow-[inset_0_0_20px_rgba(0,0,0,0.9)] h-72">
+        <div class="bg-black/80 border border-stone-800 rounded-xl p-4 pb-8 mb-4 overflow-y-auto scroll-dark text-[10px] font-mono text-slate-300 space-y-5 flex-grow shadow-[inset_0_0_20px_rgba(0,0,0,0.9)] h-72">
             <div>
                 <h4 class="text-amber-500 font-black uppercase mb-1.5 border-b border-stone-800 pb-1">Phase 1: Sovereign Awakening</h4>
                 <ul class="space-y-1.5 list-none pl-1">
@@ -470,13 +480,13 @@
                 <h4 class="text-amber-500 font-black uppercase mb-1.5 border-b border-stone-800 pb-1">Phase 4: Governance Panel</h4>
                 <ul class="space-y-1.5 list-none pl-1">
                     <li><span class="text-rose-400 font-bold">Council Panel:</span> Dashboard UI displays ONLY the "Digital live vote tally" tracking towards the 199/333 Absolute Quorum. Opening a vote (Create Proposal) must be executed by a Council Member via BaseScan directly. (Deeds #1-10 hold Council Governance Rights & Primary Quorum Authority; #50 and #100 hold Council Governance Rights with standard execution weight).</li>
-                    <li><span class="text-rose-400 font-bold">Protocol Routing:</span> Automated 7-unit mathematical split: Protocol Ecosystem Vault 3/7 (~42.8%) / Architect 2/7 (~28.5%) / Governance Council Pool 2/7 (~28.5%).</li>
+                    <li><span class="text-rose-400 font-bold">Protocol Routing:</span> Automated 7-unit mathematical split: Protocol Ecosystem Vault 3/7 (~42.8%) / Architect 2/7 (~28.5%) / Ecosystem Development & Protocol Support Vault 2/7 (~28.5%).</li>
                 </ul>
             </div>
             <div>
              <h4 class="text-amber-500 font-black uppercase mb-1.5 border-b border-stone-800 pb-1">Phase 5: Sovereign Dissolution & Remint Loop</h4>
              <ul class="space-y-1.5 list-none pl-1">
-            <li><span class="text-rose-400 font-bold">Sovereign Immolation:</span> In times of protocol instability, nodes possess the autonomy to self-destruct (Burn). The immutable contract strictly executes a systemic programmatic rage-quit routing of 85% algorithmic token state to the holder address. <i>There are no manual overrides, and the vault operates without human administration.</i></li>
+            <li><span class="text-rose-400 font-bold">Sovereign Immolation:</span> In times of protocol instability, nodes possess the autonomy to self-destruct (Burn). The immutable contract strictly executes a systemic programmatic protocol exit reserve allocation to the holder address. <i>There are no manual overrides, and the vault operates without human administration.</i></li>
             <li><span class="text-rose-400 font-bold">The Architect Restriction:</span> The void left by burned elements maps to address(0). The Architect holds severely bottlenecked structural access (Hardcapped overrides) to inject new meta-state and trigger a Re-Mint, restoring the empire's mass entirely strictly dictated by on-chain math.</li>
                 </ul>
             </div>
@@ -620,7 +630,7 @@
             <div id="displayReserve" class="text-xl md:text-2xl font-black gold-text font-mono">0.00 <span class="text-xs text-stone-600">ETH</span></div>
         </div>
         <div class="chiaroscuro-bg p-4 rounded-xl border-l-2 border-rose-700">
-            <span class="text-[9px] font-mono uppercase text-stone-500 block mb-1">COUNCIL TRIBUTE ALLOCATION</span>
+            <span class="text-[9px] font-mono uppercase text-stone-500 block mb-1">PROTOCOL ECOSYSTEM VAULT</span>
             <div id="displayCouncilPool" class="text-xl md:text-2xl font-black crimson-text font-mono">0.00 <span class="text-xs text-stone-600">ETH</span></div>
             <div class="mt-2 pt-2 border-t border-rose-900/50">
                 <span class="text-[8px] font-mono text-stone-400 block tracking-widest uppercase">DUST CAP BUFFER (WEI):</span>
@@ -633,7 +643,7 @@
         </div>
         <div class="chiaroscuro-bg p-4 rounded-xl border-l-2 border-amber-700">
             <span class="text-[9px] font-mono uppercase text-stone-500 block mb-1">TRIBUTE TARIFF METRICS</span>
-            <div class="text-xs font-mono text-stone-300 mt-1">
+            <div class="text-xs font-mono text-stone-300 mt-1 leading-relaxed break-words">
                 MINT: <span id="lblMintPrice" class="text-amber-500 font-bold">0.0</span> | NOVA: <span id="lblNovaFee" class="text-rose-400 font-bold">0.0</span> ETH
             </div>
             <div class="text-[9px] font-mono text-stone-500 mt-2 pt-1 border-t border-stone-900">
@@ -658,7 +668,7 @@
         </div>
         <div class="flex flex-wrap gap-4 mt-4 text-[9px] font-mono uppercase text-stone-500">
             <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm bg-stone-950 border border-stone-900"></span> Dormant Space</span>
-            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm border rank-prime"></span> RANK-PRIME COUNCIL (1-10, 50, 100) (Founder / Co-Founder | ผู้ก่อตั้ง / ผู้ร่วมก่อตั้ง)</span>
+            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm border rank-prime"></span> RANK-PRIME COUNCIL (1-10, 50, 100) (FOUNDER / CO-FOUNDER / ASSISTANT PROJECT MANAGER | ฟาวเดอร์ / ผู้ร่วมก่อตั้ง / ผู้ช่วยบริหารจัดการโครงการ)</span>
             <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm border rank-gold"></span> GOLD RANK (11-99)</span>
             <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm border rank-silver"></span> SILVER RANK (101-200)</span>
             <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm border rank-red"></span> RED RANK (201-332)</span>
@@ -792,17 +802,17 @@
         </div>
 
         <div id="stationFront" class="station-panel space-y-4">
-            <div class="flex items-center justify-between bg-stone-950 border border-stone-900 rounded-lg p-3">
+            <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 bg-stone-950 border border-stone-900 rounded-lg p-3">
                 <span class="text-[10px] font-mono uppercase text-slate-400 flex items-center">
                     OBVERSE TARGET FILE CLASSIFICATION: 
                     <input type="radio" name="frontType" value="image" checked class="ml-2 accent-amber-500 cursor-pointer w-4 h-4" onchange="onTypeToggle('front')" /> <span class="text-amber-500 font-bold ml-1">IMAGE</span> 
                     <span class="mx-2">/</span>
                     <input type="radio" name="frontType" value="video" class="ml-2 accent-rose-500 cursor-pointer w-4 h-4" onchange="onTypeToggle('front')" /> <span class="text-rose-500 font-bold ml-1">VIDEO ANIMATION</span>
                 </span>
-                <button id="btnConnectIrys" type="button" class="px-4 py-2 bg-slate-900 border border-blue-900 text-blue-400 font-mono text-sm hover:bg-blue-950 hover:text-blue-300 transition-colors duration-300 shadow-[0_0_15px_rgba(30,58,138,0.3)]">
+                <button id="btnConnectIrys" type="button" class="w-full md:w-auto px-4 py-2 bg-slate-900 border border-blue-900 text-blue-400 font-mono text-sm hover:bg-blue-950 hover:text-blue-300 transition-colors duration-300 shadow-[0_0_15px_rgba(30,58,138,0.3)]">
                     ⚡ ENGAGE IRYS BRIDGE
                 </button>
-                <button onclick="executeArchitectCentralizedUpload('front')" class="px-4 py-2 bg-amber-700 hover:bg-amber-600 text-black font-bold text-[10px] font-mono uppercase rounded transition-all">STREAM OBVERSE PAYLOAD</button>
+                <button onclick="executeArchitectCentralizedUpload('front')" class="w-full md:w-auto px-4 py-2 bg-amber-700 hover:bg-amber-600 text-black font-bold text-[10px] font-mono uppercase rounded transition-all">STREAM OBVERSE PAYLOAD</button>
             </div>
             <div>
                 <label class="text-[9px] text-stone-400 font-mono block mb-1 uppercase">FRONT <span id="frontTypeLabel" class="text-amber-500 font-bold">IMAGE</span> SOURCE REFERENCE URI</label>
@@ -812,14 +822,14 @@
         </div>
 
         <div id="stationBack" class="station-panel space-y-4 hidden">
-            <div class="flex items-center justify-between bg-stone-950 border border-stone-900 rounded-lg p-3">
+            <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 bg-stone-950 border border-stone-900 rounded-lg p-3">
                 <span class="text-[10px] font-mono uppercase text-slate-400 flex items-center">
                     REVERSE TARGET FILE CLASSIFICATION: 
                     <input type="radio" name="backType" value="image" checked class="ml-2 accent-amber-500 cursor-pointer w-4 h-4" onchange="onTypeToggle('back')" /> <span class="text-amber-500 font-bold ml-1">IMAGE</span> 
                     <span class="mx-2">/</span>
                     <input type="radio" name="backType" value="video" class="ml-2 accent-rose-500 cursor-pointer w-4 h-4" onchange="onTypeToggle('back')" /> <span class="text-rose-500 font-bold ml-1">VIDEO ANIMATION</span>
                 </span>
-                <button onclick="executeArchitectCentralizedUpload('back')" class="px-4 py-2 bg-amber-700 hover:bg-amber-600 text-black font-bold text-[10px] font-mono uppercase rounded transition-all">STREAM REVERSE PAYLOAD</button>
+                <button onclick="executeArchitectCentralizedUpload('back')" class="w-full md:w-auto px-4 py-2 bg-amber-700 hover:bg-amber-600 text-black font-bold text-[10px] font-mono uppercase rounded transition-all">STREAM REVERSE PAYLOAD</button>
             </div>
             <div>
                 <label class="text-[9px] text-stone-400 font-mono block mb-1 uppercase">BACK <span id="backTypeLabel" class="text-amber-500 font-bold">IMAGE</span> SOURCE REFERENCE URI</label>
@@ -848,17 +858,17 @@
             </div>
             <div>
                 <label class="text-[9px] text-stone-400 font-mono block mb-1 uppercase">③ Video URI (video)</label>
-                <input type="text" id="novaVideoUri" placeholder="Irys Tx ID (43 chars) or full URL" class="w-full bg-stone-950 border border-stone-900 p-3 text-sm font-mono text-amber-400 rounded outline-none focus:border-amber-500 transition-all" />
+                <input type="text" id="novaVideoUri" placeholder="Irys Tx ID (43 chars) or full URI" class="w-full bg-stone-950 border border-stone-900 p-3 text-sm font-mono text-amber-400 rounded outline-none focus:border-amber-500 transition-all" />
             </div>
             <div>
                 <label class="text-[9px] text-stone-400 font-mono block mb-1 uppercase">④ Chrono-Map / Pixel Anchor (hiddenProperty)</label>
-                <input type="text" id="novaHiddenInput" placeholder="Irys Tx ID (43 chars) or full URL" class="w-full bg-stone-950 border border-rose-950 p-3 text-sm font-mono text-rose-400 rounded outline-none focus:border-rose-600 transition-all" />
+                <input type="text" id="novaHiddenInput" placeholder="Irys Tx ID (43 chars) or full URI" class="w-full bg-stone-950 border border-rose-950 p-3 text-sm font-mono text-rose-400 rounded outline-none focus:border-rose-600 transition-all" />
             </div>
         </div>
 
         <div class="mt-8 flex flex-col gap-4">
             <div class="p-4 border border-rose-950 rounded-xl bg-black/40">
-                <span class="text-[9px] font-mono text-rose-400 uppercase tracking-widest block mb-3">xx ETH • Unlocks Sanctified Status & Lifetime Identity Updates | UPDATE IDENTITY: Requires Sanctified status (isSanctified == true). Accepts 4 parameters: Token ID (t), Front URI (front), Back URI (back), Video URI (video).</span>
+                <span class="text-[9px] font-mono text-rose-400 uppercase tracking-widest block mb-3 pb-4 leading-relaxed">xx ETH • Unlocks Sanctified Status & Lifetime Identity Updates | UPDATE IDENTITY: Requires Sanctified status (isSanctified == true). Accepts 4 parameters: Token ID (t), Front URI (front), Back URI (back), Video URI (video).</span>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <button onclick="openNovaWarn()" class="btn-gold-master rounded-xl py-3.5 text-xs">[ ⚡ SANCTIFY NOVA CONSECRATION ]</button>
                     <button onclick="executeUpdateIdentity(this)" class="bg-stone-950 border border-rose-700 text-rose-400 font-black font-mono text-xs py-3.5 rounded-xl uppercase tracking-wider hover:bg-stone-900 transition-all">[ 📜 UPDATE SANCTIFIED IDENTITY ]</button>
@@ -933,7 +943,7 @@
     <section class="chiaroscuro-bg p-6 rounded-2xl mb-6 relative z-10 border border-rose-950">
         <div class="border-b border-stone-900 pb-3 mb-5">
             <h2 class="text-lg font-black font-cinzel text-stone-100 uppercase tracking-tight">👑 Treasury Extraction Operations</h2>
-            <p class="text-[9px] font-mono text-stone-500 uppercase tracking-wide">SECURE DIVIDEND CLAIMING & FIXED EXIT INFRASTRUCTURE SEPARATED</p>
+            <p class="text-[9px] font-mono text-stone-500 uppercase tracking-wide">SECURE PROTOCOL FEE DISPENSATION & FIXED EXIT INFRASTRUCTURE SEPARATED</p>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -957,7 +967,7 @@
                             Route your mathematical network dispensation. <br><b class="text-amber-400">This is a strict cryptographic execution.</b> Your structural node and matrix identity remain undisturbed within the Empire.
                         </p>
                     </div>
-                    <button id="executeClaimRewardBtn" onclick="executeClaimReward(this)" class="w-full bg-amber-700 hover:bg-amber-600 text-black font-black text-xs py-3.5 rounded-lg uppercase tracking-widest transition-all shadow-[0_0_15px_rgba(217,119,6,0.35)] border border-amber-400">CLAIM PROTOCOL TRIBUTE</button>
+                    <button id="executeClaimRewardBtn" onclick="executeClaimReward(this)" class="w-full bg-amber-700 hover:bg-amber-600 text-black font-black text-xs py-3.5 rounded-lg uppercase tracking-widest transition-all shadow-[0_0_15px_rgba(217,119,6,0.35)] border border-amber-400">CLAIM PROTOCOL DISPENSATION</button>
                     <div id="rewardExclusionWarning" class="hidden mt-3 p-2.5 bg-red-950/40 border border-red-800 rounded text-[9px] font-mono text-red-400 text-center uppercase font-bold animate-pulse">
                         CRITICAL REJECTION: ID 50 & 100 ARE GOVERNANCE ONLY (ZERO TRIBUTE)
                     </div>
@@ -1128,8 +1138,11 @@
             This protocol operates an exclusive, private digital identity infrastructure accessible solely via direct curation. All proceeds represent lawful studio service fees. Reserve allocations fund software R&D and Ecosystem Infrastructure Support Grants. Minting and on-chain operations are executed 100% self-sovereignly by curated pass holders. This protocol does not offer public sales, securities, or financial returns.
         </div>
     </footer>
-
-
+    
+    
+    
+    
+    
 <script>
 "use strict";
 
