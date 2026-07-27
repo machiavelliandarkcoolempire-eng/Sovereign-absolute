@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="en" style="background-color:#0a1128;color-scheme:dark" class="bg-[#0a1128] text-slate-100 overflow-x-hidden selection:bg-rose-700 selection:text-white">
+<html lang="en" style="background-color:#020617;color-scheme:dark" class="bg-[#020617] text-slate-100 overflow-x-hidden selection:bg-[#D4AF37] selection:text-black">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <meta name="theme-color" content="#0a1128" />
+    <meta name="theme-color" content="#020617" />
     <meta http-equiv="X-Frame-Options" content="DENY" />
     <meta name="referrer" content="no-referrer" />
-    <title>IMPERIAL SOVEREIGN ARCHITECTURE v1.3.0 (IRYS DATACHAIN MAINNET)</title>
+    <title>IMPERIAL SOVEREIGN ARCHITECTURE v1.0 (PRODUCTION MAINNET)</title>
     <script>
         if (window.top !== window.self) {
             document.documentElement.replaceChildren();
@@ -14,56 +14,47 @@
         }
     </script>
 
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; media-src 'self' blob: https:; connect-src 'self' https://mainnet.base.org https://base.llamarpc.com https://base-rpc.publicnode.com https://mainnet.irys.xyz https://node1.irys.xyz https://gateway.irys.xyz wss://relay.walletconnect.com wss://relay.walletconnect.org https://rpc.walletconnect.com https://api.web3modal.com https://api.reown.com wss:; frame-ancestors 'none'; base-uri 'none'; object-src 'none'; form-action 'self';">
-
-    <!-- 🌟 1. โหลด CSS ที่ Vercel บิ้วให้ -->
-    <link rel="stylesheet" href="./dist.css" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https: ar:; media-src 'self' blob: https: ar:; connect-src 'self' https://mainnet.base.org https://base.llamarpc.com https://base-rpc.publicnode.com https://mainnet.irys.xyz https://arweave.net wss://relay.walletconnect.com wss://relay.walletconnect.org https://rpc.walletconnect.com https://api.web3modal.com https://api.reown.com wss:; frame-ancestors 'none'; base-uri 'none'; object-src 'none'; form-action 'self';">
 
     <style>
-        html, body { background-color: #000000 !important; }
+        html, body { background-color: #020617 !important; }
         body { visibility: hidden; }
         body.app-ready { visibility: visible; }
     </style>
     
-    <!-- 📦 ETHERS V6 & WALLETCONNECT & HLS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- 📦 UPGRADED TO ETHERS V6 (CRITICAL DIRECTIVE) -->
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://unpkg.com/@walletconnect/ethereum-provider@2.11.1/dist/index.umd.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 
-    <!-- 🌟 2. โหลด Polyfill -->
-    <script src="./web3-polyfill.js"></script>
-
-    <!-- 🌟 3. โหลด Irys SDK -->
-    <script src="./irys-bundle.js"></script>
-
-</head>
+    <!-- Irys SDK -->
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=JetBrains+Mono:wght@400;700;800&display=swap');
 
         :root {
-            --void: #000000;
-            --midnight: #0a1128;
-            --midnight-2: #0f172a;
-            --gold-bright: #fbbf24;
-            --gold: #d97706;
-            --gold-deep: #78350f;
-            --gold-pale: #fef08a;
-            --crimson: #be123c;
-            --crimson-deep: #9f1239;
-            --crimson-dark: #7f1d1d;
-            --hairline: rgba(251, 191, 36, 0.14);
+            --void: #020617;
+            --midnight: #0F172A;
+            --midnight-alt: #1E293B;
+            --gold-bright: #FDE047;
+            --gold: #D4AF37;
+            --gold-deep: #854D0E;
+            --gold-pale: #FEF08A;
+            --crimson: #9F1239;
+            --crimson-deep: #881337;
+            --hairline: rgba(212, 175, 55, 0.15);
         }
 
         body {
             font-family: 'JetBrains Mono', monospace;
-            background-color: #000000;
+            background-color: var(--void);
             background-image:
-                radial-gradient(circle at 12% 8%, rgba(217, 119, 6, 0.14) 0%, transparent 42%),
-                radial-gradient(circle at 88% 6%, rgba(190, 18, 60, 0.12) 0%, transparent 40%),
-                radial-gradient(ellipse at 50% 120%, rgba(15, 23, 42, 0.9) 0%, transparent 55%),
-                radial-gradient(circle at 50% 40%, rgba(10, 17, 40, 0.55) 0%, transparent 70%);
+                radial-gradient(circle at 12% 8%, rgba(212, 175, 55, 0.1) 0%, transparent 42%),
+                radial-gradient(circle at 88% 6%, rgba(15, 23, 42, 0.8) 0%, transparent 40%),
+                radial-gradient(ellipse at 50% 120%, rgba(2, 6, 23, 0.9) 0%, transparent 55%),
+                radial-gradient(circle at 50% 40%, rgba(15, 23, 42, 0.55) 0%, transparent 70%);
             background-attachment: fixed;
-            padding: clamp(0.75rem, 2vw, 2.25rem);
+            padding: clamp(0.75rem, 2vw, 1.25rem);
             max-width: 1600px;
             margin-inline: auto;
         }
@@ -74,8 +65,7 @@
             inset: 0;
             pointer-events: none;
             z-index: 0;
-            background:
-                radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.85) 100%);
+            background: radial-gradient(ellipse at center, transparent 55%, rgba(2, 6, 23, 0.95) 100%);
             mix-blend-mode: multiply;
         }
         body::after {
@@ -85,7 +75,7 @@
             pointer-events: none;
             z-index: 0;
             opacity: 0.035;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
         }
 
         .font-mono { font-family: 'JetBrains Mono', monospace; }
@@ -93,41 +83,38 @@
 
         .chiaroscuro-bg {
             position: relative;
-            background:
-                linear-gradient(150deg, rgba(15, 23, 42, 0.82) 0%, rgba(10, 17, 40, 0.9) 45%, rgba(2, 4, 12, 0.96) 100%);
+            background: linear-gradient(150deg, rgba(15, 23, 42, 0.82) 0%, rgba(2, 6, 23, 0.96) 100%);
             border: 1px solid var(--hairline);
             border-radius: 1rem;
             backdrop-filter: blur(18px) saturate(120%);
             -webkit-backdrop-filter: blur(18px) saturate(120%);
-            box-shadow:
-                inset 0 1px 0 rgba(255, 255, 255, 0.045),
-                inset 0 0 40px rgba(0, 0, 0, 0.55),
-                0 30px 70px rgba(0, 0, 0, 0.85);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02), inset 0 0 40px rgba(0, 0, 0, 0.55), 0 30px 70px rgba(0, 0, 0, 0.85);
         }
         .chiaroscuro-bg::before {
             content: '';
             position: absolute;
-            inset: 0 0 auto 0;
+            inset: 0 auto auto 0;
+            width: 100%;
             height: 1px;
             border-radius: 1rem 1rem 0 0;
-            background: linear-gradient(90deg, transparent 0%, rgba(251, 191, 36, 0.55) 25%, rgba(254, 240, 138, 0.75) 50%, rgba(251, 191, 36, 0.55) 75%, transparent 100%);
+            background: linear-gradient(90deg, transparent 0%, rgba(212, 175, 55, 0.55) 25%, rgba(254, 240, 138, 0.75) 50%, rgba(212, 175, 55, 0.55) 75%, transparent 100%);
             opacity: 0.5;
             pointer-events: none;
         }
 
         .gold-text {
-            background: linear-gradient(135deg, #fffbeb 0%, #fef08a 22%, #fbbf24 48%, #d97706 74%, #78350f 100%);
+            background: linear-gradient(135deg, #FEF08A 0%, #FDE047 22%, #D4AF37 48%, #854D0E 74%, #451A03 100%);
             -webkit-background-clip: text;
             background-clip: text;
             -webkit-text-fill-color: transparent;
-            filter: drop-shadow(0 1px 8px rgba(217, 119, 6, 0.35));
+            filter: drop-shadow(0 1px 8px rgba(212, 175, 55, 0.35));
         }
 
-        .crimson-text { color: #fda4af; text-shadow: 0 0 18px rgba(190, 18, 60, 0.7), 0 0 6px rgba(190, 18, 60, 0.5); }
+        .crimson-text { color: #fda4af; text-shadow: 0 0 18px rgba(159, 18, 57, 0.7), 0 0 6px rgba(159, 18, 57, 0.5); }
         .red-vivid { color: #f87171; text-shadow: 0 0 18px rgba(239, 68, 68, 0.5); }
         .gold-vivid {
-            color: #fcd34d;
-            text-shadow: 0 0 30px rgba(251, 191, 36, 0.9), 0 0 14px rgba(251, 191, 36, 0.55), 0 2px 4px rgba(0, 0, 0, 0.8);
+            color: #FDE047;
+            text-shadow: 0 0 30px rgba(212, 175, 55, 0.9), 0 0 14px rgba(212, 175, 55, 0.55), 0 2px 4px rgba(0, 0, 0, 0.8);
         }
 
         .btn-gold-master, .btn-rebirth-bright, .btn-remint-bright { position: relative; overflow: hidden; isolation: isolate; }
@@ -146,28 +133,28 @@
         .btn-remint-bright:hover::after { left: 130%; }
 
         .btn-gold-master {
-            background: linear-gradient(120deg, #78350f 0%, #b45309 30%, #fbbf24 50%, #b45309 70%, #78350f 100%);
-            color: #1a0e00; font-weight: 900; text-transform: uppercase;
+            background: linear-gradient(120deg, #854D0E 0%, #B45309 30%, #D4AF37 50%, #B45309 70%, #854D0E 100%);
+            color: #020617; font-weight: 900; text-transform: uppercase;
             letter-spacing: 0.08em;
-            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6), 0 0 22px rgba(217, 119, 6, 0.28), inset 0 1px 0 rgba(255, 251, 235, 0.6);
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6), 0 0 22px rgba(212, 175, 55, 0.28), inset 0 1px 0 rgba(254, 240, 138, 0.6);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            border: 1px solid #fef08a;
+            border: 1px solid #FEF08A;
             will-change: transform, box-shadow;
         }
         .btn-gold-master:hover:not(:disabled) {
             transform: translateY(-2px);
-            box-shadow: 0 10px 26px rgba(0, 0, 0, 0.65), 0 0 40px rgba(217, 119, 6, 0.6), inset 0 1px 0 rgba(255, 251, 235, 0.8);
+            box-shadow: 0 10px 26px rgba(0, 0, 0, 0.65), 0 0 40px rgba(212, 175, 55, 0.6), inset 0 1px 0 rgba(254, 240, 138, 0.8);
             cursor: pointer;
         }
         .btn-gold-master:disabled { filter: grayscale(100%); opacity: 0.4; cursor: not-allowed; }
 
         .btn-rebirth-bright {
-            background: linear-gradient(120deg, #b45309 0%, #fbbf24 35%, #fef9c3 50%, #fbbf24 65%, #b45309 100%);
-            color: #1a0e00; font-weight: 900; text-transform: uppercase;
+            background: linear-gradient(120deg, #B45309 0%, #D4AF37 35%, #FEF08A 50%, #D4AF37 65%, #B45309 100%);
+            color: #020617; font-weight: 900; text-transform: uppercase;
             letter-spacing: 0.1em;
             box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 38px rgba(253, 224, 71, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.7);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            border: 1.5px solid #fffbeb;
+            border: 1.5px solid #FEF08A;
             will-change: transform, box-shadow;
         }
         .btn-rebirth-bright:hover {
@@ -177,24 +164,24 @@
         }
 
         .btn-remint-bright {
-            background: linear-gradient(120deg, #7f1d1d 0%, #be123c 35%, #fb7185 50%, #be123c 65%, #7f1d1d 100%);
-            color: #fff5f5; font-weight: 900; text-transform: uppercase;
+            background: linear-gradient(120deg, #881337 0%, #BE123C 35%, #FB7185 50%, #BE123C 65%, #881337 100%);
+            color: #FFF; font-weight: 900; text-transform: uppercase;
             letter-spacing: 0.1em;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 38px rgba(244, 63, 94, 0.42), inset 0 1px 0 rgba(255, 228, 230, 0.5);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 38px rgba(159, 18, 57, 0.42), inset 0 1px 0 rgba(255, 228, 230, 0.5);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            border: 1.5px solid #ffe4e6;
+            border: 1.5px solid #FFE4E6;
             will-change: transform, box-shadow;
         }
         .btn-remint-bright:hover {
             transform: translateY(-2px) scale(1.012);
-            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.7), 0 0 55px rgba(244, 63, 94, 0.72), inset 0 1px 0 rgba(255, 228, 230, 0.7);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.7), 0 0 55px rgba(159, 18, 57, 0.72), inset 0 1px 0 rgba(255, 228, 230, 0.7);
             cursor: pointer;
         }
 
         .scroll-dark::-webkit-scrollbar { width: 6px; height: 6px; }
-        .scroll-dark::-webkit-scrollbar-track { background: #020203; }
-        .scroll-dark::-webkit-scrollbar-thumb { background: #4c0519; border-radius: 3px; }
-        .scroll-dark::-webkit-scrollbar-thumb:hover { background: #881337; }
+        .scroll-dark::-webkit-scrollbar-track { background: #020617; }
+        .scroll-dark::-webkit-scrollbar-thumb { background: #1E293B; border-radius: 3px; border: 1px solid #D4AF37; }
+        .scroll-dark::-webkit-scrollbar-thumb:hover { background: #D4AF37; }
 
         .deed-card-container {
             perspective: 1200px;
@@ -220,35 +207,32 @@
         .deed-card-back { transform: rotateY(180deg); }
 
         .preview-slot {
-            background: linear-gradient(180deg, rgba(20, 10, 15, 0.8) 0%, rgba(2, 2, 4, 0.95) 100%);
-            border: 1px solid rgba(136, 19, 55, 0.4);
+            background: linear-gradient(180deg, rgba(15, 23, 42, 0.8) 0%, rgba(2, 6, 23, 0.95) 100%);
+            border: 1px solid rgba(212, 175, 55, 0.2);
             transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .preview-slot:hover, .preview-slot.active {
-            border-color: rgba(217, 119, 6, 0.8);
-            box-shadow: 0 0 30px rgba(217, 119, 6, 0.25);
+            border-color: rgba(212, 175, 55, 0.8);
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.25);
         }
 
         .scanline-bar {
             position: relative; overflow: hidden;
-            border: 1px solid rgba(251, 191, 36, 0.3);
+            border: 1px solid rgba(212, 175, 55, 0.3);
             border-radius: 1rem;
-            background:
-                linear-gradient(135deg, rgba(20, 12, 4, 0.96) 0%, rgba(6, 4, 2, 0.98) 55%, rgba(18, 4, 10, 0.96) 100%);
-            box-shadow:
-                inset 0 0 40px rgba(0, 0, 0, 0.9),
-                0 0 30px rgba(217, 119, 6, 0.12);
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.96) 0%, rgba(2, 6, 23, 0.98) 55%, rgba(15, 23, 42, 0.96) 100%);
+            box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.9), 0 0 30px rgba(212, 175, 55, 0.12);
             transition: box-shadow 0.4s ease, border-color 0.4s ease;
         }
         .scanline-bar:hover {
-            border-color: rgba(251, 191, 36, 0.6);
-            box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.9), 0 0 55px rgba(217, 119, 6, 0.3);
+            border-color: rgba(212, 175, 55, 0.6);
+            box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.9), 0 0 55px rgba(212, 175, 55, 0.3);
         }
         .scanline-bar::before {
             content: ''; position: absolute; top: -10%; left: 0;
             width: 100%; height: 2px;
-            background: linear-gradient(90deg, transparent, #fef08a 50%, transparent);
-            box-shadow: 0 0 28px 6px rgba(251, 191, 36, 0.75);
+            background: linear-gradient(90deg, transparent, #FEF08A 50%, transparent);
+            box-shadow: 0 0 28px 6px rgba(212, 175, 55, 0.75);
             animation: scanline 3.8s linear infinite;
         }
         .scanline-bar::after {
@@ -257,14 +241,14 @@
             border-radius: 0.6rem;
             pointer-events: none;
             background:
-                linear-gradient(#fbbf24, #fbbf24) left top / 22px 2px no-repeat,
-                linear-gradient(#fbbf24, #fbbf24) left top / 2px 22px no-repeat,
-                linear-gradient(#fbbf24, #fbbf24) right top / 22px 2px no-repeat,
-                linear-gradient(#fbbf24, #fbbf24) right top / 2px 22px no-repeat,
-                linear-gradient(#fbbf24, #fbbf24) left bottom / 22px 2px no-repeat,
-                linear-gradient(#fbbf24, #fbbf24) left bottom / 2px 22px no-repeat,
-                linear-gradient(#fbbf24, #fbbf24) right bottom / 22px 2px no-repeat,
-                linear-gradient(#fbbf24, #fbbf24) right bottom / 2px 22px no-repeat;
+                linear-gradient(#D4AF37, #D4AF37) left top / 22px 2px no-repeat,
+                linear-gradient(#D4AF37, #D4AF37) left top / 2px 22px no-repeat,
+                linear-gradient(#D4AF37, #D4AF37) right top / 22px 2px no-repeat,
+                linear-gradient(#D4AF37, #D4AF37) right top / 2px 22px no-repeat,
+                linear-gradient(#D4AF37, #D4AF37) left bottom / 22px 2px no-repeat,
+                linear-gradient(#D4AF37, #D4AF37) left bottom / 2px 22px no-repeat,
+                linear-gradient(#D4AF37, #D4AF37) right bottom / 22px 2px no-repeat,
+                linear-gradient(#D4AF37, #D4AF37) right bottom / 2px 22px no-repeat;
             opacity: 0.55;
         }
         @keyframes scanline {
@@ -278,13 +262,13 @@
             transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
             content-visibility: auto;
             contain-intrinsic-size: 2rem;
-            background: radial-gradient(circle at 50% 30%, rgba(30, 41, 59, 0.5) 0%, rgba(2, 4, 12, 0.85) 100%);
+            background: radial-gradient(circle at 50% 30%, rgba(30, 41, 59, 0.5) 0%, rgba(2, 6, 23, 0.85) 100%);
         }
         .matrix-node:hover {
             transform: scale(1.18) translateY(-1px);
             z-index: 20;
             will-change: transform;
-            box-shadow: 0 0 16px 2px rgba(251, 191, 36, 0.45);
+            box-shadow: 0 0 16px 2px rgba(212, 175, 55, 0.45);
         }
         .matrix-node::before {
             content: '';
@@ -295,46 +279,46 @@
             pointer-events: none;
         }
         .rank-prime {
-            border: 1px solid #fbbf24 !important;
-            background: radial-gradient(circle at 50% 30%, rgba(251, 191, 36, 0.32) 0%, rgba(113, 63, 18, 0.4) 100%) !important;
-            box-shadow: 0 0 12px rgba(251, 191, 36, 0.45), inset 0 0 8px rgba(251, 191, 36, 0.25);
+            border: 1px solid #D4AF37 !important;
+            background: radial-gradient(circle at 50% 30%, rgba(212, 175, 55, 0.32) 0%, rgba(133, 77, 14, 0.4) 100%) !important;
+            box-shadow: 0 0 12px rgba(212, 175, 55, 0.45), inset 0 0 8px rgba(212, 175, 55, 0.25);
         }
         .rank-gold {
-            border: 1px solid #eab308 !important;
-            box-shadow: 0 0 8px rgba(234, 179, 8, 0.3), inset 0 0 6px rgba(234, 179, 8, 0.12);
+            border: 1px solid #B8972E !important;
+            box-shadow: 0 0 8px rgba(184, 151, 46, 0.3), inset 0 0 6px rgba(184, 151, 46, 0.12);
         }
         .rank-silver {
-            border: 1px solid #cbd5e1 !important;
+            border: 1px solid #94A3B8 !important;
             box-shadow: 0 0 8px rgba(148, 163, 184, 0.3), inset 0 0 6px rgba(203, 213, 225, 0.12);
         }
         .rank-red {
-            border: 1px solid #ef4444 !important;
-            box-shadow: 0 0 8px rgba(220, 38, 38, 0.35), inset 0 0 6px rgba(239, 68, 68, 0.12);
+            border: 1px solid #9F1239 !important;
+            box-shadow: 0 0 8px rgba(159, 18, 57, 0.35), inset 0 0 6px rgba(159, 18, 57, 0.12);
         }
         .rank-imperial {
-            border: 2px solid #f59e0b !important;
-            background: radial-gradient(circle at 50% 30%, rgba(254, 240, 138, 0.4) 0%, rgba(245, 158, 11, 0.18) 100%) !important;
-            box-shadow: 0 0 20px rgba(251, 191, 36, 0.7), inset 0 0 10px rgba(251, 191, 36, 0.4);
-            animation: imperialPulse 2.6s ease-in-out infinite;
+            border: 2px solid #D4AF37 !important;
+            background: radial-gradient(circle at 50% 30%, rgba(254, 240, 138, 0.4) 0%, rgba(212, 175, 55, 0.18) 100%) !important;
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.7), inset 0 0 10px rgba(212, 175, 55, 0.4);
+            animation: imperialPulse 0.6s ease-in-out infinite;
         }
         @keyframes imperialPulse {
-            0%, 100% { box-shadow: 0 0 16px rgba(251, 191, 36, 0.55), inset 0 0 10px rgba(251, 191, 36, 0.35); }
-            50% { box-shadow: 0 0 28px rgba(251, 191, 36, 0.9), inset 0 0 14px rgba(251, 191, 36, 0.55); }
+            0%, 100% { box-shadow: 0 0 16px rgba(212, 175, 55, 0.55), inset 0 0 10px rgba(212, 175, 55, 0.35); }
+            50% { box-shadow: 0 0 28px rgba(212, 175, 55, 0.9), inset 0 0 14px rgba(212, 175, 55, 0.55); }
         }
 
         .node-active {
-            background: radial-gradient(circle at 50% 30%, rgba(251, 191, 36, 0.4) 0%, rgba(180, 83, 9, 0.25) 100%) !important;
-            border-color: #fbbf24 !important;
-            box-shadow: 0 0 18px rgba(251, 191, 36, 0.7) !important;
+            background: radial-gradient(circle at 50% 30%, rgba(212, 175, 55, 0.4) 0%, rgba(133, 77, 14, 0.25) 100%) !important;
+            border-color: #D4AF37 !important;
+            box-shadow: 0 0 18px rgba(212, 175, 55, 0.7) !important;
         }
         .node-council {
-            background: radial-gradient(circle at 50% 30%, rgba(190, 18, 60, 0.4) 0%, rgba(127, 29, 29, 0.28) 100%) !important;
-            border-color: #f43f5e !important;
-            box-shadow: 0 0 18px rgba(190, 18, 60, 0.65) !important;
+            background: radial-gradient(circle at 50% 30%, rgba(15, 23, 42, 0.4) 0%, rgba(2, 6, 23, 0.28) 100%) !important;
+            border-color: #3B82F6 !important;
+            box-shadow: 0 0 18px rgba(59, 130, 246, 0.65) !important;
         }
 
-        .tab-btn.active { background: rgba(245,158,11,0.12); border-color: rgba(245,158,11,0.6); color: #fbbf24; }
-        .tab-btn:hover:not(.active) { border-color: rgba(245,158,11,0.35); color: #fcd34d; }
+        .tab-btn.active { background: rgba(212, 175, 55, 0.12); border-color: rgba(212, 175, 55, 0.6); color: #D4AF37; }
+        .tab-btn:hover:not(.active) { border-color: rgba(212, 175, 55, 0.35); color: #FDE047; }
         .tab-btn:active { transform: translateY(1px); }
 
         :focus { outline: none; }
@@ -342,7 +326,7 @@
         button:focus-visible,
         input:focus-visible,
         [tabindex]:focus-visible {
-            outline: 2px solid #fbbf24;
+            outline: 2px solid #D4AF37;
             outline-offset: 2px;
             border-radius: 0.4rem;
         }
@@ -356,7 +340,7 @@
         .btn-gold-master:focus-visible,
         .btn-rebirth-bright:focus-visible,
         .btn-remint-bright:focus-visible {
-            outline: 2px solid #fde68a;
+            outline: 2px solid #FEF08A;
             outline-offset: 3px;
         }
 
@@ -372,14 +356,14 @@
     </style>
 </head>
 
-<body class="bg-black text-slate-100 font-mono antialiased relative">
+<body class="bg-imperial-void text-slate-100 font-mono antialiased relative">
 
-    <div id="gasSurgeWarning" class="fixed top-4 left-1/2 transform -translate-x-1/2 bg-red-950/90 border border-red-500 text-red-100 px-6 py-3 rounded-xl z-[99999] hidden shadow-[0_0_20px_rgba(239,68,68,0.6)] backdrop-blur-md">
+    <div id="gasSurgeWarning" class="fixed top-4 left-1/2 transform -translate-x-1/2 bg-slate-900/90 border border-yellow-500 text-yellow-100 px-6 py-3 rounded-xl z-[99999] hidden shadow-[0_0_20px_rgba(234,179,8,0.6)] backdrop-blur-md">
         <span class="font-cinzel font-black uppercase text-xs flex items-center gap-2"><span class="animate-pulse">⚠</span> NETWORK GAS SURGE DETECTED</span>
-        <p class="text-[10px] font-mono mt-1 text-red-300">Gas price is currently highly volatile. Proceeding may result in unexpected fees or front-running risks.</p>
+        <p class="text-[10px] font-mono mt-1 text-yellow-300">Gas price is currently highly volatile. Proceeding may result in unexpected fees or front-running risks.</p>
     </div>
 
-    <div id="securityHardLockOverlay" class="fixed inset-0 bg-red-950/95 z-[99999] flex flex-col items-center justify-center p-6 hidden text-center font-mono border-4 border-red-600 m-4 rounded shadow-[0_0_50px_rgba(239,68,68,0.5)]">
+    <div id="securityHardLockOverlay" class="fixed inset-0 bg-slate-950/95 z-[99999] flex flex-col items-center justify-center p-6 hidden text-center font-mono border-4 border-red-600 m-4 rounded shadow-[0_0_50px_rgba(239,68,68,0.5)]">
         <span class="text-6xl mb-4 animate-bounce">🛡️</span>
         <h1 class="text-2xl font-black text-red-100 tracking-widest mb-2">NETWORK CHAIN VIOLATION DETECTED</h1>
         <p class="text-sm text-red-300 max-w-md mb-6 font-bold">ระบบหน้าบ้านถูกล็อกอย่างสมบูรณ์เนื่องจากกระเป๋าของคุณไม่ได้เชื่อมต่อกับ Base Mainnet กรุณาสลับเครือข่ายกลับมาเพื่อปลดล็อก</p>
@@ -387,121 +371,121 @@
     </div>
 
     <div id="fundConfirmModal" class="fixed inset-0 bg-black/95 backdrop-blur-md z-[99] hidden items-center justify-center p-4">
-        <div class="chiaroscuro-bg p-6 rounded-2xl border border-amber-600/50 max-w-md w-full text-center">
-            <h3 class="text-sm font-black font-cinzel text-amber-500 mb-2 uppercase tracking-widest">⛽ BRIDGE CAPITAL DEPLETION</h3>
+        <div class="chiaroscuro-bg p-6 rounded-2xl border border-yellow-600/50 max-w-md w-full text-center">
+            <h3 class="text-sm font-black font-cinzel text-yellow-500 mb-2 uppercase tracking-widest">⛽ SOVEREIGN CAPITAL DEPLETION</h3>
             <p class="text-[11px] font-mono text-slate-300 leading-relaxed mb-4">
-                The network telemetry detects insufficient balance on the Irys Permanent Settlement Bridge for this immutable archival sequence. System requires additional gas allocation of: <span id="fundAmountDisplay" class="text-amber-400 font-bold">0.0000</span> ETH (15% buffer included)
+                The network telemetry detects insufficient balance on the Arweave Permanent Settlement Bridge for this immutable archival sequence. System requires additional gas allocation of: <span id="fundAmountDisplay" class="text-yellow-400 font-bold">0.0000</span> ETH (15% buffer included)
             </p>
             <div class="flex gap-2">
-                <button onclick="window.resolveFundConfirm(false)" class="w-1/2 bg-stone-950 text-stone-400 font-mono text-[11px] py-3 rounded-lg uppercase border border-stone-800 cursor-pointer">CANCEL</button>
-                <button onclick="window.resolveFundConfirm(true)" class="w-1/2 btn-gold-master text-[11px] py-3 rounded-lg">FUND BRIDGE BALANCES</button>
+                <button onclick="window.resolveFundConfirm(false)" class="w-1/2 bg-slate-900 text-slate-400 font-mono text-[11px] py-3 rounded-lg uppercase border border-slate-800 cursor-pointer">CANCEL</button>
+                <button onclick="window.resolveFundConfirm(true)" class="w-1/2 btn-gold-master text-[11px] py-3 rounded-lg">RESTORE SOVEREIGN CAPITAL</button>
             </div>
         </div>
     </div>
 
     <div id="mediaConfirmModal" class="fixed inset-0 bg-black/95 backdrop-blur-md z-[100] hidden items-center justify-center p-4">
-        <div class="chiaroscuro-bg p-6 rounded-2xl border border-amber-600/50 max-w-lg w-full flex flex-col shadow-[0_0_50px_rgba(217,119,6,0.3)]">
-            <h3 class="text-sm font-black font-cinzel text-amber-500 mb-2 uppercase tracking-widest text-center">🎬 CRYPTOGRAPHIC MEDIA PREVIEW</h3>
+        <div class="chiaroscuro-bg p-6 rounded-2xl border border-yellow-600/50 max-w-lg w-full flex flex-col shadow-[0_0_50px_rgba(212,175,55,0.3)]">
+            <h3 class="text-sm font-black font-cinzel text-yellow-500 mb-2 uppercase tracking-widest text-center">🎬 CRYPTOGRAPHIC MEDIA PREVIEW</h3>
             <p class="text-[10px] font-mono text-slate-400 text-center uppercase mb-4 tracking-wider">
                 Please verify the cryptographic DNA and artifact asset structure before ledger deployment.
             </p>
-            <div id="mediaConfirmationPreviewContainer" class="aspect-[16/9] w-full bg-black border border-stone-900 rounded-xl overflow-hidden flex items-center justify-center mb-4"></div>
-            <div id="mediaConfirmDnaDisplay" class="p-2.5 bg-stone-950 border border-rose-950/40 rounded-lg text-center font-mono text-[10px] text-rose-400 mb-5 break-all">
+            <div id="mediaConfirmationPreviewContainer" class="aspect-[16/9] w-full bg-black border border-slate-900 rounded-xl overflow-hidden flex items-center justify-center mb-4"></div>
+            <div id="mediaConfirmDnaDisplay" class="p-2.5 bg-slate-900 border border-slate-800 rounded-lg text-center font-mono text-[10px] text-yellow-400 mb-5 break-all">
                 DNA: —
             </div>
             <div class="flex gap-3">
-                <button onclick="window.resolveMediaConfirm(false)" class="w-1/2 bg-stone-950 text-stone-400 font-mono text-[11px] py-3 rounded-xl uppercase border border-stone-800 font-bold cursor-pointer hover:bg-stone-900">ABORT CHAIN INJECTION</button>
-                <button onclick="window.resolveMediaConfirm(true)" class="w-1/2 btn-gold-master text-[11px] py-3 rounded-xl font-bold">CONSECRATE & SIGN TRANSMISSION ⚔</button>
+                <button onclick="window.resolveMediaConfirm(false)" class="w-1/2 bg-slate-900 text-slate-400 font-mono text-[11px] py-3 rounded-xl uppercase border border-slate-800 font-bold cursor-pointer hover:bg-slate-800">ABORT ABSOLUTE INJECTION</button>
+                <button onclick="window.resolveMediaConfirm(true)" class="w-1/2 btn-gold-master text-[11px] py-3 rounded-xl font-bold">ENFORCE ABSOLUTE MANDATE ⚔</button>
             </div>
         </div>
     </div>
 
     <div id="actionConfirmModal" class="fixed inset-0 bg-black/95 backdrop-blur-md z-[110] hidden items-center justify-center p-4">
-        <div class="chiaroscuro-bg p-6 rounded-2xl border border-rose-700/60 max-w-md w-full flex flex-col shadow-[0_0_50px_rgba(190,18,60,0.35)]">
-            <h3 id="actionConfirmTitle" class="text-sm font-black font-cinzel text-rose-400 mb-3 uppercase tracking-widest text-center">⚠ CRITICAL ENFORCEMENT</h3>
+        <div class="chiaroscuro-bg p-6 rounded-2xl border border-yellow-700/60 max-w-md w-full flex flex-col shadow-[0_0_50px_rgba(212,175,55,0.35)]">
+            <h3 id="actionConfirmTitle" class="text-sm font-black font-cinzel text-yellow-400 mb-3 uppercase tracking-widest text-center">⚠ CRITICAL ENFORCEMENT</h3>
             <p id="actionConfirmMessage" class="text-[11px] font-mono text-slate-300 text-center leading-relaxed mb-6 break-words"></p>
             <div class="flex gap-3">
-                <button onclick="window.resolveActionConfirm(false)" class="w-1/2 bg-stone-950 text-stone-400 font-mono text-[11px] py-3 rounded-xl uppercase border border-stone-800 font-bold cursor-pointer hover:bg-stone-900">ABORT</button>
-                <button onclick="window.resolveActionConfirm(true)" class="w-1/2 bg-rose-950 text-rose-100 border border-rose-500 font-mono text-[11px] py-3 rounded-xl uppercase font-bold cursor-pointer hover:bg-rose-900">CONFIRM & PROCEED ⚔</button>
+                <button onclick="window.resolveActionConfirm(false)" class="w-1/2 bg-slate-900 text-slate-400 font-mono text-[11px] py-3 rounded-xl uppercase border border-slate-800 font-bold cursor-pointer hover:bg-slate-800">ABORT</button>
+                <button onclick="window.resolveActionConfirm(true)" class="w-1/2 bg-slate-800 text-yellow-100 border border-yellow-500 font-mono text-[11px] py-3 rounded-xl uppercase font-bold cursor-pointer hover:bg-slate-700">ENFORCE ABSOLUTE COMMAND ⚔</button>
             </div>
         </div>
     </div>
 
-   <div id="identityAuthModal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[80] hidden items-center justify-center p-4">
-    <div class="chiaroscuro-bg p-6 rounded-2xl border border-rose-900/50 max-w-2xl w-full max-h-[90vh] flex flex-col">
-        <h3 class="text-sm font-black font-cinzel text-rose-400 mb-2 uppercase tracking-widest flex-shrink-0">🔒 IDENTITY PASSPORT & SYSTEM GUIDE</h3>
-        
-        <p class="text-[10px] font-mono text-slate-400 leading-relaxed mb-3 flex-shrink-0">
-            The Forensic Laboratory is strictly Token-Gated. Please review the Sovereign Dashboard operational guide before executing the scan.
-        </p>
+    <div id="identityAuthModal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[80] hidden items-center justify-center p-4">
+        <div class="chiaroscuro-bg p-6 rounded-2xl border border-slate-800 max-w-2xl w-full max-h-[90vh] flex flex-col">
+            <h3 class="text-sm font-black font-cinzel text-yellow-400 mb-2 uppercase tracking-widest flex-shrink-0">🔒 IDENTITY PASSPORT & SYSTEM GUIDE</h3>
+            
+            <p class="text-[10px] font-mono text-slate-400 leading-relaxed mb-3 flex-shrink-0">
+                The Forensic Laboratory is strictly Token-Gated. Please review the Sovereign Dashboard operational guide before executing the scan.
+            </p>
 
-        <div class="bg-black/80 border border-stone-800 rounded-xl p-4 mb-4 overflow-y-auto scroll-dark text-[10px] font-mono text-slate-300 space-y-5 flex-grow shadow-[inset_0_0_20px_rgba(0,0,0,0.9)] h-72">
-            <div>
-                <h4 class="text-amber-500 font-black uppercase mb-1.5 border-b border-stone-800 pb-1">Phase 1: Sovereign Awakening</h4>
-                <ul class="space-y-1.5 list-none pl-1">
-                    <li><span class="text-rose-400 font-bold">Action:</span> Connect Web3 wallet and mint the Deed NFT on the Base network.</li>
-                    <li><span class="text-rose-400 font-bold">Fact:</span> Automatically deploys a Token Bound Account (TBA - ERC-6551) via Lazy Initialization. The dev team is permanently stripped of control with No Backdoors.</li>
-                    <li><span class="text-rose-400 font-bold">Outcome:</span> Absolute ownership and operational control over metadata and media transfer strictly to the holder.</li>
-                </ul>
+            <div class="bg-black/80 border border-slate-800 rounded-xl p-4 mb-4 overflow-y-auto scroll-dark text-[10px] font-mono text-slate-300 space-y-5 flex-grow shadow-[inset_0_0_20px_rgba(0,0,0,0.9)] h-72">
+                <div>
+                    <h4 class="text-yellow-500 font-black uppercase mb-1.5 border-b border-slate-800 pb-1">Phase 1: Sovereign Awakening</h4>
+                    <ul class="space-y-1.5 list-none pl-1">
+                        <li><span class="text-yellow-400 font-bold">Action:</span> Connect Web3 wallet and forge the Sovereign Pass on the Base network.</li>
+                        <li><span class="text-yellow-400 font-bold">Fact:</span> Automatically deploys a Token Bound Account (TBA - ERC-6551) via Lazy Initialization. The dev team is permanently stripped of control with No Backdoors.</li>
+                        <li><span class="text-yellow-400 font-bold">Outcome:</span> Absolute ownership and operational control over metadata and media transfer strictly to the holder.</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-yellow-500 font-black uppercase mb-1.5 border-b border-slate-800 pb-1">Phase 2: Pass Ascension</h4>
+                    <ul class="space-y-1.5 list-none pl-1">
+                        <li><span class="text-yellow-400 font-bold">9:16 Video Preview Slots:</span> Designed strictly for viewing Nova sample templates. No data fields.</li>
+                        <li><span class="text-yellow-400 font-bold">Premium 4K Production:</span> Select a template version → Contact the Architect via social links → Submit 5 source images. The Architect custom-engineers a 4K Branding Video and 5 profiles with personalized cryptographic DNA engraved at <span class="text-yellow-400 font-bold bg-slate-800 px-1 rounded">3% Opacity</span> for forensic proof.</li>
+                        <li><span class="text-yellow-400 font-bold">Nova Input Fields:</span> Enter 3 fields: Token ID, Identity DNA, and Hidden Property (Chrono-Map) with links uploaded via Irys SDK Arweave.</li>
+                        <li class="mt-2 text-[9px] text-yellow-400 border border-yellow-900/50 bg-slate-900/50 p-2 rounded uppercase font-bold">
+                            CRITICAL WARNING: identityDNA and hiddenProperty are permanently Immutable (cannot be changed). Media URIs (front, back, video) can be updated for free (gas only) post-Nova.
+                        </li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-yellow-500 font-black uppercase mb-1.5 border-b border-slate-800 pb-1">Phase 3: Forensic DNA Lab</h4>
+                    <ul class="space-y-1.5 list-none pl-1">
+                        <li><span class="text-yellow-400 font-bold">Action:</span> Access via the hidden trigger under the "Uncompromised Integrity Protocol" section.</li>
+                        <li><span class="text-yellow-400 font-bold">Fact:</span> On-chain verification restricts access exclusively to the verified Pass holder.</li>
+                        <li><span class="text-yellow-400 font-bold">Outcome:</span> Instantly cross-checks personal DNA footprints to deliver irrefutable, court-admissible evidence, significantly expediting identity theft and deepfake litigation.
+                        </li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-yellow-500 font-black uppercase mb-1.5 border-b border-slate-800 pb-1">Phase 4: Governance Panel</h4>
+                    <ul class="space-y-1.5 list-none pl-1">
+                        <li><span class="text-yellow-400 font-bold">Council Panel:</span> Dashboard UI displays ONLY the "Digital live vote tally" tracking towards the 199/333 Absolute Quorum. Opening a vote (Create Proposal) must be executed by a Council Member via BaseScan directly. (Passes #1-10 have Council rights + grants; #50 and #100 have Council rights but zero grants).</li>
+                        <li><span class="text-yellow-400 font-bold">Ecosystem Allocations:</span> Automated 7-unit mathematical split: Project Treasury 3/7 (~42.8%) / Architect 2/7 (~28.5%) / Council Grant 2/7 (~28.5%).</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-yellow-500 font-black uppercase mb-1.5 border-b border-slate-800 pb-1">Phase 5: Treasury Liquidation</h4>
+                    <ul class="space-y-1.5 list-none pl-1">
+                        <li><span class="text-yellow-400 font-bold">Autonomous Exit (85% Remedy):</span> During a catastrophic market collapse (Black Swan), holders can trigger the "Autonomous Exit" command to relinquish the Pass. The contract programmatically liquidates and transfers 85% of the average reserve pool directly back to the holder's wallet (15% retained for stability: 12% Reserve / 3% Council).</li>
+                        <li><span class="text-yellow-400 font-bold">The Re-Forge Loop:</span> Relinquished tokens map to address(0). The Architect can inject new Metadata into the vacant Token ID and execute a Re-Forge to re-issue at premium pricing. Split: 70% Project Treasury / 25% Council Grant / 5% Architect.</li>
+                    </ul>
+                </div>
             </div>
-            <div>
-                <h4 class="text-amber-500 font-black uppercase mb-1.5 border-b border-stone-800 pb-1">Phase 2: Deed Ascension</h4>
-                <ul class="space-y-1.5 list-none pl-1">
-                    <li><span class="text-rose-400 font-bold">9:16 Video Preview Slots:</span> Designed strictly for viewing Nova sample templates. No data fields.</li>
-                    <li><span class="text-rose-400 font-bold">Premium 4K Production:</span> Select a template version → Contact the Architect via social links → Submit 5 source images. The Architect custom-engineers a 4K Branding Video and 5 profiles with personalized cryptographic DNA engraved at <span class="text-red-400 font-bold bg-red-950/40 px-1 rounded">3% Opacity</span> for forensic proof.</li>
-                    <li><span class="text-rose-400 font-bold">Nova Input Fields:</span> Enter 3 fields: Token ID, Identity DNA, and Hidden Property (Chrono-Map) with links uploaded via Irys SDK.</li>
-                    <li class="mt-2 text-[9px] text-red-400 border border-red-900/50 bg-red-950/20 p-2 rounded uppercase font-bold">
-                        CRITICAL WARNING: identityDNA and hiddenProperty are permanently Immutable (cannot be changed). Media URIs (front, back, video) can be updated for free (gas only) post-Nova.
-                    </li>
-                </ul>
-            </div>
-            <div>
-                <h4 class="text-amber-500 font-black uppercase mb-1.5 border-b border-stone-800 pb-1">Phase 3: Forensic DNA Lab</h4>
-                <ul class="space-y-1.5 list-none pl-1">
-                    <li><span class="text-rose-400 font-bold">Action:</span> Access via the hidden trigger under the "Uncompromised Integrity Protocol" section.</li>
-                    <li><span class="text-rose-400 font-bold">Fact:</span> On-chain verification restricts access exclusively to the verified Deed holder.</li>
-                    <li><span class="text-rose-400 font-bold">Outcome:</span> Instantly cross-checks personal DNA footprints to deliver irrefutable, court-admissible evidence, significantly expediting identity theft and deepfake litigation.
-                    </li>
-                </ul>
-            </div>
-            <div>
-                <h4 class="text-amber-500 font-black uppercase mb-1.5 border-b border-stone-800 pb-1">Phase 4: Governance Panel</h4>
-                <ul class="space-y-1.5 list-none pl-1">
-                    <li><span class="text-rose-400 font-bold">Council Panel:</span> Dashboard UI displays ONLY the "Digital live vote tally" tracking towards the 199/333 Absolute Quorum. Opening a vote (Create Proposal) must be executed by a Council Member via BaseScan directly. (Deeds #1-10 hold Council Governance Rights & Primary Quorum Authority; #50 and #100 hold Council Governance Rights with standard execution weight).</li>
-                    <li><span class="text-rose-400 font-bold">Protocol Routing:</span> Automated 7-unit mathematical split: Protocol Ecosystem Vault 3/7 (~42.8%) / Architect 2/7 (~28.5%) / Governance Council Pool 2/7 (~28.5%).</li>
-                </ul>
-            </div>
-            <div>
-             <h4 class="text-amber-500 font-black uppercase mb-1.5 border-b border-stone-800 pb-1">Phase 5: Sovereign Dissolution & Remint Loop</h4>
-             <ul class="space-y-1.5 list-none pl-1">
-            <li><span class="text-rose-400 font-bold">Sovereign Immolation:</span> In times of protocol instability, nodes possess the autonomy to self-destruct (Burn). The immutable contract strictly executes a systemic programmatic rage-quit routing of 85% algorithmic token state to the holder address. <i>There are no manual overrides, and the vault operates without human administration.</i></li>
-            <li><span class="text-rose-400 font-bold">The Architect Restriction:</span> The void left by burned elements maps to address(0). The Architect holds severely bottlenecked structural access (Hardcapped overrides) to inject new meta-state and trigger a Re-Mint, restoring the empire's mass entirely strictly dictated by on-chain math.</li>
-                </ul>
-            </div>
-        </div>
-        <div class="flex gap-2 flex-shrink-0">
-            <button onclick="closeIdentityAuthModal()" class="w-1/2 bg-stone-950 text-stone-400 font-mono text-[11px] py-3 rounded-lg uppercase border border-stone-800 cursor-pointer hover:bg-stone-900 transition-colors">ABORT SCAN</button>
-            <button onclick="executeGatewayUnlock(event)" class="w-1/2 bg-rose-950/60 text-rose-300 border border-rose-700 font-mono font-bold text-[11px] py-3 rounded-lg uppercase hover:bg-rose-900 cursor-pointer transition-colors shadow-[0_0_15px_rgba(153,27,27,0.4)]">AGREE & EXECUTE SCAN 🧬</button>
+            <div class="flex gap-2 flex-shrink-0">
+                <button onclick="closeIdentityAuthModal()" class="w-1/2 bg-slate-900 text-slate-400 font-mono text-[11px] py-3 rounded-lg uppercase border border-slate-800 cursor-pointer hover:bg-slate-800 transition-colors">ABORT SCAN</button>
+                <button onclick="executeGatewayUnlock(event)" class="w-1/2 bg-slate-800 text-yellow-300 border border-yellow-700 font-mono font-bold text-[11px] py-3 rounded-lg uppercase hover:bg-slate-700 cursor-pointer transition-colors shadow-[0_0_15px_rgba(212,175,55,0.2)]">AGREE & EXECUTE SCAN 🧬</button>
             </div>
         </div>
     </div>
 
     <div id="novaWarnModal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[80] hidden items-center justify-center p-4">
-        <div class="chiaroscuro-bg p-6 rounded-2xl border border-red-900/60 max-w-lg w-full shadow-[0_0_50px_rgba(153,27,27,0.4)]">
-            <h3 class="text-sm font-black font-cinzel text-red-500 mb-3 border-b border-stone-900 pb-2 uppercase tracking-wider">
+        <div class="chiaroscuro-bg p-6 rounded-2xl border border-yellow-900/60 max-w-lg w-full shadow-[0_0_50px_rgba(212,175,55,0.2)]">
+            <h3 class="text-sm font-black font-cinzel text-yellow-500 mb-3 border-b border-slate-900 pb-2 uppercase tracking-wider">
                 ⚠ Uncompromised Integrity Warning
             </h3>
             <p class="text-[11px] font-mono text-slate-300 leading-relaxed mb-4">
-                Forensic Integrity Warning: 'Identity DNA' and 'Chrono-Map (Hidden Property)' parameters will be immutably bound to the genesis blockchain deed. This action cannot be revoked or altered under any jurisdiction. Ensure 100% precision before executing the transaction.
+                Forensic Integrity Warning: 'Identity DNA' and 'Chrono-Map (Hidden Property)' parameters will be immutably bound to the genesis blockchain pass. This action cannot be revoked or altered under any jurisdiction. Ensure 100% precision before executing the transaction.
             </p>
             <label class="flex items-start gap-2 mb-4 cursor-pointer">
-                <input type="checkbox" id="novaAck" class="mt-0.5 accent-red-700 w-4 h-4" />
+                <input type="checkbox" id="novaAck" class="mt-0.5 accent-yellow-700 w-4 h-4" />
                 <span class="text-[10px] font-mono text-slate-400 uppercase tracking-wide">
                     I have thoroughly verified all parameters and acknowledge that this cryptographic binding is completely irreversible.
                 </span>
             </label>
             <div class="flex gap-2">
-                <button onclick="closeNovaWarn(false)" class="w-1/2 bg-stone-950 text-stone-400 font-mono text-[11px] py-3 rounded-lg uppercase border border-stone-800 hover:bg-stone-900 transition-colors cursor-pointer">ABORT</button>
+                <button onclick="closeNovaWarn(false)" class="w-1/2 bg-slate-900 text-slate-400 font-mono text-[11px] py-3 rounded-lg uppercase border border-slate-800 hover:bg-slate-800 transition-colors cursor-pointer">ABORT</button>
                 <button id="novaConfirmBtn" onclick="closeNovaWarn(true)" class="w-1/2 btn-gold-master text-[11px] py-3 rounded-lg">SIGN TRANSACTION</button>
             </div>
         </div>
@@ -511,42 +495,42 @@
 
     <header class="chiaroscuro-bg p-4 md:p-5 rounded-2xl mb-6 relative z-10 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
         <div class="flex items-center gap-3">
-            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-600 to-rose-950 flex items-center justify-center font-cinzel font-black text-black text-2xl shadow-[0_0_18px_rgba(217,119,6,0.35)]">Ω</div>
+            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-yellow-600 to-slate-900 flex items-center justify-center font-cinzel font-black text-black text-2xl shadow-[0_0_18px_rgba(212,175,55,0.35)]">Ω</div>
             <div>
-                <h1 class="text-base md:text-xl font-black tracking-wider uppercase font-cinzel text-stone-100">
-                    IMPERIAL SOVEREIGN <span class="gold-text">ARCHITECTURE</span> <span class="text-xs align-top text-amber-600">v1.3.0</span>
+                <h1 class="text-base md:text-xl font-black tracking-wider uppercase font-cinzel text-slate-100">
+                    IMPERIAL SOVEREIGN <span class="gold-text">ARCHITECTURE</span> <span class="text-xs align-top text-yellow-600">v1.0</span>
                 </h1>
-                <p class="text-[9px] font-mono text-rose-400/60 uppercase tracking-[0.2em] mt-1">
-                    BASE MAINNET • <span class="font-bold text-stone-300" id="hdrContract">0x920c1........A2b230C9</span>
+                <p class="text-[9px] font-mono text-yellow-400/60 uppercase tracking-[0.2em] mt-1">
+                    BASE MAINNET • <span class="font-bold text-slate-300" id="hdrContract">0x920c1........A2b230C9</span>
                 </p>
             </div>
         </div>
 
         <div class="flex flex-wrap items-center gap-3 w-full lg:w-auto justify-start lg:justify-end">
             <div class="flex flex-col gap-1 w-full lg:w-auto">
-                <div id="stagedBridgeStatus" class="text-[10px] text-amber-500 font-mono font-bold uppercase tracking-wider bg-stone-950 border border-rose-950 rounded p-2 text-center lg:text-left">
+                <div id="stagedBridgeStatus" class="text-[10px] text-yellow-500 font-mono font-bold uppercase tracking-wider bg-slate-900 border border-slate-800 rounded p-1 text-center lg:text-left">
                     🧳 Permanent Bridge Standby
                 </div>
                 <div class="hidden w-full" id="uploadProgressShell" role="progressbar" aria-label="Upload progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
-                    <div class="h-1.5 w-full bg-stone-900 rounded-full overflow-hidden border border-stone-800">
-                        <div id="uploadProgressFill" class="h-full w-0 bg-amber-500 transition-[width] duration-200 ease-out" style="will-change:width"></div>
+                    <div class="h-1.5 w-full bg-slate-900 rounded-full overflow-hidden border border-slate-800">
+                        <div id="uploadProgressFill" class="h-full w-0 bg-yellow-500 transition-[width] duration-200 ease-out" style="will-change:width"></div>
                     </div>
-                    <div id="uploadProgressLabel" class="mt-0.5 text-[9px] font-mono font-bold text-amber-400 tabular-nums text-right">0%</div>
+                    <div id="uploadProgressLabel" class="mt-0.5 text-[9px] font-mono font-bold text-yellow-400 tabular-nums text-right">0%</div>
                 </div>
             </div>
             <div id="walletInfo" class="hidden flex-col items-end text-[9px] font-mono uppercase w-full lg:w-auto">
-                <span class="text-stone-400">NET: <span id="hdrNetwork" class="text-amber-500 font-bold">—</span></span>
-                <span class="text-stone-400">ADDR: <span id="hdrAddress" class="text-stone-200 font-bold">—</span></span>
-                <span class="text-stone-400">DEED BALANCE: <span id="hdrBalance" class="text-rose-400 font-bold">0</span></span>
+                <span class="text-slate-400">NET: <span id="hdrNetwork" class="text-yellow-500 font-bold">—</span></span>
+                <span class="text-slate-400">ADDR: <span id="hdrAddress" class="text-slate-200 font-bold">—</span></span>
+                <span class="text-slate-400">PASS BALANCE: <span id="hdrBalance" class="text-yellow-400 font-bold">0</span></span>
             </div>
             <button id="btnConnect" onclick="connectWallet(this)" class="px-5 py-3 w-full lg:w-auto btn-gold-master rounded-xl text-xs">
-                🔗 Connect Sovereign Wallet
+                🔗 Bind Sovereign Passport
             </button>
         </div>
     </header>
 
     <section class="mb-6 relative z-10">
-        <div onclick="openIdentityAuthModal()" class="scanline-bar chiaroscuro-bg p-6 rounded-2xl cursor-pointer hover:border-blue-500 transition-all shadow-[inset_0_0_20px_rgba(0,0,0,0.9)]" title="INITIALIZE IDENTITY PROBE">
+        <div onclick="openIdentityAuthModal()" class="scanline-bar chiaroscuro-bg p-6 rounded-2xl cursor-pointer hover:border-yellow-500 transition-all shadow-[inset_0_0_20px_rgba(0,0,0,0.9)]" title="INITIALIZE IDENTITY PROBE">
             <h2 class="gold-vivid text-center font-cinzel font-black text-lg md:text-2xl tracking-[0.25em] opacity-90 hover:opacity-100 transition-all drop-shadow-2xl select-none uppercase">
                 Uncompromised Integrity Protocol
             </h2>
@@ -554,50 +538,50 @@
     </section>
 
     <div id="memberDnaVault" class="hidden mb-6 relative z-10">
-        <div class="chiaroscuro-bg p-6 rounded-2xl border border-rose-950">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-stone-900 pb-3 mb-5 gap-2">
+        <div class="chiaroscuro-bg p-6 rounded-2xl border border-slate-800">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-900 pb-3 mb-5 gap-2">
                 <div>
-                    <h2 class="text-lg font-black font-cinzel text-rose-400 uppercase tracking-tight">🧬 FORENSIC IDENTITY DNA LAB </h2>
-                    <p class="text-[9px] font-mono text-stone-500 uppercase tracking-wide mt-1">RESTRICTED SYSTEM — HOLDER IDENTITY ACCREDITED BY CRYPTOGRAPHY</p>
+                    <h2 class="text-lg font-black font-cinzel text-yellow-400 uppercase tracking-tight">🧬 FORENSIC IDENTITY DNA LAB </h2>
+                    <p class="text-[9px] font-mono text-slate-500 uppercase tracking-wide mt-1">RESTRICTED SYSTEM — HOLDER IDENTITY ACCREDITED BY CRYPTOGRAPHY</p>
                 </div>
-                <span id="labAccessBadge" class="bg-rose-950/40 text-rose-400 border border-rose-800 text-[10px] font-black px-2.5 py-1.5 tracking-widest uppercase rounded">HOLDER VERIFIED</span>
+                <span id="labAccessBadge" class="bg-slate-800 text-yellow-400 border border-slate-700 text-[10px] font-black px-2 py-1.5 tracking-widest uppercase rounded">HOLDER VERIFIED</span>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
                 <div class="lg:col-span-5 space-y-4">
                     <div>
-                        <label class="text-[10px] text-stone-400 font-mono block mb-1 uppercase">CELL IDENTIFIER (TOKEN ID)</label>
-                        <input type="number" id="dnaVerifyTokenId" min="1" max="333" placeholder="TOKEN ID (1-333)" class="w-full bg-stone-950 border border-rose-950 p-3 text-sm font-mono text-amber-500 rounded outline-none focus:border-amber-600 transition-all" />
+                        <label class="text-[10px] text-slate-400 font-mono block mb-1 uppercase">CELL IDENTIFIER (TOKEN ID)</label>
+                        <input type="number" id="dnaVerifyTokenId" min="1" max="333" placeholder="TOKEN ID (1-333)" class="w-full bg-slate-900 border border-slate-800 p-3 text-sm font-mono text-yellow-500 rounded outline-none focus:border-yellow-600 transition-all" />
                     </div>
-                    <button onclick="processIdentityDnaInspectionOnChain()" class="w-full bg-rose-950/40 text-rose-300 border border-rose-700 text-[11px] font-black font-mono py-3.5 rounded-lg uppercase hover:bg-rose-900/60 transition-all tracking-widest shadow-[0_0_15px_rgba(153,27,27,0.2)] cursor-pointer">
+                    <button onclick="processIdentityDnaInspectionOnChain()" class="w-full bg-slate-800 text-yellow-300 border border-slate-700 text-[11px] font-black font-mono py-3.5 rounded-lg uppercase hover:bg-slate-700 transition-all tracking-widest shadow-[0_0_15px_rgba(212,175,55,0.1)] cursor-pointer">
                         EXTRACT ON-CHAIN STRUCTURAL TRACE — autoMap() 🧬
                     </button>
                 </div>
-                <div class="lg:col-span-7 bg-stone-950/60 p-4 rounded-xl border border-stone-900 min-h-[10rem] flex flex-col justify-center">
-                    <div id="dnaAnalysisTerminalOut" class="text-center font-mono text-[9px] text-stone-600 uppercase italic">
+                <div class="lg:col-span-7 bg-slate-900/60 p-4 rounded-xl border border-slate-800 min-h-[10rem] flex flex-col justify-center">
+                    <div id="dnaAnalysisTerminalOut" class="text-center font-mono text-[9px] text-slate-600 uppercase italic">
                         [AWAITING CELL COORDINATE CAPTURE — INJECT ID TO DECODE FORENSIC MANIFEST]
                     </div>
                     <div id="dnaLabDisplay" class="hidden space-y-3">
-                        <div class="p-2 bg-rose-950/20 border border-rose-900/40 rounded text-center">
-                            <span class="text-[8px] font-mono text-rose-400 block tracking-widest uppercase mb-1">// ANCHORED EXTRACTED FORENSIC TEXT</span>
-                            <h1 id="dnaTargetText" class="font-cinzel font-black text-xs md:text-sm tracking-wider text-rose-300">— SUBJECT LOG DATA BLANK —</h1>
+                        <div class="p-2 bg-slate-800/50 border border-slate-700 rounded text-center">
+                            <span class="text-[8px] font-mono text-yellow-400 block tracking-widest uppercase mb-1">// ANCHORED EXTRACTED FORENSIC TEXT</span>
+                            <h1 id="dnaTargetText" class="font-cinzel font-black text-xs md:text-sm tracking-wider text-yellow-300">— SUBJECT LOG DATA BLANK —</h1>
                         </div>
                         <div class="grid grid-cols-2 gap-2 text-[9px] font-mono">
-                            <div class="p-2 bg-black/80 rounded border border-stone-900">
-                                <span class="text-stone-500 block uppercase font-bold">// RAW IDENTITY DNA STRING</span>
-                                <span id="metaRawDna" class="text-stone-300 break-all select-all">—</span>
+                            <div class="p-2 bg-black/80 rounded border border-slate-900">
+                                <span class="text-slate-500 block uppercase font-bold">// RAW IDENTITY DNA STRING</span>
+                                <span id="metaRawDna" class="text-slate-300 break-all select-all">—</span>
                             </div>
-                            <div class="p-2 bg-black/80 rounded border border-stone-900">
-                                <span class="text-stone-500 block uppercase font-bold">// IMMUTABLE CHRONO-MAP PROPERTY</span>
-                                <code id="metaHiddenProperty" class="text-rose-400 break-all">—</code>
+                            <div class="p-2 bg-black/80 rounded border border-slate-900">
+                                <span class="text-slate-500 block uppercase font-bold">// IMMUTABLE CHRONO-MAP PROPERTY</span>
+                                <code id="metaHiddenProperty" class="text-yellow-400 break-all">—</code>
                             </div>
-                            <div class="p-2 bg-black/80 rounded border border-stone-900">
-                                <span class="text-stone-500 block uppercase font-bold">// OPENSEA MAP TRAIT 1</span>
-                                <span id="propDisplay1" class="text-amber-500 font-bold">—</span>
+                            <div class="p-2 bg-black/80 rounded border border-slate-900">
+                                <span class="text-slate-500 block uppercase font-bold">// OPENSEA MAP TRAIT 1</span>
+                                <span id="propDisplay1" class="text-yellow-500 font-bold">—</span>
                             </div>
-                            <div class="p-2 bg-black/80 rounded border border-stone-900">
-                                <span class="text-stone-500 block uppercase font-bold">// OPENSEA MAP TRAIT 2</span>
-                                <span id="propDisplay2" class="text-amber-500 font-bold">—</span>
+                            <div class="p-2 bg-black/80 rounded border border-slate-900">
+                                <span class="text-slate-500 block uppercase font-bold">// OPENSEA MAP TRAIT 2</span>
+                                <span id="propDisplay2" class="text-yellow-500 font-bold">—</span>
                             </div>
                         </div>
                     </div>
@@ -607,52 +591,52 @@
     </div>
 
     <section class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6 relative z-10">
-        <div class="chiaroscuro-bg p-4 rounded-xl border-l-2 border-amber-500">
-            <span class="text-[9px] font-mono uppercase text-stone-500 flex justify-between items-center mb-1">
-                THE IMPERIAL MACRO VAULT
-                <span id="rpcStatus" class="text-[8px] text-amber-500">◌ RPC SYNC</span>
+        <div class="chiaroscuro-bg p-4 rounded-xl border-l-2 border-yellow-500">
+            <span class="text-[9px] font-mono uppercase text-slate-500 flex justify-between items-center mb-1">
+                PROJECT TREASURY
+                <span id="rpcStatus" class="text-[8px] text-yellow-500">◌ RPC SYNC</span>
             </span>
-            <div id="displayReserve" class="text-xl md:text-2xl font-black gold-text font-mono">0.00 <span class="text-xs text-stone-600">ETH</span></div>
+            <div id="displayReserve" class="text-xl md:text-2xl font-black gold-text font-mono">0.00 <span class="text-xs text-slate-600">ETH</span></div>
         </div>
-        <div class="chiaroscuro-bg p-4 rounded-xl border-l-2 border-rose-700">
-            <span class="text-[9px] font-mono uppercase text-stone-500 block mb-1">COUNCIL TRIBUTE ALLOCATION</span>
-            <div id="displayCouncilPool" class="text-xl md:text-2xl font-black crimson-text font-mono">0.00 <span class="text-xs text-stone-600">ETH</span></div>
-            <div class="mt-2 pt-2 border-t border-rose-900/50">
-                <span class="text-[8px] font-mono text-stone-400 block tracking-widest uppercase">DUST CAP BUFFER (WEI):</span>
-                <span id="dustVisualizer" class="text-[10px] font-mono text-amber-400 font-bold block overflow-hidden text-ellipsis truncate mt-0.5">0</span>
+        <div class="chiaroscuro-bg p-4 rounded-xl border-l-2 border-slate-600">
+            <span class="text-[9px] font-mono uppercase text-slate-500 block mb-1">COUNCIL GRANT TREASURY</span>
+            <div id="displayCouncilPool" class="text-xl md:text-2xl font-black text-slate-300 font-mono">0.00 <span class="text-xs text-slate-600">ETH</span></div>
+            <div class="mt-2 pt-2 border-t border-slate-800">
+                <span class="text-[8px] font-mono text-slate-400 block tracking-widest uppercase">DUST CAP BUFFER (WEI):</span>
+                <span id="dustVisualizer" class="text-[10px] font-mono text-yellow-400 font-bold block overflow-hidden text-ellipsis truncate mt-0.5">0</span>
             </div>
         </div>
-        <div class="chiaroscuro-bg p-4 rounded-xl border-l-2 border-red-700">
-            <span class="text-[9px] font-mono uppercase text-stone-500 block mb-1">SANCTIFIED ACTIVE DEEDS</span>
-            <div id="displaySupply" class="text-xl md:text-2xl font-black red-vivid font-mono">0 / 333</div>
+        <div class="chiaroscuro-bg p-4 rounded-xl border-l-2 border-yellow-700">
+            <span class="text-[9px] font-mono uppercase text-slate-500 block mb-1">SANCTIFIED ACTIVE PASSES</span>
+            <div id="displaySupply" class="text-xl md:text-2xl font-black text-yellow-500 font-mono">0 / 333</div>
         </div>
-        <div class="chiaroscuro-bg p-4 rounded-xl border-l-2 border-amber-700">
-            <span class="text-[9px] font-mono uppercase text-stone-500 block mb-1">TRIBUTE TARIFF METRICS</span>
-            <div class="text-xs font-mono text-stone-300 mt-1">
-                MINT: <span id="lblMintPrice" class="text-amber-500 font-bold">0.0</span> | NOVA: <span id="lblNovaFee" class="text-rose-400 font-bold">0.0</span> ETH
+        <div class="chiaroscuro-bg p-4 rounded-xl border-l-2 border-slate-700">
+            <span class="text-[9px] font-mono uppercase text-slate-500 block mb-1">STUDIO SERVICE FEE</span>
+            <div class="text-xs font-mono text-slate-300 mt-1">
+                FORGE: <span id="lblMintPrice" class="text-yellow-500 font-bold">0.0</span> | NOVA: <span id="lblNovaFee" class="text-yellow-400 font-bold">0.0</span> ETH
             </div>
-            <div class="text-[9px] font-mono text-stone-500 mt-2 pt-1 border-t border-stone-900">
-                HIST MINTS: <span id="lblHistoricalMint" class="text-stone-200 font-bold">0</span> | RES/NFT: <span id="lblReservePerNFT" class="text-stone-200 font-bold">0.0</span>
+            <div class="text-[9px] font-mono text-slate-500 mt-2 pt-1 border-t border-slate-900">
+                SANCTIFIED FORGES: <span id="lblHistoricalMint" class="text-slate-200 font-bold">0</span> | RES/PASS: <span id="lblReservePerNFT" class="text-slate-200 font-bold">0.0</span>
             </div>
         </div>
     </section>
 
-    <section class="chiaroscuro-bg p-6 rounded-2xl mb-6 relative z-10 border border-rose-950">
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-stone-900 pb-3 mb-5 gap-3">
+    <section class="chiaroscuro-bg p-6 rounded-2xl mb-6 relative z-10 border border-slate-800">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-900 pb-3 mb-5 gap-3">
             <div>
-                <h2 class="text-lg font-black font-cinzel text-stone-100 uppercase tracking-tight">🗺 Sovereign Node Matrix Layout Map</h2>
-                <p class="text-[9px] font-mono text-stone-500 uppercase tracking-wide">333 STRUCTURAL CELLS • LIVE LEDGER MAPS WITH MEMORY OBJECT CACHE</p>
+                <h2 class="text-lg font-black font-cinzel text-slate-100 uppercase tracking-tight">🗺 Sovereign Node Matrix Layout Map</h2>
+                <p class="text-[9px] font-mono text-slate-500 uppercase tracking-wide">333 STRUCTURAL CELLS • LIVE LEDGER MAPS WITH MEMORY OBJECT CACHE</p>
             </div>
             <div class="flex items-center gap-2 w-full sm:w-auto">
-                <input type="number" id="gridSearchInput" min="1" max="333" placeholder="ISOLATE NODE (1-333)" class="bg-black border border-stone-900 px-3 py-2 text-sm font-mono text-amber-500 rounded outline-none focus:border-amber-600 w-full sm:w-48" />
-                <span class="text-[10px] font-mono text-stone-500 uppercase whitespace-nowrap">ACTIVE: <span id="matrixActiveCount" class="text-amber-500 font-bold">0</span>/333</span>
+                <input type="number" id="gridSearchInput" min="1" max="333" placeholder="ISOLATE NODE (1-333)" class="bg-black border border-slate-900 px-3 py-2 text-sm font-mono text-yellow-500 rounded outline-none focus:border-yellow-600 w-full sm:w-48" />
+                <span class="text-[10px] font-mono text-slate-500 uppercase whitespace-nowrap">ACTIVE: <span id="matrixActiveCount" class="text-yellow-500 font-bold">0</span>/333</span>
             </div>
         </div>
         <div id="matrixGridContainer" class="grid grid-cols-6 sm:grid-cols-10 md:grid-cols-12 lg:grid-cols-16 gap-1.5 max-h-72 overflow-y-auto scroll-dark pr-2">
             <!-- Skeletons will be replaced by JS -->
         </div>
-        <div class="flex flex-wrap gap-4 mt-4 text-[9px] font-mono uppercase text-stone-500">
-            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm bg-stone-950 border border-stone-900"></span> Dormant Space</span>
+        <div class="flex flex-wrap gap-4 mt-4 text-[9px] font-mono uppercase text-slate-500">
+            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm bg-slate-900 border border-slate-800"></span> Dormant Space</span>
             <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm border rank-prime"></span> RANK-PRIME COUNCIL (1-10, 50, 100)</span>
             <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm border rank-gold"></span> RANK-GOLDEN COUNCIL (11-99)</span>
             <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm border rank-silver"></span> RANK-SILVER CIPHER COUNCIL (101-200)</span>
@@ -661,61 +645,80 @@
         </div>
     </section>
 
-    <section class="chiaroscuro-bg p-6 rounded-2xl mb-6 relative z-10 border border-rose-950 shadow-[0_0_25px_rgba(217,119,6,0.1)]">
-        <div class="border-b border-stone-900 pb-3 mb-4">
-            <h2 class="text-base font-black font-cinzel text-amber-500 uppercase tracking-wider">⚡ IMPERIAL ASSET FORGE & TBA REGISTRY</h2>
-            <p class="text-[9px] font-mono text-stone-500 uppercase tracking-wide">PRIMARY TRANSACTION INTERFACE FOR REBIRTH, RE-MINT CYCLES, AND TOKEN BOUND ACCOUNT VERIFICATION</p>
+<!-- ========================================== -->
+<!-- 1. ส่วน HTML (IMPERIAL SOVEREIGN FORGE) -->
+<!-- ========================================== -->
+<section class="chiaroscuro-bg p-6 rounded-2xl mb-6 relative z-10 border border-slate-800 shadow-[0_0_25px_rgba(212,175,55,0.05)]">
+    <div class="border-b border-slate-900 pb-3 mb-4">
+        <h2 class="text-base font-black font-cinzel text-yellow-500 uppercase tracking-wider">⚡ IMPERIAL SOVEREIGN FORGE & TBA REGISTRY</h2>
+        <p class="text-[9px] font-mono text-slate-500 uppercase tracking-wide">PRIMARY TRANSACTION INTERFACE FOR REBIRTH, RE-FORGE CYCLES, AND TOKEN BOUND ACCOUNT VERIFICATION</p>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+        <div class="md:col-span-5 space-y-3">
+            <span class="text-[9px] font-mono text-slate-400 uppercase tracking-wider block">// CRYPTOGRAPHIC ACTION Hub</span>
+            
+            <!-- CONSENT CHECKBOX BOX -->
+            <div class="mb-4 p-3 bg-slate-900/90 border border-slate-800 rounded-lg text-left font-mono">
+                <label class="flex items-start space-x-3 cursor-pointer select-none">
+                    <input 
+                        type="checkbox" 
+                        id="forgeConsentCheckbox" 
+                        onchange="toggleForgeButtonState()"
+                        class="mt-1 h-4 w-4 rounded border-slate-700 bg-black text-yellow-500 focus:ring-yellow-500 focus:ring-offset-slate-900 cursor-pointer"
+                    />
+                    <span class="text-[10px] text-slate-400 leading-relaxed">
+                        <strong class="text-slate-200 uppercase block mb-0.5 tracking-wider">⚠️ MEMBERSHIP & COLLECTIBLE ACKNOWLEDGEMENT</strong>
+                        ฉันยืนยันว่าเข้าใจดีว่าโฉนด/บัตรนี้เป็นเพียง <span class="text-slate-200 font-semibold">NFT ของสะสมและสิทธิ์เข้าร่วมสโมสรเท่านั้น</span> ไม่ใช่สินทรัพย์การลงทุน ตราสารทางการเงิน หรือผลิตภัณฑ์เก็งกำไรใดๆ และไม่มีการรับประกันผลตอบแทน
+                    </span>
+                </label>
+            </div>
+
+            <div class="grid grid-cols-1 gap-3">
+                <button id="executeForgeBtn" onclick="triggerForge('REBIRTH', this)" disabled class="btn-rebirth-bright text-xs py-3.5 rounded-xl font-black tracking-wide opacity-50 cursor-not-allowed">SOVEREIGN REBIRTH ⚔</button>
+            </div>
+            <p class="text-[9px] font-mono text-slate-600 uppercase">EXECUTING CYCLE MODIFICATIONS ASSOCIATED DIRECTLY TO THE ACTIVE PASS POSITION</p>
         </div>
         
-        <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
-            <div class="md:col-span-5 space-y-3">
-                <span class="text-[9px] font-mono text-stone-400 uppercase tracking-wider block">// CRYPTOGRAPHIC ACTION Hub</span>
-                <div class="grid grid-cols-1 gap-3">
-                    <button onclick="triggerForge('REBIRTH', this)" class="btn-rebirth-bright text-xs py-3.5 rounded-xl font-black tracking-wide">SOVEREIGN REBIRTH ⚔</button>
+        <div class="md:col-span-7 bg-black/60 p-4 rounded-xl border border-slate-900 flex flex-col justify-between">
+            <div>
+                <span class="text-[9px] font-mono text-yellow-500 uppercase tracking-wider block mb-2">// SPECIFIC ACTIVE PASS OWNERSHIP STATE</span>
+                <div id="activeDeedMetadataDisplay" class="w-full bg-slate-900 border border-slate-800 rounded p-3 text-center text-[11px] font-mono text-slate-400 truncate uppercase">
+                    STATION STANDBY // CHOOSE AN ACTIVE CELL FROM MATRIX MAP ABOVE
                 </div>
-                <p class="text-[9px] font-mono text-stone-600 uppercase">EXECUTING CYCLE MODIFICATIONS ASSOCIATED DIRECTLY TO THE ACTIVE DEED POSITION</p>
             </div>
-            
-            <div class="md:col-span-7 bg-black/60 p-4 rounded-xl border border-stone-900 flex flex-col justify-between">
-                <div>
-                    <span class="text-[9px] font-mono text-amber-500 uppercase tracking-wider block mb-2">// SPECIFIC ACTIVE DEED OWNERSHIP STATE</span>
-                    <div id="activeDeedMetadataDisplay" class="w-full bg-stone-950 border border-stone-900 rounded p-3 text-center text-[11px] font-mono text-stone-400 truncate uppercase">
-                        STATION STANDBY // CHOOSE AN ACTIVE CELL FROM MATRIX MAP ABOVE
-                    </div>
-                </div>
-
-                <div class="mt-3 p-3 bg-gradient-to-br from-stone-950 to-[#1c0a10] border border-amber-600/30 rounded-xl">
-                    <span class="text-[9px] font-mono text-amber-400 font-bold block uppercase mb-2 tracking-widest">💰 TBA LEDGER VAULT BALANCES</span>
-                    <div class="grid grid-cols-2 gap-2 text-[10px] font-mono">
-                        <div class="p-2.5 bg-black/80 rounded border border-stone-950 flex justify-between items-center">
-                            <span class="text-stone-500">TBA VAULT FUEL (ETH):</span>
-                            <span id="tbaEthBalance" class="text-amber-500 font-bold">0.0000 ETH</span>
-                        </div>
-                        <div class="p-2.5 bg-black/80 rounded border border-stone-950 flex justify-between items-center">
-                            <span class="text-stone-500">NETWORK FLUIDITY (WETH):</span>
-                            <span id="tbaWethBalance" class="text-rose-400 font-bold">0.0000 WETH</span>
+            <div class="mt-3 p-3 bg-gradient-to-br from-slate-900 to-[#020617] border border-yellow-600/30 rounded-xl">              
+                <span class="text-[9px] font-mono text-yellow-400 font-bold block uppercase mb-2 tracking-widest">💰 ABSOLUTE VAULT CAPITALS</span>
+              <div class="grid grid-cols-2 gap-2 text-[10px] font-mono">
+               <div class="p-1.5 bg-black/80 rounded border border-slate-800 flex justify-between items-center">
+                <span class="text-slate-500">ETH CAPITAL:</span>
+                 <span id="tbaEthBalance" class="text-yellow-500 font-bold">0.0000 ETH</span>
+                   </div>
+                 <div class="p-1.5 bg-black/80 rounded border border-slate-800 flex justify-between items-center">
+                   <span class="text-slate-500">WETH LIQUIDITY:</span>
+                            <span id="tbaWethBalance" class="text-yellow-400 font-bold">0.0000 WETH</span>
                         </div>
                     </div>
                 </div>
                 
-                <div class="mt-3 pt-3 border-t border-stone-900/60">
-                    <label class="text-[9px] text-stone-500 font-mono block mb-1 uppercase tracking-widest">// TOKEN BOUND ACCOUNT (TBA ADDRESS)</label>
+                <div class="mt-3 pt-3 border-t border-slate-800/60">
+                    <label class="text-[9px] text-slate-500 font-mono block mb-1 uppercase tracking-widest">// TOKEN BOUND ACCOUNT (TBA ADDRESS)</label>
                     <div class="flex gap-2">
-                        <input type="text" id="tbaAddressDisplay" readonly placeholder="0x0000000000000000000000000000000000000000" class="flex-grow bg-stone-950 border border-stone-900 p-2.5 text-[10px] font-mono text-amber-400 rounded outline-none select-all" />
-                        <button onclick="navigator.clipboard.writeText(document.getElementById('tbaAddressDisplay').value); alert('TBA Address Copied!');" class="px-4 bg-stone-900 border border-stone-800 text-stone-300 hover:border-amber-500 hover:text-amber-500 rounded text-[10px] font-mono uppercase font-bold transition-all">COPY TBA</button>
+                        <input type="text" id="tbaAddressDisplay" readonly placeholder="0x0000000000000000000000000000000000000000" class="flex-grow bg-slate-900 border border-slate-800 p-1.5 text-[10px] font-mono text-yellow-400 rounded outline-none select-all" />
+                        <button onclick="navigator.clipboard.writeText(document.getElementById('tbaAddressDisplay').value); alert('TBA Address Copied!');" class="px-4 bg-slate-800 border border-slate-700 text-slate-300 hover:border-yellow-500 hover:text-yellow-500 rounded text-[10px] font-mono uppercase font-bold transition-all">COPY TBA</button>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <section class="chiaroscuro-bg p-6 rounded-2xl mb-6 relative z-10 border border-rose-950">
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-stone-900 pb-3 mb-5 gap-4">
+    <section class="chiaroscuro-bg p-6 rounded-2xl mb-6 relative z-10 border border-slate-800">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-900 pb-3 mb-5 gap-4">
             <div>
                 <h2 class="text-lg font-black font-cinzel gold-text uppercase tracking-tight">🎬 Real-Time Interactive Canvas Framework (Billboard)</h2>
-                <p class="text-[9px] font-mono text-stone-500 uppercase tracking-wide">4 STRUCTURAL VIDEO PREVIEW SLOTS // 180 DEGREE INSPECTION ROTATOR CANVAS</p>
+                <p class="text-[9px] font-mono text-slate-500 uppercase tracking-wide">4 STRUCTURAL VIDEO PREVIEW SLOTS // 180 DEGREE INSPECTION ROTATOR CANVAS</p>
             </div>
-            <button onclick="toggleCardFlip()" class="px-4 py-3 bg-rose-900 hover:bg-rose-800 text-white font-black text-xs font-mono rounded-xl transition-all shadow-[0_0_15px_rgba(136,19,55,0.4)] uppercase tracking-wider border border-rose-600">
+            <button onclick="toggleCardFlip()" class="px-4 py-3 bg-slate-800 hover:bg-slate-700 text-white font-black text-xs font-mono rounded-xl transition-all shadow-[0_0_15px_rgba(212,175,55,0.1)] uppercase tracking-wider border border-slate-600">
                 🔄 FLIP INSPECTION CANVAS (180°)
             </button>
         </div>
@@ -723,397 +726,388 @@
             <div class="lg:col-span-4 flex flex-col items-center w-full">
                 <div class="deed-card-container">
                     <div id="sovereignFlipCard" class="deed-card-inner">
-                        <div id="previewFrontContainer" class="deed-card-front preview-slot border border-amber-600/50 flex flex-col items-center justify-center p-4">
-                            <span class="text-[9px] font-mono text-stone-500 text-center uppercase italic">[ OBVERSE ELEMENT UNINITIALIZED ]</span>
+                        <div id="previewFrontContainer" class="deed-card-front preview-slot border border-yellow-600/50 flex flex-col items-center justify-center p-4">
+                            <span class="text-[9px] font-mono text-slate-500 text-center uppercase italic">[ OBVERSE ELEMENT UNINITIALIZED ]</span>
                         </div>
-                        <div id="previewBackContainer" class="deed-card-back preview-slot border border-rose-900/50 flex flex-col items-center justify-center p-4">
-                            <span class="text-[9px] font-mono text-rose-400 text-center uppercase italic">[ REVERSE ELEMENT UNINITIALIZED ]</span>
-                        </div>
+                        <div id="previewBackContainer" class="deed-card-back preview-slot border border-slate-700/50 flex flex-col items-center justify-center p-4">
+                            <span class="text-[9px] font-mono text-yellow-400 text-center uppercase italic">[ REVERSE ELEMENT UNINITIALIZED ]</span>
+                    </div>
                     </div>
                 </div>
             </div>
             <div class="lg:col-span-8 w-full">
-                <span class="text-[9px] font-mono text-stone-500 uppercase tracking-widest block mb-3">// CHRONOGRAPH PREVIEW MATRIX (READ-ONLY FOR USERS)</span>
+                <span class="text-[9px] font-mono text-slate-500 uppercase tracking-widest block mb-3">// CHRONOGRAPH PREVIEW MATRIX (READ-ONLY FOR USERS)</span>
                 <div class="grid grid-cols-2 gap-4 max-w-xl">
                     <div id="vSlot1" onclick="handleSlotClick(1)" class="preview-slot aspect-[9/16] rounded-xl p-3 flex flex-col justify-between cursor-pointer relative overflow-hidden">
-                        <div class="text-right text-[10px] font-mono text-stone-400 font-bold relative z-10">SLOT #01</div>
-                        <div class="flex-grow flex items-center justify-center relative z-10"><span class="text-amber-500 text-3xl drop-shadow-[0_0_10px_rgba(217,119,6,0.5)]">▶</span></div>
-                        <span id="vSlotStatus1" class="text-[8px] text-stone-400 uppercase mt-1 block text-center relative z-10 font-bold">CONTACT ARCHITECT TO DEPLOY</span>
+                        <div class="text-right text-[10px] font-mono text-slate-400 font-bold relative z-10">SLOT #01</div>
+                        <div class="flex-grow flex items-center justify-center relative z-10"><span class="text-yellow-500 text-3xl drop-shadow-[0_0_10px_rgba(212,175,55,0.5)]">▶</span></div>
+                        <span id="vSlotStatus1" class="text-[8px] text-slate-400 uppercase mt-1 block text-center relative z-10 font-bold">CONTACT ARCHITECT TO DEPLOY</span>
                     </div>
                     <div id="vSlot2" onclick="handleSlotClick(2)" class="preview-slot aspect-[9/16] rounded-xl p-3 flex flex-col justify-between cursor-pointer relative overflow-hidden">
-                        <div class="text-right text-[10px] font-mono text-stone-400 font-bold relative z-10">SLOT #02</div>
-                        <div class="flex-grow flex items-center justify-center relative z-10"><span class="text-amber-500 text-3xl drop-shadow-[0_0_10px_rgba(217,119,6,0.5)]">▶</span></div>
-                        <span id="vSlotStatus2" class="text-[8px] text-stone-400 uppercase mt-1 block text-center relative z-10 font-bold">CONTACT ARCHITECT TO DEPLOY</span>
+                        <div class="text-right text-[10px] font-mono text-slate-400 font-bold relative z-10">SLOT #02</div>
+                        <div class="flex-grow flex items-center justify-center relative z-10"><span class="text-yellow-500 text-3xl drop-shadow-[0_0_10px_rgba(212,175,55,0.5)]">▶</span></div>
+                        <span id="vSlotStatus2" class="text-[8px] text-slate-400 uppercase mt-1 block text-center relative z-10 font-bold">CONTACT ARCHITECT TO DEPLOY</span>
                     </div>
                     <div id="vSlot3" onclick="handleSlotClick(3)" class="preview-slot aspect-[9/16] rounded-xl p-3 flex flex-col justify-between cursor-pointer relative overflow-hidden">
-                        <div class="text-right text-[10px] font-mono text-stone-400 font-bold relative z-10">SLOT #03</div>
-                        <div class="flex-grow flex items-center justify-center relative z-10"><span class="text-amber-500 text-3xl drop-shadow-[0_0_10px_rgba(217,119,6,0.5)]">▶</span></div>
-                        <span id="vSlotStatus3" class="text-[8px] text-stone-400 uppercase mt-1 block text-center relative z-10 font-bold">CONTACT ARCHITECT TO DEPLOY</span>
+                        <div class="text-right text-[10px] font-mono text-slate-400 font-bold relative z-10">SLOT #03</div>
+                        <div class="flex-grow flex items-center justify-center relative z-10"><span class="text-yellow-500 text-3xl drop-shadow-[0_0_10px_rgba(212,175,55,0.5)]">▶</span></div>
+                        <span id="vSlotStatus3" class="text-[8px] text-slate-400 uppercase mt-1 block text-center relative z-10 font-bold">CONTACT ARCHITECT TO DEPLOY</span>
                     </div>
                     <div id="vSlot4" onclick="handleSlotClick(4)" class="preview-slot aspect-[9/16] rounded-xl p-3 flex flex-col justify-between cursor-pointer relative overflow-hidden">
-                        <div class="text-right text-[10px] font-mono text-stone-400 font-bold relative z-10">SLOT #04</div>
-                        <div class="flex-grow flex items-center justify-center relative z-10"><span class="text-amber-500 text-3xl drop-shadow-[0_0_10px_rgba(217,119,6,0.5)]">▶</span></div>
-                        <span id="vSlotStatus4" class="text-[8px] text-stone-400 uppercase mt-1 block text-center relative z-10 font-bold">CONTACT ARCHITECT TO DEPLOY</span>
+                        <div class="text-right text-[10px] font-mono text-slate-400 font-bold relative z-10">SLOT #04</div>
+                        <div class="flex-grow flex items-center justify-center relative z-10"><span class="text-yellow-500 text-3xl drop-shadow-[0_0_10px_rgba(212,175,55,0.5)]">▶</span></div>
+                        <span id="vSlotStatus4" class="text-[8px] text-slate-400 uppercase mt-1 block text-center relative z-10 font-bold">CONTACT ARCHITECT TO DEPLOY</span>
                     </div>
                 </div>
             </div>
             <div class="lg:col-span-12 w-full mt-4">
-                <div class="bg-stone-950 border border-rose-950 rounded-xl p-5">
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-5">
                     <div class="flex flex-wrap items-center justify-center gap-3">
-                        <a id="linkSocial1" href="#" target="_blank" rel="noopener noreferrer" class="px-4 py-2.5 bg-stone-900 border border-stone-800 rounded-lg text-[10px] font-mono uppercase text-stone-300 hover:border-amber-500 hover:text-amber-500 transition-colors">✦ LinkedIn Gateway</a>
-                        <a id="linkSocial2" href="#" target="_blank" rel="noopener noreferrer" class="px-4 py-2.5 bg-stone-900 border border-stone-800 rounded-lg text-[10px] font-mono uppercase text-stone-300 hover:border-amber-500 hover:text-amber-500 transition-colors">✦ X / Twitter Gateway</a>
-                        <a id="linkSocial3" href="#" target="_blank" rel="noopener noreferrer" class="px-4 py-2.5 bg-stone-900 border border-stone-800 rounded-lg text-[10px] font-mono uppercase text-stone-300 hover:border-rose-600 hover:text-rose-400 transition-colors">✦ Council Room Discord</a>
-                        <a id="linkSocialClubHouse" href="#" target="_blank" rel="noopener noreferrer" class="px-4 py-2.5 bg-gradient-to-r from-[#78350f] to-[#d97706] border border-[#fef08a] rounded-lg text-[10px] font-mono font-black uppercase text-black hover:brightness-110 transition-all shadow-[0_0_15px_rgba(217,119,6,0.3)]">🏆 THE SOVEREIGN CLUB HOUSE & SOCIAL</a>
+                        <a id="linkSocial1" href="#" target="_blank" rel="noopener noreferrer" class="px-4 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-[10px] font-mono uppercase text-slate-300 hover:border-yellow-500 hover:text-yellow-500 transition-colors">✦ LinkedIn Gateway</a>
+                        <a id="linkSocial2" href="#" target="_blank" rel="noopener noreferrer" class="px-4 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-[10px] font-mono uppercase text-slate-300 hover:border-yellow-500 hover:text-yellow-500 transition-colors">✦ X / Twitter Gateway</a>
+                        <a id="linkSocial3" href="#" target="_blank" rel="noopener noreferrer" class="px-4 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-[10px] font-mono uppercase text-slate-300 hover:border-yellow-600 hover:text-yellow-400 transition-colors">✦ Council Room Discord</a>
+                        <a id="linkSocialClubHouse" href="#" target="_blank" rel="noopener noreferrer" class="px-4 py-1.5 bg-gradient-to-r from-[#854D0E] to-[#D4AF37] border border-[#FEF08A] rounded-lg text-[10px] font-mono font-black uppercase text-black hover:brightness-110 transition-all shadow-[0_0_15px_rgba(212,175,55,0.3)]">🏆 THE SOVEREIGN CLUB HOUSE & SOCIAL</a>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <section class="chiaroscuro-bg p-6 rounded-2xl mb-6 relative z-10 border border-rose-950">
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-stone-900 pb-3 mb-5 gap-2">
+    <section class="chiaroscuro-bg p-6 rounded-2xl mb-6 relative z-10 border border-slate-800">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-900 pb-3 mb-5 gap-2">
             <div>
-                <h2 class="text-lg font-black font-cinzel text-stone-100 uppercase tracking-tight">📡 Decentralized Media Transmission Station</h2>
-                <p class="text-[9px] font-mono text-stone-500 uppercase tracking-wide">DIRECT IRYS BRIDGING TRANSMISSION • EXPLICIT MAXIMUM CAPACITY RESTRICTIONS: 300MB</p>
+                <h2 class="text-lg font-black font-cinzel text-slate-100 uppercase tracking-tight">📡 Decentralized Media Transmission Station</h2>
+                <p class="text-[9px] font-mono text-slate-500 uppercase tracking-wide">DIRECT IRYS BRIDGING TRANSMISSION • EXPLICIT MAXIMUM CAPACITY RESTRICTIONS: 300MB</p>
             </div>
-            <div id="targetBridgeFieldLabel" class="text-[9px] font-mono font-bold text-amber-500 uppercase bg-stone-950 px-2.5 py-1.5 border border-stone-900 rounded">
+            <div id="targetBridgeFieldLabel" class="text-[9px] font-mono font-bold text-yellow-500 uppercase bg-slate-900 px-2 py-1.5 border border-slate-800 rounded">
                 TARGET ASPECT: DORMANT (CHOOSE NODES COORD)
             </div>
         </div>
 
         <div class="flex gap-2 mb-5" role="tablist" aria-label="Transmission station selector">
-            <button type="button" role="tab" aria-selected="true" aria-controls="stationFront" onclick="switchStation('front')" id="tabFront" class="tab-btn active flex-1 bg-stone-950 border border-stone-900 rounded-lg py-3 text-[10px] font-black font-mono uppercase tracking-wider text-stone-300 transition-all cursor-pointer">OBVERSE TRANSMISSION DECK (FRONT STATION)</button>
-            <button type="button" role="tab" aria-selected="false" aria-controls="stationBack" onclick="switchStation('back')" id="tabBack" class="tab-btn flex-1 bg-stone-950 border border-stone-900 rounded-lg py-3 text-[10px] font-black font-mono uppercase tracking-wider text-stone-300 transition-all cursor-pointer">REVERSE TRANSMISSION DECK (BACK STATION)</button>
+            <button type="button" role="tab" aria-selected="true" aria-controls="stationFront" onclick="switchStation('front')" id="tabFront" class="tab-btn active flex-1 bg-slate-900 border border-slate-800 rounded-lg py-3 text-[10px] font-black font-mono uppercase tracking-wider text-slate-300 transition-all cursor-pointer">OBVERSE TRANSMISSION DECK (FRONT STATION)</button>
+            <button type="button" role="tab" aria-selected="false" aria-controls="stationBack" onclick="switchStation('back')" id="tabBack" class="tab-btn flex-1 bg-slate-900 border border-slate-800 rounded-lg py-3 text-[10px] font-black font-mono uppercase tracking-wider text-slate-300 transition-all cursor-pointer">REVERSE TRANSMISSION DECK (BACK STATION)</button>
         </div>
 
         <div id="stationFront" class="station-panel space-y-4">
-            <div class="flex items-center justify-between bg-stone-950 border border-stone-900 rounded-lg p-3">
-                <span class="text-[10px] font-mono uppercase text-slate-400 flex items-center">
+            <div class="flex items-center justify-between bg-slate-900 border border-slate-800 rounded-lg p-3">
+               <span class="text-[10px] font-mono uppercase text-slate-400 flex items-center">
                     OBVERSE TARGET FILE CLASSIFICATION: 
-                    <input type="radio" name="frontType" value="image" checked class="ml-2 accent-amber-500 cursor-pointer w-4 h-4" onchange="onTypeToggle('front')" /> <span class="text-amber-500 font-bold ml-1">IMAGE</span> 
+                    <input type="radio" name="frontType" value="image" checked class="ml-2 accent-yellow-500 cursor-pointer w-4 h-4" onchange="onTypeToggle('front')" /> <span class="text-yellow-500 font-bold ml-1">IMAGE</span> 
                     <span class="mx-2">/</span>
-                    <input type="radio" name="frontType" value="video" class="ml-2 accent-rose-500 cursor-pointer w-4 h-4" onchange="onTypeToggle('front')" /> <span class="text-rose-500 font-bold ml-1">VIDEO ANIMATION</span>
+                    <input type="radio" name="frontType" value="video" class="ml-2 accent-yellow-500 cursor-pointer w-4 h-4" onchange="onTypeToggle('front')" /> <span class="text-yellow-500 font-bold ml-1">VIDEO ANIMATION</span>
                 </span>
-                <button id="btnConnectIrys" type="button" class="px-4 py-2 bg-slate-900 border border-blue-900 text-blue-400 font-mono text-sm hover:bg-blue-950 hover:text-blue-300 transition-colors duration-300 shadow-[0_0_15px_rgba(30,58,138,0.3)]">
+                <button id="btnConnectIrys" type="button" class="px-4 py-2 bg-slate-800 border border-blue-900 text-blue-400 font-mono text-sm hover:bg-slate-700 hover:text-blue-300 transition-colors duration-300 shadow-[0_0_15px_rgba(30,58,138,0.3)]">
                     ⚡ ENGAGE IRYS BRIDGE
                 </button>
-                <button onclick="executeArchitectCentralizedUpload('front')" class="px-4 py-2 bg-amber-700 hover:bg-amber-600 text-black font-bold text-[10px] font-mono uppercase rounded transition-all">STREAM OBVERSE PAYLOAD</button>
+                <button onclick="executeArchitectCentralizedUpload('front')" class="px-4 py-2 bg-yellow-700 hover:bg-yellow-600 text-black font-bold text-[10px] font-mono uppercase rounded transition-all">STREAM OBVERSE PAYLOAD</button>
             </div>
             <div>
-                <label class="text-[9px] text-stone-400 font-mono block mb-1 uppercase">FRONT <span id="frontTypeLabel" class="text-amber-500 font-bold">IMAGE</span> SOURCE REFERENCE URI</label>
-                <input type="text" id="forgeFrontUri" placeholder="e.g. Irys Tx ID (43 chars) or full URL" class="w-full bg-stone-950 border border-stone-900 p-3 text-sm font-mono text-stone-200 rounded outline-none focus:border-amber-600 transition-all" />
-                <p class="text-[9px] font-mono text-stone-600 mt-1 uppercase">MAPS CODE TARGET TO → <span id="frontMapTarget" class="text-amber-500 font-bold">frontURI / imageURI</span></p>
+                <label class="text-[9px] text-slate-400 font-mono block mb-1 uppercase">FRONT <span id="frontTypeLabel" class="text-yellow-500 font-bold">IMAGE</span> SOURCE REFERENCE URI</label>
+                <input type="text" id="forgeFrontUri" placeholder="e.g. ar://… Manifest mapping output target" class="w-full bg-slate-900 border border-slate-800 p-3 text-sm font-mono text-slate-200 rounded outline-none focus:border-yellow-600 transition-all" />
+                <p class="text-[9px] font-mono text-slate-600 mt-1 uppercase">MAPS CODE TARGET TO → <span id="frontMapTarget" class="text-yellow-500 font-bold">frontURI / imageURI</span></p>
             </div>
         </div>
 
         <div id="stationBack" class="station-panel space-y-4 hidden">
-            <div class="flex items-center justify-between bg-stone-950 border border-stone-900 rounded-lg p-3">
+            <div class="flex items-center justify-between bg-slate-900 border border-slate-800 rounded-lg p-3">
                 <span class="text-[10px] font-mono uppercase text-slate-400 flex items-center">
                     REVERSE TARGET FILE CLASSIFICATION: 
-                    <input type="radio" name="backType" value="image" checked class="ml-2 accent-amber-500 cursor-pointer w-4 h-4" onchange="onTypeToggle('back')" /> <span class="text-amber-500 font-bold ml-1">IMAGE</span> 
+                    <input type="radio" name="backType" value="image" checked class="ml-2 accent-yellow-500 cursor-pointer w-4 h-4" onchange="onTypeToggle('back')" /> <span class="text-yellow-500 font-bold ml-1">IMAGE</span> 
                     <span class="mx-2">/</span>
-                    <input type="radio" name="backType" value="video" class="ml-2 accent-rose-500 cursor-pointer w-4 h-4" onchange="onTypeToggle('back')" /> <span class="text-rose-500 font-bold ml-1">VIDEO ANIMATION</span>
+                    <input type="radio" name="backType" value="video" class="ml-2 accent-yellow-500 cursor-pointer w-4 h-4" onchange="onTypeToggle('back')" /> <span class="text-yellow-500 font-bold ml-1">VIDEO ANIMATION</span>
                 </span>
-                <button onclick="executeArchitectCentralizedUpload('back')" class="px-4 py-2 bg-amber-700 hover:bg-amber-600 text-black font-bold text-[10px] font-mono uppercase rounded transition-all">STREAM REVERSE PAYLOAD</button>
+                <button onclick="executeArchitectCentralizedUpload('back')" class="px-4 py-2 bg-yellow-700 hover:bg-yellow-600 text-black font-bold text-[10px] font-mono uppercase rounded transition-all">STREAM REVERSE PAYLOAD</button>
             </div>
             <div>
-                <label class="text-[9px] text-stone-400 font-mono block mb-1 uppercase">BACK <span id="backTypeLabel" class="text-amber-500 font-bold">IMAGE</span> SOURCE REFERENCE URI</label>
-                <input type="text" id="forgeBackUri" placeholder="e.g. Irys Tx ID (43 chars) or full URL" class="w-full bg-stone-950 border border-stone-900 p-3 text-sm font-mono text-stone-200 rounded outline-none focus:border-amber-600 transition-all" />
-                <p class="text-[9px] font-mono text-stone-600 mt-1 uppercase">MAPS CODE TARGET TO → <span id="backMapTarget" class="text-amber-500 font-bold">backURI / imageURI</span></p>
+                <label class="text-[9px] text-slate-400 font-mono block mb-1 uppercase">BACK <span id="backTypeLabel" class="text-yellow-500 font-bold">IMAGE</span> SOURCE REFERENCE URI</label>
+                <input type="text" id="forgeBackUri" placeholder="e.g. ar://… Manifest mapping output target" class="w-full bg-slate-900 border border-slate-800 p-3 text-sm font-mono text-slate-200 rounded outline-none focus:border-yellow-600 transition-all" />
+                <p class="text-[9px] font-mono text-slate-600 mt-1 uppercase">MAPS CODE TARGET TO → <span id="backMapTarget" class="text-yellow-500 font-bold">backURI / imageURI</span></p>
             </div>
         </div>
     </section>
 
-    <section class="chiaroscuro-bg p-6 rounded-2xl mb-6 relative z-10 border border-rose-950">
-        <div class="border-b border-stone-900 pb-3 mb-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+    <section class="chiaroscuro-bg p-6 rounded-2xl mb-6 relative z-10 border border-slate-800">
+        <div class="border-b border-slate-900 pb-3 mb-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
             <div>
                 <h2 class="text-lg font-black font-cinzel gold-text uppercase tracking-tight">⚡ Master Inscription Ledger Operations</h2>
-                <p class="text-[9px] font-mono text-stone-500 uppercase tracking-wide">IMMUTABLE IDENTITY ASSIGNMENTS • FORGING CRYPTOGRAPHIC CONSENSUS PIPELINES</p>
+                <p class="text-[9px] font-mono text-slate-500 uppercase tracking-wide">IMMUTABLE IDENTITY ASSIGNMENTS • FORGING CRYPTOGRAPHIC CONSENSUS PIPELINES</p>
             </div>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-                <label class="text-[9px] text-stone-400 font-mono block mb-1 uppercase">① Target Matrix Cell Identifier (Token ID)</label>
-                <input type="number" id="novaTokenId" min="1" max="333" placeholder="1 - 333 Execution coordinate" class="w-full bg-stone-950 border border-stone-900 p-3 text-sm font-mono text-amber-500 rounded outline-none focus:border-amber-600 transition-all" />
+                <label class="text-[9px] text-slate-400 font-mono block mb-1 uppercase">① Target Matrix Cell Identifier (Token ID)</label>
+                <input type="number" id="novaTokenId" min="1" max="333" placeholder="1 - 333 Execution coordinate" class="w-full bg-slate-900 border border-slate-800 p-3 text-sm font-mono text-yellow-500 rounded outline-none focus:border-yellow-600 transition-all" />
             </div>
             <div>
-                <label class="text-[9px] text-stone-400 font-mono block mb-1 uppercase">② Embedded Identity DNA String (Forensic String)</label>
-                <input type="text" id="novaDnaInput" placeholder='e.g. Anchor identifier sequence mapping coordinates' class="w-full bg-stone-950 border border-stone-900 p-3 text-sm font-mono text-rose-300 rounded outline-none focus:border-rose-600 transition-all" />
+                <label class="text-[9px] text-slate-400 font-mono block mb-1 uppercase">② Embedded Identity DNA String (Forensic String)</label>
+                <input type="text" id="novaDnaInput" placeholder='e.g. Anchor identifier sequence mapping coordinates' class="w-full bg-slate-900 border border-slate-800 p-3 text-sm font-mono text-yellow-300 rounded outline-none focus:border-yellow-600 transition-all" />
             </div>
             <div>
-                <label class="text-[9px] text-stone-400 font-mono block mb-1 uppercase">③ Core 4K Portrait High-Performance Media Loop URI</label>
-                <input type="text" id="novaVideoUri" placeholder="Irys Tx ID (43 chars) or full URL" class="w-full bg-stone-950 border border-stone-900 p-3 text-sm font-mono text-amber-400 rounded outline-none focus:border-amber-500 transition-all" />
+                <label class="text-[9px] text-slate-400 font-mono block mb-1 uppercase">③ Core 4K Portrait High-Performance Media Loop URI</label>
+                <input type="text" id="novaVideoUri" placeholder="ar://… / https://… Destination payload reference address" class="w-full bg-slate-900 border border-slate-800 p-3 text-sm font-mono text-yellow-400 rounded outline-none focus:border-yellow-500 transition-all" />
             </div>
             <div>
-                <label class="text-[9px] text-stone-400 font-mono block mb-1 uppercase">④ Sealing Manifest Path (Hidden Property JSON URI)</label>
-                <input type="text" id="novaHiddenInput" placeholder="Irys Tx ID (43 chars) or full URL" class="w-full bg-stone-950 border border-rose-950 p-3 text-sm font-mono text-rose-400 rounded outline-none focus:border-rose-600 transition-all" />
+                <label class="text-[9px] text-slate-400 font-mono block mb-1 uppercase">④ Sealing Manifest Path (Hidden Property JSON URI)</label>
+                <input type="text" id="novaHiddenInput" placeholder="ar://… Encoded architectural data string address" class="w-full bg-slate-900 border border-slate-800 p-3 text-sm font-mono text-yellow-400 rounded outline-none focus:border-yellow-600 transition-all" />
             </div>
         </div>
 
         <div class="mt-8 flex flex-col gap-4">
-            <div class="p-4 border border-rose-950 rounded-xl bg-black/40">
-                <span class="text-[9px] font-mono text-rose-400 uppercase tracking-widest block mb-3">// ASCENSION & MODIFICATION PROTOCOLS</span>
+            <div class="p-4 border border-slate-800 rounded-xl bg-black/40">
+                <span class="text-[9px] font-mono text-yellow-400 uppercase tracking-widest block mb-3">// ASCENSION & MODIFICATION PROTOCOLS</span>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <button onclick="openNovaWarn()" class="btn-gold-master rounded-xl py-3.5 text-xs">THE_SOVEREIGN_NOVA 🔥</button>
-                    <button onclick="executeUpdateIdentity(this)" class="bg-stone-950 border border-rose-700 text-rose-400 font-black font-mono text-xs py-3.5 rounded-xl uppercase tracking-wider hover:bg-stone-900 transition-all">COMMIT updateIdentity()</button>
+                    <button onclick="executeUpdateIdentity(this)" class="bg-slate-900 border border-slate-700 text-yellow-400 font-black font-mono text-xs py-3.5 rounded-xl uppercase tracking-wider hover:bg-slate-800 transition-all">COMMIT updateIdentity()</button>
                 </div>
             </div>
         </div>
     </section>
 
-    <section class="chiaroscuro-bg p-6 rounded-2xl mb-6 relative z-10 border border-rose-950">
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-stone-900 pb-3 mb-5 gap-2">
+    <section class="chiaroscuro-bg p-6 rounded-2xl mb-6 relative z-10 border border-slate-800">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-900 pb-3 mb-5 gap-2">
             <div>
-                <h2 class="text-lg font-black font-cinzel text-stone-100 uppercase tracking-tight">📡 Imperial Governance Room Ledger</h2>
-                <p class="text-[9px] font-mono text-stone-500 uppercase tracking-wide">RATIFICATION REGISTRY ENGINE // RESTRICTED MANDATE GENERATION PIPELINES</p>
+                <h2 class="text-lg font-black font-cinzel text-slate-100 uppercase tracking-tight">📡 Imperial Governance Room Ledger</h2>
+                <p class="text-[9px] font-mono text-slate-500 uppercase tracking-wide">RATIFICATION REGISTRY ENGINE // RESTRICTED MANDATE GENERATION PIPELINES</p>
             </div>
-            <span class="bg-stone-950 text-stone-400 border border-stone-800 text-[10px] font-black px-2.5 py-1.5 tracking-widest uppercase rounded">ACTIVE MANDATE REGISTER</span>
+            <span class="bg-slate-900 text-slate-400 border border-slate-800 text-[10px] font-black px-2 py-1.5 tracking-widest uppercase rounded">ACTIVE MANDATE REGISTER</span>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 mb-5">
             <div class="lg:col-span-5 space-y-2 max-h-56 overflow-y-auto scroll-dark pr-2 w-full" id="proposalBoard">
                 <div id="proposalBoardSkeleton" class="space-y-2 w-full">
-                    <div class="w-full h-14 bg-stone-900/40 rounded-lg animate-pulse border border-stone-800"></div>
-                    <div class="w-full h-14 bg-stone-900/40 rounded-lg animate-pulse border border-stone-800" style="animation-delay: 150ms;"></div>
-                    <div class="w-full h-14 bg-stone-900/40 rounded-lg animate-pulse border border-stone-800" style="animation-delay: 300ms;"></div>
+                    <div class="w-full h-14 bg-slate-900/40 rounded-lg animate-pulse border border-slate-800"></div>
+                    <div class="w-full h-14 bg-slate-900/40 rounded-lg animate-pulse border border-slate-800" style="animation-delay: 150ms;"></div>
+                    <div class="w-full h-14 bg-slate-900/40 rounded-lg animate-pulse border border-slate-800" style="animation-delay: 300ms;"></div>
                 </div>
             </div>
 
             <div class="lg:col-span-7 grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <div class="bg-black/50 rounded-lg border border-stone-900 p-3"><span class="text-[9px] font-mono uppercase text-stone-500 block">QUORUM TARGET</span><span id="govQuorum" class="text-lg font-black font-mono text-rose-400">199</span></div>
-                <div class="bg-black/50 rounded-lg border border-stone-900 p-3"><span class="text-[9px] font-mono uppercase text-stone-500 block">TOTAL DIRECTIVES</span><span id="govTotalProposals" class="text-lg font-black font-mono text-stone-200">0</span></div>
-                <div class="bg-black/50 rounded-lg border border-stone-900 p-3"><span class="text-[9px] font-mono uppercase text-stone-500 block">MANDATE ID</span><span id="govProposalId" class="text-lg font-black font-mono text-amber-500">—</span></div>
-                <div class="bg-black/50 rounded-lg border border-stone-900 p-3"><span class="text-[9px] font-mono uppercase text-stone-500 block">CHAMBER STATE</span><span id="govState" class="text-xs font-black font-mono text-amber-500 mt-1 block">IDLE</span></div>
+                <div class="bg-black/50 rounded-lg border border-slate-900 p-3"><span class="text-[9px] font-mono uppercase text-slate-500 block">QUORUM TARGET</span><span id="govQuorum" class="text-lg font-black font-mono text-yellow-400">199</span></div>
+                <div class="bg-black/50 rounded-lg border border-slate-900 p-3"><span class="text-[9px] font-mono uppercase text-slate-500 block">TOTAL DIRECTIVES</span><span id="govTotalProposals" class="text-lg font-black font-mono text-slate-200">0</span></div>
+                <div class="bg-black/50 rounded-lg border border-slate-900 p-3"><span class="text-[9px] font-mono uppercase text-slate-500 block">MANDATE ID</span><span id="govProposalId" class="text-lg font-black font-mono text-yellow-500">—</span></div>
+                <div class="bg-black/50 rounded-lg border border-slate-900 p-3"><span class="text-[9px] font-mono uppercase text-slate-500 block">CHAMBER STATE</span><span id="govState" class="text-xs font-black font-mono text-yellow-500 mt-1 block">IDLE</span></div>
             </div>
         </div>
 
-        <div class="pt-5 border-t border-stone-900 grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div class="space-y-3 bg-black/40 p-4 rounded-xl border border-stone-900 flex flex-col justify-between">
+        <div class="pt-5 border-t border-slate-900 grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="space-y-3 bg-black/40 p-4 rounded-xl border border-slate-900 flex flex-col justify-between">
                 <div>
-                    <span class="text-[9px] font-mono text-stone-400 uppercase tracking-wider block mb-2">// CONFIRM AFFIRMATIVE WEIGHT RATIFICATION</span>
+                    <span class="text-[9px] font-mono text-slate-400 uppercase tracking-wider block mb-2">// CONFIRM AFFIRMATIVE WEIGHT RATIFICATION</span>
                     <div class="grid grid-cols-2 gap-2 mb-2">
-                        <input type="number" id="voteProposalId" placeholder="MANDATE ID" class="w-full bg-stone-950 border border-stone-900 p-2.5 text-[10px] font-mono text-stone-200 rounded outline-none" />
-                        <input type="number" id="voteTokenId" min="1" max="333" placeholder="WEIGHT CELL ID" class="w-full bg-stone-950 border border-stone-900 p-2.5 text-[10px] font-mono text-amber-500 rounded outline-none" />
+                        <input type="number" id="voteProposalId" placeholder="MANDATE ID" class="w-full bg-slate-900 border border-slate-800 p-1.5 text-[10px] font-mono text-slate-200 rounded outline-none" />
+                        <input type="number" id="voteTokenId" min="1" max="333" placeholder="WEIGHT CELL ID" class="w-full bg-slate-900 border border-slate-800 p-1.5 text-[10px] font-mono text-yellow-500 rounded outline-none" />
                     </div>
                 </div>
-                <button onclick="executeCastVote(this)" class="w-full bg-gradient-to-r from-rose-950 to-rose-700 text-white font-black font-mono text-xs py-3.5 rounded-lg uppercase tracking-widest hover:brightness-110 transition-all shadow-[0_0_15px_rgba(136,19,55,0.25)] border border-rose-500">🔥 VOTE (AFFIRMATIVE)</button>
+                <button onclick="executeCastVote(this)" class="w-full bg-gradient-to-r from-slate-800 to-slate-700 text-white font-black font-mono text-xs py-3.5 rounded-lg uppercase tracking-widest hover:brightness-110 transition-all shadow-[0_0_15px_rgba(212,175,55,0.1)] border border-slate-600">🔥 VOTE (AFFIRMATIVE)</button>
             </div>
 
-            <div class="space-y-3 bg-black/40 p-4 rounded-xl border border-stone-900 flex flex-col justify-between">
+            <div class="space-y-3 bg-black/40 p-4 rounded-xl border border-slate-900 flex flex-col justify-between">
                 <div>
-                    <span class="text-[9px] font-mono text-amber-500 uppercase tracking-wider block mb-2">// DISSEMINATE STRUCTURAL DIRECTIVE (COUNCIL 12 ONLY)</span>
+                    <span class="text-[9px] font-mono text-yellow-500 uppercase tracking-wider block mb-2">// DISSEMINATE STRUCTURAL DIRECTIVE (COUNCIL 12 ONLY)</span>
                     <div class="grid grid-cols-3 gap-2 mb-2">
-                        <input type="text" id="propAmountInput" placeholder="ETH AMT" class="bg-stone-950 border border-stone-900 p-2.5 text-[10px] font-mono text-stone-200 rounded outline-none" />
-                        <input type="text" id="propTargetInput" placeholder="PAYEE HEX ADDR" class="bg-stone-950 border border-stone-900 p-2.5 text-[10px] font-mono text-stone-200 rounded outline-none" />
-                        <input type="number" id="propDurationInput" min="1" max="30" placeholder="DAYS(1-30)" class="bg-stone-950 border border-stone-900 p-2.5 text-[10px] font-mono text-stone-200 rounded outline-none" />
+                        <input type="text" id="propAmountInput" placeholder="ETH AMT" class="bg-slate-900 border border-slate-800 p-1.5 text-[10px] font-mono text-slate-200 rounded outline-none" />
+                        <input type="text" id="propTargetInput" placeholder="PAYEE HEX ADDR" class="bg-slate-900 border border-slate-800 p-1.5 text-[10px] font-mono text-slate-200 rounded outline-none" />
+                        <input type="number" id="propDurationInput" min="1" max="30" placeholder="DAYS(1-30)" class="bg-slate-900 border border-slate-800 p-1.5 text-[10px] font-mono text-slate-200 rounded outline-none" />
                     </div>
                 </div>
-                <button onclick="executeCreateProposal(this)" class="w-full bg-stone-950 border border-amber-600 text-amber-400 font-black font-mono text-[11px] py-3.5 rounded-lg uppercase tracking-wider hover:bg-stone-900 transition-all shadow-[0_0_15px_rgba(217,119,6,0.15)]">⚡ PROPOSE MODIFICATION</button>
+                <button onclick="executeCreateProposal(this)" class="w-full bg-slate-900 border border-yellow-600 text-yellow-400 font-black font-mono text-[11px] py-3.5 rounded-lg uppercase tracking-wider hover:bg-slate-800 transition-all shadow-[0_0_15px_rgba(212,175,55,0.15)]">⚡ PROPOSE MODIFICATION</button>
             </div>
 
-            <div class="space-y-3 bg-black/40 p-4 rounded-xl border border-stone-900 flex flex-col justify-between">
+            <div class="space-y-3 bg-black/40 p-4 rounded-xl border border-slate-900 flex flex-col justify-between">
                 <div>
-                    <span class="text-[9px] font-mono text-rose-400 uppercase tracking-wider block mb-2">// TIMELOCK APPRAISAL MACHINERY PIPELINES</span>
-                    <input type="number" id="timelockActionProposalId" placeholder="TARGET MANDATE DIRECTIVE ID" class="w-full bg-stone-950 border border-stone-900 p-2.5 text-[11px] font-mono text-stone-200 rounded outline-none mb-2" />
+                    <span class="text-[9px] font-mono text-yellow-400 uppercase tracking-wider block mb-2">// TIMELOCK APPRAISAL MACHINERY PIPELINES</span>
+                    <input type="number" id="timelockActionProposalId" placeholder="TARGET MANDATE DIRECTIVE ID" class="w-full bg-slate-900 border border-slate-800 p-1.5 text-[11px] font-mono text-slate-200 rounded outline-none mb-2" />
                 </div>
                 <div class="grid grid-cols-2 gap-2">
-                    <button onclick="executeQueueProposal(document.getElementById('timelockActionProposalId').value, this)" class="bg-stone-950 border border-rose-800 text-rose-400 font-bold font-mono text-[10px] py-3.5 rounded-lg uppercase hover:bg-stone-900 transition-all">QUEUE TIMELOCK</button>
-                    <button onclick="triggerExecuteProposal(document.getElementById('timelockActionProposalId').value, this)" class="bg-rose-900 text-white font-black font-mono text-[10px] py-3.5 rounded-lg uppercase hover:bg-rose-800 transition-all shadow-[0_0_15px_rgba(136,19,55,0.4)] border border-rose-600">RELEASE ASSETS</button>
+                    <button onclick="executeQueueProposal(document.getElementById('timelockActionProposalId').value, this)" class="bg-slate-900 border border-slate-700 text-yellow-400 font-bold font-mono text-[10px] py-3.5 rounded-lg uppercase hover:bg-slate-800 transition-all">QUEUE TIMELOCK</button>
+                    <button onclick="triggerExecuteProposal(document.getElementById('timelockActionProposalId').value, this)" class="bg-slate-800 text-white font-black font-mono text-[10px] py-3.5 rounded-lg uppercase hover:bg-slate-700 transition-all shadow-[0_0_15px_rgba(212,175,55,0.2)] border border-slate-600">RELEASE ASSETS</button>
                 </div>
             </div>
         </div>
     </section>
 
-    <section class="chiaroscuro-bg p-6 rounded-2xl mb-6 relative z-10 border border-rose-950">
-        <div class="border-b border-stone-900 pb-3 mb-5">
-            <h2 class="text-lg font-black font-cinzel text-stone-100 uppercase tracking-tight">👑 Treasury Extraction Operations</h2>
-            <p class="text-[9px] font-mono text-stone-500 uppercase tracking-wide">SECURE DIVIDEND CLAIMING & FIXED EXIT INFRASTRUCTURE SEPARATED</p>
+    <section class="chiaroscuro-bg p-6 rounded-2xl mb-6 relative z-10 border border-slate-800">
+        <div class="border-b border-slate-900 pb-3 mb-5">
+            <h2 class="text-lg font-black font-cinzel text-slate-100 uppercase tracking-tight">👑 Treasury Extraction Operations</h2>
+            <p class="text-[9px] font-mono text-slate-500 uppercase tracking-wide">SECURE GRANT CLAIMING & FIXED EXIT INFRASTRUCTURE SEPARATED</p>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
             <div class="lg:col-span-4 flex flex-col justify-center">
-                <div class="bg-stone-950 p-4 rounded-xl border border-stone-900 shadow-[inset_0_0_20px_rgba(0,0,0,0.9)]">
-                    <label class="text-[10px] text-stone-400 font-mono font-bold block mb-2 uppercase tracking-widest text-center border-b border-stone-900 pb-2">TARGET CELL POSITION IDENTIFIER</label>
-                    <input type="number" id="settleTokenId" min="1" max="333" placeholder="Token ID (1-333) coordinate input" class="w-full bg-black border border-stone-800 p-3 text-sm font-mono text-center text-white rounded outline-none focus:border-amber-500 transition-all mb-4" />
+                <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 shadow-[inset_0_0_20px_rgba(0,0,0,0.9)]">
+                    <label class="text-[10px] text-slate-400 font-mono font-bold block mb-2 uppercase tracking-widest text-center border-b border-slate-800 pb-2">TARGET CELL POSITION IDENTIFIER</label>
+                    <input type="number" id="settleTokenId" min="1" max="333" placeholder="Token ID (1-333) coordinate input" class="w-full bg-black border border-slate-700 p-3 text-sm font-mono text-center text-white rounded outline-none focus:border-yellow-500 transition-all mb-4" />
                     
-                    <div class="bg-black/80 border border-stone-900 rounded-lg p-3 text-[10px] font-mono space-y-2">
-                        <div class="flex justify-between items-center"><span class="text-stone-500">RESERVE SCALE PER CELL:</span><span class="text-stone-200" id="exitResPerNft">0.0000 ETH</span></div>
-                        <div class="flex justify-between items-center border-t border-stone-900 pt-2"><span class="text-stone-500">EST REPATRIATION (85%):</span><span class="text-rose-400 font-bold" id="exitRefund">0.0000 ETH</span></div>
+                    <div class="bg-black/80 border border-slate-900 rounded-lg p-3 text-[10px] font-mono space-y-2">
+                        <div class="flex justify-between items-center"><span class="text-slate-500">GRANT:</span><span class="text-slate-200" id="exitResPerNft">0.0000 ETH</span></div>
+                    <div class="flex justify-between items-center border-t border-slate-900 pt-2"><span class="text-slate-500">EST REPATRIATION (85%):</span><span class="text-yellow-400 font-bold" id="exitRefund">0.0000 ETH</span></div>
                     </div>
                 </div>
             </div>
-
             <div class="lg:col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div class="bg-stone-950 border border-rose-950 p-5 rounded-xl flex flex-col justify-between shadow-[0_0_20px_rgba(217,119,6,0.05)] hover:border-amber-600/40 transition-colors">
+                <div class="bg-slate-900 border border-slate-800 p-5 rounded-xl flex flex-col justify-between shadow-[0_0_20px_rgba(212,175,55,0.05)] hover:border-yellow-600/40 transition-colors">
                     <div>
-                        <h3 class="text-amber-500 font-black font-mono text-sm mb-2 uppercase tracking-wider flex items-center gap-2"><span>💎</span> EXTRACT PROTOCOL DISPENSATION</h3>
-                        <p class="text-[10px] text-stone-400 font-mono mb-4 leading-relaxed">
-                            Route your mathematical network dispensation. <br><b class="text-amber-400">This is a strict cryptographic execution.</b> Your structural node and matrix identity remain undisturbed within the Empire.
+                        <h3 class="text-yellow-500 font-black font-mono text-sm mb-2 uppercase tracking-wider flex items-center gap-2"><span>💎</span> Extract Council Grant</h3>
+                        <p class="text-[10px] text-slate-400 font-mono mb-4 leading-relaxed">
+                            Extract your accumulated proportional grants from the Project Treasury. <br><b class="text-yellow-400">This is a strictly SAFE operation.</b> Your node identity and matrix position remain completely intact and undisturbed.
                         </p>
                     </div>
-                    <button id="executeClaimRewardBtn" onclick="executeClaimReward(this)" class="w-full bg-amber-700 hover:bg-amber-600 text-black font-black text-xs py-3.5 rounded-lg uppercase tracking-widest transition-all shadow-[0_0_15px_rgba(217,119,6,0.35)] border border-amber-400">CLAIM PROTOCOL TRIBUTE</button>
-                    <div id="rewardExclusionWarning" class="hidden mt-3 p-2.5 bg-red-950/40 border border-red-800 rounded text-[9px] font-mono text-red-400 text-center uppercase font-bold animate-pulse">
-                        CRITICAL REJECTION: ID 50 & 100 ARE GOVERNANCE ONLY (ZERO TRIBUTE)
+                    <div id="rewardExclusionWarning" class="hidden mt-3 p-1.5 bg-red-950/40 border border-red-800 rounded text-[9px] font-mono text-red-400 text-center uppercase font-bold animate-pulse">
+                        CRITICAL REJECTION: ID 50 & 100 ARE GOVERNANCE ONLY (ZERO GRANT)
                     </div>
                 </div>
 
-                <div class="bg-stone-950 border border-red-950 p-5 rounded-xl flex flex-col justify-between shadow-[0_0_20px_rgba(220,38,38,0.05)] hover:border-red-700/50 transition-colors">
+                <div class="bg-slate-900 border border-red-950 p-5 rounded-xl flex flex-col justify-between shadow-[0_0_20px_rgba(220,38,38,0.05)] hover:border-red-700/50 transition-colors">
                     <div>
-                        <h3 class="text-red-500 font-black font-mono text-sm mb-2 uppercase tracking-wider flex items-center gap-2"><span>🩸</span> THE SOVEREIGN IMMOLATION RITUAL</h3>
-                        <p class="text-[10px] text-stone-400 font-mono mb-4 leading-relaxed">
-                            Execute the Ultimatum Protocol. <b class="text-red-400">This action irreversibly annihilates this node structure (Burn to address 0).</b> The network automatically routes 85% of your matrix baseline value back to your origin wallet. 15% is consumed as permanent structural friction (Attrition). Absolute irreversibility.
+                        <h3 class="text-red-500 font-black font-mono text-sm mb-2 uppercase tracking-wider flex items-center gap-2"><span>🩸</span> Relinquish Sovereign Pass</h3>
+                        <p class="text-[10px] text-slate-400 font-mono mb-4 leading-relaxed">
+                            Execute the Autonomous Exit protocol. <b class="text-red-400">This action permanently relinquishes this node (Burn to address(0)).</b> You will immediately reclaim 85% of the macro pool reserve value. Irreversible.
                         </p>
                     </div>
-                    <button id="btnBurnToken" onclick="executeSovereignSupport(this)" class="w-full bg-red-800 hover:bg-red-700 text-white font-black text-xs py-3.5 rounded-lg uppercase tracking-widest transition-all shadow-[0_0_20px_rgba(220,38,38,0.4)] border border-red-500">EXECUTE SELF-ANNIHILATION</button>
+                    <button id="btnBurnToken" onclick="executeSovereignSupport(this)" class="w-full bg-red-900 hover:bg-red-800 text-white font-black text-xs py-3.5 rounded-lg uppercase tracking-widest transition-all shadow-[0_0_20px_rgba(220,38,38,0.4)] border border-red-700">EXECUTE AUTONOMOUS EXIT</button>
                 </div>
             </div>
         </div>
     </section>
 
-    <section id="adminSector" class="admin-locked chiaroscuro-bg p-6 rounded-2xl mb-6 relative z-10 border border-rose-950 shadow-[0_0_35px_rgba(0,0,0,0.9)] hidden">
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-stone-900 pb-3 mb-5 gap-2">
+    <section id="adminSector" class="admin-locked chiaroscuro-bg p-6 rounded-2xl mb-6 relative z-10 border border-slate-800 shadow-[0_0_35px_rgba(0,0,0,0.9)] hidden">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-900 pb-3 mb-5 gap-2">
             <div>
-                <h2 class="text-lg font-black font-cinzel text-rose-500 uppercase tracking-tight">👑 Imperial Override Console (สิทธิ์สถาปนิก)</h2>
-                <p class="text-[9px] font-mono text-stone-600 uppercase tracking-wide">// RESTRICTED OVERRIDE OPERATIONS DETECTED BY ON-CHAIN PRIVILEGES</p>
+                <h2 class="text-lg font-black font-cinzel text-yellow-500 uppercase tracking-tight">👑 Imperial Override Console (สิทธิ์สถาปนิก)</h2>
+                <p class="text-[9px] font-mono text-slate-600 uppercase tracking-wide">// RESTRICTED OVERRIDE OPERATIONS DETECTED BY ON-CHAIN PRIVILEGES</p>
             </div>
-            <span class="bg-rose-950/20 text-rose-600 border border-rose-900/30 text-[10px] font-black px-2.5 py-1.5 tracking-widest uppercase rounded">CONSOLE MANAGEMENT</span>
+            <span class="bg-slate-800 text-yellow-600 border border-slate-700 text-[10px] font-black px-2 py-1.5 tracking-widest uppercase rounded">CONSOLE MANAGEMENT</span>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div class="space-y-4 border border-stone-900 p-4 rounded-xl bg-black/40">
-                <span class="text-[10px] font-mono font-bold text-amber-500 uppercase tracking-widest block border-b border-stone-900 pb-1">⚙ MANIFEST COMPONENT (5 AUTO-MAP FIELDS)</span>
+            <div class="space-y-4 border border-slate-900 p-4 rounded-xl bg-black/40">
+                <span class="text-[10px] font-mono font-bold text-yellow-500 uppercase tracking-widest block border-b border-slate-900 pb-1">⚙ MANIFEST COMPONENT (5 AUTO-MAP FIELDS)</span>
                 <div>
-                    <label class="text-[9px] text-stone-500 font-mono block mb-1">ROOT PROPERTY NAME</label>
-                    <input type="text" id="propName" value="Transfer Freedom" class="w-full bg-stone-950 border border-stone-900 p-2.5 text-[10px] font-mono text-stone-200 rounded outline-none" />
+                    <label class="text-[9px] text-slate-500 font-mono block mb-1">ROOT PROPERTY NAME</label>
+                    <input type="text" id="propName" value="Transfer Freedom" class="w-full bg-slate-900 border border-slate-800 p-1.5 text-[10px] font-mono text-slate-200 rounded outline-none" />
                 </div>
                 <div class="space-y-2 max-h-64 overflow-y-auto scroll-dark pr-1">
-                    <div class="bg-stone-950 p-2.5 rounded border border-stone-900">
-                        <input type="text" id="propKey1" value="RANK" class="w-full bg-black border border-stone-900 p-2 text-[9px] font-mono mb-1 text-stone-400 rounded" />
-                        <input type="text" id="prop1" value="" placeholder="จะถูกดึงอัตโนมัติจาก getImperialRankDetailed" class="w-full bg-black border border-stone-900 p-2 text-[10px] font-mono text-stone-200 rounded" />
+                    <div class="bg-slate-900 p-1.5 rounded border border-slate-800">
+                        <input type="text" id="propKey1" value="RANK" class="w-full bg-black border border-slate-900 p-1 text-[9px] font-mono mb-1 text-slate-400 rounded" />
+                        <input type="text" id="prop1" value="" placeholder="จะถูกดึงอัตโนมัติจาก getImperialRankDetailed" class="w-full bg-black border border-slate-900 p-1 text-[10px] font-mono text-slate-200 rounded" />
                     </div>
-                    <div class="bg-stone-950 p-2.5 rounded border border-stone-900">
-                        <input type="text" id="propKey2" value="FREEDOM STATUS" class="w-full bg-black border border-stone-900 p-2 text-[9px] font-mono mb-1 text-stone-400 rounded" />
-                        <input type="text" id="prop2" value="SOVEREIGN IMMOLATION" class="w-full bg-black border border-stone-900 p-2 text-[10px] font-mono text-stone-200 rounded" />
+                    <div class="bg-slate-900 p-1.5 rounded border border-slate-800">
+                        <input type="text" id="propKey2" value="FREEDOM STATUS" class="w-full bg-black border border-slate-900 p-1 text-[9px] font-mono mb-1 text-slate-400 rounded" />
+                        <input type="text" id="prop2" value="AUTONOMOUS EXIT" class="w-full bg-black border border-slate-900 p-1 text-[10px] font-mono text-slate-200 rounded" />
                     </div>
-                    <div class="bg-stone-950 p-2.5 rounded border border-stone-900">
-                        <input type="text" id="propKey3" value="SUPREME LAW" class="w-full bg-black border border-stone-900 p-2 text-[9px] font-mono mb-1 text-stone-400 rounded" />
-                        <input type="text" id="prop3" value="CODE IS LAW" class="w-full bg-black border border-stone-900 p-2 text-[10px] font-mono text-stone-200 rounded" />
+                    <div class="bg-slate-900 p-1.5 rounded border border-slate-800">
+                        <input type="text" id="propKey3" value="SUPREME LAW" class="w-full bg-black border border-slate-900 p-1 text-[9px] font-mono mb-1 text-slate-400 rounded" />
+                        <input type="text" id="prop3" value="CODE IS LAW" class="w-full bg-black border border-slate-900 p-1 text-[10px] font-mono text-slate-200 rounded" />
                     </div>
-                    <div class="bg-stone-950 p-2.5 rounded border border-stone-900">
-                        <input type="text" id="propKey4" value="SOVEREIGN AUTHORITY" class="w-full bg-black border border-stone-900 p-2 text-[9px] font-mono mb-1 text-stone-400 rounded" />
-                        <input type="text" id="prop4" value="ABSOLUTE AUTONOMY" class="w-full bg-black border border-stone-900 p-2 text-[10px] font-mono text-stone-200 rounded" />
+                    <div class="bg-slate-900 p-1.5 rounded border border-slate-800">
+                        <input type="text" id="propKey4" value="SOVEREIGN AUTHORITY" class="w-full bg-black border border-slate-900 p-1 text-[9px] font-mono mb-1 text-slate-400 rounded" />
+                        <input type="text" id="prop4" value="ABSOLUTE AUTONOMY" class="w-full bg-black border border-slate-900 p-1 text-[10px] font-mono text-slate-200 rounded" />
                     </div>
-                    <div class="bg-stone-950 p-2.5 rounded border border-stone-900">
-                        <input type="text" id="propKey5" value="ABSOLUTE CONTROL" class="w-full bg-black border border-stone-900 p-2 text-[9px] font-mono mb-1 text-stone-400 rounded" />
-                        <input type="text" id="prop5" value="PERMISSIONLESS P2P" class="w-full bg-black border border-stone-900 p-2 text-[10px] font-mono text-stone-200 rounded" />
+                    <div class="bg-slate-900 p-1.5 rounded border border-slate-800">
+                        <input type="text" id="propKey5" value="ABSOLUTE CONTROL" class="w-full bg-black border border-slate-900 p-1 text-[9px] font-mono mb-1 text-slate-400 rounded" />
+                        <input type="text" id="prop5" value="PERMISSIONLESS P2P" class="w-full bg-black border border-slate-900 p-1 text-[10px] font-mono text-slate-200 rounded" />
                     </div>
                 </div>
-                <button onclick="buildAndUploadMetadata(this)" class="w-full bg-gradient-to-r from-amber-900 to-amber-700 text-black font-black font-mono text-[10px] py-3 rounded-lg uppercase tracking-wider">COMPILE & TRANSMIT MANIFEST JSON</button>
+                <button onclick="buildAndUploadMetadata(this)" class="w-full bg-gradient-to-r from-yellow-900 to-yellow-700 text-black font-black font-mono text-[10px] py-3 rounded-lg uppercase tracking-wider">COMPILE & TRANSMIT MANIFEST JSON</button>
             </div>
 
-            <div class="space-y-3 border border-stone-900 p-4 rounded-xl bg-black/40">
-                <span class="text-[10px] font-mono text-amber-600 font-bold uppercase tracking-wider block border-b border-stone-900 pb-1">// CHRONOGRAPH LINK DEPLOYMENT CONSOLE</span>
+            <div class="space-y-3 border border-slate-900 p-4 rounded-xl bg-black/40">
+                <span class="text-[10px] font-mono text-yellow-600 font-bold uppercase tracking-wider block border-b border-slate-900 pb-1">// CHRONOGRAPH LINK DEPLOYMENT CONSOLE</span>
                 
                 <div class="space-y-3">
                     <div>
-                        <label class="text-[9px] text-stone-400 font-mono block">SLOT #01 TARGET URI</label>
+                        <label class="text-[9px] text-slate-400 font-mono block">SLOT #01 TARGET URI</label>
                         <div class="flex gap-2">
-                            <input type="text" id="vSlotUri1" placeholder="Irys Tx ID or URL" class="flex-grow bg-stone-950 border border-stone-900 p-2 text-[10px] font-mono text-stone-200 rounded" />
-                            <button onclick="applySlotToNova(1)" class="px-3 bg-rose-950 border border-rose-700 text-rose-300 text-[9px] rounded">APPLY</button>
+                            <input type="text" id="vSlotUri1" placeholder="ar://..." class="flex-grow bg-slate-900 border border-slate-800 p-1 text-[10px] font-mono text-slate-200 rounded" />
+                            <button onclick="applySlotToNova(1)" class="px-3 bg-slate-800 border border-slate-700 text-yellow-300 text-[9px] rounded">APPLY</button>
                         </div>
                     </div>
                     <div>
-                        <label class="text-[9px] text-stone-400 font-mono block">SLOT #02 TARGET URI</label>
+                        <label class="text-[9px] text-slate-400 font-mono block">SLOT #02 TARGET URI</label>
                         <div class="flex gap-2">
-                            <input type="text" id="vSlotUri2" placeholder="Irys Tx ID or URL" class="flex-grow bg-stone-950 border border-stone-900 p-2 text-[10px] font-mono text-stone-200 rounded" />
-                            <button onclick="applySlotToNova(2)" class="px-3 bg-rose-950 border border-rose-700 text-rose-300 text-[9px] rounded">APPLY</button>
+                            <input type="text" id="vSlotUri2" placeholder="ar://..." class="flex-grow bg-slate-900 border border-slate-800 p-1 text-[10px] font-mono text-slate-200 rounded" />
+                            <button onclick="applySlotToNova(2)" class="px-3 bg-slate-800 border border-slate-700 text-yellow-300 text-[9px] rounded">APPLY</button>
                         </div>
                     </div>
                     <div>
-                        <label class="text-[9px] text-stone-400 font-mono block">SLOT #03 TARGET URI</label>
+                        <label class="text-[9px] text-slate-400 font-mono block">SLOT #03 TARGET URI</label>
                         <div class="flex gap-2">
-                            <input type="text" id="vSlotUri3" placeholder="Irys Tx ID or URL" class="flex-grow bg-stone-950 border border-stone-900 p-2 text-[10px] font-mono text-stone-200 rounded" />
-                            <button onclick="applySlotToNova(3)" class="px-3 bg-rose-950 border border-rose-700 text-rose-300 text-[9px] rounded">APPLY</button>
+                            <input type="text" id="vSlotUri3" placeholder="ar://..." class="flex-grow bg-slate-900 border border-slate-800 p-1 text-[10px] font-mono text-slate-200 rounded" />
+                            <button onclick="applySlotToNova(3)" class="px-3 bg-slate-800 border border-slate-700 text-yellow-300 text-[9px] rounded">APPLY</button>
                         </div>
                     </div>
                     <div>
-                        <label class="text-[9px] text-stone-400 font-mono block">SLOT #04 TARGET URI</label>
+                        <label class="text-[9px] text-slate-400 font-mono block">SLOT #04 TARGET URI</label>
                         <div class="flex gap-2">
-                            <input type="text" id="vSlotUri4" placeholder="Irys Tx ID or URL" class="flex-grow bg-stone-950 border border-stone-900 p-2 text-[10px] font-mono text-stone-200 rounded" />
-                            <button onclick="applySlotToNova(4)" class="px-3 bg-rose-950 border border-rose-700 text-rose-300 text-[9px] rounded">APPLY</button>
+                            <input type="text" id="vSlotUri4" placeholder="ar://..." class="flex-grow bg-slate-900 border border-slate-800 p-1 text-[10px] font-mono text-slate-200 rounded" />
+                            <button onclick="applySlotToNova(4)" class="px-3 bg-slate-800 border border-slate-700 text-yellow-300 text-[9px] rounded">APPLY</button>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="space-y-3 border border-stone-900 p-4 rounded-xl bg-black/40">
-                <span class="text-[10px] font-mono text-rose-400 font-bold uppercase tracking-wider block border-b border-stone-900 pb-1">// MACRO POLICIES & RE-MINT CYCLE</span>
+            <div class="space-y-3 border border-slate-900 p-4 rounded-xl bg-black/40">
+                <span class="text-[10px] font-mono text-yellow-400 font-bold uppercase tracking-wider block border-b border-slate-900 pb-1">// MACRO POLICIES & RE-FORGE CYCLE</span>
                 <div class="grid grid-cols-2 gap-2">
-                    <div><label class="text-[9px] text-stone-500 font-mono block">MINT FEE ETH</label><input type="number" step="0.001" id="inputAdminMint" class="w-full bg-black border border-stone-900 p-2.5 text-xs font-mono text-amber-500 rounded" /></div>
-                    <div><label class="text-[9px] text-stone-500 font-mono block">NOVA FEE ETH</label><input type="number" step="0.001" id="inputAdminNova" class="w-full bg-black border border-stone-900 p-2.5 text-xs font-mono text-rose-400 rounded" /></div>
+                    <div><label class="text-[9px] text-slate-500 font-mono block">FORGE FEE ETH</label><input type="number" step="0.001" id="inputAdminMint" class="w-full bg-black border border-slate-900 p-1.5 text-xs font-mono text-yellow-500 rounded" /></div>
+                    <div><label class="text-[9px] text-slate-500 font-mono block">NOVA FEE ETH</label><input type="number" step="0.001" id="inputAdminNova" class="w-full bg-black border border-slate-900 p-1.5 text-xs font-mono text-yellow-400 rounded" /></div>
                 </div>
-                <button onclick="executeSetParams(this)" class="w-full bg-amber-700 text-black font-black font-mono text-[10px] py-2.5 rounded uppercase hover:bg-amber-600 transition-colors">RATIFY setParams</button>
+                <button onclick="executeSetParams(this)" class="w-full bg-yellow-700 text-black font-black font-mono text-[10px] py-1.5 rounded uppercase hover:bg-yellow-600 transition-colors">RATIFY setParams</button>
                 <div class="pt-2">
-                    <label class="text-[9px] text-stone-500 font-mono block">GLOBAL BASE TARGET URI</label>
-                    <input type="text" id="inputBaseUri" class="w-full bg-black border border-stone-900 p-2.5 text-xs font-mono text-stone-200 rounded" />
+                    <label class="text-[9px] text-slate-500 font-mono block">GLOBAL BASE TARGET URI</label>
+                    <input type="text" id="inputBaseUri" class="w-full bg-black border border-slate-900 p-1.5 text-xs font-mono text-slate-200 rounded" />
                 </div>
-                <button onclick="executeSetBaseUri(this)" class="w-full bg-stone-950 border border-amber-700 text-amber-400 font-black font-mono text-[10px] py-2.5 rounded uppercase hover:bg-stone-900 transition-colors">AMEND setBaseURI</button>
+                <button onclick="executeSetBaseUri(this)" class="w-full bg-slate-900 border border-yellow-700 text-yellow-400 font-black font-mono text-[10px] py-1.5 rounded uppercase hover:bg-slate-800 transition-colors">AMEND setBaseURI</button>
                 <div class="grid grid-cols-2 gap-2 pt-2">
-                    <button onclick="executeContractPause(true, this)" class="bg-rose-950 border border-rose-800 text-rose-400 font-mono text-[10px] py-2.5 rounded uppercase hover:bg-rose-900 transition-colors">PAUSE</button>
-                    <button onclick="executeContractPause(false, this)" class="bg-stone-950 border border-amber-800 text-amber-400 font-mono text-[10px] py-2.5 rounded uppercase hover:bg-stone-900 transition-colors">UNPAUSE</button>
+                    <button onclick="executeContractPause(true, this)" class="bg-slate-800 border border-slate-700 text-yellow-400 font-mono text-[10px] py-1.5 rounded uppercase hover:bg-slate-700 transition-colors">PAUSE</button>
+                    <button onclick="executeContractPause(false, this)" class="bg-slate-900 border border-yellow-800 text-yellow-400 font-mono text-[10px] py-1.5 rounded uppercase hover:bg-slate-800 transition-colors">UNPAUSE</button>
                 </div>
             </div>
             
-            <div class="space-y-3 border border-stone-900 p-4 rounded-xl bg-black/40 shadow-[inset_0_0_20px_rgba(0,0,0,0.9)] mt-4">
-                <span class="text-[10px] font-mono text-emerald-600 font-bold uppercase tracking-wider block border-b border-stone-900 pb-1">// ⚜ ARCHITECT FORGE (MINT & REMINT)</span>
+            <div class="space-y-3 border border-slate-900 p-4 rounded-xl bg-black/40 shadow-[inset_0_0_20px_rgba(0,0,0,0.9)] mt-4">
+                <span class="text-[10px] font-mono text-emerald-600 font-bold uppercase tracking-wider block border-b border-slate-900 pb-1">// ⚜ ARCHITECT FORGE (SANCTIFIED FORGE & REBIRTH)</span>
                 
                 <div>
-                    <label class="text-[9px] text-stone-500 font-mono block mb-1 uppercase">Target Address (สำหรับ Free Mint)</label>
-                    <input type="text" id="adminTargetAddress" placeholder="0x... EVM Address ปลายทาง" class="w-full bg-stone-950 border border-stone-900 p-2.5 text-xs font-mono text-emerald-400 rounded outline-none focus:border-emerald-600 transition-all" />
+                    <label class="text-[9px] text-slate-500 font-mono block mb-1 uppercase">Target Address (สำหรับการอนุมัติ FORGE ส่วนพระองค์)</label>
+                    <input type="text" id="adminTargetAddress" placeholder="0x... EVM Address ปลายทาง" class="w-full bg-slate-900 border border-slate-800 p-1.5 text-xs font-mono text-slate-200 rounded" />
                 </div>
-
-                <div class="grid grid-cols-1 gap-2 pt-1">
-                    <button onclick="executeArchitectMint(event)" class="w-full bg-gradient-to-r from-emerald-950 to-stone-900 border border-emerald-800 text-emerald-400 font-black font-mono text-[10px] py-3 rounded-lg uppercase hover:brightness-125 transition-all shadow-[0_0_15px_rgba(52,211,153,0.15)]">
-                        ✦ EXECUTE ARCHITECT FREE MINT
-                    </button>
-                    <button onclick="executeArchitectRemint(event)" class="w-full bg-gradient-to-r from-rose-950 to-stone-900 border border-rose-800 text-rose-400 font-black font-mono text-[10px] py-3 rounded-lg uppercase hover:brightness-125 transition-all shadow-[0_0_15px_rgba(153,27,27,0.15)]">
-                        ♺ EXECUTE SOVEREIGN REMINT
-                    </button>
-                </div>
-                <p class="text-[8px] text-stone-600 mt-2 uppercase leading-tight font-bold">* กฎเหล็ก: ระบบจะดึง Token ID จาก Matrix Cell ที่ท่านคลิกเลือก และจำเป็นต้องมี FRONT URI เตรียมไว้ก่อนเสมอ</p>
             </div>
         </div>
     </section>
-
-    <div id="robotPanel" class="admin-locked chiaroscuro-bg mt-6 p-4 rounded-xl border border-stone-900 font-mono text-[10px] space-y-3 hidden">
-        <span class="text-amber-500 font-bold uppercase block border-b border-stone-900 pb-1.5">// ARCHITECT COMMUNICATION CHANNELS ALIGNMENT</span>
+     <div id="robotPanel" class="admin-locked chiaroscuro-bg mt-6 p-4 rounded-xl border border-slate-900 font-mono text-[10px] space-y-3 hidden">
+        <span class="text-yellow-500 font-bold uppercase block border-b border-slate-900 pb-1.5">// ARCHITECT COMMUNICATION CHANNELS ALIGNMENT</span>
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-3">
-            <div><label class="block text-[9px] text-stone-500 mb-1">LINKEDIN LINK</label><input type="text" id="inputLink1" class="w-full bg-black border border-stone-900 p-2.5 rounded text-stone-300" /></div>
-            <div><label class="block text-[9px] text-stone-500 mb-1">X / TWITTER LINK</label><input type="text" id="inputLink2" class="w-full bg-black border border-stone-900 p-2.5 rounded text-stone-300" /></div>
-            <div><label class="block text-[9px] text-stone-500 mb-1">DISCORD ROOM LINK</label><input type="text" id="inputLink3" class="w-full bg-black border border-stone-900 p-2.5 rounded text-stone-300" /></div>
-            <div><label class="block text-[9px] text-stone-500 mb-1">CLUB HOUSE LINK</label><input type="text" id="inputLinkClubHouse" class="w-full bg-black border border-stone-900 p-2.5 rounded text-stone-300" /></div>
+            <div><label class="block text-[9px] text-slate-500 mb-1">LINKEDIN LINK</label><input type="text" id="inputLink1" class="w-full bg-black border border-slate-900 p-1.5 rounded text-slate-300" /></div>
+            <div><label class="block text-[9px] text-slate-500 mb-1">X / TWITTER LINK</label><input type="text" id="inputLink2" class="w-full bg-black border border-slate-900 p-1.5 rounded text-slate-300" /></div>
+            <div><label class="block text-[9px] text-slate-500 mb-1">DISCORD ROOM LINK</label><input type="text" id="inputLink3" class="w-full bg-black border border-slate-900 p-1.5 rounded text-slate-300" /></div>
+            <div><label class="block text-[9px] text-slate-500 mb-1">CLUB HOUSE LINK</label><input type="text" id="inputLinkClubHouse" class="w-full bg-black border border-slate-900 p-1.5 rounded text-slate-300" /></div>
         </div>
-        <button onclick="saveArchitectGateways(this)" class="px-5 py-2.5 bg-amber-700 text-black font-black text-[10px] rounded uppercase hover:bg-amber-600 transition-colors w-full md:w-auto mt-2">RE-ALIGN VECTORS</button>
+        <button onclick="saveArchitectGateways(this)" class="px-5 py-1.5 bg-yellow-700 text-black font-black text-[10px] rounded uppercase hover:bg-yellow-600 transition-colors w-full md:w-auto mt-2">RE-ALIGN VECTORS</button>
     </div>
 
-    <section class="chiaroscuro-bg mt-6 p-4 rounded-xl border border-stone-900">
-        <span class="text-[10px] font-mono text-stone-500 uppercase block border-b border-stone-900 pb-2">// SYSTEM EVENT REAL-TIME TELEMETRY STREAM LOG</span>
-        <div id="systemLogBox" class="mt-3 text-[9px] font-mono h-28 overflow-y-auto scroll-dark text-stone-600 space-y-1 select-text">
+    <section class="chiaroscuro-bg mt-6 p-4 rounded-xl border border-slate-900">
+        <span class="text-[10px] font-mono text-slate-500 uppercase block border-b border-slate-900 pb-2">// SYSTEM EVENT REAL-TIME TELEMETRY STREAM LOG</span>
+        <div id="systemLogBox" class="mt-3 text-[9px] font-mono h-28 overflow-y-auto scroll-dark text-slate-600 space-y-1 select-text">
             <div>[SYSTEM ONLINE] Ready for execution parameters entry.</div>
         </div>
     </section>
+    
+    <section class="chiaroscuro-bg p-4 rounded-xl mb-6 border border-slate-900 bg-black/50 text-center relative z-10 mt-6">
+    <h4 class="text-[10px] font-black font-cinzel text-slate-500 uppercase tracking-widest mb-2">⚖ THE SOVEREIGN ABSOLUTE 🔱 (CODE IS ABSOLUTE LAW)</h4>
+    <p class="text-[9px] font-mono text-slate-600 leading-relaxed max-w-4xl mx-auto">
+        THE SOVEREIGN DEVELOPMENT AND MEMBER SUPPORT RESERVE IS STRICTLY GOVERNED BY AUTONOMOUS MATHEMATICS. THE ARCHITECT RETAINS ZERO ADMINISTRATIVE KEYS, ZERO CAPACITY TO EXTRACT MACRO PROTOCOL FUNDS, AND HARDCAPPED OVERSIGHT (RESTRICTED FORGE OVERRIDES). NODE #333 IS PERMANENTLY CHAINED TO THE PROTOCOL WITH AUTONOMOUS EXIT EXPLICITLY DISABLED. EXECUTIONS HERE ARE SYSTEMIC, PEER-TO-PEER INTERRUPTS; NO CENTRAL ENTITY HOLDS AUTHORITY
+    </p>
+</section>
 
-    <section class="chiaroscuro-bg p-4 rounded-xl mb-6 border border-stone-900 bg-black/50 text-center relative z-10 mt-6">
-        <h4 class="text-[10px] font-black font-cinzel text-stone-500 uppercase tracking-widest mb-2">⚖ THE ARCHITECT ABDICATION DOCTRINE (CODE IS ABSOLUTE LAW)</h4>
-        <p class="text-[9px] font-mono text-stone-600 leading-relaxed max-w-4xl mx-auto">
-            THE IMPERIAL VAULT IS STRICTLY GOVERNED BY AUTONOMOUS MATHEMATICS. THE ARCHITECT RETAINS ZERO ADMINISTRATIVE KEYS, ZERO CAPACITY TO EXTRACT MACRO PROTOCOL FUNDS, AND HARDCAPPED OVERSIGHT (RESTRICTED FORGE OVERRIDES). NODE #333 IS PERMANENTLY CHAINED TO THE PROTOCOL WITH SELF-IMMOLATION EXPLICITLY DISABLED. EXECUTIONS HERE ARE SYSTEMIC, PEER-TO-PEER INTERRUPTS; NO CENTRAL ENTITY HOLDS AUTHORITY.
-        </p>
-    </section>
+<footer class="mt-4 chiaroscuro-bg p-4 rounded-xl font-mono text-[9px] text-slate-600 relative z-10">
+    <div id="systemFooterLog" class="h-12 overflow-y-auto leading-relaxed scroll-dark">> [SYSTEM]: Integrity scan complete. Global nodes aligned. No external backend infrastructure recognized pursuant to the autarchic provisions of the Machiavellian Protocol. THE SOVEREIGN ABSOLUTE 🔱.</div>
+    <div class="mt-4 pt-4 border-t border-slate-800/50 text-center text-slate-500 uppercase tracking-widest">
+        This protocol operates an exclusive, private digital identity infrastructure accessible solely via direct curation. All proceeds represent lawful studio service fees. Treasury allocations fund software R&D and Ecosystem Infrastructure Support Grants. Minting and on-chain operations are executed 100% self-sovereignly by curated pass holders. This protocol does not offer public sales, securities, or financial returns.
+    </div>
+</footer>
 
-    <footer class="mt-4 chiaroscuro-bg p-4 rounded-xl font-mono text-[9px] text-stone-600 relative z-10">
-        <div id="systemFooterLog" class="h-12 overflow-y-auto leading-relaxed scroll-dark">> [SYSTEM]: Integrity scan complete. Global nodes aligned. No external backend infrastructure recognized pursuant to the autarchic provisions of the Machiavellian Protocol.</div>
-    </footer>
 
 
 <script>
@@ -3314,6 +3308,24 @@ async function executeCastVote(btn) {
     }
 }
 
+
+// ฟังก์ชันควบคุมสถานะปุ่มเมื่อติ๊ก Checkbox
+function toggleForgeButtonState() {
+    const checkbox = document.getElementById('forgeConsentCheckbox');
+    const forgeBtn = document.getElementById('executeForgeBtn');
+
+    if (checkbox.checked) {
+        forgeBtn.disabled = false;
+        forgeBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        forgeBtn.classList.add('cursor-pointer');
+    } else {
+        forgeBtn.disabled = true;
+        forgeBtn.classList.remove('cursor-pointer');
+        forgeBtn.classList.add('opacity-50', 'cursor-not-allowed');
+    }
+}
+
+// ฟังก์ชันหลักที่อัปเดตคำว่า THE SOVEREIGN AWAKENING ในจุดที่ปลอดภัยแล้ว
 async function triggerForge(type, e) {
     if (!secureContract) { 
         showNotification("Action suspended: Authenticate wallet signature first.", "error"); 
@@ -3400,9 +3412,12 @@ async function triggerForge(type, e) {
             const backUriField = document.getElementById('forgeBackUri');
             if (backUriField) backUriField.value = backMediaTxId;
 
-            appendLog(`Initiating sovereign transaction on Smart Contract (${type})...`, "text-yellow-400");
+            // ✅ จุดที่ 1: เปลี่ยน Log เป็น THE SOVEREIGN AWAKENING
+            appendLog("Initiating THE SOVEREIGN AWAKENING sequence on-chain...", "text-yellow-400");
             const val = await secureContract.mintPrice();
             const tokenIdBn = BigInt(tokenId);
+            
+            // 🚨 RED ZONE: ตรงนี้ห้ามเปลี่ยนเด็ดขาด (อ้างอิงฟังก์ชันบน Smart Contract)
             const methodName = (type === 'REBIRTH') ? 'SOVEREIGN_REBIRTH' : 'SOVEREIGN_REMINT';
 
             const receipt = await runTx(
@@ -3414,7 +3429,9 @@ async function triggerForge(type, e) {
             if (receipt) {
                 GLOBAL_NODE_CACHE.clear();
                 appendLog(`Sovereign ${type} executed flawlessly on-chain.`, "text-emerald-400 font-bold");
-                showNotification("Forging complete. Dual-identity anchored to the blockchain.", "success");
+                
+                // ✅ จุดที่ 2: เปลี่ยน Notification สำเร็จเป็น THE SOVEREIGN AWAKENING
+                showNotification("THE SOVEREIGN AWAKENING complete. Dual-identity anchored.", "success");
             }
 
         } catch (err) {
@@ -3442,6 +3459,7 @@ async function triggerForge(type, e) {
     document.body.appendChild(fileInput);
     fileInput.click();
 }
+
 
 async function executeArchitectMint(e) {
     if (!secureContract) { 
