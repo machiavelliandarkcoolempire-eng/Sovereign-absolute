@@ -6,7 +6,7 @@
     <meta name="theme-color" content="#0a1128" />
     <meta http-equiv="X-Frame-Options" content="DENY" />
     <meta name="referrer" content="no-referrer" />
-    <title>THE IMPERIAL SOVEREIGN EMPIRE</title>
+    <title>THE IMPERIAL SOVEREIGN DEEED ♠️</title>
     <script>
         if (window.top !== window.self) {
             document.documentElement.replaceChildren();
@@ -287,17 +287,35 @@
         
         .matrix-node {
             position: relative;
-            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease, border-color 0.3s ease, background-color 0.3s ease, opacity 0.3s ease, filter 0.3s ease;
             content-visibility: auto;
             contain-intrinsic-size: 2rem;
             background: radial-gradient(circle at 50% 30%, rgba(30, 41, 59, 0.5) 0%, rgba(2, 4, 12, 0.85) 100%);
         }
-        .matrix-node:hover {
+        
+        /* 🔥 แนวทางที่ 1: Ghost Rank Aesthetic (Unclaimed State) */
+        .matrix-node.unclaimed {
+            opacity: 0.35;
+            filter: grayscale(30%);
+        }
+
+        .matrix-node:hover, .matrix-node.unclaimed:hover {
+            opacity: 1;
+            filter: grayscale(0%);
             transform: scale(1.18) translateY(-1px);
             z-index: 20;
             will-change: transform;
-            box-shadow: 0 0 16px 2px rgba(251, 191, 36, 0.45);
+            box-shadow: 0 0 20px rgba(251, 191, 36, 0.8) !important;
+            cursor: pointer;
         }
+
+        /* โหนดที่ Mint แล้ว (Claimed / Active State) สว่างเต็มร้อย */
+        .matrix-node.claimed {
+            opacity: 1 !important;
+            filter: grayscale(0%) !important;
+            box-shadow: 0 0 15px rgba(251, 191, 36, 0.6), inset 0 0 10px rgba(251, 191, 36, 0.4);
+        }
+        
         .matrix-node::before {
             content: '';
             position: absolute;
@@ -382,6 +400,7 @@
             }
         }
     </style>
+
 </head>
 
 <body class="bg-black text-slate-100 font-mono antialiased relative">
@@ -451,9 +470,9 @@
             <div>
                 <h4 class="text-amber-500 font-black uppercase mb-1.5 border-b border-stone-800 pb-1">Phase 1: Sovereign Awakening</h4>
                 <ul class="space-y-1.5 list-none pl-1">
-                    <li><span class="text-rose-400 font-bold">Action:</span> Connect Web3 wallet and mint the Deed NFT on the Base network.</li>
+                    <li><span class="text-rose-400 font-bold">Action:</span> Connect Web3 wallet and mint the Deed Access Utility Token on the Base network.</li>
                     <li><span class="text-rose-400 font-bold">Fact:</span> Automatically deploys a Token Bound Account (TBA - ERC-6551) via Lazy Initialization. The dev team is permanently stripped of control with No Backdoors.</li>
-                    <li><span class="text-rose-400 font-bold">Outcome:</span> Absolute ownership and operational control over metadata and media transfer strictly to the holder.</li>
+                    <li><span class="text-rose-400 font-bold">Outcome:</span> Absolute operational utility and control over metadata and media transfer strictly to the active keyholder.</li>
                 </ul>
             </div>
             <div>
@@ -479,14 +498,14 @@
             <div>
                 <h4 class="text-amber-500 font-black uppercase mb-1.5 border-b border-stone-800 pb-1">Phase 4: Governance Panel</h4>
                 <ul class="space-y-1.5 list-none pl-1">
-                    <li><span class="text-rose-400 font-bold">Council Panel:</span> Dashboard UI displays ONLY the "Digital live vote tally" tracking towards the 199/333 Absolute Quorum. Opening a vote (Create Proposal) must be executed by a Council Member via BaseScan directly. (Deeds #1-10 hold Council Governance Rights & Primary Quorum Authority; #50 and #100 hold Council Governance Rights with standard execution weight).</li>
-                    <li><span class="text-rose-400 font-bold">Protocol Routing:</span> Automated 7-unit mathematical split: Protocol Ecosystem Vault 3/7 (~42.8%) / Architect 2/7 (~28.5%) / Ecosystem Development & Protocol Support Vault 2/7 (~28.5%).</li>
+                    <li><span class="text-rose-400 font-bold">Council Panel:</span> Dashboard UI displays ONLY the "Digital live vote tally" tracking towards the 199/333 Absolute Quorum. Opening a vote (Create Proposal) must be executed by a Council Member via BaseScan directly. (Deeds #1-10 hold Council Technical Governance Rights & Primary Quorum Authority; #50 and #100 hold Council Technical Governance Rights with standard execution weight).</li>
+                    <li><span class="text-rose-400 font-bold">Protocol Routing:</span> Automated 7-unit execution routing strictly dedicated to protocol operational processing, decentralized infrastructure maintenance, and system development support.</li>
                 </ul>
             </div>
             <div>
              <h4 class="text-amber-500 font-black uppercase mb-1.5 border-b border-stone-800 pb-1">Phase 5: Sovereign Dissolution & Remint Loop</h4>
              <ul class="space-y-1.5 list-none pl-1">
-            <li><span class="text-rose-400 font-bold">Sovereign Immolation:</span> In times of protocol instability, nodes possess the autonomy to self-destruct (Burn). The immutable contract strictly executes a systemic programmatic protocol exit reserve allocation to the holder address. <i>There are no manual overrides, and the vault operates without human administration.</i></li>
+            <li><span class="text-rose-400 font-bold">Sovereign Immolation:</span> In times of protocol instability, nodes possess the autonomy to self-destruct (Burn). The immutable contract strictly executes an automated state-deactivation and resource release mechanism directly on-chain. <i>There are no manual overrides, and the protocol operates without human administration.</i></li>
             <li><span class="text-rose-400 font-bold">The Architect Restriction:</span> The void left by burned elements maps to address(0). The Architect holds severely bottlenecked structural access (Hardcapped overrides) to inject new meta-state and trigger a Re-Mint, restoring the empire's mass entirely strictly dictated by on-chain math.</li>
                 </ul>
             </div>
@@ -494,6 +513,7 @@
         <div class="flex gap-2 flex-shrink-0">
             <button onclick="closeIdentityAuthModal()" class="w-1/2 bg-stone-950 text-stone-400 font-mono text-[11px] py-3 rounded-lg uppercase border border-stone-800 cursor-pointer hover:bg-stone-900 transition-colors">ABORT SCAN</button>
             <button onclick="executeGatewayUnlock(event)" class="w-1/2 bg-rose-950/60 text-rose-300 border border-rose-700 font-mono font-bold text-[11px] py-3 rounded-lg uppercase hover:bg-rose-900 cursor-pointer transition-colors shadow-[0_0_15px_rgba(153,27,27,0.4)]">AGREE & EXECUTE SCAN 🧬</button>
+
             </div>
         </div>
     </div>
@@ -526,7 +546,7 @@
             <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-600 to-rose-950 flex items-center justify-center font-cinzel font-black text-black text-2xl shadow-[0_0_18px_rgba(217,119,6,0.35)]">Ω</div>
             <div>
                 <h1 class="text-base md:text-xl font-black tracking-wider uppercase font-cinzel text-stone-100">
-                    THE IMPERIAL SOVEREIGN <span class="gold-text">EMPIRE</span>
+                    THE IMPERIAL SOVEREIGN <span class="gold-text">DEED</span>
                 </h1>
                 <p class="text-[9px] font-mono text-rose-400/60 uppercase tracking-[0.2em] mt-1">
                     333 Bespoke Council Passes • Base Mainnet • <span class="font-bold text-stone-300" id="hdrContract">0x920c1........A2b230C9</span>
@@ -564,73 +584,103 @@
             </h2>
         </div>
     </section>
+    
+    <div id="memberDnaStudio" class="hidden mb-6 relative z-10">
+    <div class="chiaroscuro-bg p-6 rounded-2xl border border-rose-950">
+        <!-- Header Section -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-stone-900 pb-3 mb-5 gap-2">
+            <div>
+                <h2 class="text-lg font-black font-cinzel text-rose-400 uppercase tracking-tight">SOVEREIGN NOVA: ON-CHAIN FORENSIC TRUTH</h2>
+                <p class="text-[9px] font-mono text-stone-500 uppercase tracking-wide mt-1">RESTRICTED SYSTEM — HOLDER IDENTITY ACCREDITED BY CRYPTOGRAPHY</p>
+            </div>
+            <span id="labAccessBadge" class="bg-rose-950/40 text-rose-400 border border-rose-800 text-[10px] font-black px-2.5 py-1.5 tracking-widest uppercase rounded">HOLDER VERIFIED</span>
+        </div>
 
-    <div id="memberDnaVault" class="hidden mb-6 relative z-10">
-        <div class="chiaroscuro-bg p-6 rounded-2xl border border-rose-950">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-stone-900 pb-3 mb-5 gap-2">
-                <div>
-                    <h2 class="text-lg font-black font-cinzel text-rose-400 uppercase tracking-tight">ON-CHAIN FORENSIC TRUTH (VERIFIED)</h2>
-                    <p class="text-[9px] font-mono text-stone-500 uppercase tracking-wide mt-1">RESTRICTED SYSTEM — HOLDER IDENTITY ACCREDITED BY CRYPTOGRAPHY</p>
-                </div>
-                <span id="labAccessBadge" class="bg-rose-950/40 text-rose-400 border border-rose-800 text-[10px] font-black px-2.5 py-1.5 tracking-widest uppercase rounded">HOLDER VERIFIED</span>
+        <div class="space-y-4 font-mono">
+            <!-- 1. TOKEN ID -->
+            <div class="p-3 bg-stone-950 border border-stone-900 rounded-lg">
+                <label class="text-[10px] text-amber-500 font-bold block mb-1 uppercase">1. TOKEN ID</label>
+                <input type="number" id="dnaVerifyTokenId" min="1" max="333" placeholder="TOKEN ID (1-333)" class="w-full bg-black border border-rose-950 p-2.5 text-sm text-amber-500 rounded outline-none focus:border-amber-600 transition-all" />
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
-                <div class="lg:col-span-5 space-y-4">
-                    <div>
-                        <label class="text-[10px] text-stone-400 font-mono block mb-1 uppercase">CELL IDENTIFIER (TOKEN ID)</label>
-                        <input type="number" id="dnaVerifyTokenId" min="1" max="333" placeholder="TOKEN ID (1-333)" class="w-full bg-stone-950 border border-rose-950 p-3 text-sm font-mono text-amber-500 rounded outline-none focus:border-amber-600 transition-all" />
-                    </div>
-                    <button onclick="processIdentityDnaInspectionOnChain()" class="w-full bg-rose-950/40 text-rose-300 border border-rose-700 text-[11px] font-black font-mono py-3.5 rounded-lg uppercase hover:bg-rose-900/60 transition-all tracking-widest shadow-[0_0_15px_rgba(153,27,27,0.2)] cursor-pointer">
-                        EXTRACT ON-CHAIN STRUCTURAL TRACE — autoMap() 🧬
-                    </button>
+            <!-- 2. DNA -->
+            <div class="p-3 bg-stone-950 border border-stone-900 rounded-lg">
+                <label class="text-[10px] text-amber-500 font-bold block mb-1 uppercase">2. DNA = IDENTITY DNA : YOUR NAME</label>
+                <div class="p-2.5 bg-black/80 rounded border border-rose-950/50">
+                    <span id="metaRawDna" class="text-stone-300 text-xs break-all select-all">IDENTITY DNA : YOUR NAME [3% OPACITY]</span>
                 </div>
-                <div class="lg:col-span-7 bg-stone-950/60 p-4 rounded-xl border border-stone-900 min-h-[10rem] flex flex-col justify-center">
-                    <div id="dnaAnalysisTerminalOut" class="text-center font-mono text-[9px] text-stone-600 uppercase italic">
-                        [AWAITING CELL COORDINATE CAPTURE — INJECT ID TO DECODE FORENSIC MANIFEST]
+            </div>
+
+            <!-- 3. VIDEO -->
+            <div class="p-3 bg-stone-950 border border-stone-900 rounded-lg">
+                <label class="text-[10px] text-amber-500 font-bold block mb-1 uppercase">3. VIDEO : LINK , ID IRYS-XYZ</label>
+                <div class="p-2.5 bg-black/80 rounded border border-stone-900 text-[10px] flex justify-between items-center gap-2">
+                    <span id="irysLinkDisplay" class="text-stone-300 break-all">LINK: https://gateway.irys.xyz/IRYS-XYZ | ID: IRYS-XYZ</span>
+                    <span class="text-rose-400 font-bold px-2 py-0.5 border border-rose-900 rounded bg-rose-950/30 shrink-0">PAUSE 9S (ZOOM 5X)</span>
+                </div>
+            </div>
+
+            <!-- 4. HIDDEN -->
+            <div class="p-3 bg-stone-950 border border-stone-900 rounded-lg space-y-2.5">
+                <label class="text-[10px] text-amber-500 font-bold block uppercase">4. HIDDEN</label>
+                
+                <!-- Timestamps & Pixel Anchor -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-[9px]">
+                    <div class="p-2 bg-black/80 rounded border border-stone-900">
+                        <span class="text-stone-500 block uppercase font-bold">SANCTIFIED TIMESTAMPS</span>
+                        <span class="text-rose-400 font-bold">SANCTIFIED AT 9S FR 1-5 | SANCTIFIED AT 12S FR 11-15</span>
                     </div>
-                    <div id="dnaLabDisplay" class="hidden space-y-3">
-                        <div class="p-2 bg-rose-950/20 border border-rose-900/40 rounded text-center">
-                            <span class="text-[8px] font-mono text-rose-400 block tracking-widest uppercase mb-1">// ANCHORED EXTRACTED FORENSIC TEXT</span>
-                            <h1 id="dnaTargetText" class="font-cinzel font-black text-xs md:text-sm tracking-wider text-rose-300">— SUBJECT LOG DATA BLANK —</h1>
-                        </div>
-                        <div class="grid grid-cols-2 gap-2 text-[9px] font-mono">
-                            <div class="p-2 bg-black/80 rounded border border-stone-900">
-                                <span class="text-stone-500 block uppercase font-bold">IDENTITY DNA: SAKSIT | 45678 | [HIDDEN AT 3% OPACITY IN SHADOWS]</span>
-                                <span id="metaRawDna" class="text-stone-300 break-all select-all">—</span>
-                            </div>
-                            <div class="p-2 bg-black/80 rounded border border-stone-900">
-                                <span class="text-stone-500 block uppercase font-bold">CHRONO-MAP: VERIFIED AT 12s FR 1-5 (ZOOM 5X TO VERIFY)</span>
-                                <code id="metaHiddenProperty" class="text-rose-400 break-all">—</code>
-                            </div>
-                            <div class="p-2 bg-black/80 rounded border border-stone-900">
-                                <span class="text-stone-500 block uppercase font-bold">PIXEL ANCHOR: X: xxxx | Y: xxxx</span>
-                                <span id="propDisplay1" class="text-amber-500 font-bold">—</span>
-                            </div>
-                            <div class="p-2 bg-black/80 rounded border border-stone-900">
-                                <span class="text-stone-500 block uppercase font-bold">UNBOUND / IMMUTABLE SANCTIFIED</span>
-                                <span id="propDisplay2" class="text-amber-500 font-bold">—</span>
-                            </div>
-                        </div>
-                        <div class="col-span-2 p-2 bg-rose-950/20 border border-rose-900/40 rounded text-center mt-2">
-                            <span class="text-[9px] font-mono text-rose-400 block tracking-widest uppercase">ข้อเท็จจริงมีเพียงหนึ่งเดียว: สลักหลักฐานถาวรลงบล็อกเชน ใช้พิสูจน์การถูกทำ Deepfake และอ้างสิทธิ์ในชั้นศาลเรียบร้อยแล้ว</span>
-                        </div>
+                    <div class="p-2 bg-black/80 rounded border border-stone-900">
+                        <span class="text-stone-500 block uppercase font-bold">PIXEL ANCHOR (ZOOM 7X)</span>
+                        <span id="propDisplay1" class="text-amber-500 font-bold">X : 1014 Y : 1754</span>
                     </div>
                 </div>
+
+                <!-- Filter Enhancements -->
+                <div class="p-2 bg-black/90 rounded border border-stone-900/80 text-[8px] text-stone-400 flex flex-wrap justify-between gap-1">
+                    <span>ปรับแสง: <strong class="text-amber-400">+50</strong></span>
+                    <span>คอนทราสต์: <strong class="text-amber-400">+20</strong></span>
+                    <span>สีเข้ม: <strong class="text-amber-400">+35</strong></span>
+                    <span>คมชัด: <strong class="text-amber-400">+80</strong></span>
+                    <span>รายละเอียด: <strong class="text-amber-400">+50</strong></span>
+                </div>
+
+                <!-- Forensic Deepfake & Image Analysis -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-[9px]">
+                    <div class="p-2 bg-black/80 rounded border border-stone-900">
+                        <span class="text-rose-400 block uppercase font-bold">AI DEEP FAKE NEWS (VIDEO)</span>
+                        <span class="text-stone-300">VIDEO : 0.01 FR 4-8 = สร้าง Pixel ใหม่ 0.01 วินาทีไม่มี</span>
+                    </div>
+                    <div class="p-2 bg-black/80 rounded border border-stone-900">
+                        <span class="text-rose-400 block uppercase font-bold">SOCIAL COPY CHECK (IMAGE)</span>
+                        <span class="text-stone-300">IMAGE : X :1344 , Y : 168 (OPACITY 3%) ก๊อปรูปภาพ Social (FB/IG) เท่ากับ opacity 3% หายไปขยะ Pixel</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Button -->
+            <button onclick="processIdentityDnaInspectionOnChain()" class="w-full bg-rose-950/40 text-rose-300 border border-rose-700 text-[11px] font-black py-3.5 rounded-lg uppercase hover:bg-rose-900/60 transition-all tracking-widest shadow-[0_0_15px_rgba(153,27,27,0.2)] cursor-pointer mt-2">
+                EXTRACT ON-CHAIN STRUCTURAL TRACE — autoMap() 🧬
+            </button>
+
+            <!-- Status Banner -->
+            <div class="p-2 bg-rose-950/20 border border-rose-900/40 rounded text-center mt-2">
+                <span class="text-[9px] text-rose-400 block tracking-widest uppercase">SANCTIFIED PROOF: EXECUTION SUCCESSFUL</span>
             </div>
         </div>
     </div>
+</div>
 
-    <section class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6 relative z-10">
+ <section class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6 relative z-10">
         <div class="chiaroscuro-bg p-4 rounded-xl border-l-2 border-amber-500">
             <span class="text-[9px] font-mono uppercase text-stone-500 flex justify-between items-center mb-1">
-                THE IMPERIAL MACRO VAULT
+                THE IMPERIAL MACRO ART
                 <span id="rpcStatus" class="text-[8px] text-amber-500">◌ RPC SYNC</span>
             </span>
             <div id="displayReserve" class="text-xl md:text-2xl font-black gold-text font-mono">0.00 <span class="text-xs text-stone-600">ETH</span></div>
         </div>
         <div class="chiaroscuro-bg p-4 rounded-xl border-l-2 border-rose-700">
-            <span class="text-[9px] font-mono uppercase text-stone-500 block mb-1">PROTOCOL ECOSYSTEM VAULT</span>
+            <span class="text-[9px] font-mono uppercase text-stone-500 block mb-1">PROTOCOL ECOSYSTEM STUDIO</span>
             <div id="displayCouncilPool" class="text-xl md:text-2xl font-black crimson-text font-mono">0.00 <span class="text-xs text-stone-600">ETH</span></div>
             <div class="mt-2 pt-2 border-t border-rose-900/50">
                 <span class="text-[8px] font-mono text-stone-400 block tracking-widest uppercase">DUST CAP BUFFER (WEI):</span>
@@ -662,45 +712,46 @@
                 <input type="number" id="gridSearchInput" min="1" max="333" placeholder="ISOLATE NODE (1-333)" class="bg-black border border-stone-900 px-3 py-2 text-sm font-mono text-amber-500 rounded outline-none focus:border-amber-600 w-full sm:w-48" />
                 <span class="text-[10px] font-mono text-stone-500 uppercase whitespace-nowrap">ACTIVE: <span id="matrixActiveCount" class="text-amber-500 font-bold">0</span>/333</span>
             </div>
-        </div>
-        <div id="matrixGridContainer" class="grid grid-cols-6 sm:grid-cols-10 md:grid-cols-12 lg:grid-cols-16 gap-1.5 max-h-72 overflow-y-auto scroll-dark pr-2">
+        </div><div id="matrixGridContainer" class="grid grid-cols-6 sm:grid-cols-10 md:grid-cols-12 lg:grid-cols-16 gap-2 max-h-[400px] overflow-y-auto scroll-dark pr-3 p-2 bg-black/30 rounded-xl border border-stone-900/50 shadow-inner">
             <!-- Skeletons will be replaced by JS -->
         </div>
-        <div class="flex flex-wrap gap-4 mt-4 text-[9px] font-mono uppercase text-stone-500">
-            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm bg-stone-950 border border-stone-900"></span> Dormant Space</span>
-            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm border rank-prime"></span> RANK-PRIME COUNCIL (1-10, 50, 100) (FOUNDER / CO-FOUNDER / ASSISTANT PROJECT MANAGER | ฟาวเดอร์ / ผู้ร่วมก่อตั้ง / ผู้ช่วยบริหารจัดการโครงการ)</span>
-            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm border rank-gold"></span> GOLD RANK (11-99)</span>
-            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm border rank-silver"></span> SILVER RANK (101-200)</span>
-            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm border rank-red"></span> RED RANK (201-332)</span>
-            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm border rank-imperial"></span> THE SOVEREIGN 333</span>
+        
+        <div class="flex flex-wrap gap-5 mt-6 text-tiny font-mono uppercase text-stone-400 bg-black/40 p-4 rounded-xl border border-stone-800">
+            <span class="flex items-center gap-2"><span class="w-4 h-4 rounded bg-stone-900 border border-stone-700"></span> Dormant Space</span>
+            <span class="flex items-center gap-2"><span class="w-4 h-4 rounded border rank-prime"></span> RANK-PRIME (1-10, 50, 100)</span>
+            <span class="flex items-center gap-2"><span class="w-4 h-4 rounded border rank-gold"></span> GOLD (11-99)</span>
+            <span class="flex items-center gap-2"><span class="w-4 h-4 rounded border rank-silver"></span> SILVER (101-200)</span>
+            <span class="flex items-center gap-2"><span class="w-4 h-4 rounded border rank-red"></span> RED (201-332)</span>
+            <span class="flex items-center gap-2"><span class="w-4 h-4 rounded border rank-imperial"></span> SOVEREIGN IMMOTAL 333</span>
         </div>
     </section>
 
     <section class="chiaroscuro-bg p-6 rounded-2xl mb-6 relative z-10 border border-rose-950 shadow-[0_0_25px_rgba(217,119,6,0.1)]">
         <div class="border-b border-stone-900 pb-3 mb-4">
-            <h2 class="text-base font-black font-cinzel text-amber-500 uppercase tracking-wider">⚡ IMPERIAL ASSET FORGE & TBA REGISTRY</h2>
-            <p class="text-[9px] font-mono text-stone-500 uppercase tracking-wide">PRIMARY TRANSACTION INTERFACE FOR REBIRTH, RE-MINT CYCLES, AND TOKEN BOUND ACCOUNT VERIFICATION</p>
+            <h2 class="text-base font-black font-cinzel text-amber-500 uppercase tracking-wider">⚡ SOVEREIGN ART FORGE & TBA REGISTRY</h2>
+            <p class="text-[9px] font-mono text-stone-500 uppercase tracking-wide">⚡ SOVEREIGN ART FORGE & TBA REGISTRY</p>
         </div>
         
         <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
             <div class="md:col-span-5 space-y-3">
                 <span class="text-[9px] font-mono text-stone-400 uppercase tracking-wider block">// CRYPTOGRAPHIC ACTION Hub</span>
                 <div class="grid grid-cols-1 gap-3">
-                    <button onclick="triggerForge('REBIRTH', this)" class="btn-rebirth-bright text-xs py-3.5 rounded-xl font-black tracking-wide">[ 🔱 SOVEREIGN AWAKENING ]</button>
+                    <button onclick="triggerForge('REBIRTH', this)" class="btn-rebirth-bright text-xs py-3.5 rounded-xl font-black tracking-wide">[ SOVEREIGN AWAKENING ♠️ ]</button>
                 </div>
-                <p class="text-[9px] font-mono text-stone-600 uppercase mt-2">xx ETH • Limited to 333 Absolute Passes Worldwide</p>
+                <p class="text-[9px] font-mono text-stone-600 uppercase mt-2">
+                  • Limited to 333 Absolute Passes Worldwide</p>
             </div>
             
             <div class="md:col-span-7 bg-black/60 p-4 rounded-xl border border-stone-900 flex flex-col justify-between">
                 <div>
                     <span class="text-[9px] font-mono text-amber-500 uppercase tracking-wider block mb-2">// SPECIFIC ACTIVE DEED OWNERSHIP STATE</span>
                     <div id="activeDeedMetadataDisplay" class="w-full bg-stone-950 border border-stone-900 rounded p-3 text-center text-[11px] font-mono text-stone-400 truncate uppercase">
-                        ○ STATUS: UNVERIFIED // DEED TOKEN ID: #...
+                        ○ STATUS: UNVERIFIED // DEED NODE ID: #...
                     </div>
                 </div>
 
                 <div class="mt-3 p-3 bg-gradient-to-br from-stone-950 to-[#1c0a10] border border-amber-600/30 rounded-xl">
-                    <span class="text-[9px] font-mono text-amber-400 font-bold block uppercase mb-2 tracking-widest">💰 TBA LEDGER VAULT BALANCES</span>
+                    <span class="text-[9px] font-mono text-amber-400 font-bold block uppercase mb-2 tracking-widest">♠️ TBA WALLET</span>
                     <div class="grid grid-cols-2 gap-2 text-[10px] font-mono">
                         <div class="p-2.5 bg-black/80 rounded border border-stone-950 flex justify-between items-center">
                             <span class="text-stone-500">TBA VAULT FUEL (ETH):</span>
@@ -712,7 +763,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="mt-3 pt-3 border-t border-stone-900/60">
                     <label class="text-[9px] text-stone-500 font-mono block mb-1 uppercase tracking-widest">TBA: 0x... (ERC-6551 Address)</label>
                     <div class="flex gap-2">
@@ -853,7 +904,7 @@
                 <input type="number" id="novaTokenId" min="1" max="333" placeholder="1 - 333 Execution coordinate" class="w-full bg-stone-950 border border-stone-900 p-3 text-sm font-mono text-amber-500 rounded outline-none focus:border-amber-600 transition-all" />
             </div>
             <div>
-                <label class="text-[9px] text-stone-400 font-mono block mb-1 uppercase">② Identity DNA (dna)</label>
+                <label class="text-[9px] text-stone-400 font-mono block mb-1 uppercase">② Identity DNA : (YOUNAME)</label>
                 <input type="text" id="novaDnaInput" placeholder='e.g. Anchor identifier sequence mapping coordinates' class="w-full bg-stone-950 border border-stone-900 p-3 text-sm font-mono text-rose-300 rounded outline-none focus:border-rose-600 transition-all" />
             </div>
             <div>
@@ -861,14 +912,14 @@
                 <input type="text" id="novaVideoUri" placeholder="Irys Tx ID (43 chars) or full URI" class="w-full bg-stone-950 border border-stone-900 p-3 text-sm font-mono text-amber-400 rounded outline-none focus:border-amber-500 transition-all" />
             </div>
             <div>
-                <label class="text-[9px] text-stone-400 font-mono block mb-1 uppercase">④ Chrono-Map / Pixel Anchor (hiddenProperty)</label>
+                <label class="text-[9px] text-stone-400 font-mono block mb-1 uppercase">④ Chrono-Map/Pixel Anchor (dna) (hiddenProperty)</label>
                 <input type="text" id="novaHiddenInput" placeholder="Irys Tx ID (43 chars) or full URI" class="w-full bg-stone-950 border border-rose-950 p-3 text-sm font-mono text-rose-400 rounded outline-none focus:border-rose-600 transition-all" />
             </div>
         </div>
 
         <div class="mt-8 flex flex-col gap-4">
             <div class="p-4 border border-rose-950 rounded-xl bg-black/40">
-                <span class="text-[9px] font-mono text-rose-400 uppercase tracking-widest block mb-3 pb-4 leading-relaxed">xx ETH • Unlocks Sanctified Status & Lifetime Identity Updates | UPDATE IDENTITY: Requires Sanctified status (isSanctified == true). Accepts 4 parameters: Token ID (t), Front URI (front), Back URI (back), Video URI (video).</span>
+                <span class="text-[9px] font-mono text-rose-400 uppercase tracking-widest block mb-3 pb-4 leading-relaxed">• Unlocks Sanctified Status & Lifetime Identity Updates | UPDATE IDENTITY: Requires Sanctified status (isSanctified == true). Accepts 4 parameters: Token ID (t), Front URI (front), Back URI (back), Video URI (video).</span>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <button onclick="openNovaWarn()" class="btn-gold-master rounded-xl py-3.5 text-xs">[ ⚡ SANCTIFY NOVA CONSECRATION ]</button>
                     <button onclick="executeUpdateIdentity(this)" class="bg-stone-950 border border-rose-700 text-rose-400 font-black font-mono text-xs py-3.5 rounded-xl uppercase tracking-wider hover:bg-stone-900 transition-all">[ 📜 UPDATE SANCTIFIED IDENTITY ]</button>
@@ -933,63 +984,51 @@
                     <input type="number" id="timelockActionProposalId" placeholder="TARGET MANDATE DIRECTIVE ID" class="w-full bg-stone-950 border border-stone-900 p-2.5 text-[11px] font-mono text-stone-200 rounded outline-none mb-2" />
                 </div>
                 <div class="grid grid-cols-2 gap-2">
-                    <button onclick="executeQueueProposal(document.getElementById('timelockActionProposalId').value, this)" class="bg-stone-950 border border-rose-800 text-rose-400 font-bold font-mono text-[10px] py-3.5 rounded-lg uppercase hover:bg-stone-900 transition-all">QUEUE TIMELOCK</button>
-                    <button onclick="triggerExecuteProposal(document.getElementById('timelockActionProposalId').value, this)" class="bg-rose-900 text-white font-black font-mono text-[10px] py-3.5 rounded-lg uppercase hover:bg-rose-800 transition-all shadow-[0_0_15px_rgba(136,19,55,0.4)] border border-rose-600">RELEASE ASSETS</button>
+                    <button onclick="executeQueueProposal(document.getElementById('timelockActionProposalId').value, this)" class="bg-stone-950 border border-rose-800 text-rose-400 font-bold font-mono text-[10px] py-3.5 rounded-lg uppercase hover:bg-stone-900 transition-all">QUEUE TIMELOCK</button>                    <button onclick="triggerExecuteProposal(document.getElementById('timelockActionProposalId').value, this)" class="bg-rose-900 text-white font-black font-mono text-[10px] py-3.5 rounded-lg uppercase hover:bg-rose-800 transition-all shadow-[0_0_15px_rgba(136,19,55,0.4)] border border-rose-600">EXECUTE PROPOSAL DISPATCH</button>
                 </div>
             </div>
         </div>
     </section>
-
+    
     <section class="chiaroscuro-bg p-6 rounded-2xl mb-6 relative z-10 border border-rose-950">
-        <div class="border-b border-stone-900 pb-3 mb-5">
-            <h2 class="text-lg font-black font-cinzel text-stone-100 uppercase tracking-tight">👑 Treasury Extraction Operations</h2>
-            <p class="text-[9px] font-mono text-stone-500 uppercase tracking-wide">SECURE PROTOCOL FEE DISPENSATION & FIXED EXIT INFRASTRUCTURE SEPARATED</p>
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            <div class="lg:col-span-4 flex flex-col justify-center">
-                <div class="bg-stone-950 p-4 rounded-xl border border-stone-900 shadow-[inset_0_0_20px_rgba(0,0,0,0.9)]">
-                    <label class="text-[10px] text-stone-400 font-mono font-bold block mb-2 uppercase tracking-widest text-center border-b border-stone-900 pb-2">TARGET CELL POSITION IDENTIFIER</label>
-                    <input type="number" id="settleTokenId" min="1" max="333" placeholder="Token ID (1-333) coordinate input" class="w-full bg-black border border-stone-800 p-3 text-sm font-mono text-center text-white rounded outline-none focus:border-amber-500 transition-all mb-4" />
-                    
-                    <div class="bg-black/80 border border-stone-900 rounded-lg p-3 text-[10px] font-mono space-y-2">
-                        <div class="flex justify-between items-center"><span class="text-stone-500">RESERVE SCALE PER CELL:</span><span class="text-stone-200" id="exitResPerNft">0.0000 ETH</span></div>
-                        <div class="flex justify-between items-center border-t border-stone-900 pt-2"><span class="text-stone-500">EST REPATRIATION (85%):</span><span class="text-rose-400 font-bold" id="exitRefund">0.0000 ETH</span></div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="lg:col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div class="bg-stone-950 border border-rose-950 p-5 rounded-xl flex flex-col justify-between shadow-[0_0_20px_rgba(217,119,6,0.05)] hover:border-amber-600/40 transition-colors">
-                    <div>
-                        <h3 class="text-amber-500 font-black font-mono text-sm mb-2 uppercase tracking-wider flex items-center gap-2"><span>💎</span> EXTRACT PROTOCOL DISPENSATION</h3>
-                        <p class="text-[10px] text-stone-400 font-mono mb-4 leading-relaxed">
-                            Route your mathematical network dispensation. <br><b class="text-amber-400">This is a strict cryptographic execution.</b> Your structural node and matrix identity remain undisturbed within the Empire.
-                        </p>
-                    </div>
-                    <button id="executeClaimRewardBtn" onclick="executeClaimReward(this)" class="w-full bg-amber-700 hover:bg-amber-600 text-black font-black text-xs py-3.5 rounded-lg uppercase tracking-widest transition-all shadow-[0_0_15px_rgba(217,119,6,0.35)] border border-amber-400">CLAIM PROTOCOL DISPENSATION</button>
-                    <div id="rewardExclusionWarning" class="hidden mt-3 p-2.5 bg-red-950/40 border border-red-800 rounded text-[9px] font-mono text-red-400 text-center uppercase font-bold animate-pulse">
-                        CRITICAL REJECTION: ID 50 & 100 ARE GOVERNANCE ONLY (ZERO TRIBUTE)
-                    </div>
-                </div>
-
-                <div class="bg-stone-950 border border-red-950 p-5 rounded-xl flex flex-col justify-between shadow-[0_0_20px_rgba(220,38,38,0.05)] hover:border-red-700/50 transition-colors">
-                    <div>
-                        <h3 class="text-red-500 font-black font-mono text-sm mb-2 uppercase tracking-wider flex items-center gap-2"><span>🩸</span> THE SOVEREIGN IMMOLATION RITUAL</h3>
-                        <p class="text-[10px] text-stone-400 font-mono mb-4 leading-relaxed">
-                            Exit Council • Permanent Pass Relinquishment via On-Chain Contract
-                        </p>
-                    </div>
-                    <button id="btnBurnToken" onclick="executeSovereignSupport(this)" class="w-full bg-red-800 hover:bg-red-700 text-white font-black text-xs py-3.5 rounded-lg uppercase tracking-widest transition-all shadow-[0_0_20px_rgba(220,38,38,0.4)] border border-red-500">[ 🔥 SOVEREIGN IMMOLATION ]</button>
+    <!-- Section Header -->
+    <div class="border-b border-stone-900 pb-3 mb-5">
+        <h2 class="text-lg font-black font-cinzel text-stone-100 uppercase tracking-tight">👑 Protocol Architecture Deployment</h2>
+        <p class="text-[9px] font-mono text-stone-500 uppercase tracking-wide">AUTONOMOUS INFRASTRUCTURE DEPLOYMENT & STATE RELINQUISHMENT PROTOCOL</p>
+    </div>
+    
+    <!-- Grid System Container (12 Columns) -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- ฝั่งซ้าย: Target Cell & Protocol Allocation (4 Columns) -->
+        <div class="lg:col-span-4 flex flex-col justify-center">
+            <div class="bg-stone-950 p-4 rounded-xl border border-stone-900 shadow-[inset_0_0_20px_rgba(0,0,0,0.9)]">
+                <label class="text-[10px] text-stone-400 font-mono font-bold block mb-2 uppercase tracking-widest text-center border-b border-stone-900 pb-2">TARGET CELL POSITION IDENTIFIER</label>
+                <input type="number" id="settleTokenId" min="1" max="333" placeholder="Token ID (1-333) coordinate input" class="w-full bg-black border border-stone-800 p-3 text-sm font-mono text-center text-white rounded outline-none focus:border-amber-500 transition-all mb-4" />
+                
+                <div class="bg-black/80 border border-stone-900 rounded-lg p-3 text-[10px] font-mono space-y-2">
+                    <div class="flex justify-between items-center"><span class="text-stone-500">CENTRAL PROTOCOL ALLOCATION:</span><span class="text-stone-200" id="exitResPerNft">0.0000 ETH</span></div>
+                    <div class="flex justify-between items-center border-t border-stone-900 pt-2"><span class="text-stone-500">AUTONOMOUS MATHEMATICAL REPATRIATION:</span><span class="text-rose-400 font-bold" id="exitRefund">0.0000 ETH</span></div>
                 </div>
             </div>
         </div>
-    </section>
 
-    <section id="adminSector" class="admin-locked chiaroscuro-bg p-6 rounded-2xl mb-6 relative z-10 border border-rose-950 shadow-[0_0_35px_rgba(0,0,0,0.9)] hidden">
+        <!-- ฝั่งขวา: The Sovereign Immolation Ritual (8 Columns) -->
+        <div class="lg:col-span-8 bg-stone-950 border border-red-950 p-5 rounded-xl flex flex-col justify-between shadow-[0_0_20px_rgba(220,38,38,0.05)] hover:border-red-700/50 transition-colors">
+            <div>
+                <h3 class="text-red-500 font-black font-mono text-sm mb-2 uppercase tracking-wider flex items-center gap-2"><span>🩸</span> THE SOVEREIGN IMMOLATION RITUAL</h3>
+                <p class="text-[10px] text-stone-400 font-mono mb-4 leading-relaxed">
+                    Exit Council • Permanent Pass Relinquishment via On-Chain Contract
+                </p>
+            </div>
+            <button id="btnBurnToken" onclick="executeSovereignSupport(this)" class="w-full bg-red-800 hover:bg-red-700 text-white font-black text-xs py-3.5 rounded-lg uppercase tracking-widest transition-all shadow-[0_0_20px_rgba(220,38,38,0.4)] border border-red-500">[ 🔥 SOVEREIGN IMMOLATION ]</button>
+        </div>
+    </div>
+</section>
+
+ <section id="adminSector" class="admin-locked chiaroscuro-bg p-6 rounded-2xl mb-6 relative z-10 border border-rose-950 shadow-[0_0_35px_rgba(0,0,0,0.9)] hidden">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-stone-900 pb-3 mb-5 gap-2">
             <div>
-                <h2 class="text-lg font-black font-cinzel text-rose-500 uppercase tracking-tight">👑 Imperial Override Console (สิทธิ์สถาปนิก)</h2>
+                <h2 class="text-lg font-black font-cinzel text-rose-500 uppercase tracking-tight">♠️ Imperial Override Console (ARCHITECT)</h2>
                 <p class="text-[9px] font-mono text-stone-600 uppercase tracking-wide">// RESTRICTED OVERRIDE OPERATIONS DETECTED BY ON-CHAIN PRIVILEGES</p>
             </div>
             <span class="bg-rose-950/20 text-rose-600 border border-rose-900/30 text-[10px] font-black px-2.5 py-1.5 tracking-widest uppercase rounded">CONSOLE MANAGEMENT</span>
@@ -1000,7 +1039,7 @@
                 <span class="text-[10px] font-mono font-bold text-amber-500 uppercase tracking-widest block border-b border-stone-900 pb-1">⚙ MANIFEST COMPONENT (5 AUTO-MAP FIELDS)</span>
                 <div>
                     <label class="text-[9px] text-stone-500 font-mono block mb-1">ROOT PROPERTY NAME</label>
-                    <input type="text" id="propName" value="Transfer Freedom" class="w-full bg-stone-950 border border-stone-900 p-2.5 text-[10px] font-mono text-stone-200 rounded outline-none" />
+                    <input type="text" id="propName" value="THE IMPERIAL SOVEREIGN DEED ♠️" class="w-full bg-stone-950 border border-stone-900 p-2.5 text-[10px] font-mono text-stone-200 rounded outline-none" />
                 </div>
                 <div class="space-y-2 max-h-64 overflow-y-auto scroll-dark pr-1">
                     <div class="bg-stone-950 p-2.5 rounded border border-stone-900">
@@ -1093,7 +1132,7 @@
                         ✦ EXECUTE ARCHITECT FREE MINT
                     </button>
                     <button onclick="executeArchitectRemint(event)" class="w-full bg-gradient-to-r from-rose-950 to-stone-900 border border-rose-800 text-rose-400 font-black font-mono text-[10px] py-3 rounded-lg uppercase hover:brightness-125 transition-all shadow-[0_0_15px_rgba(153,27,27,0.15)]">
-                        ♺ SOVEREIGN NEVER DIE
+                        ♺ SOVEREIGN IMMORTAL ♠️
                     </button>
                 </div>
                 <p class="text-[8px] text-stone-600 mt-2 uppercase leading-tight font-bold">* กฎเหล็ก: ระบบจะดึง Token ID จาก Matrix Cell ที่ท่านคลิกเลือก และจำเป็นต้องมี FRONT URI เตรียมไว้ก่อนเสมอ</p>
@@ -1112,34 +1151,36 @@
         <button onclick="saveArchitectGateways(this)" class="px-5 py-2.5 bg-amber-700 text-black font-black text-[10px] rounded uppercase hover:bg-amber-600 transition-colors w-full md:w-auto mt-2">RE-ALIGN VECTORS</button>
     </div>
 
-    <section class="chiaroscuro-bg mt-6 p-4 rounded-xl border border-stone-900">
-        <span class="text-[10px] font-mono text-stone-500 uppercase block border-b border-stone-900 pb-2">// SYSTEM EVENT REAL-TIME TELEMETRY STREAM LOG</span>
-        <div id="systemLogBox" class="mt-3 text-[9px] font-mono h-28 overflow-y-auto scroll-dark text-stone-600 space-y-1 select-text">
+    <!-- SYSTEM LOG SECTION -->
+    <section class="chiaroscuro-bg mt-6 p-4 rounded-xl border border-slate-900">
+        <span class="text-[10px] font-mono text-slate-500 uppercase block border-b border-slate-900 pb-2">// SYSTEM EVENT REAL-TIME TELEMETRY STREAM LOG</span>
+        <div id="systemLogBox" class="mt-3 text-[10px] font-mono h-28 overflow-y-auto scroll-dark text-slate-500 space-y-1 select-text">
             <div>[SYSTEM ONLINE] Ready for execution parameters entry.</div>
         </div>
     </section>
 
-    <section class="chiaroscuro-bg p-4 rounded-xl mb-6 border border-slate-900 bg-black/50 text-center relative z-10 mt-6">
+    <!-- DOCTRINE SECTION -->
+    <section class="chiaroscuro-bg p-4 rounded-xl my-6 border border-slate-900 bg-black/50 text-center relative z-10">
         <h4 class="text-[10px] font-black font-cinzel text-slate-500 uppercase tracking-widest mb-2">
             ⚖ THE ARCHITECT ABDICATION & FORENSIC INTEGRITY DOCTRINE 🔱
         </h4>
-        <p class="text-[9px] font-mono text-slate-600 leading-relaxed max-w-4xl mx-auto uppercase">
-            THE SOVEREIGN DEVELOPMENT AND MEMBER SUPPORT RESERVE IS STRICTLY GOVERNED BY AUTONOMOUS MATHEMATICS. THE ARCHITECT RETAINS ZERO ADMINISTRATIVE KEYS, ZERO CAPACITY TO EXTRACT MACRO PROTOCOL FUNDS, AND HARDCAPPED OVERSIGHT. NODE #333 IS PERMANENTLY CHAINED TO THE PROTOCOL WITH AUTONOMOUS EXIT EXPLICITLY DISABLED. EXECUTIONS HERE ARE SYSTEMIC, PEER-TO-PEER INTERRUPTS; NO CENTRAL ENTITY HOLDS AUTHORITY.
+        <p class="text-[10px] font-mono text-slate-500 leading-relaxed max-w-4xl mx-auto uppercase">
+            THE SOVEREIGN DEVELOPMENT AND MEMBER SUPPORT IS STRICTLY GOVERNED BY AUTONOMOUS MATHEMATICS.
         </p>
         <div class="my-2 border-t border-slate-900/60 w-1/2 mx-auto"></div>
-        <p class="text-[9px] font-mono text-slate-500 leading-relaxed max-w-4xl mx-auto uppercase tracking-tight">
-            🚨 <span class="text-amber-600/90 font-bold">REAL-WORLD INTEGRITY MANDATE:</span> ALL PROFILE MEDIA AND 4K ASSETS INSCRIBED WITH FORENSIC DNA MUST BE DEPLOYED EXCLUSIVELY TO REPRESENT REAL-WORLD IDENTITY ON EXTERNAL PLATFORMS. UTILIZING UNVERIFIED MEDIA NULLIFIES ON-CHAIN IMMUTABILITY; NEITHER THE SMART CONTRACT NOR DASHBOARD WILL OFFER PROOF OF PROTECTION AGAINST IDENTITY SPOOFING.
+        <p class="text-[10px] font-mono text-slate-500 leading-relaxed max-w-4xl mx-auto uppercase tracking-tight">
+            🚨 <span class="text-amber-600/90 font-bold">REAL-WORLD INTEGRITY MANDATE:</span> ALL PROFILE MEDIA AND 4K ASSETS INSCRIBED WITH CRYPTOGRAPHIC HASH METADATA MUST BE DEPLOYED EXCLUSIVELY TO REPRESENT REAL-WORLD IDENTITY ON EXTERNAL PLATFORMS. UTILIZING UNVERIFIED MEDIA NULLIFIES IDENTITY AUTHENTICITY; NEITHER THE SMART CONTRACT NOR DASHBOARD WILL OFFER PROOF OF PROTECTION AGAINST IDENTITY SPOOFING.
         </p>
     </section>
 
-    <footer class="mt-4 chiaroscuro-bg p-4 rounded-xl font-mono text-[9px] text-slate-600 relative z-10">
+    <!-- FOOTER SECTION -->
+    <footer class="mt-4 chiaroscuro-bg p-4 rounded-xl font-mono text-[10px] text-slate-500 relative z-10">
         <div id="systemFooterLog" class="h-12 overflow-y-auto leading-relaxed scroll-dark">> [SYSTEM]: Integrity scan complete. Global nodes aligned. No external backend infrastructure recognized pursuant to the autarchic provisions of the Machiavellian Protocol. THE SOVEREIGN ABSOLUTE 🔱.</div>
         <div class="mt-4 pt-4 border-t border-slate-800/50 text-center text-slate-500 uppercase tracking-widest leading-relaxed">
             This protocol operates an exclusive, private digital identity infrastructure accessible solely via direct curation. All proceeds represent lawful studio service fees. Reserve allocations fund software R&D and Ecosystem Infrastructure Support Grants. Minting and on-chain operations are executed 100% self-sovereignly by curated pass holders. This protocol does not offer public sales, securities, or financial returns.
         </div>
     </footer>
-    
-    
+
     
     
     
@@ -1171,66 +1212,123 @@ const MULTICALL3_ABI = [
 ];
 
 const CONTRACT_ABI = [
+    // ----------------- CONSTRUCTOR -----------------
     "constructor(address _architect, address _weth)",
+    
+    // ------------------- ERRORS --------------------
     "error AgendaSetterOnly()",
     "error AlreadyActive()",
     "error AlreadyQueued()",
     "error AlreadyVoted()",
+    "error ArchitectMintLimitExceeded()",
+    "error ERC2981InvalidDefaultRoyalty(uint256 numerator, uint256 denominator)",
+    "error ERC2981InvalidDefaultRoyaltyReceiver(address receiver)",
+    "error ERC2981InvalidTokenRoyalty(uint256 tokenId, uint256 numerator, uint256 denominator)",
+    "error ERC2981InvalidTokenRoyaltyReceiver(uint256 tokenId, address receiver)",
+    "error ERC721IncorrectOwner(address sender, uint256 tokenId, address owner)",
+    "error ERC721InsufficientApproval(address operator, uint256 tokenId)",
+    "error ERC721InvalidApprover(address approver)",
+    "error ERC721InvalidOperator(address operator)",
+    "error ERC721InvalidOwner(address owner)",
+    "error ERC721InvalidReceiver(address receiver)",
+    "error ERC721InvalidSender(address sender)",
+    "error ERC721NonexistentToken(uint256 tokenId)",
     "error EnforcedPause()",
+    "error ExactAmountRequired()",
     "error Executed()",
     "error ExpectedPause()",
     "error Expired()",
+    "error FeeTooHigh()",
     "error GenesisIncomplete()",
     "error GenesisNotForged()",
+    "error InvalidAddress()",
     "error InvalidDuration()",
+    "error InvalidRewardDebt()",
     "error InvalidTBAReceiver()",
     "error InvalidTokenId()",
     "error LowFee()",
-    "error LowTribute()",
     "error MajorityNotMet()",
     "error NoReward()",
-    "error NoWETHBalance()",
     "error NonexistentToken()",
     "error NotEligible()",
     "error NotOwner()",
+    "error OwnableInvalidOwner(address owner)",
+    "error OwnableUnauthorizedAccount(address account)",
+    "error ProposalCooldownActive()",
     "error ProposalNotQueued()",
     "error ProposalNotReady()",
+    "error ReentrancyGuardReentrantCall()",
     "error ReserveLow()",
     "error SanctifyFirst()",
+    "error TBAInitFailed()",
     "error TokenLockedInVoting()",
     "error TokenLockedPermanently()",
     "error TokenStillActive()",
     "error TransferFailed()",
     "error UnauthorizedIdentity()",
     "error VotingPeriodActive()",
+
+    // ------------------- EVENTS --------------------
+    "event BaseURIUpdated(string newURI)",
+    "event ParamsUpdated(uint256 mintPrice, uint256 novaFee)",
     "event ProposalCreated(uint256 indexed proposalId)",
     "event ProposalExecuted(uint256 indexed proposalId)",
     "event ProposalQueued(uint256 indexed proposalId, uint256 executionTime)",
     "event ReserveClaimed(address indexed user, uint256 indexed tokenId, uint256 amount)",
     "event SovereignForged(address indexed owner, uint256 indexed tokenId)",
     "event SovereignSanctified(uint256 indexed tokenId, string dna)",
+
+    // ------------- READ FUNCTIONS (VIEW) -----------
     "function ABSOLUTE_QUORUM() view returns (uint256)",
     "function ERC6551_REGISTRY() view returns (address)",
     "function MAX_SUPPLY() view returns (uint256)",
+    "function PROPOSAL_COOLDOWN() view returns (uint256)",
     "function TBA_IMPL() view returns (address)",
     "function TIMELOCK_DELAY() view returns (uint256)",
     "function WETH() view returns (address)",
     "function accCouncilRewardPerNode() view returns (uint256)",
-    "function activeDeedsCount() view returns (uint256)",
+    "function activeDeedsCount() view returns (uint16)",
     "function actualReserve() view returns (uint256)",
     "function architect() view returns (address)",
+    "function architectMintCount() view returns (uint16)",
+    "function balanceOf(address owner) view returns (uint256)",
     "function baseURI() view returns (string)",
     "function genesisMinted(uint256) view returns (bool)",
+    "function getAllActiveTokens() view returns (uint256[] memory)",
+    "function getApproved(uint256 tokenId) view returns (address)",
+    "function getDeedData(uint256 t) view returns (address owner, bool active, bool sanctified, string memory front, string memory back, string memory video, string memory dna, string memory hidden)",
+    "function getTBA(uint256 t) view returns (address)",
+    "function hasVoted(uint256, uint256) view returns (bool)",
+    "function isApprovedForAll(address owner, address operator) view returns (bool)",
+    "function isCouncil(uint256 t) view returns (bool)",
+    "function isCouncilHolder(address user) view returns (bool)",
+    "function isDividendEligible(uint256 t) view returns (bool)",
+    "function isSanctified(uint256 t) view returns (bool)",
+    "function lastProposalTime(uint256) view returns (uint256)",
     "function mintPrice() view returns (uint256)",
     "function name() view returns (string)",
     "function novaFee() view returns (uint256)",
     "function owner() view returns (address)",
+    "function ownerOf(uint256 tokenId) view returns (address)",
     "function paused() view returns (bool)",
     "function pendingCouncilRewards() view returns (uint256)",
     "function proposalCount() view returns (uint256)",
+    "function proposals(uint256) view returns (uint256 amount, address target, uint64 deadline, uint16 massVotes, bool executed, uint64 queuedAt)",
+    "function registry(uint256) view returns (string frontURI, string backURI, string videoURI, string identityDNA, string hiddenProperty, bool isActivated, bool isSanctified, uint256 rewardDebt)",
+    "function rewardCredit(uint256) view returns (uint256)",
+    "function royaltyInfo(uint256 tokenId, uint256 salePrice) view returns (address receiver, uint256 amount)",
+    "function supportsInterface(bytes4 interfaceId) view returns (bool)",
     "function symbol() view returns (string)",
-    "function totalHistoricalMint() view returns (uint256)",
+    "function tokenIsCouncil(uint256 tokenId) view returns (bool)",
+    "function tokenIsDividendEligible(uint256 tokenId) view returns (bool)",
+    "function tokenURI(uint256 tokenId) view returns (string)",
+    "function tokenVotingLockUntil(uint256) view returns (uint256)",
+    "function totalHistoricalMint() view returns (uint16)",
     "function totalSupply() view returns (uint256)",
+    "function treasuryStatus() view returns (uint256 reserve, uint256 pendingRewards, uint256 activeSupply, uint256 historicalMint, uint256 reservePerNFT)",
+    "function walletOfOwner(address owner) view returns (uint256[] memory)",
+
+    // ------------- WRITE FUNCTIONS (EXEC) ----------
     "function ARCHITECT_MINT(uint256 t, address to, string memory front, string memory back) external",
     "function SOVEREIGN_REBIRTH(uint256 t, string memory front, string memory back) external payable",
     "function SOVEREIGN_REMINT(uint256 t, string memory front, string memory back) external payable",
@@ -1253,30 +1351,9 @@ const CONTRACT_ABI = [
     "function transferFrom(address from, address to, uint256 tokenId) external",
     "function transferOwnership(address newOwner) external",
     "function unpause() external",
-    "function updateIdentity(uint256 t, string memory front, string memory back, string memory video) external",
-    "function balanceOf(address owner) view returns (uint256)",
-    "function getAllActiveTokens() view returns (uint256[] memory)",
-    "function getApproved(uint256 tokenId) view returns (address)",
-    "function getDeedData(uint256 t) view returns (address owner, bool active, bool sanctified, string memory front, string memory back, string memory video, string memory dna, string memory hidden)",
-    "function getTBA(uint256 t) view returns (address)",
-    "function hasVoted(uint256, uint256) view returns (bool)",
-    "function isApprovedForAll(address owner, address operator) view returns (bool)",
-    "function isCouncil(uint256 t) view returns (bool)",
-    "function isCouncilHolder(address user) view returns (bool)",
-    "function isDividendEligible(uint256 t) view returns (bool)",
-    "function ownerOf(uint256 tokenId) view returns (address)",
-    "function proposals(uint256) view returns (uint256 amount, address payable target, uint256 massVotes, uint256 deadline, uint256 queuedAt, bool executed)",
-    "function registry(uint256) view returns (string memory frontURI, string memory backURI, string memory videoURI, string identityDNA, string memory hiddenProperty, bool isActivated, bool isSanctified, uint256 rewardDebt)",
-    "function rewardCredit(uint256) view returns (uint256)",
-    "function royaltyInfo(uint256 tokenId, uint256 salePrice) view returns (address receiver, uint256 amount)",
-    "function supportsInterface(bytes4 interfaceId) view returns (bool)",
-    "function tokenIsCouncil(uint256 tokenId) view returns (bool)",
-    "function tokenIsDividendEligible(uint256 tokenId) view returns (bool)",
-    "function tokenURI(uint256 tokenId) view returns (string)",
-    "function tokenVotingLockUntil(uint256) view returns (uint256)",
-    "function treasuryStatus() view returns (uint256 reserve, uint256 pendingRewards, uint256 activeSupply, uint256 historicalMint, uint256 reservePerNFT)",
-    "function walletOfOwner(address owner) view returns (uint256[] memory)"
+    "function updateIdentity(uint256 t, string memory front, string memory back, string memory video) external"
 ];
+
 
 const WETH_ABI = [
     "function balanceOf(address account) view returns (uint256)"
@@ -1475,6 +1552,57 @@ function decodeContractError(err) {
     return err.reason || err.message || "Transaction reverted by EVM";
 }
 
+// 1. Utility Function กลาง (ปรับปรุงระบบ Event Listener ให้ปลอดภัยจาก Race Condition)
+async function promptUserForFile(acceptType = 'image/*,video/*') {
+    return new Promise((resolve) => {
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.accept = acceptType;
+        fileInput.style.display = 'none';
+
+        let isSettled = false;
+
+        const cleanup = () => {
+            if (fileInput.parentNode === document.body) {
+                document.body.removeChild(fileInput);
+            }
+            window.removeEventListener('focus', handleFocusFallback);
+        };
+
+        const handleFileChange = (event) => {
+            if (isSettled) return;
+            isSettled = true;
+            cleanup();
+            resolve(event.target.files[0] || null);
+        };
+
+        const handleCancel = () => {
+            if (isSettled) return;
+            isSettled = true;
+            cleanup();
+            resolve(null);
+        };
+
+        // Fallback ป้องกันการค้าง กรณี Browser ไม่ส่ง cancel event
+        const handleFocusFallback = () => {
+            setTimeout(() => {
+                if (!isSettled && fileInput.value === "") handleCancel();
+            }, 1000); // ขยายเวลาเป็น 1s เพื่อความชัวร์
+        };
+
+        fileInput.addEventListener('change', handleFileChange, { once: true });
+        fileInput.addEventListener('cancel', handleCancel, { once: true });
+
+        // ผูก Focus Fallback หลังจาก Window หลุด Focus ไปแล้วเท่านั้น เพื่อป้องกัน Race Condition
+        window.addEventListener('blur', () => {
+            window.addEventListener('focus', handleFocusFallback, { once: true });
+        }, { once: true });
+
+        document.body.appendChild(fileInput);
+        fileInput.click();
+    });
+}
+
 // ============================================================================
 // ⚡ TRANSACTION ENGINE (ETHERS V6)
 // ============================================================================
@@ -1569,7 +1697,7 @@ function getImperialRank(tokenId) {
     if (id >= 11 && id <= 100) return "THE COUNCIL GOLDEN";
     if (id >= 101 && id <= 200) return "THE COUNCIL SILVER CIPHER";
     if (id >= 201 && id <= 332) return "THE COUNCIL RED MACHINE";
-    if (id === 333) return "THE IMPERIAL SOVEREIGN DEED 333";
+    if (id === 333) return "SOVEREIGN IMMORTAL 333 ";
     return "UNKNOWN ENTITY";
 }
 
@@ -2454,7 +2582,7 @@ async function syncContractStates() {
     }
     
     try {
-        let tStatus, rMint, rNova;
+        let tStatus, rMint, rNova, accRewardPerNode;
 
         try {
             // 1. พยายามใช้ Multicall3 ก่อน
@@ -2462,19 +2590,22 @@ async function syncContractStates() {
             const calls = [
                 { target: CONTRACT_ADDRESS, allowFailure: false, callData: activeContract.interface.encodeFunctionData("treasuryStatus") },
                 { target: CONTRACT_ADDRESS, allowFailure: false, callData: activeContract.interface.encodeFunctionData("mintPrice") },
-                { target: CONTRACT_ADDRESS, allowFailure: false, callData: activeContract.interface.encodeFunctionData("novaFee") }
+                { target: CONTRACT_ADDRESS, allowFailure: false, callData: activeContract.interface.encodeFunctionData("novaFee") },
+                { target: CONTRACT_ADDRESS, allowFailure: false, callData: activeContract.interface.encodeFunctionData("accCouncilRewardPerNode") }
             ];
             const results = await multicall.aggregate3(calls);
             tStatus = activeContract.interface.decodeFunctionResult("treasuryStatus", results[0].returnData);
             rMint = activeContract.interface.decodeFunctionResult("mintPrice", results[1].returnData)[0];
             rNova = activeContract.interface.decodeFunctionResult("novaFee", results[2].returnData)[0];
+            accRewardPerNode = activeContract.interface.decodeFunctionResult("accCouncilRewardPerNode", results[3].returnData)[0];
         } catch (mcErr) {
             // 2. FALLBACK: ถ้า Multicall พัง ให้เรียกตรงๆ
             console.warn("[MULTICALL FALLBACK] syncContractStates:", mcErr);
-            [tStatus, rMint, rNova] = await Promise.all([
+            [tStatus, rMint, rNova, accRewardPerNode] = await Promise.all([
                 activeContract.treasuryStatus(),
                 activeContract.mintPrice(),
-                activeContract.novaFee()
+                activeContract.novaFee(),
+                activeContract.accCouncilRewardPerNode()
             ]);
         }
         
@@ -2486,29 +2617,20 @@ async function syncContractStates() {
         updateText('lblMintPrice', fmtUnits(rMint));
         updateText('lblNovaFee', fmtUnits(rNova));
         
-        // รองรับทั้งแบบ Array และ Object
         const activeSupply = tStatus.activeSupply !== undefined ? tStatus.activeSupply : tStatus[2];
         const historicalMint = tStatus.historicalMint !== undefined ? tStatus.historicalMint : tStatus[3];
         const reservePerNFT = tStatus.reservePerNFT !== undefined ? tStatus.reservePerNFT : tStatus[4];
-        const pendingRewards = tStatus.pendingRewards !== undefined ? tStatus.pendingRewards : tStatus[1];
         const reserve = tStatus.reserve !== undefined ? tStatus.reserve : tStatus[0];
 
         updateText('displaySupply', `${activeSupply.toString()} / 333`);
         updateText('lblHistoricalMint', historicalMint.toString());
         updateText('lblReservePerNFT', fmtUnits(reservePerNFT));
 
-        let activeNodes = Number(activeSupply);
-        let activeCouncilCount = Math.min(activeNodes, 10);
-
-        let rewardPerNodeWei = 0n;
-        if (activeCouncilCount > 0) {
-            rewardPerNodeWei = BigInt(pendingRewards) / BigInt(activeCouncilCount);
-        }
-        
+        // แสดงผลปันผลต่อโหนดที่แม่นยำ 100% ตาม On-chain V13
         const councilEl = document.getElementById('displayCouncilPool');
         if (councilEl) {
             councilEl.textContent = "";
-            councilEl.appendChild(document.createTextNode(fmtUnits(rewardPerNodeWei, 4) + " "));
+            councilEl.appendChild(document.createTextNode(fmtUnits(accRewardPerNode, 4) + " "));
             const span = document.createElement('span');
             span.className = "text-xs text-stone-600";
             span.textContent = "ETH / NODE";
@@ -3285,55 +3407,72 @@ async function executeContractPause(status, e) {
 async function executeCreateProposal(e) {
     if (!secureContract || !signer) { showNotification("Action suspended: Sovereign council credentials needed.", "error"); return; }
 
+    const btn = toggleButtonLoading(e, true);
     try {
         const userAddress = await signer.getAddress();
         const userTokens = await secureContract.walletOfOwner(userAddress);
         const primarchNodes = [1,2,3,4,5,6,7,8,9,10,50,100];
         
-        const hasPrimarchRights = userTokens.some(token => {
-            try { return primarchNodes.includes(Number(token)); } 
-            catch(err) { return false; }
-        });
+        let eligibleTokenId = 0;
+        let hasCouncil = false;
+        const currentEpoch = Math.floor(Date.now() / 1000);
 
-        if (!hasPrimarchRights) {
-            appendLog("ACCESS DENIED: Proposal rights restricted strictly to the 12 Golden Sovereign Council members.", "text-red-500 font-bold");
-            showNotification("ACCESS DENIED: สิทธิ์การตั้งวาระ (Proposal) ถูกจำกัดเฉพาะ Golden Sovereign Council 12 ท่าน (Node 1-10, 50, 100) เท่านั้น", "error");
+        // Pre-flight Check: ตรวจสอบสิทธิ์และ Cooldown 7 วัน
+        for (let i = 0; i < userTokens.length; i++) {
+            const tid = Number(userTokens[i]);
+            if (primarchNodes.includes(tid)) {
+                hasCouncil = true;
+                const lastTime = await secureContract.lastProposalTime(BigInt(tid));
+                if (currentEpoch >= Number(lastTime) + (7 * 86400)) { // 7 Days Cooldown
+                    eligibleTokenId = tid;
+                    break;
+                }
+            }
+        }
+
+        if (!hasCouncil) {
+            showNotification("ACCESS DENIED: สิทธิ์การตั้งวาระถูกจำกัดเฉพาะ Golden Sovereign Council 12 ท่าน", "error");
             return;
         }
-    } catch (authErr) {
+        if (eligibleTokenId === 0) {
+            showNotification("COOLDOWN ACTIVE: โหนดสภาของคุณเพิ่งตั้งวาระไป กรุณารอ 7 วัน (Proposal Cooldown)", "warning");
+            return;
+        }
+
+        const rawAmount = document.getElementById('propAmountInput')?.value.trim();
+        const target = document.getElementById('propTargetInput')?.value.trim();
+        const rawDuration = document.getElementById('propDurationInput')?.value.trim();
+
+        if(!rawAmount || !target || !rawDuration || Number.isNaN(Number(rawAmount)) || Number.isNaN(Number(rawDuration))) {
+            showNotification("Legislation formatting incomplete. Verify data accuracy inputs.", "error");
+            return;
+        }
+
+        if (!ethers.isAddress(target)) {
+            showNotification("STRUCTURAL EXCEPTION: Target must be a valid EVM Address.", "error");
+            return;
+        }
+        
+        const daysInt = parseInt(rawDuration, 10);
+        if (daysInt < 1 || daysInt > 30) {
+            showNotification("Legislation constraint violation: Duration must be between 1 and 30 days.", "error");
+            return;
+        }
+
+        const amount = ethers.parseEther(rawAmount);
+        const durationSeconds = BigInt(daysInt) * 86400n; 
+
+        const receipt = await runTx(btn, "CREATE_PROPOSAL", "createProposal", [amount, target, durationSeconds], {}, { manageButton: false });
+        if (receipt) {
+            appendLog("Executive financial directive introduced to the chamber for voting weight collection.", "text-emerald-400 font-bold");
+            document.getElementById('propAmountInput').value = '';
+            document.getElementById('propTargetInput').value = '';
+            document.getElementById('propDurationInput').value = '';
+        }
+    } catch (err) {
         showNotification("System Warning: ล้มเหลวในการตรวจสอบสิทธิสภาพบุคคลบนเครือข่าย", "error");
-        return;
-    }
-
-    const rawAmount = document.getElementById('propAmountInput')?.value.trim();
-    const target = document.getElementById('propTargetInput')?.value.trim();
-    const rawDuration = document.getElementById('propDurationInput')?.value.trim();
-
-    if(!rawAmount || !target || !rawDuration || Number.isNaN(Number(rawAmount)) || Number.isNaN(Number(rawDuration))) {
-        showNotification("Legislation formatting incomplete. Verify data accuracy inputs.", "error");
-        return;
-    }
-
-    if (!ethers.isAddress(target)) {
-        showNotification("STRUCTURAL EXCEPTION: Target must be a valid EVM Address.", "error");
-        return;
-    }
-    
-    const daysInt = parseInt(rawDuration, 10);
-    if (daysInt.toString() !== rawDuration || daysInt < 1 || daysInt > 30) {
-        showNotification("Legislation constraint violation: Duration must be an absolute integer between 1 and 30 days.", "error");
-        return;
-    }
-
-    const amount = ethers.parseEther(rawAmount);
-    const durationSeconds = BigInt(daysInt) * 86400n; 
-
-    const receipt = await runTx(e, "CREATE_PROPOSAL", "createProposal", [amount, target, durationSeconds]);
-    if (receipt) {
-        appendLog("Executive financial directive introduced to the chamber for voting weight collection.", "text-emerald-400 font-bold");
-        const inpAmount = document.getElementById('propAmountInput'); if(inpAmount) inpAmount.value = '';
-        const inpTarget = document.getElementById('propTargetInput'); if(inpTarget) inpTarget.value = '';
-        const inpDuration = document.getElementById('propDurationInput'); if(inpDuration) inpDuration.value = '';
+    } finally {
+        if (btn) toggleButtonLoading(btn, false);
     }
 }
 
@@ -3359,6 +3498,9 @@ async function executeCastVote(btn) {
 function toggleForgeButtonState() {
     const checkbox = document.getElementById('forgeConsentCheckbox');
     const forgeBtn = document.getElementById('executeForgeBtn');
+    
+    // Safe Exit หากไม่มี Element ใน DOM
+    if (!checkbox || !forgeBtn) return; 
 
     if (checkbox.checked) {
         forgeBtn.disabled = false;
@@ -3371,60 +3513,34 @@ function toggleForgeButtonState() {
     }
 }
 
+
 // ฟังก์ชันหลักที่อัปเดตคำว่า THE SOVEREIGN AWAKENING ในจุดที่ปลอดภัยแล้ว
 async function triggerForge(type, e) {
-    if (!secureContract) { 
-        showNotification("Action suspended: Authenticate wallet signature first.", "error"); 
-        return; 
-    }
+    if (!secureContract) { showNotification("Action suspended: Authenticate wallet signature first.", "error"); return; }
     if (!lockSystem()) return;
 
-    const isSurge = await checkGasSurge();
-    if (isSurge) { unlockSystem(); return; }
-    
-    const rawId = document.getElementById('novaTokenId')?.value.trim();
-    const tokenId = validateTokenRange(rawId);
-    if (!tokenId) {
-        showNotification("STRUCTURAL EXCEPTION: Valid Token ID specification required.", "error");
-        unlockSystem();
-        return;
-    }
-
-    const existingFrontUri = document.getElementById('forgeFrontUri')?.value.trim();
-    if (!existingFrontUri) {
-        showNotification("METADATA EXCEPTION: Architect front-end URI missing from system.", "error");
-        unlockSystem();
-        return;
-    }
-
-    const fileInput = document.createElement('input');
-    fileInput.type = 'file';
-    fileInput.accept = 'image/*,video/*';
-    fileInput.style.display = 'none';
-
-    let isFileProcessed = false; 
-
-    const cleanupFileInput = () => {
-        if (fileInput.parentNode === document.body) {
-            document.body.removeChild(fileInput);
+    try {
+        const isSurge = await checkGasSurge();
+        if (isSurge) { unlockSystem(); return; }
+        
+        const tokenId = globalSelectedTokenId;
+        if (!tokenId) {
+            showNotification("STRUCTURAL EXCEPTION: กรุณาคลิกเลือกพิกัด Token ID บน Matrix ก่อนดำเนินการ", "error");
+            unlockSystem(); return;
         }
-        window.removeEventListener('focus', handleWindowFocus);
-        unlockSystem(); 
-    };
 
-    const handleWindowFocus = () => {
-        setTimeout(() => {
-            if (!isFileProcessed && fileInput.parentNode) {
-                appendLog("[SYSTEM] File selection aborted by user. Executing DOM cleanup & State Unlock.", "text-yellow-500");
-                cleanupFileInput();
-            }
-        }, 500); 
-    };
+        const existingFrontUri = document.getElementById('forgeFrontUri')?.value.trim();
+        if (!existingFrontUri) {
+            showNotification("METADATA EXCEPTION: Architect front-end URI missing from system.", "error");
+            unlockSystem(); return;
+        }
 
-    fileInput.onchange = async (event) => {
-        isFileProcessed = true;
-        const file = event.target.files[0];
-        if (!file) { cleanupFileInput(); return; }
+        // 🌟 [FIXED] เรียกใช้ Utility กลางที่ปลอดภัยจาก Race Condition
+        const file = await promptUserForFile('image/*,video/*');
+        if (!file) {
+            appendLog("[SYSTEM] File selection aborted by user. Executing DOM cleanup & State Unlock.", "text-yellow-500");
+            unlockSystem(); return;
+        }
 
         const previewObjectUrl = URL.createObjectURL(file);
         const dnaField = document.getElementById('novaDnaInput')?.value.trim() || "N/A";
@@ -3432,17 +3548,13 @@ async function triggerForge(type, e) {
         
         try {
             if (typeof requestMediaConfirmation === "function") {
-                 isConfirmed = await requestMediaConfirmation(previewObjectUrl, dnaField, file.type);
+                isConfirmed = await requestMediaConfirmation(previewObjectUrl, dnaField, file.type);
             } else { isConfirmed = true; }
         } finally {
             URL.revokeObjectURL(previewObjectUrl);
         }
         
-        if (!isConfirmed) {
-            fileInput.value = ""; 
-            cleanupFileInput();
-            return;
-        }
+        if (!isConfirmed) { unlockSystem(); return; }
 
         const btn = toggleButtonLoading(e, true);
         try {
@@ -3454,16 +3566,12 @@ async function triggerForge(type, e) {
             const backMediaTxId = response.data ? response.data.id : response.id; 
 
             appendLog(`Back-end media successfully anchored: ${sanitizeForDOM(backMediaTxId)}`, "text-emerald-400 font-bold");
-            
             const backUriField = document.getElementById('forgeBackUri');
             if (backUriField) backUriField.value = backMediaTxId;
 
-            // ✅ จุดที่ 1: เปลี่ยน Log เป็น THE SOVEREIGN AWAKENING
             appendLog("Initiating THE SOVEREIGN AWAKENING sequence on-chain...", "text-yellow-400");
             const val = await secureContract.mintPrice();
             const tokenIdBn = BigInt(tokenId);
-            
-            // 🚨 RED ZONE: ตรงนี้ห้ามเปลี่ยนเด็ดขาด (อ้างอิงฟังก์ชันบน Smart Contract)
             const methodName = (type === 'REBIRTH') ? 'SOVEREIGN_REBIRTH' : 'SOVEREIGN_REMINT';
 
             const receipt = await runTx(
@@ -3473,13 +3581,10 @@ async function triggerForge(type, e) {
             );
 
             if (receipt) {
-                GLOBAL_NODE_CACHE.clear();
+                if (typeof GLOBAL_NODE_CACHE !== 'undefined' && GLOBAL_NODE_CACHE?.clear) GLOBAL_NODE_CACHE.clear();
                 appendLog(`Sovereign ${type} executed flawlessly on-chain.`, "text-emerald-400 font-bold");
-                
-                // ✅ จุดที่ 2: เปลี่ยน Notification สำเร็จเป็น THE SOVEREIGN AWAKENING
                 showNotification("THE SOVEREIGN AWAKENING complete. Dual-identity anchored.", "success");
             }
-
         } catch (err) {
             const errorMsg = typeof decodeContractError === 'function' ? decodeContractError(err) : (err.message || "Unknown Error");
             const sanitizedMsg = sanitizeForDOM(errorMsg);
@@ -3496,75 +3601,47 @@ async function triggerForge(type, e) {
             }
         } finally {
             if (btn) toggleButtonLoading(btn, false);
-            fileInput.value = ""; 
-            cleanupFileInput(); 
+            unlockSystem();
         }
-    };
-
-    window.addEventListener('focus', handleWindowFocus);
-    document.body.appendChild(fileInput);
-    fileInput.click();
+    } catch (criticalErr) {
+        appendLog(`Critical Error in triggerForge: ${criticalErr?.message || criticalErr}`, "text-red-500");
+        unlockSystem();
+    }
 }
 
-
 async function executeArchitectMint(e) {
-    if (!secureContract) { 
-        showNotification("Action suspended: Authenticate wallet signature first.", "error"); 
-        return; 
-    }
+    if (!secureContract) { showNotification("Action suspended: Authenticate wallet signature first.", "error"); return; }
     if (!lockSystem()) return;
 
-    const isSurge = await checkGasSurge();
-    if (isSurge) { unlockSystem(); return; }
+    try {
+        const isSurge = await checkGasSurge();
+        if (isSurge) { unlockSystem(); return; }
 
-    const rawId = document.getElementById('novaTokenId')?.value.trim() || globalSelectedTokenId;
-    const tokenId = validateTokenRange(rawId);
-    if (!tokenId) {
-        showNotification("STRUCTURAL EXCEPTION: กรุณาคลิกเลือกพิกัด Token ID บน Matrix ก่อน", "error");
-        unlockSystem();
-        return;
-    }
+        const rawId = document.getElementById('novaTokenId')?.value.trim() || globalSelectedTokenId;
+        const tokenId = validateTokenRange(rawId);
+        if (!tokenId) {
+            showNotification("STRUCTURAL EXCEPTION: กรุณาคลิกเลือกพิกัด Token ID บน Matrix ก่อน", "error");
+            unlockSystem(); return;
+        }
 
-    const targetAddress = document.getElementById('adminTargetAddress')?.value.trim();
-    if (!targetAddress || !ethers.isAddress(targetAddress)) {
-        showNotification("STRUCTURAL EXCEPTION: กรุณาระบุ EVM Target Address ให้ถูกต้องก่อนสั่งการ", "error");
-        unlockSystem();
-        return;
-    }
+        const targetAddress = document.getElementById('adminTargetAddress')?.value.trim();
+        if (!targetAddress || !ethers.isAddress(targetAddress)) {
+            showNotification("STRUCTURAL EXCEPTION: กรุณาระบุ EVM Target Address ให้ถูกต้องก่อนสั่งการ", "error");
+            unlockSystem(); return;
+        }
 
-    const existingFrontUri = document.getElementById('forgeFrontUri')?.value.trim() || currentLoadedMediaData.front;
-    if (!existingFrontUri) {
-        showNotification("METADATA EXCEPTION: การมิ้นต์ถูกระงับ! สถาปนิกต้องผูก Front URI ก่อนเสมอ", "error");
-        unlockSystem();
-        return;
-    }
+        const existingFrontUri = document.getElementById('forgeFrontUri')?.value.trim() || currentLoadedMediaData.front;
+        if (!existingFrontUri) {
+            showNotification("METADATA EXCEPTION: การมิ้นต์ถูกระงับ! สถาปนิกต้องผูก Front URI ก่อนเสมอ", "error");
+            unlockSystem(); return;
+        }
 
-    const fileInput = document.createElement('input');
-    fileInput.type = 'file';
-    fileInput.accept = 'image/*,video/*';
-    fileInput.style.display = 'none';
-
-    let isFileProcessed = false; 
-
-    const cleanupFileInput = () => {
-        if (fileInput.parentNode === document.body) document.body.removeChild(fileInput);
-        window.removeEventListener('focus', handleWindowFocus);
-        unlockSystem();
-    };
-
-    const handleWindowFocus = () => {
-        setTimeout(() => {
-            if (!isFileProcessed && fileInput.parentNode) {
-                appendLog("[SYSTEM] ยกเลิกการเลือกไฟล์ ปลดล็อกระบบสถาปนิก", "text-yellow-500");
-                cleanupFileInput();
-            }
-        }, 500); 
-    };
-
-    fileInput.onchange = async (event) => {
-        isFileProcessed = true; 
-        const file = event.target.files[0];
-        if (!file) { cleanupFileInput(); return; }
+        // 🌟 [FIXED] เรียกใช้ Utility กลาง
+        const file = await promptUserForFile('image/*,video/*');
+        if (!file) {
+            appendLog("[SYSTEM] ยกเลิกการเลือกไฟล์ ปลดล็อกระบบสถาปนิก", "text-yellow-500");
+            unlockSystem(); return;
+        }
 
         const previewObjectUrl = URL.createObjectURL(file);
         const dnaField = "ARCHITECT MINT OVERRIDE";
@@ -3572,17 +3649,13 @@ async function executeArchitectMint(e) {
         
         try {
             if (typeof requestMediaConfirmation === "function") {
-                 isConfirmed = await requestMediaConfirmation(previewObjectUrl, dnaField, file.type);
+                isConfirmed = await requestMediaConfirmation(previewObjectUrl, dnaField, file.type);
             } else { isConfirmed = true; }
         } finally {
             URL.revokeObjectURL(previewObjectUrl);
         }
         
-        if (!isConfirmed) {
-            fileInput.value = ""; 
-            cleanupFileInput();
-            return;
-        }
+        if (!isConfirmed) { unlockSystem(); return; }
 
         const btn = toggleButtonLoading(e, true);
         try {
@@ -3607,12 +3680,11 @@ async function executeArchitectMint(e) {
             );
 
             if (receipt) {
-                GLOBAL_NODE_CACHE.delete(String(tokenId));
+                if (typeof GLOBAL_NODE_CACHE !== 'undefined' && GLOBAL_NODE_CACHE?.clear) GLOBAL_NODE_CACHE.clear();
                 if (typeof auditTokenFromLedger === 'function') await auditTokenFromLedger(tokenId);
                 appendLog(`ARCHITECT MINT EXECUTED FLAWLESSLY ON-CHAIN.`, "text-emerald-400 font-bold");
                 showNotification(`Architect Mint complete. ส่งมอบสิทธิ์ให้ ${targetAddress.slice(0,6)} สำเร็จ!`, "success");
             }
-
         } catch (err) {
             const errorMsg = typeof decodeContractError === 'function' ? decodeContractError(err) : (err.message || "Unknown Error");
             const sanitizedMsg = sanitizeForDOM(errorMsg);
@@ -3629,83 +3701,54 @@ async function executeArchitectMint(e) {
             }
         } finally {
             if (btn) toggleButtonLoading(btn, false);
-            fileInput.value = ""; 
-            cleanupFileInput(); 
+            unlockSystem();
         }
-    };
-    
-    window.addEventListener('focus', handleWindowFocus);
-    document.body.appendChild(fileInput);
-    fileInput.click();
+    } catch (criticalErr) {
+        appendLog(`Critical Error: ${criticalErr?.message || criticalErr}`, "text-red-500");
+        unlockSystem();
+    }
 }
 
+
 async function executeArchitectRemint(e) {
-    if (!secureContract) { 
-        showNotification("Action suspended: Authenticate wallet signature first.", "error"); 
-        return; 
-    }
+    if (!secureContract) { showNotification("Action suspended: Authenticate wallet signature first.", "error"); return; }
     if (!lockSystem()) return;
 
-    const isSurge = await checkGasSurge();
-    if (isSurge) { unlockSystem(); return; }
-    
-    const rawId = document.getElementById('novaTokenId')?.value.trim() || globalSelectedTokenId;
-    const tokenId = validateTokenRange(rawId);
-    if (!tokenId) {
-        showNotification("STRUCTURAL EXCEPTION: กรุณาคลิกเลือกพิกัด Token ID บน Matrix ก่อน", "error");
-        unlockSystem();
-        return;
-    }
+    try {
+        const isSurge = await checkGasSurge();
+        if (isSurge) { unlockSystem(); return; }
+        
+        const rawId = document.getElementById('novaTokenId')?.value.trim() || globalSelectedTokenId;
+        const tokenId = validateTokenRange(rawId);
+        if (!tokenId) {
+            showNotification("STRUCTURAL EXCEPTION: กรุณาคลิกเลือกพิกัด Token ID บน Matrix ก่อน", "error");
+            unlockSystem(); return;
+        }
 
-    const existingFrontUri = document.getElementById('forgeFrontUri')?.value.trim() || currentLoadedMediaData.front;
-    if (!existingFrontUri) {
-        showNotification("METADATA EXCEPTION: การรีมิ้นต์ถูกระงับ! ต้องผูก Front URI ก่อนเสมอ", "error");
-        unlockSystem();
-        return;
-    }
+        const existingFrontUri = document.getElementById('forgeFrontUri')?.value.trim() || currentLoadedMediaData.front;
+        if (!existingFrontUri) {
+            showNotification("METADATA EXCEPTION: การรีมิ้นต์ถูกระงับ! ต้องผูก Front URI ก่อนเสมอ", "error");
+            unlockSystem(); return;
+        }
 
-    const fileInput = document.createElement('input');
-    fileInput.type = 'file';
-    fileInput.accept = 'image/*,video/*';
-    fileInput.style.display = 'none';
-
-    let isFileProcessed = false; 
-
-    const cleanupFileInput = () => {
-        if (fileInput.parentNode === document.body) document.body.removeChild(fileInput);
-        window.removeEventListener('focus', handleWindowFocus);
-        unlockSystem();
-    };
-
-    const handleWindowFocus = () => {
-        setTimeout(() => {
-            if (!isFileProcessed && fileInput.parentNode) {
-                cleanupFileInput();
-            }
-        }, 500); 
-    };
-
-    fileInput.onchange = async (event) => {
-        isFileProcessed = true; 
-        const file = event.target.files[0];
-        if (!file) { cleanupFileInput(); return; }
+        // 🌟 [FIXED] เรียกใช้ Utility กลาง
+        const file = await promptUserForFile('image/*,video/*');
+        if (!file) {
+            unlockSystem(); return;
+        }
 
         const previewObjectUrl = URL.createObjectURL(file);
         let isConfirmed = false;
         
         try {
             if (typeof requestMediaConfirmation === "function") {
-                 isConfirmed = await requestMediaConfirmation(previewObjectUrl, "SOVEREIGN REMINT OVERRIDE", file.type);
+                isConfirmed = await requestMediaConfirmation(previewObjectUrl, "SOVEREIGN REMINT OVERRIDE", file.type);
             } else { isConfirmed = true; }
         } finally {
             URL.revokeObjectURL(previewObjectUrl);
         }
         
-        if (!isConfirmed) {
-            fileInput.value = ""; 
-            cleanupFileInput();
-            return;
-        }
+        if (!isConfirmed) { unlockSystem(); return; }
 
         const btn = toggleButtonLoading(e, true);
         try {
@@ -3730,12 +3773,11 @@ async function executeArchitectRemint(e) {
             );
 
             if (receipt) {
-                GLOBAL_NODE_CACHE.delete(String(tokenId));
+                if (typeof GLOBAL_NODE_CACHE !== 'undefined' && GLOBAL_NODE_CACHE?.clear) GLOBAL_NODE_CACHE.clear();
                 if (typeof auditTokenFromLedger === 'function') await auditTokenFromLedger(tokenId);
                 appendLog(`Sovereign REMINT executed flawlessly on-chain.`, "text-emerald-400 font-bold");
                 showNotification("Reminting complete. โฉนดถูกสร้างใหม่และดึงกลับสู่ระบบแล้ว!", "success");
             }
-
         } catch (err) {
             const errorMsg = typeof decodeContractError === 'function' ? decodeContractError(err) : (err.message || "Unknown Error");
             const sanitizedMsg = sanitizeForDOM(errorMsg);
@@ -3752,14 +3794,12 @@ async function executeArchitectRemint(e) {
             }
         } finally {
             if (btn) toggleButtonLoading(btn, false);
-            fileInput.value = ""; 
-            cleanupFileInput(); 
+            unlockSystem();
         }
-    };
-
-    window.addEventListener('focus', handleWindowFocus);
-    document.body.appendChild(fileInput);
-    fileInput.click();
+    } catch (criticalErr) {
+        appendLog(`Critical Error: ${criticalErr?.message || criticalErr}`, "text-red-500");
+        unlockSystem();
+    }
 }
 
 function closeNovaWarn(isConfirmed) {
@@ -3950,8 +3990,8 @@ async function executeSovereignSupport(e) {
     let confirmBurn = true;
     if (typeof requestActionConfirmation === "function") {
         confirmBurn = await requestActionConfirmation(
-            "☠ SOVEREIGN IMMOLATION [15% EXIT TAX]",
-            `CRITICAL WARNING: You are about to permanently destroy Asset Node #${tokenId} to reclaim liquidity. The Smart Contract will strictly enforce a 15% EXIT TAX on your total share. This action CANNOT be undone.`
+          "♠️ COVENANT DISSOLUTION",`SOVEREIGN NOTICE: You are about to dissolve the covenant for Node #${tokenId}, surrendering all exclusive rights back to the Studio. On-chain bonds will be permanently severed. This action is absolute and irreversible.`
+
         );
     }
     if(!confirmBurn) return;
@@ -4156,285 +4196,310 @@ function handleSlotClick(slotNum) {
 }
 
 function applySlotToNova(slotNum) { 
-    const uriInput = document.getElementById(`vSlotUri${slotNum}`); 
-    if (uriInput && uriInput.value) {
-        const novaVideoUri = document.getElementById('novaVideoUri'); 
-        if (novaVideoUri) {
-            novaVideoUri.value = sanitizeForDOM(uriInput.value); 
-            showNotification(`Template Framework 0${slotNum} Applied: Video URI ถูกโอนย้ายไปยัง NOVA ASCENSION เรียบร้อยแล้ว`, "success"); 
-            appendLog(`Matrix Framework 0${slotNum} applied to NOVA upgrade pipeline.`, "text-blue-400 font-bold"); 
+        const uriInput = document.getElementById(`vSlotUri${slotNum}`); 
+        if (uriInput && uriInput.value) {
+            const novaVideoUri = document.getElementById('novaVideoUri'); 
+            if (novaVideoUri) {
+                novaVideoUri.value = sanitizeForDOM(uriInput.value); 
+                showNotification(`Template Framework 0${slotNum} Applied: Video URI ถูกโอนย้ายไปยัง NOVA ASCENSION เรียบร้อยแล้ว`, "success"); 
+                appendLog(`Matrix Framework 0${slotNum} applied to NOVA upgrade pipeline.`, "text-blue-400 font-bold"); 
+            } 
+        } else {
+            showNotification("EXCEPTION: กรุณาใส่ลิงก์ Irys Tx ID หรือ URL ในช่อง Template ก่อนกด SELECT & APPLY", "error"); 
         } 
-    } else {
-        showNotification("EXCEPTION: กรุณาใส่ลิงก์ Irys Tx ID หรือ URL ในช่อง Template ก่อนกด SELECT & APPLY", "error"); 
-    } 
-}
+    }
 
-document.addEventListener('DOMContentLoaded', () => { 
-    const grid = document.getElementById('matrixGridContainer'); 
-    if (grid) {
-        grid.addEventListener('click', async (e) => { 
-            const targetNode = e.target.closest('.matrix-node'); 
-            if (!targetNode) return;
+    document.addEventListener('DOMContentLoaded', () => { 
+        const grid = document.getElementById('matrixGridContainer'); 
+        if (grid) {
+            grid.addEventListener('click', async (e) => { 
+                const targetNode = e.target.closest('.matrix-node'); 
+                if (!targetNode) return;
 
-            const tokenId = targetNode.getAttribute('data-token-id');
-            if (!tokenId) return;
+                const tokenId = targetNode.getAttribute('data-token-id');
+                if (!tokenId) return;
 
-            if (typeof isTransactionPending !== 'undefined' && isTransactionPending) {
-                showNotification("SYSTEM ENFORCEMENT: ธุรกรรมกำลังประมวลผล ไม่สามารถสลับเซลล์ได้", "error");
-                return;
-            }
-
-            try {
-                document.querySelectorAll('.matrix-node').forEach(n => n.classList.remove('bg-slate-800', 'border-yellow-500'));
-                targetNode.classList.add('bg-slate-800', 'border-yellow-500');
-
-                if (typeof auditTokenFromLedger === 'function') {
-                    await auditTokenFromLedger(tokenId);
+                if (typeof isTransactionPending !== 'undefined' && isTransactionPending) {
+                    showNotification("SYSTEM ENFORCEMENT: ธุรกรรมกำลังประมวลผล ไม่สามารถสลับเซลล์ได้", "error");
+                    return;
                 }
-            } catch (err) {
-                console.error(`[MATRIX GRID EXCEPTION] Failed to inspect node #${tokenId}:`, err);
-                showNotification("ไม่สามารถดึงข้อมูลพิกัดเซลล์ที่เลือกได้", "error");
+
+                try {
+                    document.querySelectorAll('.matrix-node').forEach(n => n.classList.remove('bg-slate-800', 'border-yellow-500'));
+                    targetNode.classList.add('bg-slate-800', 'border-yellow-500');
+
+                    if (typeof auditTokenFromLedger === 'function') {
+                        await auditTokenFromLedger(tokenId);
+                    }
+                } catch (err) {
+                    console.error(`[MATRIX GRID EXCEPTION] Failed to inspect node #${tokenId}:`, err);
+                    showNotification("ไม่สามารถดึงข้อมูลพิกัดเซลล์ที่เลือกได้", "error");
+                }
+            });
+        } else {
+            console.warn("[INIT WARN] Matrix Grid Container element target unresolved in DOM.");
+        }
+    });
+
+    function getImperialRankDetailed(tokenId) { 
+        const id = parseInt(tokenId, 10); 
+        if (isNaN(id)) return "UNKNOWN ENTITY"; 
+        if ([1,2,3,4,5,6,7,8,9,10,50,100].includes(id)) return "THE COUNCIL PRIME"; 
+        if (id >= 11 && id <= 99 && id !== 50) return "The Golden Council"; 
+        if (id >= 101 && id <= 200) return "The Silver Cypher Council"; 
+        if (id >= 201 && id <= 332) return "THE RED MACHINE COUNCIL"; 
+        if (id === 333) return "THE NEVER DIE COUNCIL 333 ♠️"; 
+        return "UNKNOWN ENTITY"; 
+    }
+
+    function autoMapMetadata(tokenId) { 
+        const properties = [ 
+            { k: "RANK", v: getImperialRankDetailed(tokenId).toUpperCase() }, 
+            { k: "FREEDOM STATUS", v: "SOVEREIGN IMMOLATION" }, 
+            { k: "SUPREME LAW", v: "CODE IS LAW" }, 
+            { k: "SOVEREIGN AUTHORITY", v: "ABSOLUTE AUTONOMY" }, 
+            { k: "ABSOLUTE CONTROL", v: "PERMISSIONLESS P2P" } 
+        ];
+
+        for (let i = 0; i < 5; i++) {
+            const keyInput = document.getElementById(`propKey${i+1}`);
+            const valInput = document.getElementById(`prop${i+1}`);
+            if (keyInput && valInput) {
+                keyInput.value = properties[i].k;
+                valInput.value = properties[i].v;
             }
-        });
-    } else {
-        console.warn("[INIT WARN] Matrix Grid Container element target unresolved in DOM.");
-    }
-});
-
-function getImperialRankDetailed(tokenId) { 
-    const id = parseInt(tokenId, 10); 
-    if (isNaN(id)) return "UNKNOWN ENTITY"; 
-    if ([1,2,3,4,5,6,7,8,9,10,50,100].includes(id)) return "THE COUNCIL PRIME"; 
-    if (id >= 11 && id <= 99 && id !== 50) return "The Golden Council"; 
-    if (id >= 101 && id <= 200) return "The Silver Cypher Council"; 
-    if (id >= 201 && id <= 332) return "THE RED MACHINE COUNCIL"; 
-    if (id === 333) return "THE SOVEREIGN NEVER DIE COUNCIL 333 ♠️"; 
-    return "UNKNOWN ENTITY"; 
-}
-
-function autoMapMetadata(tokenId) { 
-    const properties = [ 
-        { k: "RANK", v: getImperialRankDetailed(tokenId).toUpperCase() }, 
-        { k: "FREEDOM STATUS", v: "SOVEREIGN IMMOLATION" }, 
-        { k: "SUPREME LAW", v: "CODE IS LAW" }, 
-        { k: "SOVEREIGN AUTHORITY", v: "ABSOLUTE AUTONOMY" }, 
-        { k: "ABSOLUTE CONTROL", v: "PERMISSIONLESS P2P" } 
-    ];
-
-    for (let i = 0; i < 5; i++) {
-        const keyInput = document.getElementById(`propKey${i+1}`);
-        const valInput = document.getElementById(`prop${i+1}`);
-        if (keyInput && valInput) {
-            keyInput.value = properties[i].k;
-            valInput.value = properties[i].v;
         }
     }
-}
 
-async function auditTokenFromLedger(tokenId) { 
-    if (typeof resetAdminInputs === 'function') resetAdminInputs(); 
-    const mySession = ++currentAuditSession;
+    async function auditTokenFromLedger(tokenId) { 
+        if (typeof resetAdminInputs === 'function') resetAdminInputs(); 
+        const mySession = ++currentAuditSession;
 
-    const activeContract = secureContract || (typeof readOnlyContract !== 'undefined' ? readOnlyContract : null);
-    if (!activeContract) { 
-        appendLog("Interrogating consensus network parameters...", "text-yellow-500"); 
-        return; 
-    }
-
-    try {
-        globalSelectedTokenId = tokenId;
-        autoMapMetadata(tokenId);
-        updateVideoSlotsUI();
-        const card = document.getElementById('sovereignFlipCard');
-        if (card) card.classList.remove('flipped');
-
-        const tbaInputElem = document.getElementById('tbaAddressDisplay');
-        if (tbaInputElem) tbaInputElem.value = "Calculating deterministic ERC-6551 TBA address hash...";
-
-        appendLog(`Extracting structural blueprint record for matrix cell node #${tokenId}...`, "text-purple-400");
-        
-        const mappedNode = await autoMap(tokenId);
-        if (mySession !== currentAuditSession) return; 
-
-        if (!mappedNode) throw new Error("Mapping failure");
-
-        const currentEpoch = Math.floor(Date.now() / 1000);
-        const btnBurn = document.getElementById('btnBurnToken');
-        const btnTransfer = document.getElementById('btnTransferToken');
-        
-        if (mappedNode.votingLockUntil && mappedNode.votingLockUntil > currentEpoch) {
-            if (btnBurn) btnBurn.disabled = true;
-            if (btnTransfer) btnTransfer.disabled = true;
-        } else {
-            if (btnBurn) btnBurn.disabled = false;
-            if (btnTransfer) btnTransfer.disabled = false;
-        }
-
-        const claimBtn = document.getElementById('executeClaimRewardBtn');
-        const warningTxt = document.getElementById('rewardExclusionWarning');
-        const numericTokenId = Number(tokenId);
-        
-        if (numericTokenId === 50 || numericTokenId === 100) {
-            if (claimBtn) claimBtn.classList.add('hidden');
-            if (warningTxt) warningTxt.classList.remove('hidden');
-        } else {
-            if (claimBtn) claimBtn.classList.remove('hidden');
-            if (warningTxt) warningTxt.classList.add('hidden');
+        const activeContract = secureContract || (typeof readOnlyContract !== 'undefined' ? readOnlyContract : null);
+        if (!activeContract) { 
+            appendLog("Interrogating consensus network parameters...", "text-yellow-500"); 
+            return; 
         }
 
         try {
-            const onChainTBA = await activeContract.getTBA(BigInt(tokenId));
-            if (mySession !== currentAuditSession) return; 
-            if (tbaInputElem) tbaInputElem.value = sanitizeForDOM(onChainTBA);
-            if (typeof refreshTbaBalances === 'function') await refreshTbaBalances(onChainTBA, mySession);
-        } catch (tbaErr) {
-            if (tbaInputElem) tbaInputElem.value = "CRITICAL: FAILED TO EXTRACT DETERMINISTIC ADDR PIVOT";
-            if (typeof setTbaBalanceDisplay === 'function') setTbaBalanceDisplay("0.0000", "0.0000");
-        }
+            globalSelectedTokenId = tokenId;
+            autoMapMetadata(tokenId);
+            updateVideoSlotsUI();
+            const card = document.getElementById('sovereignFlipCard');
+            if (card) card.classList.remove('flipped');
 
-        currentLoadedMediaData.front = mappedNode.front;
-        currentLoadedMediaData.back = mappedNode.back;
-        currentLoadedMediaData.video = mappedNode.video;
-        
-        if (typeof loadDeedMetadata === 'function') loadDeedMetadata(tokenId);
+            const tbaInputElem = document.getElementById('tbaAddressDisplay');
+            if (tbaInputElem) tbaInputElem.value = "Calculating deterministic ERC-6551 TBA address hash...";
 
-        renderToViewport('previewFrontContainer', currentLoadedMediaData.front, "Obverse aspect currently unassigned. Engage rebirth parameters.");
-        
-        const backContainer = document.getElementById('previewBackContainer');
-        setTimeout(() => {
-            if (mySession !== currentAuditSession) return; 
+            appendLog(`Extracting structural blueprint record for matrix cell node #${tokenId}...`, "text-purple-400");
             
-            if (mappedNode.back && mappedNode.back.trim() !== "") { 
-                renderToViewport('previewBackContainer', currentLoadedMediaData.back, "Reverse diagnostic data trace is currently null.");
+            const mappedNode = await autoMap(tokenId);
+            if (mySession !== currentAuditSession) return; 
+
+            if (!mappedNode) throw new Error("Mapping failure");
+
+            const currentEpoch = Math.floor(Date.now() / 1000);
+            const btnBurn = document.getElementById('btnBurnToken');
+            const btnTransfer = document.getElementById('btnTransferToken');
+            
+            if (mappedNode.votingLockUntil && mappedNode.votingLockUntil > currentEpoch) {
+                if (btnBurn) btnBurn.disabled = true;
+                if (btnTransfer) btnTransfer.disabled = true;
             } else {
-                if (backContainer) {
-                    while (backContainer.firstChild) backContainer.removeChild(backContainer.firstChild);
-                    const lockSpan = document.createElement('span');
-                    lockSpan.className = "text-[8px] font-mono text-center font-bold tracking-tight text-slate-500 p-1 uppercase w-full h-full flex items-center justify-center z-10 relative";
-                    lockSpan.textContent = "[ REVERSE ELEMENT UNINITIALIZED ]";
-                    backContainer.appendChild(lockSpan);
-                }
+                if (btnBurn) btnBurn.disabled = false;
+                if (btnTransfer) btnTransfer.disabled = false;
             }
-        }, 300); 
-        
-        const displayData = document.getElementById('activeDeedMetadataDisplay');
-        if (displayData) {
-            const imperialRank = getImperialRankDetailed(tokenId);
-            
-            displayData.textContent = ""; 
-            
-            const line1 = document.createTextNode(`CELL NODE ID: ${tokenId} `);
-            const rankSpan = document.createElement('span');
-            rankSpan.className = "text-yellow-500 font-bold tracking-widest";
-            rankSpan.textContent = `[${imperialRank}]`;
-            
-            const br = document.createElement('br');
-            
-            const safeOwner = mappedNode.owner ? sanitizeForDOM(mappedNode.owner) : "0x0000000000000000000000000000000000000000";
-            const line2 = document.createTextNode(`ACCREDITED ROOT: ${safeOwner.slice(0,6)}...${safeOwner.slice(-4)} // NOVA RATIFICATION: `);
-            
-            const sanctifiedSpan = document.createElement('span');
-            sanctifiedSpan.className = mappedNode.isSanctified ? 'text-emerald-400 font-bold' : 'text-slate-500';
-            sanctifiedSpan.textContent = mappedNode.isSanctified ? 'AFFIRMED' : 'DORMANT';
 
-            displayData.append(line1, rankSpan, br, line2, sanctifiedSpan);
+            const claimBtn = document.getElementById('executeClaimRewardBtn');
+            const warningTxt = document.getElementById('rewardExclusionWarning');
+            const numericTokenId = Number(tokenId);
+            
+            if (numericTokenId === 50 || numericTokenId === 100) {
+                if (claimBtn) claimBtn.classList.add('hidden');
+                if (warningTxt) warningTxt.classList.remove('hidden');
+            } else {
+                if (claimBtn) claimBtn.classList.remove('hidden');
+                if (warningTxt) warningTxt.classList.add('hidden');
+            }
+
+            try {
+                const onChainTBA = await activeContract.getTBA(BigInt(tokenId));
+                if (mySession !== currentAuditSession) return; 
+                if (tbaInputElem) tbaInputElem.value = sanitizeForDOM(onChainTBA);
+                if (typeof refreshTbaBalances === 'function') await refreshTbaBalances(onChainTBA, mySession);
+            } catch (tbaErr) {
+                if (tbaInputElem) tbaInputElem.value = "CRITICAL: FAILED TO EXTRACT DETERMINISTIC ADDR PIVOT";
+                if (typeof setTbaBalanceDisplay === 'function') setTbaBalanceDisplay("0.0000", "0.0000");
+            }
+
+            currentLoadedMediaData.front = mappedNode.front;
+            currentLoadedMediaData.back = mappedNode.back;
+            currentLoadedMediaData.video = mappedNode.video;
+            
+            if (typeof loadDeedMetadata === 'function') loadDeedMetadata(tokenId);
+
+            renderToViewport('previewFrontContainer', currentLoadedMediaData.front, "Obverse aspect currently unassigned. Engage rebirth parameters.");
+            
+            const backContainer = document.getElementById('previewBackContainer');
+            setTimeout(() => {
+                if (mySession !== currentAuditSession) return; 
+                
+                if (mappedNode.back && mappedNode.back.trim() !== "") { 
+                    renderToViewport('previewBackContainer', currentLoadedMediaData.back, "Reverse diagnostic data trace is currently null.");
+                } else {
+                    if (backContainer) {
+                        while (backContainer.firstChild) backContainer.removeChild(backContainer.firstChild);
+                        const lockSpan = document.createElement('span');
+                        lockSpan.className = "text-[8px] font-mono text-center font-bold tracking-tight text-slate-500 p-1 uppercase w-full h-full flex items-center justify-center z-10 relative";
+                        lockSpan.textContent = "[ REVERSE ELEMENT UNINITIALIZED ]";
+                        backContainer.appendChild(lockSpan);
+                    }
+                }
+            }, 300); 
+            
+            const displayData = document.getElementById('activeDeedMetadataDisplay');
+            if (displayData) {
+                const imperialRank = getImperialRankDetailed(tokenId);
+                
+                displayData.textContent = ""; 
+                
+                const line1 = document.createTextNode(`CELL NODE ID: ${tokenId} `);
+                const rankSpan = document.createElement('span');
+                rankSpan.className = "text-yellow-500 font-bold tracking-widest";
+                rankSpan.textContent = `[${imperialRank}]`;
+                
+                const br = document.createElement('br');
+                
+                const safeOwner = mappedNode.owner ? sanitizeForDOM(mappedNode.owner) : "0x0000000000000000000000000000000000000000";
+                const line2 = document.createTextNode(`ACCREDITED ROOT: ${safeOwner.slice(0,6)}...${safeOwner.slice(-4)} // NOVA RATIFICATION: `);
+                
+                const sanctifiedSpan = document.createElement('span');
+                sanctifiedSpan.className = mappedNode.isSanctified ? 'text-emerald-400 font-bold' : 'text-slate-500';
+                sanctifiedSpan.textContent = mappedNode.isSanctified ? 'AFFIRMED' : 'DORMANT';
+
+                displayData.append(line1, rankSpan, br, line2, sanctifiedSpan);
+            }
+
+            const settleTokenInput = document.getElementById('settleTokenId');
+            if (settleTokenInput) settleTokenInput.value = tokenId;
+
+        } catch (e) { 
+            if (mySession !== currentAuditSession) return; 
+            appendLog(`Matrix cell node #${tokenId} contains no structural allocation details (Void Element).`, "text-yellow-500"); 
+            renderToViewport('previewFrontContainer', "", "Void element data layer uninitialized.");
+            renderToViewport('previewBackContainer', "", "Void element data layer uninitialized.");
+            
+            const metaDisp = document.getElementById('activeDeedMetadataDisplay');
+            if (metaDisp) metaDisp.textContent = "VOID ELEMENT: UNINITIALIZED";
+        } finally {
+            if (typeof toggleButtonLoading === 'function') toggleButtonLoading(null, false);
+            if (typeof unlockSystem === 'function') unlockSystem();
+        }
+    }
+
+    function setTbaBalanceDisplay(eth, weth) { 
+        const ethElem = document.getElementById('tbaEthBalance'); 
+        const wethElem = document.getElementById('tbaWethBalance'); 
+        if (ethElem) ethElem.textContent = `${eth} ETH`; 
+        if (wethElem) wethElem.textContent = `${weth} WETH`; 
+    }
+
+    async function refreshTbaBalances(tbaAddress, sessionRef) { 
+        if (!tbaAddress || !ethers.isAddress(tbaAddress) || tbaAddress === ethers.ZeroAddress) {
+            setTbaBalanceDisplay("0.0000", "0.0000"); 
+            return; 
+        } 
+        const netProvider = (secureContract && secureContract.runner && secureContract.runner.provider) || readOnlyProvider; 
+        if (!netProvider) { 
+            setTbaBalanceDisplay("0.0000", "0.0000");
+            return; 
+        } 
+        try { 
+            const wethContract = new ethers.Contract(WETH_ADDRESS, WETH_ABI, netProvider); 
+            const [ethBal, wethBal] = await Promise.all([
+                netProvider.getBalance(tbaAddress), 
+                wethContract.balanceOf(tbaAddress).catch(() => 0n) 
+            ]); 
+            if (typeof sessionRef !== 'undefined' && sessionRef !== currentAuditSession) return; 
+            setTbaBalanceDisplay(fmtUnits(ethBal), fmtUnits(wethBal)); 
+        } catch (err) { 
+            setTbaBalanceDisplay("0.0000", "0.0000"); 
+        }
+    }
+
+    // ประกาศตัวแปร Cache ไว้ด้านนอกเพื่อหลีกเลี่ยงการ Query DOM ซ้ำ
+let searchDebounceTimer = null;
+let cachedMatrixNodes = null;
+
+function filterSovereignGrid() {
+    clearTimeout(searchDebounceTimer);
+    
+    searchDebounceTimer = setTimeout(() => {
+        const inputEl = document.getElementById('gridSearchInput');
+        if (!inputEl) return;
+        
+        const query = inputEl.value.trim();
+        const isQueryEmpty = query === "";
+        
+        // ใช้ Number() แทน parseInt() เพื่อความแม่นยำ ป้องกันการตัด String ทิ้งแบบ '12a' -> 12
+        const targetNum = isQueryEmpty ? null : Number(query);
+        const isTargetValid = targetNum !== null && !isNaN(targetNum);
+
+        // ทำการ Cache DOM เฉพาะครั้งแรกที่เรียกใช้ หรือเมื่อยังไม่มีข้อมูล
+        if (!cachedMatrixNodes) {
+            cachedMatrixNodes = document.querySelectorAll('.matrix-node');
         }
 
-        const settleTokenInput = document.getElementById('settleTokenId');
-        if (settleTokenInput) settleTokenInput.value = tokenId;
+        // ใช้ requestAnimationFrame สั่งให้เบราว์เซอร์อัปเดต UI ใน Frame เดียว ป้องกัน Layout Thrashing
+        requestAnimationFrame(() => {
+            cachedMatrixNodes.forEach(node => {
+                // ใช้ .slice(5) ตัดคำว่า 'node-' ออก (ความยาว 5 ตัวอักษร) ทำงานเร็วกว่า .replace()
+                const nodeIdAttr = node.id.slice(5); 
+                
+                let isMatch = isQueryEmpty || nodeIdAttr === query;
+                
+                if (!isMatch && isTargetValid) {
+                    isMatch = Number(nodeIdAttr) === targetNum;
+                }
 
-    } catch (e) { 
-        if (mySession !== currentAuditSession) return; 
-        appendLog(`Matrix cell node #${tokenId} contains no structural allocation details (Void Element).`, "text-yellow-500"); 
-        renderToViewport('previewFrontContainer', "", "Void element data layer uninitialized.");
-        renderToViewport('previewBackContainer', "", "Void element data layer uninitialized.");
-        
-        const metaDisp = document.getElementById('activeDeedMetadataDisplay');
-        if (metaDisp) metaDisp.textContent = "VOID ELEMENT: UNINITIALIZED";
-    } finally {
-        if (typeof toggleButtonLoading === 'function') toggleButtonLoading(null, false);
-        if (typeof unlockSystem === 'function') unlockSystem();
-    }
-}
-
-function setTbaBalanceDisplay(eth, weth) { 
-    const ethElem = document.getElementById('tbaEthBalance'); 
-    const wethElem = document.getElementById('tbaWethBalance'); 
-    if (ethElem) ethElem.textContent = `${eth} ETH`; 
-    if (wethElem) wethElem.textContent = `${weth} WETH`; 
-}
-
-async function refreshTbaBalances(tbaAddress, sessionRef) { 
-    if (!tbaAddress || !ethers.isAddress(tbaAddress) || tbaAddress === ethers.ZeroAddress) {
-        setTbaBalanceDisplay("0.0000", "0.0000"); 
-        return; 
-    } 
-    const netProvider = (secureContract && secureContract.runner && secureContract.runner.provider) || readOnlyProvider; 
-    if (!netProvider) { 
-        setTbaBalanceDisplay("0.0000", "0.0000");
-        return; 
-    } 
-    try { 
-        const wethContract = new ethers.Contract(WETH_ADDRESS, WETH_ABI, netProvider); 
-        const [ethBal, wethBal] = await Promise.all([
-            netProvider.getBalance(tbaAddress), 
-            wethContract.balanceOf(tbaAddress).catch(() => 0n) 
-        ]); 
-        if (typeof sessionRef !== 'undefined' && sessionRef !== currentAuditSession) return; 
-        setTbaBalanceDisplay(fmtUnits(ethBal), fmtUnits(wethBal)); 
-    } catch (err) { 
-        setTbaBalanceDisplay("0.0000", "0.0000"); 
-    }
-}
-
-function filterSovereignGrid() { 
-    clearTimeout(searchDebounceTimer);
-    searchDebounceTimer = setTimeout(() => { 
-        const inputEl = document.getElementById('gridSearchInput'); 
-        if (!inputEl) return; 
-        const query = inputEl.value.trim(); 
-        const targetParsedInt = query !== "" ? parseInt(query, 10) : null;
-
-        document.querySelectorAll('.matrix-node').forEach(node => {
-            const nodeIdAttr = node.id.replace('node-', '');
-            if (query === "" || nodeIdAttr === query || (targetParsedInt !== null && parseInt(nodeIdAttr, 10) === targetParsedInt)) { 
-                node.style.display = 'flex'; 
-            } else { 
-                node.style.display = 'none'; 
-            }
+                node.style.display = isMatch ? 'flex' : 'none';
+            });
         });
     }, 300);
 }
 
-async function syncActiveMatrixNodes() { 
-    const activeContract = secureContract || (typeof readOnlyContract !== 'undefined' ? readOnlyContract : null); 
-    if (!activeContract) return; 
-    try { 
-        if (typeof activeContract.getAllActiveTokens === 'function') { 
-            const activeTokens = await activeContract.getAllActiveTokens();
-            const activeSet = new Set(activeTokens.map(t => Number(t))); 
-            for (let i = 1; i <= 333; i++) { 
-                const node = document.getElementById(`node-${i}`); 
-                if (node) { 
-                    if (!activeSet.has(i)) { 
-                        node.classList.add('opacity-30', 'grayscale', 'cursor-not-allowed'); 
-                        node.classList.remove('hover:bg-slate-800', 'bg-slate-950'); 
-                        node.classList.add('bg-red-950/20'); 
-                        node.title = `NODE #${i} [BURNED / VOID]`; 
-                    } else { 
-                        node.classList.remove('opacity-30', 'grayscale', 'cursor-not-allowed', 'bg-red-950/20'); 
-                        node.classList.add('bg-slate-950'); 
-                        node.title = `NODE #${i} [ACTIVE]`; 
+
+    async function syncActiveMatrixNodes() { 
+        const activeContract = secureContract || (typeof readOnlyContract !== 'undefined' ? readOnlyContract : null); 
+        if (!activeContract) return; 
+        try { 
+            if (typeof activeContract.getAllActiveTokens === 'function') { 
+                const activeTokens = await activeContract.getAllActiveTokens();
+                const activeSet = new Set(activeTokens.map(t => Number(t))); 
+                for (let i = 1; i <= 333; i++) { 
+                    const node = document.getElementById(`node-${i}`); 
+                    if (node) { 
+                        if (!activeSet.has(i)) { 
+                            // สถานะยังไม่ถูก Mint (Ghost Rank)
+                            node.classList.add('unclaimed');
+                            node.classList.remove('claimed', 'opacity-30', 'grayscale', 'cursor-not-allowed', 'bg-red-950/20'); 
+                            node.title = `NODE #${i} [UNCLAIMED]`; 
+                        } else { 
+                            // สถานะถูก Mint แล้ว (Active/Claimed สว่างวาบเต็มร้อย)
+                            node.classList.remove('unclaimed', 'opacity-30', 'grayscale', 'cursor-not-allowed', 'bg-red-950/20'); 
+                            node.classList.add('claimed', 'bg-slate-950', 'hover:bg-slate-800'); 
+                            node.title = `NODE #${i} [ACTIVE]`; 
+                        } 
                     } 
                 } 
             } 
+        } catch (err) { 
+            console.warn("[SYSTEM] Failed to sync active matrix nodes.", err); 
         } 
-    } catch (err) { 
-        console.warn("[SYSTEM] Failed to sync active matrix nodes.", err); 
-    } 
-}
+    }
 
-function setupMatrixGrid() { 
+    function setupMatrixGrid() { 
+    cachedMatrixNodes = null; // 🛡️ [FIXED] ล้าง Cache เก่าทิ้งทุกครั้งที่สร้าง Grid ใหม่ ป้องกัน Memory Leak
     const grid = document.getElementById('matrixGridContainer'); 
     if (!grid) return;
 
@@ -4465,7 +4530,8 @@ function setupMatrixGrid() {
         const node = document.createElement('div');
         node.id = `node-${i}`;
         node.setAttribute('data-token-id', i.toString());
-        node.className = `matrix-node aspect-square w-full bg-slate-950 border rounded flex flex-col items-center justify-center font-mono text-[8px] sm:text-[10px] md:text-xs text-slate-500 cursor-pointer p-1 sm:p-2 hover:bg-slate-800 transition-colors ${rankClass}`;
+        
+        node.className = `matrix-node unclaimed aspect-square w-full bg-slate-950 border rounded flex flex-col items-center justify-center font-mono text-[8px] sm:text-[10px] md:text-xs text-slate-500 cursor-pointer p-1 sm:p-2 hover:bg-slate-800 transition-colors ${rankClass}`;
         
         const innerDiv = document.createElement('div');
         innerDiv.className = "flex justify-center w-full items-center leading-none";
@@ -4493,64 +4559,64 @@ function setupMatrixGrid() {
     }
 }
 
-function switchStation(station) { 
-    const tabFront = document.getElementById("tabFront"); 
-    const tabBack = document.getElementById("tabBack"); 
-    const stationFront = document.getElementById("stationFront"); 
-    const stationBack = document.getElementById("stationBack");
+    function switchStation(station) { 
+        const tabFront = document.getElementById("tabFront"); 
+        const tabBack = document.getElementById("tabBack"); 
+        const stationFront = document.getElementById("stationFront"); 
+        const stationBack = document.getElementById("stationBack");
 
-    if (!tabFront || !tabBack || !stationFront || !stationBack) {
-        return;
+        if (!tabFront || !tabBack || !stationFront || !stationBack) {
+            return;
+        }
+
+        const isFront = station === 'front';
+        tabFront.classList.toggle("active", isFront);
+        tabBack.classList.toggle("active", !isFront);
+        stationFront.classList.toggle("hidden", !isFront);
+        stationBack.classList.toggle("hidden", isFront);
+
+        tabFront.setAttribute("aria-selected", String(isFront));
+        tabBack.setAttribute("aria-selected", String(!isFront));
     }
 
-    const isFront = station === 'front';
-    tabFront.classList.toggle("active", isFront);
-    tabBack.classList.toggle("active", !isFront);
-    stationFront.classList.toggle("hidden", !isFront);
-    stationBack.classList.toggle("hidden", isFront);
+    function onTypeToggle(station) { 
+        const typeEl = document.querySelector(`input[name="${station}Type"]:checked`); 
+        if (!typeEl) { 
+            return; 
+        } 
+        const type = typeEl.value; 
+        const isVideo = type === 'video'; 
+        const label = document.getElementById(`${station}TypeLabel`); 
+        const target = document.getElementById(`${station}MapTarget`);
 
-    tabFront.setAttribute("aria-selected", String(isFront));
-    tabBack.setAttribute("aria-selected", String(!isFront));
-}
-
-function onTypeToggle(station) { 
-    const typeEl = document.querySelector(`input[name="${station}Type"]:checked`); 
-    if (!typeEl) { 
-        return; 
-    } 
-    const type = typeEl.value; 
-    const isVideo = type === 'video'; 
-    const label = document.getElementById(`${station}TypeLabel`); 
-    const target = document.getElementById(`${station}MapTarget`);
-
-    if (label) {
-        label.textContent = type.toUpperCase();
-        label.className = isVideo ? "text-rose-500 font-bold" : "text-amber-500 font-bold";
+        if (label) {
+            label.textContent = type.toUpperCase();
+            label.className = isVideo ? "text-rose-500 font-bold" : "text-amber-500 font-bold";
+        }
+        if (target) {
+            target.textContent = isVideo ? "animation_url / videoURI" : "image";
+        }
     }
-    if (target) {
-        target.textContent = isVideo ? "animation_url / videoURI" : "image";
+
+    function revealApp() { document.body.classList.add('app-ready'); }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', revealApp, { once: true }); 
+    } else { 
+        revealApp(); 
     }
-}
 
-function revealApp() { document.body.classList.add('app-ready'); }
-
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', revealApp, { once: true }); 
-} else { 
-    revealApp(); 
-}
-
-window.addEventListener('load', async () => { 
-    revealApp(); 
-    try { setupMatrixGrid(); } catch (e) {} 
-    if (typeof loadArchitectGateways === 'function') { try { loadArchitectGateways(); } catch (e) {} } 
-    if (typeof initReadOnlyRPC === 'function') { 
-        try { 
-            await initReadOnlyRPC(); 
-            if (typeof syncActiveMatrixNodes === 'function') syncActiveMatrixNodes(); 
-        } catch (e) {} 
-    }
-});
+    window.addEventListener('load', async () => { 
+        revealApp(); 
+        try { setupMatrixGrid(); } catch (e) {} 
+        if (typeof loadArchitectGateways === 'function') { try { loadArchitectGateways(); } catch (e) {} } 
+        if (typeof initReadOnlyRPC === 'function') { 
+            try { 
+                await initReadOnlyRPC(); 
+                if (typeof syncActiveMatrixNodes === 'function') syncActiveMatrixNodes(); 
+            } catch (e) {} 
+        }
+    });
 </script>
 </body>
 </html>
