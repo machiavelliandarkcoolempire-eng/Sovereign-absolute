@@ -13,9 +13,10 @@
             try { window.top.location = window.self.location; } catch (_) { /* CSP frame-ancestors remains authoritative. */ }
         }
     </script>
+    
+    <!-- ✅ แก้ไข connect-src: อนุญาตโดเมน *.irys.xyz ทั้งหมดเพื่อป้องกัน CORS/Network Error -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; media-src 'self' blob: https:; connect-src 'self' https://mainnet.base.org https://base.llamarpc.com https://base-rpc.publicnode.com https://base-mainnet.g.alchemy.com wss://base-mainnet.g.alchemy.com https://*.irys.xyz wss://relay.walletconnect.com wss://relay.walletconnect.org https://rpc.walletconnect.com https://api.web3modal.com https://api.reown.com wss:; frame-ancestors 'none'; base-uri 'none'; object-src 'none'; form-action 'self';">
 
-    <!-- ✅ แก้ไข connect-src: เพิ่ม Alchemy Endpoints เข้าไปเรียบร้อยแล้ว -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; media-src 'self' blob: https:; connect-src 'self' https://mainnet.base.org https://base.llamarpc.com https://base-rpc.publicnode.com https://base-mainnet.g.alchemy.com wss://base-mainnet.g.alchemy.com https://mainnet.irys.xyz https://node1.irys.xyz https://gateway.irys.xyz wss://relay.walletconnect.com wss://relay.walletconnect.org https://rpc.walletconnect.com https://api.web3modal.com https://api.reown.com wss:; frame-ancestors 'none'; base-uri 'none'; object-src 'none'; form-action 'self';">
 
     <!-- 🌟 1. โหลด CSS ที่ Vercel บิ้วให้ -->
     <link rel="stylesheet" href="./dist.css" />
@@ -1518,7 +1519,6 @@ function decodeContractError(err) {
     return err.reason || err.message || "Transaction reverted by EVM";
 }
 
-// 1. Utility Function กลาง (ปรับปรุงระบบ Event Listener ให้ปลอดภัยจาก Race Condition)
 async function promptUserForFile(acceptType = 'image/*,video/*') {
     return new Promise((resolve) => {
         const fileInput = document.createElement('input');
@@ -1549,17 +1549,16 @@ async function promptUserForFile(acceptType = 'image/*,video/*') {
             resolve(null);
         };
 
-        // Fallback ป้องกันการค้าง กรณี Browser ไม่ส่ง cancel event
+        // แก้ไข: ขยายเวลาเป็น 3 วินาที เพื่อให้ OS มือถือมีเวลาส่งข้อมูลไฟล์กลับมาหลังสลับแอป
         const handleFocusFallback = () => {
             setTimeout(() => {
-                if (!isSettled && fileInput.value === "") handleCancel();
-            }, 1000); // ขยายเวลาเป็น 1s เพื่อความชัวร์
+                if (!isSettled && fileInput.files.length === 0) handleCancel();
+            }, 3000); 
         };
 
         fileInput.addEventListener('change', handleFileChange, { once: true });
         fileInput.addEventListener('cancel', handleCancel, { once: true });
 
-        // ผูก Focus Fallback หลังจาก Window หลุด Focus ไปแล้วเท่านั้น เพื่อป้องกัน Race Condition
         window.addEventListener('blur', () => {
             window.addEventListener('focus', handleFocusFallback, { once: true });
         }, { once: true });
@@ -1982,11 +1981,25 @@ async function ensureIrysReady(timeoutMs = 60000) {
 }
 
 
+// ฟังก์ชันใหม่: ตัวช่วยลองเชื่อมต่อซ้ำเมื่อเน็ตกระตุก
+async function withNetworkRetry(fn, retries = 3, delay = 1000) {
+    for (let i = 0; i < retries; i++) {
+        try { return await fn(); }
+        catch (e) {
+            if (i === retries - 1) throw e;
+            await new Promise(r => setTimeout(r, delay * Math.pow(2, i)));
+        }
+    }
+}
+
+// ฟังก์ชันเดิมที่ถูกแก้ไข
 async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = null) {
     await ensureIrysReady();
     const size = isFile ? payload.size : new Blob([payload]).size;
-    const price = await irys.getPrice(size);
-    const loadedBalance = await irys.getLoadedBalance();
+    
+    // แก้ไข: ใช้ withNetworkRetry ป้องกันเน็ตหลุดชั่วขณะตอนเช็คราคาและยอดเงิน
+    const price = await withNetworkRetry(() => irys.getPrice(size));
+    const loadedBalance = await withNetworkRetry(() => irys.getLoadedBalance());
 
     if (loadedBalance.isLessThan(price)) {
         const diffWithBuffer = price.minus(loadedBalance).multipliedBy(115).dividedToIntegerBy(100);
@@ -1998,7 +2011,8 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
         const isConfirmed = await requestFundConfirmation(costStr);
         if (!isConfirmed) throw new Error("User declined funding.");
         
-        await irys.fund(diffWithBuffer);
+        // แก้ไข: ป้องกันเน็ตหลุดตอนสั่งเติมเงิน
+        await withNetworkRetry(() => irys.fund(diffWithBuffer));
         appendLog("Funding successful. Proceeding to upload.", "text-emerald-400");
     }
 
@@ -2166,11 +2180,16 @@ async function processIdentityDnaInspectionOnChain() {
 
 async function loadDeedMetadata(tokenId) {
     const mappedNode = await autoMap(tokenId);
-    if (!mappedNode?.rawMetadata?.attributes) return; 
+    // เพิ่มการตรวจสอบ Array.isArray เพื่อป้องกัน Prototype/Type Error
+    if (!mappedNode?.rawMetadata?.attributes || !Array.isArray(mappedNode.rawMetadata.attributes)) return; 
+    
     const attrs = mappedNode.rawMetadata.attributes;
     for(let i = 0; i < attrs.length; i++) {
         const targetElement = document.getElementById(`propDisplay${i+1}`); 
-        if(targetElement && attrs[i]) targetElement.textContent = attrs[i].value;
+        // ตรวจสอบว่า attrs[i] เป็น Object และมี property value
+        if(targetElement && attrs[i] && typeof attrs[i] === 'object' && 'value' in attrs[i]) {
+            targetElement.textContent = String(attrs[i].value);
+        }
     }
 }
 
@@ -2948,12 +2967,14 @@ function detectUploadEnvironment() {
     const deviceMemory = navigator.deviceMemory || (isMobile ? 2 : 8);
 
     let chunkSize, batchSize;
-    if (isIOS) {
-        chunkSize = 2 * 1024 * 1024;   
+    if (isIOS || isAndroid || isMobile) {
+        // 🌟 แก้ไข: ลดขนาด Chunk เหลือ 512KB และบังคับส่งทีละ 1 ก้อน (Sequential) สำหรับมือถือ
+        // เพื่อป้องกัน Network Timeout และลดภาระ RAM ของ Mobile Browser
+        chunkSize = 512 * 1024;   
         batchSize = 1;
-    } else if (isMobile || deviceMemory <= 4) {
-        chunkSize = 2 * 1024 * 1024;   
-        batchSize = 2;
+    } else if (deviceMemory <= 4) {
+        chunkSize = 1 * 1024 * 1024;   
+        batchSize = 1;
     } else {
         chunkSize = 5 * 1024 * 1024;   
         batchSize = 3;
@@ -3014,6 +3035,12 @@ async function uploadWithRetry(file, tags, env, progress, maxRetries = 4) {
             const msg = (err && err.message ? err.message : String(err)).toLowerCase();
             const isUserAbort = msg.includes('declined') || msg.includes('rejected by user') || msg.includes('user denied');
             if (isUserAbort) throw err;
+            
+            // 🌟 แก้ไข: ดักจับ Network Error โดยเฉพาะ เพื่อให้ Log ชัดเจนขึ้น
+            if (msg.includes('network error') || msg.includes('failed to fetch')) {
+                console.warn(`[IRYS SDK] Network drop detected on chunk. Retrying...`);
+            }
+            
             attempt++;
             if (attempt > maxRetries) break;
             const backoff = Math.min(8000, 800 * Math.pow(2, attempt - 1));
@@ -3091,11 +3118,13 @@ async function processDeedUploadAssignment(event) {
         const videoDataUrl = URL.createObjectURL(file);
         const videoHelper = document.createElement('video');
         videoHelper.preload = 'metadata';
-        videoHelper.src = videoDataUrl;
+        videoHelper.muted = true; // แก้ไข: บังคับ Mute เพื่อให้มือถือยอมประมวลผล
+        videoHelper.playsInline = true; // แก้ไข: ป้องกัน iOS เด้งเข้า Fullscreen
         
         let timeoutId;
         const isValidDuration = await Promise.race([
             new Promise((resolve) => {
+                // แก้ไข: ผูก Event Listener ก่อนใส่ src เสมอ ป้องกัน Race Condition
                 videoHelper.onloadedmetadata = function() { 
                     if (!isFinite(videoHelper.duration) || isNaN(videoHelper.duration)) {
                         resolve(false);
@@ -3104,15 +3133,17 @@ async function processDeedUploadAssignment(event) {
                     }
                 };
                 videoHelper.onerror = function() { resolve(false); };
+                videoHelper.src = videoDataUrl; // ใส่ src ตรงนี้
             }),
             new Promise((resolve) => {
                 timeoutId = setTimeout(() => { resolve(false); }, 8000); 
             })
         ]).finally(() => {
             clearTimeout(timeoutId); 
-            videoHelper.removeAttribute('src'); // Memory Leak Prevention
+            videoHelper.removeAttribute('src'); 
             videoHelper.load();
             URL.revokeObjectURL(videoDataUrl); 
+            videoHelper.remove(); // แก้ไข: ทำลาย DOM Node ทิ้งเพื่อคืน RAM ทันที
         });
 
         if (!isValidDuration) {
@@ -4054,6 +4085,12 @@ async function renderToViewport(containerId, path, defaultText, explicitMediaTyp
 }
 
 function renderMediaToDOM(container, finalUrl, mediaType) {
+    // แก้ไข: ทำลาย HLS instance ตัวเก่าทิ้งก่อนเสมอ เพื่อคืนพื้นที่ RAM ป้องกันแอปเด้ง
+    if (container._hlsInstance) {
+        container._hlsInstance.destroy();
+        container._hlsInstance = null;
+    }
+
     while (container.firstChild) {
         container.removeChild(container.firstChild);
     }
@@ -4073,6 +4110,7 @@ function renderMediaToDOM(container, finalUrl, mediaType) {
         
         if (finalUrl.includes('.m3u8') && typeof Hls !== 'undefined' && Hls.isSupported()) {
             const hls = new Hls({ maxBufferLength: 30, maxMaxBufferLength: 600 });
+            container._hlsInstance = hls; // เก็บ Reference ไว้เพื่อทำลายในรอบถัดไป
             hls.loadSource(finalUrl);
             hls.attachMedia(el);
             hls.on(Hls.Events.MANIFEST_PARSED, () => { el.play().catch(()=>{}); });
@@ -4094,6 +4132,7 @@ function renderMediaToDOM(container, finalUrl, mediaType) {
     };
     container.appendChild(el);
 }
+
 
 function updateVideoSlotsUI() {
     for (let i = 1; i <= 5; i++) {
@@ -4367,6 +4406,7 @@ async function auditTokenFromLedger(tokenId) {
         const metaDisp = document.getElementById('activeDeedMetadataDisplay');
         if (metaDisp) metaDisp.textContent = "VOID ELEMENT: UNINITIALIZED";
     } finally {
+        // แก้ไข: บังคับปลดล็อกระบบเสมอ ไม่ว่าจะสำเร็จหรือ Error เพื่อป้องกัน UI ค้าง
         if (typeof toggleButtonLoading === 'function') toggleButtonLoading(null, false);
         if (typeof unlockSystem === 'function') unlockSystem();
     }
