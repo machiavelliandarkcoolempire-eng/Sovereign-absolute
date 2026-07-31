@@ -17,7 +17,6 @@
     <!-- ✅ แก้ไข connect-src: อนุญาตโดเมน *.irys.xyz ทั้งหมดเพื่อป้องกัน CORS/Network Error -->
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; media-src 'self' blob: https:; connect-src 'self' https://mainnet.base.org https://base.llamarpc.com https://base-rpc.publicnode.com https://base-mainnet.g.alchemy.com wss://base-mainnet.g.alchemy.com https://*.irys.xyz wss://relay.walletconnect.com wss://relay.walletconnect.org https://rpc.walletconnect.com https://api.web3modal.com https://api.reown.com wss:; frame-ancestors 'none'; base-uri 'none'; object-src 'none'; form-action 'self';">
 
-
     <!-- 🌟 1. โหลด CSS ที่ Vercel บิ้วให้ -->
     <link rel="stylesheet" href="./dist.css" />
 
@@ -38,7 +37,8 @@
     </style>
     
     <!-- 📦 ETHERS V6 & WALLETCONNECT & HLS -->
-    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <!-- ถอด defer ออก เพื่อให้ทำงานตามลำดับ ป้องกันสคริปต์ด้านล่างพัง -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://unpkg.com/@walletconnect/ethereum-provider@2.11.1/dist/index.umd.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 
@@ -3933,197 +3933,6 @@ async function executeArchitectRemint(e) {
                 showNotification(`SECURITY ENFORCEMENT: ตรวจพบการเปลี่ยนเซลล์ระหว่างอัปโหลด ระบบระงับการทำงาน`, "error");
                 return;
             }
-
-            const backUriField = document.getElementById('forgeBackUri');
-            if (backUriField) backUriField.value = backMediaTxId;
-
-            appendLog(`Initiating SOVEREIGN_REMINT on Smart Contract...`, "text-yellow-400");
-            const val = await secureContract.mintPrice();
-            const tokenIdBn = BigInt(tokenId);
-
-            const receipt = await runTx(
-                e, `SOVEREIGN_REMINT_#${tokenId}`, "SOVEREIGN_REMINT",
-                [tokenIdBn, existingFrontUri, backMediaTxId], { value: val },
-                { manageLock: false, manageButton: false }
-            );
-
-            if (receipt) {
-                if (typeof GLOBAL_NODE_CACHE !== 'undefined' && GLOBAL_NODE_CACHE?.clear) GLOBAL_NODE_CACHE.clear();
-                if (typeof auditTokenFromLedger === 'function') await auditTokenFromLedger(tokenId);
-                appendLog(`Sovereign REMINT executed flawlessly on-chain.`, "text-emerald-400 font-bold");
-                showNotification("Reminting complete. โฉนดถูกสร้างใหม่และดึงกลับสู่ระบบแล้ว!", "success");
-            }
-        } catch (err) {
-            const errorMsg = typeof decodeContractError === 'function' ? decodeContractError(err) : (err.message || "Unknown Error");
-            const sanitizedMsg = sanitizeForDOM(errorMsg);
-
-            if (err.code === 4001 || sanitizedMsg === "USER_CANCELLED_TX" || err.message?.toLowerCase().includes("user rejected") || err.message?.toLowerCase().includes("declined")) {
-                appendLog("Architect Remint aborted by signature denial.", "text-yellow-500");
-                showNotification("ธุรกรรมการรีมิ้นต์ถูกยกเลิกโดยผู้ใช้", "warning");
-            } else if (err.code === "UNPREDICTABLE_GAS_LIMIT" || err.message?.toLowerCase().includes("cannot estimate gas")) {
-                appendLog("Network rejected estimateGas: Execution will likely fail on-chain.", "text-red-500 font-bold");
-                showNotification("Gas estimation failed (Contract Revert Risk).", "error");
-            } else {
-                appendLog(`Execution aborted: ${sanitizedMsg}`, "text-red-500");
-                showNotification(`Transaction failed: ${sanitizedMsg}`, "error");
-            }
-        } finally {
-            if (btn) toggleButtonLoading(btn, false);
-            unlockSystem();
-        }
-    } catch (criticalErr) {
-        appendLog(`Critical Error: ${criticalErr?.message || criticalErr}`, "text-red-500");
-        unlockSystem();
-    }
-}
-
-
-async function executeArchitectMint(e) {
-    if (!secureContract) { showNotification("Action suspended: Authenticate wallet signature first.", "error"); return; }
-    if (!lockSystem()) return;
-
-    try {
-        const isSurge = await checkGasSurge();
-        if (isSurge) { unlockSystem(); return; }
-
-        const rawId = document.getElementById('novaTokenId')?.value.trim() || globalSelectedTokenId;
-        const tokenId = validateTokenRange(rawId);
-        if (!tokenId) {
-            showNotification("STRUCTURAL EXCEPTION: กรุณาคลิกเลือกพิกัด Token ID บน Matrix ก่อน", "error");
-            unlockSystem(); return;
-        }
-
-        const targetAddress = document.getElementById('adminTargetAddress')?.value.trim();
-        if (!targetAddress || !ethers.isAddress(targetAddress)) {
-            showNotification("STRUCTURAL EXCEPTION: กรุณาระบุ EVM Target Address ให้ถูกต้องก่อนสั่งการ", "error");
-            unlockSystem(); return;
-        }
-
-        const existingFrontUri = document.getElementById('forgeFrontUri')?.value.trim() || currentLoadedMediaData.front;
-        if (!existingFrontUri) {
-            showNotification("METADATA EXCEPTION: การมิ้นต์ถูกระงับ! สถาปนิกต้องผูก Front URI ก่อนเสมอ", "error");
-            unlockSystem(); return;
-        }
-
-        const file = await promptUserForFile('image/*,video/*');
-        if (!file) {
-            appendLog("[SYSTEM] ยกเลิกการเลือกไฟล์ ปลดล็อกระบบสถาปนิก", "text-yellow-500");
-            unlockSystem(); return;
-        }
-
-        const previewObjectUrl = URL.createObjectURL(file);
-        const dnaField = "ARCHITECT MINT OVERRIDE";
-        let isConfirmed = false;
-        
-        try {
-            if (typeof requestMediaConfirmation === "function") {
-                isConfirmed = await requestMediaConfirmation(previewObjectUrl, dnaField, file.type);
-            } else { isConfirmed = true; }
-        } finally {
-            URL.revokeObjectURL(previewObjectUrl);
-        }
-        
-        if (!isConfirmed) { unlockSystem(); return; }
-
-        const btn = toggleButtonLoading(e, true);
-        try {
-            if (!irys) throw new Error("Irys SDK Bridge is offline.");
-
-            appendLog(`Inscribing Architect's back-end media onto permanent Irys Datachain...`, "text-blue-400");
-            const tags = [{ name: "Content-Type", value: file.type }];
-            const response = await executeIrysUpload(file, tags, true); 
-            const backMediaTxId = response.data ? response.data.id : response.id; 
-
-            appendLog(`Back-end media successfully anchored: ${sanitizeForDOM(backMediaTxId)}`, "text-emerald-400 font-bold");
-            const backUriField = document.getElementById('forgeBackUri');
-            if (backUriField) backUriField.value = backMediaTxId;
-
-            appendLog(`Initiating ARCHITECT_MINT for Node #${tokenId} to ${targetAddress.slice(0,6)}...`, "text-yellow-400");
-            const tokenIdBn = BigInt(tokenId);
-
-            const receipt = await runTx(
-                e, `ARCHITECT_MINT_#${tokenId}`, "ARCHITECT_MINT",
-                [tokenIdBn, targetAddress, existingFrontUri, backMediaTxId], {},
-                { manageLock: false, manageButton: false }
-            );
-
-            if (receipt) {
-                if (typeof GLOBAL_NODE_CACHE !== 'undefined' && GLOBAL_NODE_CACHE?.clear) GLOBAL_NODE_CACHE.clear();
-                if (typeof auditTokenFromLedger === 'function') await auditTokenFromLedger(tokenId);
-                appendLog(`ARCHITECT MINT EXECUTED FLAWLESSLY ON-CHAIN.`, "text-emerald-400 font-bold");
-                showNotification(`Architect Mint complete. ส่งมอบสิทธิ์ให้ ${targetAddress.slice(0,6)} สำเร็จ!`, "success");
-            }
-        } catch (err) {
-            const errorMsg = typeof decodeContractError === 'function' ? decodeContractError(err) : (err.message || "Unknown Error");
-            const sanitizedMsg = sanitizeForDOM(errorMsg);
-
-            if (err.code === 4001 || sanitizedMsg === "USER_CANCELLED_TX" || err.message?.toLowerCase().includes("user rejected") || err.message?.toLowerCase().includes("declined")) {
-                appendLog("Architect mint sequence aborted due to signature denial.", "text-yellow-500");
-                showNotification("ธุรกรรมถูกยกเลิกโดยผู้ใช้", "warning");
-            } else if (err.code === "UNPREDICTABLE_GAS_LIMIT" || err.message?.toLowerCase().includes("cannot estimate gas")) {
-                appendLog("Network rejected estimateGas: Execution will likely fail on-chain.", "text-red-500 font-bold");
-                showNotification("Gas estimation failed (Contract Revert Risk).", "error");
-            } else {
-                appendLog(`Execution aborted: ${sanitizedMsg}`, "text-red-500");
-                showNotification(`Transaction failed: ${sanitizedMsg}`, "error");
-            }
-        } finally {
-            if (btn) toggleButtonLoading(btn, false);
-            unlockSystem();
-        }
-    } catch (criticalErr) {
-        appendLog(`Critical Error: ${criticalErr?.message || criticalErr}`, "text-red-500");
-        unlockSystem();
-    }
-}
-
-async function executeArchitectRemint(e) {
-    if (!secureContract) { showNotification("Action suspended: Authenticate wallet signature first.", "error"); return; }
-    if (!lockSystem()) return;
-
-    try {
-        const isSurge = await checkGasSurge();
-        if (isSurge) { unlockSystem(); return; }
-        
-        const rawId = document.getElementById('novaTokenId')?.value.trim() || globalSelectedTokenId;
-        const tokenId = validateTokenRange(rawId);
-        if (!tokenId) {
-            showNotification("STRUCTURAL EXCEPTION: กรุณาคลิกเลือกพิกัด Token ID บน Matrix ก่อน", "error");
-            unlockSystem(); return;
-        }
-
-        const existingFrontUri = document.getElementById('forgeFrontUri')?.value.trim() || currentLoadedMediaData.front;
-        if (!existingFrontUri) {
-            showNotification("METADATA EXCEPTION: การรีมิ้นต์ถูกระงับ! ต้องผูก Front URI ก่อนเสมอ", "error");
-            unlockSystem(); return;
-        }
-
-        const file = await promptUserForFile('image/*,video/*');
-        if (!file) {
-            unlockSystem(); return;
-        }
-
-        const previewObjectUrl = URL.createObjectURL(file);
-        let isConfirmed = false;
-        
-        try {
-            if (typeof requestMediaConfirmation === "function") {
-                isConfirmed = await requestMediaConfirmation(previewObjectUrl, "SOVEREIGN REMINT OVERRIDE", file.type);
-            } else { isConfirmed = true; }
-        } finally {
-            URL.revokeObjectURL(previewObjectUrl);
-        }
-        
-        if (!isConfirmed) { unlockSystem(); return; }
-
-        const btn = toggleButtonLoading(e, true);
-        try {
-            if (!irys) throw new Error("Irys SDK Bridge is offline.");
-
-            appendLog(`Inscribing back-end media onto permanent Irys Datachain...`, "text-blue-400");
-            const tags = [{ name: "Content-Type", value: file.type }];
-            const response = await executeIrysUpload(file, tags, true); 
-            const backMediaTxId = response.data ? response.data.id : response.id; 
 
             const backUriField = document.getElementById('forgeBackUri');
             if (backUriField) backUriField.value = backMediaTxId;
