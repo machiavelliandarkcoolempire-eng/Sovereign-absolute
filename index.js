@@ -3,130 +3,108 @@ import { WebEthereum } from "@irys/web-upload-ethereum";
 import { EthersV6Adapter } from "@irys/web-upload-ethereum-ethers-v6";
 import { ethers } from "ethers";
 
-declare global {
-  interface Window {
-    InitSovereignIrys: (rawProvider: any, config?: any) => Promise<any>;
-    handleMediaUpload: (file: File) => Promise<string | null>;
-    ethereum?: any;
-  }
-}
-
-/**
- * แปลงรหัสธุรกรรม Irys (43 อักขระ Base64URL) เป็นรหัส bytes32 Hex
- * (แพตช์ Gas Optimization สำหรับ Base L2)
- */
-export function convertIrysTxIdToBytes32(txId: string): string {
-  if (txId.length !== 43) throw new Error("Invalid Irys TxId length.");
-  let base64 = txId.replace(/-/g, "+").replace(/_/g, "/");
-  const padNeed = base64.length % 4;
-  if (padNeed) base64 += "=".repeat(4 - padNeed);
-  const binaryString = atob(base64);
-  let hexResult = "";
-  for (let i = 0; i < binaryString.length; i++) {
-    hexResult += binaryString.charCodeAt(i).toString(16).padStart(2, "0");
-  }
-  return "0x" + hexResult;
-}
-
-/**
- * แปลงข้อมูล bytes32 กลับเป็นรหัสธุรกรรม Irys 43 อักขระ
- */
-export function convertBytes32ToIrysTxId(hexBytes32: string): string {
-  const cleanHex = hexBytes32.startsWith("0x") ? hexBytes32.slice(2) : hexBytes32;
-  if (cleanHex.length !== 64) throw new Error("Invalid bytes32 length.");
-  let binaryString = "";
-  for (let i = 0; i < cleanHex.length; i += 2) {
-    binaryString += String.fromCharCode(parseInt(cleanHex.substring(i, i + 2), 16));
-  }
-  return btoa(binaryString).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-}
-
-/**
- * Sovereign Irys Uploader Initialization Function
- * @param {Object} rawProvider - EIP-1193 Provider (e.g. window.ethereum)
- * @param {Object} [config={}] - Configuration options
- * @returns {Promise<Object>} Active Irys Uploader instance
- */
-window.InitSovereignIrys = async function(rawProvider: any, config: any = {}): Promise<any> {
-    try {
-        if (!rawProvider) {
-            throw new Error("EIP-1193 Web3 Provider required.");
-        }
-
-        const provider = new ethers.BrowserProvider(rawProvider);
-        await provider.send("eth_requestAccounts", []); // Ensure connection
-        await provider.getSigner();
-
-        let builder = WebUploader(WebEthereum)
-            .withAdapter(EthersV6Adapter(provider));
-
-        if (config.rpcUrl) {
-            builder = builder.withRpc(config.rpcUrl);
-        }
-
-        if (config.isDevnet) {
-            builder = builder.devnet();
-        } else {
-            builder = builder.mainnet(); // บังคับเป็น Mainnet เสมอถ้าไม่เซ็ต Devnet
-        }
-
-        const irysUploader = await builder;
-
-        console.log("✅ [Irys Ready] Connected Address:", irysUploader.address);
-        return irysUploader;
-
-    } catch (error: any) {
-        // ดักจับ Error 4001: กรณีผู้ใช้กดยกเลิกในกระเป๋า
-        if (error?.code === 4001 || error?.info?.error?.code === 4001) {
-            console.warn("⚠️ [Web3] User rejected connection. Restoring UI state.");
-            return null;
-        }
-        console.error("❌ [Irys Build] Initialization Failed:", error);
-        throw error;
-    }
+// 1. Adaptive Chunked Upload Engine (OOM Guard)
+const SOVEREIGN_LIMITS = {
+    MAX_FILE_SIZE: 300 * 1024 * 1024, 
+    IOS_SOFT_CAP: 150 * 1024 * 1024   
 };
 
-/**
- * Handle Large Media Upload with Math Precision Funding (BigInt)
- * @param {File} file - The media file to upload
- */
-window.handleMediaUpload = async function(file: File): Promise<string | null> {
+function getAdaptiveChunkStrategy(fileSize) {
+    const ua = navigator.userAgent || "";
+    const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const isMobile = /Android|webOS|BlackBerry|IEMobile|Opera Mini/i.test(ua) || isIOS;
+
+    if (isIOS && fileSize > SOVEREIGN_LIMITS.IOS_SOFT_CAP) throw new Error("❌ [OOM Guard] ไฟล์เกิน 150MB บน iOS Safari");
+    if (fileSize > SOVEREIGN_LIMITS.MAX_FILE_SIZE) throw new Error("❌ [Protocol Guard] ไฟล์เกิน 300MB");
+
+    if (isIOS) return { chunkSize: 2 * 1024 * 1024, batchSize: 1 }; 
+    if (isMobile) return { chunkSize: 2 * 1024 * 1024, batchSize: 2 }; 
+    return { chunkSize: 5 * 1024 * 1024, batchSize: 3 }; 
+}
+
+// 2. Initialize Irys Node (Network & Token Locked)
+window.InitSovereignIrys = async function(rawProvider) {
+    if (!rawProvider) throw new Error("❌ Web3 Provider (Wallet) is required.");
+    
+    const provider = new ethers.BrowserProvider(rawProvider);
+    await provider.send("eth_requestAccounts", []); 
+    
+    const irysUploader = await WebUploader(WebEthereum)
+        .withAdapter(EthersV6Adapter(provider))
+        .withNetwork("mainnet") 
+        .withToken("base-eth"); 
+
+    return irysUploader;
+};
+
+// 3. Sovereign Pipeline (Upload & Auto-Fund)
+window.runSovereignPipeline = async function(file, displayContainerId) {
     try {
-        const uploader = await window.InitSovereignIrys(window.ethereum, { isDevnet: false });
-        if (!uploader) return null; // หยุดทำงานถ้าผู้ใช้ Reject ไปในขั้นแรก
+        if (!window.ethereum) throw new Error("❌ No Web3 Wallet detected.");
+        
+        const uploader = await window.InitSovereignIrys(window.ethereum);
+        if (!uploader) throw new Error("❌ Irys Initialization failed.");
 
-        const fileSizeInBytes = BigInt(file.size);
+        const fileSize = file.size;
+        const config = getAdaptiveChunkStrategy(fileSize);
+        
+        // [A] Auto-Funding Safe Buffer (20%)
+        const priceNeeded = BigInt(await uploader.getPrice(fileSize));
+        const balance = BigInt(await uploader.getLoadedBalance());
 
-        // เช็คของฟรี: ถ้าเกิน 100 KiB ต้องจ่ายเงิน
-        if (fileSizeInBytes > 102400n) {
-            const priceNeeded = BigInt(await uploader.getPrice(Number(fileSizeInBytes)));
-            const balance = BigInt(await uploader.getBalance());
-
-            if (balance < priceNeeded) {
-                // คณิตศาสตร์ Zero-Dust: คืนค่าให้เป๊ะระดับ BigInt พร้อมบัฟเฟอร์แก๊ส 20%
-                const difference = priceNeeded - balance;
-                const fundAmount = (difference * 120n) / 100n;
-                console.log(`[Funding] Initiating auto-fund for ${fundAmount.toString()} atomic units...`);
-                const fundTx = await uploader.fund(fundAmount.toString());
-                console.log(`✅ [Funding] Success: ${fundTx.id}`);
-            }
+        if (balance < priceNeeded) {
+            const fundAmount = (priceNeeded - balance) * 120n / 100n; 
+            console.log(`💸 [Funding] Auto-funding: ${fundAmount.toString()} atomic units...`);
+            await uploader.fund(fundAmount.toString());
+            // [Architecture Fix]: รอ Node Sync ข้อมูลยอดเงินเล็กน้อย ป้องกัน Race Condition ก่อนเริ่มอัปโหลด
+            await new Promise(resolve => setTimeout(resolve, 2000));
         }
+
+        // [B] Chunk Processing & Event Watchers
+        const chunkedUploader = uploader.chunkedUploader;
+        chunkedUploader.setChunkSize(config.chunkSize);
+        chunkedUploader.setBatchSize(config.batchSize);
+
+        chunkedUploader.on("chunkUpload", (chunkInfo) => {
+            console.log(`📦 [Irys] Uploaded Chunk ID: ${chunkInfo.id}`);
+        });
+        chunkedUploader.on("chunkError", (e) => {
+            console.error(`⚠️ [Irys] Chunk Error (Retrying...):`, e);
+        });
 
         const tags = [{ name: "Content-Type", value: file.type }];
-        const receipt = await uploader.uploadFile(file, { tags });
+        console.log("🚀 [Upload] Initiating Arweave Data Spooling...");
         
-        console.log(`✅ [Upload] Complete. Irys TX: ${receipt.id}`);
-        const bytes32Format = convertIrysTxIdToBytes32(receipt.id);
-        console.log(`🔒 [Base L2 Ready] Bytes32 format: ${bytes32Format}`);
+        const receipt = await chunkedUploader.uploadData(file, { tags });
         
-        return receipt.id;
-    } catch (error: any) {
-        // ดักจับ Error 4001: กรณีผู้ใช้กด Reject ตอนจ่ายเงิน
-        if (error?.code === 4001 || error?.message?.includes("rejected")) {
-            console.warn("⚠️ [Web3] User rejected the transaction. Operation aborted safely.");
-            return null;
-        }
-        console.error("❌ [Upload] Operation failed:", error);
+        // [C] Immediate Render
+        const gatewayUrl = `https://gateway.irys.xyz/${receipt.id}`;
+        renderSovereignMedia(gatewayUrl, file.type, displayContainerId);
+
+        return receipt.id; 
+
+    } catch (error) {
+        console.error("❌ [Pipeline Error]:", error);
         throw error;
     }
 };
+
+// 4. Render Engine
+function renderSovereignMedia(url, mimeType, containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    
+    container.innerHTML = ""; 
+
+    if (mimeType.startsWith("video/")) {
+        container.innerHTML = `
+            <video controls autoplay loop playsinline style="width: 100%; border-radius: 8px;">
+                <source src="${url}" type="${mimeType}">
+            </video>
+        `; // [Architecture Fix]: เพิ่ม `playsinline` เพื่อให้วิดีโอเล่นได้ปกติบน iOS Safari โดยไม่เด้ง Fullscreen
+    } else {
+        container.innerHTML = `
+            <img src="${url}" style="width: 100%; border-radius: 8px;" />
+        `;
+    }
+}
