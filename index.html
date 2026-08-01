@@ -2,8 +2,9 @@
 <html lang="en" style="background-color:#0a1128;color-scheme:dark" class="bg-[#0a1128] text-slate-100 overflow-x-hidden selection:bg-rose-700 selection:text-white">
 <head>
     <meta charset="UTF-8" />
-    <!-- ✅ 1. ดัน CSP ขึ้นมาด้านบนสุด เพื่อให้เบราว์เซอร์รับทราบกฎความปลอดภัยทันที -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; media-src 'self' blob: https:; connect-src 'self' https://mainnet.base.org https://base.llamarpc.com https://base-rpc.publicnode.com https://base-mainnet.g.alchemy.com wss://base-mainnet.g.alchemy.com https://*.irys.xyz wss://relay.walletconnect.com wss://relay.walletconnect.org https://rpc.walletconnect.com https://api.web3modal.com https://api.reown.com wss:; frame-ancestors 'none'; base-uri 'none'; object-src 'none'; form-action 'self';">
+    
+    <!-- ✅ 1. CSP ถูกดันขึ้นบนสุด (ตามโค้ช 2) และลบ wss:; ออก อุดช่องโหว่เรียบร้อย (ตามโค้ช 1) -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; media-src 'self' blob: https:; connect-src 'self' https://mainnet.base.org https://base.llamarpc.com https://base-rpc.publicnode.com https://base-mainnet.g.alchemy.com wss://base-mainnet.g.alchemy.com https://*.irys.xyz wss://*.walletconnect.com wss://*.walletconnect.org https://rpc.walletconnect.com https://api.web3modal.com https://api.reown.com; frame-ancestors 'none'; base-uri 'none'; object-src 'none'; form-action 'self';">
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <meta name="theme-color" content="#0a1128" />
@@ -36,19 +37,17 @@
         }
     </style>
     
-    <!-- 🌟 3. โหลด Polyfill (สำคัญที่สุด: ต้องอยู่ก่อน Web3 Script ทุกตัว) -->
-    <!-- ปูพื้นฐาน Buffer, process, global ให้ Browser รู้จักก่อน -->
+    <!-- 🌟 3. โหลด Polyfill (สำคัญที่สุด: ต้องอยู่ก่อน Web3 Script ทุกตัว ตามโค้ช 2) -->
     <script src="./web3-polyfill.js"></script>
 
-    <!-- 📦 4. โหลด External Scripts (เมื่อมี Polyfill ปูทางไว้แล้ว ไลบรารีเหล่านี้จะไม่พัง) -->
+    <!-- 📦 4. โหลด External Scripts (WalletConnect จะรันได้ปกติเพราะมี Polyfill เตรียมไว้แล้ว) -->
     <script src="https://unpkg.com/@walletconnect/ethereum-provider@2.11.1/dist/index.umd.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 
-    <!-- 🌟 5. โหลด Irys Bundle ของเราเป็นลำดับสุดท้าย (เพราะต้องใช้ Ethers.js ในนี้ และอาจอ้างอิงของจากด้านบน) -->
+    <!-- 🌟 5. โหลด Irys Bundle ของเราเป็นลำดับสุดท้าย -->
     <script src="./irys-bundle.js"></script>
 
 </head>
-
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=JetBrains+Mono:wght@400;700;800&display=swap');
