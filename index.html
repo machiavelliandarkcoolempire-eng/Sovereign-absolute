@@ -614,7 +614,7 @@
                     </div>
                     <div class="p-2 bg-black/80 rounded border border-stone-900">
                         <span class="text-stone-500 block uppercase font-bold">PIXEL ANCHOR (ZOOM 7X)</span>
-                        <span id="metaHiddenProperty" class="text-amber-500 font-bold">X : 1014 Y : 1754</span>
+                        <span id="propDisplay1" class="text-amber-500 font-bold">X : 1014 Y : 1754</span>
                     </div>
                 </div>
 
@@ -631,7 +631,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-[9px]">
                     <div class="p-2 bg-black/80 rounded border border-stone-900">
                         <span class="text-rose-400 block uppercase font-bold">AI DEEP FAKE NEWS (VIDEO)</span>
-                        <span class="text-stone-300">VIDEO : 0.01 FR 4-8 = สร้าง Pixel ใหม่ 0.01 วินาทีไม่มี</span>
+                        <span class="text-stone-300">VIDEO : 0.01 FR 4-8 =  Pixel 0.01</span>
                     </div>
                     <div class="p-2 bg-black/80 rounded border border-stone-900">
                         <span class="text-rose-400 block uppercase font-bold">SOCIAL COPY CHECK (IMAGE)</span>
@@ -709,7 +709,7 @@
             <span class="flex items-center gap-2"><span class="w-4 h-4 rounded border rank-gold"></span> GOLD (11-99)</span>
             <span class="flex items-center gap-2"><span class="w-4 h-4 rounded border rank-silver"></span> SILVER (101-200)</span>
             <span class="flex items-center gap-2"><span class="w-4 h-4 rounded border rank-red"></span> RED (201-332)</span>
-            <span class="flex items-center gap-2"><span class="w-4 h-4 rounded border rank-imperial"></span> SOVEREIGN IMMORTAL 333</span>
+            <span class="flex items-center gap-2"><span class="w-4 h-4 rounded border rank-imperial"></span> SOVEREIGN IMMOTAL 333</span>
         </div>
     </section>
 
@@ -887,7 +887,6 @@
             </div>
         </div>
     </section>
-
 
     <section class="chiaroscuro-bg p-6 rounded-2xl mb-6 relative z-10 border border-rose-950">
         <div class="border-b border-stone-900 pb-3 mb-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
@@ -1168,10 +1167,9 @@
             This protocol operates an exclusive, private digital identity infrastructure accessible solely via direct curation. All proceeds represent lawful studio service fees. Reserve allocations fund software R&D and Ecosystem Infrastructure Support Grants. Minting and on-chain operations are executed 100% self-sovereignly by curated pass holders. This protocol does not offer public sales, securities, or financial returns.
         </div>
     </footer>
-    
-    
-    
-    <script>
+
+
+<script>
 "use strict";
 
 // ============================================================================
@@ -1370,6 +1368,11 @@ let currentLoadedMediaData = {
 
 let irysTargetFieldType = ""; 
 let isTransactionPending = false;
+
+// 🛡️ [FIX-1] ป้องกันการกดเติมเงิน (irys.fund) ซ้ำเร็วเกินไป
+// กันไม่ให้เสียเงินจริงซ้ำๆ ตอนเจอบั๊ก "failed to post funding tx / doesn't exist" ของ Irys bundler
+let lastFundAttemptAt = 0;
+const FUND_COOLDOWN_MS = 60000; // ต้องรออย่างน้อย 60 วิ ระหว่างการเติมเงินแต่ละครั้ง
 let isSyncingState = false;
 
 const LOG_MAX_ROWS = 100;
@@ -2089,6 +2092,13 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
     if (initialBalance.isLessThan(price)) {
         const diffWithBuffer = price.minus(initialBalance).multipliedBy(115).dividedToIntegerBy(100);
         const costStr = fmtUnits(diffWithBuffer.toString());
+
+        // 🛡️ [FIX-1] เช็ค cooldown ก่อน ป้องกันกดรัว/retry ถี่จนเสียเงินซ้ำ
+        const msSinceLastFund = Date.now() - lastFundAttemptAt;
+        if (msSinceLastFund < FUND_COOLDOWN_MS) {
+            const waitSec = Math.ceil((FUND_COOLDOWN_MS - msSinceLastFund) / 1000);
+            throw new Error(`กรุณารออีก ${waitSec} วินาทีก่อนเติมเงินรอบใหม่ (ระบบกันเสียเงินซ้ำจากธุรกรรมก่อนหน้าที่อาจยังไม่เข้าระบบ)`);
+        }
         
         updateBridgeStatus("AWAITING FUNDING TX...", "warning");
         appendLog(`Awaiting user transaction: Funding ${costStr} ETH`, "text-yellow-400");
@@ -2098,25 +2108,39 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
         
         // 🚀 แสดงหน้าจอรอจ่ายเงิน (ยังไม่โชว์หลอดอัปโหลด)
         showFundingOverlay(costStr);
-        
+        lastFundAttemptAt = Date.now();
+
+        // ✅ [FIX-2] เจอ error "failed to post funding tx / ... doesn't exist" (บั๊กที่รู้จักของ Irys SDK)
+        // อย่าเพิ่งถือว่าล้มเหลวทันที เพราะ tx อาจ confirm บนเชนจริงแล้ว แค่ bundler sync ช้า/พลาดจังหวะ
+        // ให้ไปรอเช็คยอดเงินจริง (getLoadedBalance) ก่อน ค่อยฟันธงว่าล้มเหลวจริงหรือไม่
+        let fundCallFailed = false;
         try {
             await irys.fund(diffWithBuffer);
         } catch (fundErr) {
-            hideFundingOverlay();
-            throw new Error("การทำธุรกรรมเติมเงินล้มเหลว หรือถูกยกเลิก (ระบบตัดการทำงานเพื่อป้องกันการเรียกเก็บเงินซ้ำ)");
+            const feMsg = (fundErr && fundErr.message) || "";
+            const isUserRejection = /user rejected|declined|denied|cancelled|user declined/i.test(feMsg);
+            if (isUserRejection) {
+                hideFundingOverlay();
+                throw new Error("การทำธุรกรรมเติมเงินถูกยกเลิกโดยผู้ใช้");
+            }
+            fundCallFailed = true;
+            appendLog(`[IRYS FUND WARNING] ${sanitizeForDOM(feMsg)} — กำลังตรวจสอบยอดเงินอีกครั้งก่อนสรุปว่าล้มเหลวจริง (ไม่ต้องกดซ้ำตอนนี้)`, "text-yellow-500");
         }
         
-        appendLog("Funding TX confirmed on-chain. Awaiting Bundler synchronization...", "text-yellow-400");
+        appendLog(fundCallFailed
+            ? "Funding TX status uncertain (bundler notify failed). Verifying on-chain balance before giving up..."
+            : "Funding TX confirmed on-chain. Awaiting Bundler synchronization...", "text-yellow-400");
         updateBridgeStatus("SYNCING BUNDLER...", "warning");
 
         const titleEl = document.getElementById('fundOverlayTitle');
         const subEl = document.getElementById('fundOverlaySub');
         if(titleEl) titleEl.textContent = "SYNCING BUNDLER...";
-        if(subEl) subEl.innerHTML = "ธุรกรรมสำเร็จแล้ว! กำลังซิงค์ยอดเงินเข้า Irys Node...<br><span class='text-emerald-400'>(ใช้เวลาประมาณ 10-20 วินาที)</span>";
+        if(subEl) subEl.innerHTML = "กำลังตรวจสอบยอดเงินเข้า Irys Node...<br><span class='text-emerald-400'>(ใช้เวลาประมาณ 10-45 วินาที กรุณาอย่าปิดหน้านี้หรือกดเติมเงินซ้ำ)</span>";
 
         let isSynced = false;
         let attempts = 0;
-        const maxAttempts = 15;
+        // ✅ ถ้า fund() throw มาก่อน ให้รอนานขึ้น (30 รอบ x 3 วิ = ~90 วิ) เผื่อ tx confirm ช้า
+        const maxAttempts = fundCallFailed ? 30 : 15;
         
         while (!isSynced && attempts < maxAttempts) {
             await new Promise(resolve => setTimeout(resolve, 3000));
@@ -2130,6 +2154,9 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
         hideFundingOverlay(); // ปิดหน้าจอรอจ่ายเงินเมื่อเงินเข้าแล้ว
 
         if (!isSynced) {
+            if (fundCallFailed) {
+                throw new Error("ตรวจสอบยอดเงินแล้วยังไม่พบว่าเข้าระบบ — กรุณาอย่ากดเติมเงินซ้ำทันที ให้เช็คยอด ETH ที่ถูกหักในกระเป๋าก่อน แล้วลองใหม่อีกครั้งในอีกสักครู่ (เก็บ error id ไว้ถ้าต้องติดต่อฝ่ายซัพพอร์ตของ Irys)");
+            }
             throw new Error("Bundler synchronization timeout. Please retry upload in a few minutes.");
         }
         
@@ -2157,11 +2184,20 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
 // ============================================================================
 async function executeIrysTopUp(amountEthStr) {
     if (!lockSystem()) return; // ใช้ระบบ Lock เดิมของคุณเพื่อป้องกันการกดเบิ้ล
+    // 🛡️ [FIX-1] เช็ค cooldown ก่อนยิง irys.fund() ซ้ำ ป้องกันเสียเงินซ้ำจากการกดรีทราย
+    const msSinceLastFund = Date.now() - lastFundAttemptAt;
+    if (msSinceLastFund < FUND_COOLDOWN_MS) {
+        const waitSec = Math.ceil((FUND_COOLDOWN_MS - msSinceLastFund) / 1000);
+        showNotification(`กรุณารออีก ${waitSec} วินาทีก่อนเติมเงินรอบใหม่ (กันเสียเงินซ้ำจากธุรกรรมก่อนหน้าที่อาจยังไม่เข้าระบบ)`, "warning");
+        unlockSystem();
+        return;
+    }
     try {
         await ensureIrysReady();
         
         // ✅ [จุดที่แก้บั๊ก] ดึงยอดเงินตั้งต้น มาไว้ "ก่อน" จ่ายเงิน
         const initialBalance = await irys.getLoadedBalance();
+        lastFundAttemptAt = Date.now();
         
         // แปลงหน่วย ETH เป็น Wei (ใช้ ethers.js ที่มีอยู่ในระบบคุณอยู่แล้ว)
         const amountWei = ethers.parseEther(amountEthStr);
@@ -2169,18 +2205,29 @@ async function executeIrysTopUp(amountEthStr) {
         showFundingOverlay(amountEthStr);
         appendLog(`Initiating Irys Top-up: ${amountEthStr} ETH...`, "text-blue-400");
         
-        // ✅ สั่งจ่ายเงิน
-        await irys.fund(amountWei.toString());
+        // ✅ [FIX-2] สั่งจ่ายเงิน — ถ้า SDK โยน error "doesn't exist" (บั๊กที่รู้จักของ Irys)
+        // อย่าเพิ่งฟันธงว่าล้มเหลว ให้ไปรอเช็คยอดเงินจริงก่อน (เพราะ tx อาจ confirm อยู่บนเชนแล้วจริงๆ)
+        let fundCallFailed = false;
+        try {
+            await irys.fund(amountWei.toString());
+        } catch (fundErr) {
+            const feMsg = (fundErr && fundErr.message) || "";
+            const isUserRejection = /user rejected|declined|denied|cancelled|user declined/i.test(feMsg);
+            if (isUserRejection) throw fundErr; // โยนต่อให้ catch ข้างนอกจัดการข้อความยกเลิกตามปกติ
+            fundCallFailed = true;
+            appendLog(`[IRYS FUND WARNING] ${sanitizeForDOM(feMsg)} — กำลังตรวจสอบยอดเงินอีกครั้งก่อนสรุปว่าล้มเหลวจริง (ไม่ต้องกดซ้ำตอนนี้)`, "text-yellow-500");
+        }
         
         const titleEl = document.getElementById('fundOverlayTitle');
         const subEl = document.getElementById('fundOverlaySub');
         if(titleEl) titleEl.textContent = "SYNCING BUNDLER...";
-        if(subEl) subEl.innerHTML = "โอนเงินสำเร็จ! กำลังอัปเดตยอดเครดิตของคุณ...<br><span class='text-emerald-400'>(ใช้เวลาประมาณ 10-20 วินาที)</span>";
+        if(subEl) subEl.innerHTML = "กำลังตรวจสอบยอดเครดิตของคุณ...<br><span class='text-emerald-400'>(ใช้เวลาประมาณ 10-45 วินาที กรุณาอย่ากดเติมเงินซ้ำ)</span>";
 
         let isSynced = false;
         let attempts = 0;
+        const maxTopUpAttempts = fundCallFailed ? 30 : 15; // รอนานขึ้นถ้า fund() เพิ่ง throw มา
         
-        while (!isSynced && attempts < 15) {
+        while (!isSynced && attempts < maxTopUpAttempts) {
             await new Promise(resolve => setTimeout(resolve, 3000));
             // ✅ ตอนนี้ currentBalance จะเอามาเทียบกับ initialBalance (ยอดก่อนจ่าย) ได้อย่างถูกต้องแล้ว
             const currentBalance = await irys.getLoadedBalance();
@@ -2195,6 +2242,10 @@ async function executeIrysTopUp(amountEthStr) {
         if (isSynced) {
             showNotification(`เติมเครดิตเข้า Irys สำเร็จ! คุณสามารถอัปโหลดไฟล์ได้ทันทีโดยไม่ต้องเซ็นกระเป๋าอีก`, "success");
             appendLog(`Irys balance topped up successfully.`, "text-emerald-400");
+        } else if (fundCallFailed) {
+            // ✅ [FIX-2] ไม่ฟันธงว่า "สำเร็จ" เพราะ fund() เพิ่ง throw error มา — บอกตามจริงและเตือนไม่ให้กดซ้ำทันที
+            showNotification(`ไม่แน่ใจว่าเติมเงินสำเร็จหรือไม่ (bundler แจ้ง error) — กรุณาอย่ากดเติมเงินซ้ำตอนนี้ เช็คยอด ETH ในกระเป๋าก่อน แล้วลองใหม่อีกครั้งในอีกสักครู่`, "warning");
+            appendLog(`Top-up status uncertain after fund() error — please verify wallet balance before retrying.`, "text-yellow-500");
         } else {
             showNotification(`เติมเงินสำเร็จ แต่ระบบกำลังซิงค์ยอด กรุณารอสักครู่`, "warning");
         }
@@ -2285,7 +2336,7 @@ async function executeGatewayUnlock(event) {
             const ownedIds = userTokens.map(t => t.toString()).join(", ");
 
             closeIdentityAuthModal();
-            const vault = document.getElementById('memberDnaStudio');
+            const vault = document.getElementById('memberDnaVault');
             if(vault) {
                 vault.classList.remove('hidden');
                 document.getElementById('dnaVerifyTokenId').value = userTokens[0].toString();
@@ -3976,6 +4027,7 @@ async function executeArchitectRemint(e) {
         unlockSystem();
     }
 }
+
 
 function closeNovaWarn(isConfirmed) {
     const modal = document.getElementById('novaWarnModal');
