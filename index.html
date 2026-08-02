@@ -49,6 +49,7 @@
     <script src="./irys-bundle.js"></script>
 
 </head>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=JetBrains+Mono:wght@400;700;800&display=swap');
 
@@ -657,7 +658,7 @@
         </div>
         <div class="chiaroscuro-bg p-4 rounded-xl border-l-2 border-rose-700">
             <span class="text-[9px] font-mono uppercase text-stone-500 block mb-1">PROTOCOL ECOSYSTEM STUDIO</span>
-            <div id="displayCouncilPool" class="text-xl md:text-2xl font-black crimson-text font-mono">0.<div id="displayCouncilPool"class="text-xl md:text-2xl font-black crimson-text font-mono">0.00 <span class="text-xs text-stone-600">ETH</span></div>
+            <div id="displayCouncilPool" class="text-xl md:text-2xl font-black crimson-text font-mono">0.00 <span class="text-xs text-stone-600">ETH</span></div>
             <div class="mt-2 pt-2 border-t border-rose-900/50">
                 <span class="text-[8px] font-mono text-stone-400 block tracking-widest uppercase">DUST CAP BUFFER (WEI):</span>
                 <span id="dustVisualizer" class="text-[10px] font-mono text-amber-400 font-bold block overflow-hidden text-ellipsis truncate mt-0.5">0</span>
@@ -2037,7 +2038,7 @@ async function loadDeedMetadata(tokenId) {
 
 async function initReadOnlyRPC() {
     const endpoints = [
-        'https://base-mainnet.g.alchemy.com/v2/wR5UgtUrkfPjKnqfMhm8k',
+        'https://base-mainnet.g.alchemy.com/v2/QTZrknzCeDDEXAFCEBCMM',
         'https://mainnet.base.org',                                   
         'https://base.llamarpc.com',                                  
         'https://base-rpc.publicnode.com'
@@ -2215,7 +2216,7 @@ async function connectWallet(e) {
         const explicitWalletConnect = e?.currentTarget?.dataset?.walletconnect === 'true';
         const walletConnectV2ProjectID = "f93c4e10c70012d94731d8b9d57fef3d"; 
         const BASE_CHAIN_ID_HEX = '0x2105'; 
-        const ALCHEMY_RPC = "https://base-mainnet.g.alchemy.com/v2/wR5UgtUrkfPjKnqfMhm8k";
+        const ALCHEMY_RPC = "https://base-mainnet.g.alchemy.com/v2/QTZrknzCeDDEXAFCEBCMM";
 
         const requestWithTimeout = (providerTarget, requestObj, timeoutMs = 60000) => {
             return Promise.race([
@@ -2489,6 +2490,7 @@ function clearAllTimers() {
     activeTimers.forEach(clearInterval);
     activeTimers = [];
 }
+
 let pendingProposalsRequest = false;
 async function fetchAndDisplayProposals() {
     if (isFetchingProposalsLock) { pendingProposalsRequest = true; return; }
@@ -2972,16 +2974,15 @@ async function triggerForge(type, e) {
 
         const btn = toggleButtonLoading(e, true);
         try {
-            if (!irys) throw new Error("Irys SDK Bridge is offline. Establish wallet connection first.");
+            if (!window.irys) throw new Error("Irys SDK Bridge is offline. Establish wallet connection first.");
 
             appendLog(`Inscribing back-end media onto permanent Irys Datachain...`, "text-blue-400");
             const tags = [{ name: "Content-Type", value: file.type }];
-            const response = await executeIrysUpload(file, tags, true); 
+            const response = await window.executeIrysUpload(file, tags, true); 
             const backMediaTxId = response.data ? response.data.id : response.id; 
 
             appendLog(`Back-end media successfully anchored: ${sanitizeForDOM(backMediaTxId)}`, "text-emerald-400 font-bold");
             
-            // [PATCH]: STATE SANITY CHECK ก่อนยิง On-Chain ป้องกัน Cross-Node Tampering
             if (String(tokenId) !== String(globalSelectedTokenId)) {
                 appendLog(`SECURITY HALT: User changed node matrix during Irys upload. Execution aborted to prevent corruption on Node #${tokenId}.`, "text-red-500 font-bold");
                 showNotification(`SECURITY ENFORCEMENT: ตรวจพบการเปลี่ยนเซลล์ระหว่างอัปโหลด ธุรกรรม On-Chain ถูกระงับเพื่อป้องกันข้อมูลเสียหาย`, "error");
@@ -3080,16 +3081,15 @@ async function executeArchitectMint(e) {
 
         const btn = toggleButtonLoading(e, true);
         try {
-            if (!irys) throw new Error("Irys SDK Bridge is offline.");
+            if (!window.irys) throw new Error("Irys SDK Bridge is offline.");
 
             appendLog(`Inscribing Architect's back-end media onto permanent Irys Datachain...`, "text-blue-400");
             const tags = [{ name: "Content-Type", value: file.type }];
-            const response = await executeIrysUpload(file, tags, true); 
+            const response = await window.executeIrysUpload(file, tags, true); 
             const backMediaTxId = response.data ? response.data.id : response.id; 
 
             appendLog(`Back-end media successfully anchored: ${sanitizeForDOM(backMediaTxId)}`, "text-emerald-400 font-bold");
             
-            // [PATCH]: STATE SANITY CHECK
             if (String(tokenId) !== String(globalSelectedTokenId)) {
                 appendLog(`SECURITY HALT: Matrix cell changed mid-flight. Architect Mint aborted.`, "text-red-500 font-bold");
                 showNotification(`SECURITY ENFORCEMENT: ตรวจพบการเปลี่ยนเซลล์ระหว่างอัปโหลด ระบบระงับการทำงาน`, "error");
@@ -3179,14 +3179,13 @@ async function executeArchitectRemint(e) {
 
         const btn = toggleButtonLoading(e, true);
         try {
-            if (!irys) throw new Error("Irys SDK Bridge is offline.");
+            if (!window.irys) throw new Error("Irys SDK Bridge is offline.");
 
             appendLog(`Inscribing back-end media onto permanent Irys Datachain...`, "text-blue-400");
             const tags = [{ name: "Content-Type", value: file.type }];
-            const response = await executeIrysUpload(file, tags, true); 
+            const response = await window.executeIrysUpload(file, tags, true); 
             const backMediaTxId = response.data ? response.data.id : response.id; 
 
-            // [PATCH]: STATE SANITY CHECK
             if (String(tokenId) !== String(globalSelectedTokenId)) {
                 appendLog(`SECURITY HALT: Matrix cell changed mid-flight. Architect Remint aborted.`, "text-red-500 font-bold");
                 showNotification(`SECURITY ENFORCEMENT: ตรวจพบการเปลี่ยนเซลล์ระหว่างอัปโหลด ระบบระงับการทำงาน`, "error");
@@ -3311,6 +3310,7 @@ async function triggerIdentityNova(e) {
         appendLog(`THE SOVEREIGN NOVA: High ascension ritual over node element #${tokenId} integrated permanently into on-chain forensics!`, "text-blue-400 font-bold");
     }
 }
+
 
 async function executeUpdateIdentity(e) {
     if (!secureContract || !signer) { 
