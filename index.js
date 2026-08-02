@@ -69,8 +69,15 @@ import { ethers } from "ethers";
         blobGcCache.set(url, objectUrl);
     };
 
-    window.fetchWithCacheSovereign = async function(url, signal = null) {
+        window.fetchWithCacheSovereign = async function(url, signal = null) {
         if (!url || url.trim() === "") return url;
+
+        // [HOTFIX 1] MEMORY OBTENTION: ดึง Object URL จาก RAM ทันทีถ้ามี (โหลด 0ms)
+        // บล็อกการสร้าง Object URL ซ้ำซ้อนที่ก่อให้เกิด Memory Leak อย่างเด็ดขาด
+        if (blobGcCache.has(url)) {
+            return blobGcCache.get(url);
+        }
+
         let cache = null; let objectUrl = null;
 
         try {
@@ -134,6 +141,7 @@ import { ethers } from "ethers";
         }
     };
 
+
     window.ensureIrysReady = async function(timeoutMs = 60000) {
         if (window.irys) return true;
         
@@ -173,7 +181,7 @@ import { ethers } from "ethers";
         }
     };
 
-    window.executeIrysUpload = async function(payload, tags, isFile = false, progressCtrl = null) {
+        window.executeIrysUpload = async function(payload, tags, isFile = false, progressCtrl = null) {
         await window.ensureIrysReady();
         const size = isFile ? payload.size : new Blob([payload]).size;
         
@@ -201,7 +209,8 @@ import { ethers } from "ethers";
 
             let fundCallFailed = false;
             try {
-                await window.irys.fund(diffWithBuffer);
+                // [HOTFIX 2] TYPE PRECISION LIMIT: บังคับ toString() ป้องกัน BigNumber Type Conflict
+                await window.irys.fund(diffWithBuffer.toString());
             } catch (fundErr) {
                 const feMsg = (fundErr && fundErr.message) || "";
                 const isUserRejection = /user rejected|declined|denied|cancelled|user declined/i.test(feMsg);
@@ -261,6 +270,7 @@ import { ethers } from "ethers";
         window.updateBridgeStatus("PERMANENTLY ONLINE", "success");
         return receipt;
     };
+
 
     window.executeIrysTopUp = async function(amountEthStr) {
         if (!window.lockSystem()) return; 
@@ -481,11 +491,14 @@ import { ethers } from "ethers";
         const targetSlotAtInit = window.activeTargetDeedUploadSlot;
         if (!file || targetSlotAtInit === null) { window.unlockSystem(); return; }
         
-        if (!window.irys) { 
-            window.showNotification("Operation suspended: Establish permanent settlement bridge path beforehand.", "error"); 
+        // --- ระบบบังคับเชื่อมต่ออัตโนมัติ (แก้ไข Deadlock แล้ว) ---
+        try {
+            await window.ensureIrysReady();
+        } catch (e) {
             window.unlockSystem();
-            return; 
+            return;
         }
+        // ----------------------------------------------------
         
         let irysTxId = ""; 
         const maxByteSize = 300 * 1024 * 1024; 
@@ -636,11 +649,16 @@ import { ethers } from "ethers";
     };
 
     window.buildAndUploadMetadata = async function(e) {
-        if (!window.irys) { 
-            window.showNotification("Operation suspended: Establish permanent settlement bridge path beforehand.", "error"); 
-            return; 
-        }
         if (!window.lockSystem()) return;
+
+        // --- ระบบบังคับเชื่อมต่ออัตโนมัติ (แก้ไข Deadlock แล้ว) ---
+        try {
+            await window.ensureIrysReady();
+        } catch (err) {
+            window.unlockSystem();
+            return;
+        }
+        // ----------------------------------------------------
 
         const btn = window.toggleButtonLoading(e, true);
         try {
@@ -871,4 +889,4 @@ import { ethers } from "ethers";
         container.appendChild(el);
     };
 
-})(); // สิ้นสุดขอบเขต IIFE
+})();
