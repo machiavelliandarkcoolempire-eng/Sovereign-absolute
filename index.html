@@ -14,11 +14,8 @@
         }
     </script>
     
-    <!-- ✅ แก้ไข connect-src: อนุญาตโดเมน *.irys.xyz ทั้งหมดเพื่อป้องกัน CORS/Network Error -->
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; media-src 'self' blob: https:; connect-src 'self' https://mainnet.base.org https://base.llamarpc.com https://base-rpc.publicnode.com https://base-mainnet.g.alchemy.com wss://base-mainnet.g.alchemy.com https://*.irys.xyz wss://relay.walletconnect.com wss://relay.walletconnect.org https://rpc.walletconnect.com https://api.web3modal.com https://api.reown.com wss:; frame-ancestors 'none'; base-uri 'none'; object-src 'none'; form-action 'self';">
 
-
-    <!-- 🌟 1. โหลด CSS ที่ Vercel บิ้วให้ -->
     <link rel="stylesheet" href="./dist.css" />
 
     <style>
@@ -26,18 +23,16 @@
         body { visibility: hidden; }
         body.app-ready { visibility: visible; }
         
-        /* SEC Compliance Override via CSS (Zero JS Modification) */
         #displayCouncilPool span {
             font-size: 0 !important;
         }
         #displayCouncilPool span::after {
             content: "ETH (Ecosystem Vault Allocation)";
-            font-size: 0.75rem; /* text-xs */
+            font-size: 0.75rem; 
             letter-spacing: normal;
         }
     </style>
     
-    <!-- 📦 ETHERS V6 & WALLETCONNECT & HLS -->
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://unpkg.com/@walletconnect/ethereum-provider@2.11.1/dist/index.umd.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
@@ -47,8 +42,6 @@
 
     <!-- 🌟 3. โหลด Irys SDK -->
     <script src="./irys-bundle.js"></script>
-
-</head>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=JetBrains+Mono:wght@400;700;800&display=swap');
@@ -521,7 +514,7 @@
         </div>
     </div>
 
-    <input type="file" id="deedActionFileUploader" class="hidden" accept="image/*,video/*" onchange="processDeedUploadAssignment(event)" />
+    <input type="file" id="deedActionFileUploader" class="hidden" accept="image/*,video/*" onchange="window.processDeedUploadAssignment(event)" />
 
     <header class="chiaroscuro-bg p-4 md:p-5 rounded-2xl mb-6 relative z-10 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
         <div class="flex items-center gap-3">
@@ -569,7 +562,6 @@
     
     <div id="memberDnaStudio" class="hidden mb-6 relative z-10">
     <div class="chiaroscuro-bg p-6 rounded-2xl border border-rose-950">
-        <!-- Header Section -->
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-stone-900 pb-3 mb-5 gap-2">
             <div>
                 <h2 class="text-lg font-black font-cinzel text-rose-400 uppercase tracking-tight">SOVEREIGN NOVA: ON-CHAIN FORENSIC TRUTH</h2>
@@ -579,13 +571,11 @@
         </div>
 
         <div class="space-y-4 font-mono">
-            <!-- 1. TOKEN ID -->
             <div class="p-3 bg-stone-950 border border-stone-900 rounded-lg">
                 <label class="text-[10px] text-amber-500 font-bold block mb-1 uppercase">1. TOKEN ID</label>
                 <input type="number" id="dnaVerifyTokenId" min="1" max="333" placeholder="TOKEN ID (1-333)" class="w-full bg-black border border-rose-950 p-2.5 text-sm text-amber-500 rounded outline-none focus:border-amber-600 transition-all" />
             </div>
 
-            <!-- 2. DNA -->
             <div class="p-3 bg-stone-950 border border-stone-900 rounded-lg">
                 <label class="text-[10px] text-amber-500 font-bold block mb-1 uppercase">2. DNA = IDENTITY DNA : YOUR NAME</label>
                 <div class="p-2.5 bg-black/80 rounded border border-rose-950/50">
@@ -593,7 +583,6 @@
                 </div>
             </div>
 
-            <!-- 3. VIDEO -->
             <div class="p-3 bg-stone-950 border border-stone-900 rounded-lg">
                 <label class="text-[10px] text-amber-500 font-bold block mb-1 uppercase">3. VIDEO : LINK , ID IRYS-XYZ</label>
                 <div class="p-2.5 bg-black/80 rounded border border-stone-900 text-[10px] flex justify-between items-center gap-2">
@@ -602,11 +591,9 @@
                 </div>
             </div>
 
-            <!-- 4. HIDDEN -->
             <div class="p-3 bg-stone-950 border border-stone-900 rounded-lg space-y-2.5">
                 <label class="text-[10px] text-amber-500 font-bold block uppercase">4. HIDDEN</label>
                 
-                <!-- Timestamps & Pixel Anchor -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-[9px]">
                     <div class="p-2 bg-black/80 rounded border border-stone-900">
                         <span class="text-stone-500 block uppercase font-bold">SANCTIFIED TIMESTAMPS</span>
@@ -618,7 +605,6 @@
                     </div>
                 </div>
 
-                <!-- Filter Enhancements -->
                 <div class="p-2 bg-black/90 rounded border border-stone-900/80 text-[8px] text-stone-400 flex flex-wrap justify-between gap-1">
                     <span>ปรับแสง: <strong class="text-amber-400">+50</strong></span>
                     <span>คอนทราสต์: <strong class="text-amber-400">+20</strong></span>
@@ -627,7 +613,6 @@
                     <span>รายละเอียด: <strong class="text-amber-400">+50</strong></span>
                 </div>
 
-                <!-- Forensic Deepfake & Image Analysis -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-[9px]">
                     <div class="p-2 bg-black/80 rounded border border-stone-900">
                         <span class="text-rose-400 block uppercase font-bold">AI DEEP FAKE NEWS (VIDEO)</span>
@@ -640,12 +625,10 @@
                 </div>
             </div>
 
-            <!-- Action Button -->
             <button onclick="processIdentityDnaInspectionOnChain()" class="w-full bg-rose-950/40 text-rose-300 border border-rose-700 text-[11px] font-black py-3.5 rounded-lg uppercase hover:bg-rose-900/60 transition-all tracking-widest shadow-[0_0_15px_rgba(153,27,27,0.2)] cursor-pointer mt-2">
                 EXTRACT ON-CHAIN STRUCTURAL TRACE — autoMap() 🧬
             </button>
 
-            <!-- Status Banner (เชื่อมกับ JS แล้ว) -->
             <div id="dnaAnalysisTerminalOut" class="p-2 bg-stone-950 border border-stone-800 rounded text-center mt-2 text-[9px] text-stone-500 font-mono uppercase tracking-widest">
                 AWAITING FORENSIC EXTRACTION...
             </div>
@@ -700,7 +683,6 @@
                 <span class="text-[10px] font-mono text-stone-500 uppercase whitespace-nowrap">ACTIVE: <span id="matrixActiveCount" class="text-amber-500 font-bold">0</span>/333</span>
             </div>
         </div><div id="matrixGridContainer" class="grid grid-cols-6 sm:grid-cols-10 md:grid-cols-12 lg:grid-cols-16 gap-2 max-h-[400px] overflow-y-auto scroll-dark pr-3 p-2 bg-black/30 rounded-xl border border-stone-900/50 shadow-inner">
-            <!-- Skeletons will be replaced by JS -->
         </div>
         
         <div class="flex flex-wrap gap-5 mt-6 text-tiny font-mono uppercase text-stone-400 bg-black/40 p-4 rounded-xl border border-stone-800">
@@ -814,7 +796,7 @@
                 <div class="bg-stone-950 border border-rose-950 rounded-xl p-5">
                     <div class="flex flex-wrap items-center justify-center gap-3">
                         <a id="linkSocial1" href="#" target="_blank" rel="noopener noreferrer" class="px-4 py-2.5 bg-stone-900 border border-stone-800 rounded-lg text-[10px] font-mono uppercase text-stone-300 hover:border-amber-500 hover:text-amber-500 transition-colors">✦ LinkedIn Gateway</a>
-                        <a id="linkSocial2" href="#" target="_blank" rel="noopener noreferrer" class="px-4 py-2.5 bg-stone-900 border border-stone-800 rounded-lg text-[10px] font-mono uppercase text-stone-300 hover:border-amber-500 hover:text-amber-500 transition-colors">✦ X / Twitter Gateway</a>
+                        <a id="linkSocial2" href="#" target="_blank" rel="noopener noreferrer" class="px-4 py-2.5 bg-stone-900 border border-stone-800 rounded-lg text-[10px] font-mono uppercase text-stone-300 hover:border-rose-600 hover:text-rose-400 transition-colors">✦ X / Twitter Gateway</a>
                         <a id="linkSocial3" href="#" target="_blank" rel="noopener noreferrer" class="px-4 py-2.5 bg-stone-900 border border-stone-800 rounded-lg text-[10px] font-mono uppercase text-stone-300 hover:border-rose-600 hover:text-rose-400 transition-colors">✦ Council Room Discord</a>
                         <a id="linkSocialClubHouse" href="#" target="_blank" rel="noopener noreferrer" class="px-4 py-2.5 bg-gradient-to-r from-[#78350f] to-[#d97706] border border-[#fef08a] rounded-lg text-[10px] font-mono font-black uppercase text-black hover:brightness-110 transition-all shadow-[0_0_15px_rgba(217,119,6,0.3)]">🏆 THE SOVEREIGN CLUB HOUSE & SOCIAL</a>
                     </div>
@@ -852,8 +834,7 @@
                     ⚡ ENGAGE IRYS BRIDGE
                 </button>
                 
-                <!-- จัดระเบียบปุ่ม TOP-UP ใหม่: ใส่ w-full md:w-auto ปรับสี และใช้ฟอนต์ Mono -->
-                <button onclick="executeIrysTopUp('0.001')" type="button" class="w-full md:w-auto px-4 py-2 bg-blue-950 border border-blue-900 text-blue-300 hover:bg-blue-900 text-[10px] font-mono font-bold uppercase rounded shadow-[0_0_10px_rgba(30,58,138,0.2)] transition-colors">
+                <button onclick="window.executeIrysTopUp('0.001')" type="button" class="w-full md:w-auto px-4 py-2 bg-blue-950 border border-blue-900 text-blue-300 hover:bg-blue-900 text-[10px] font-mono font-bold uppercase rounded shadow-[0_0_10px_rgba(30,58,138,0.2)] transition-colors">
                     TOP-UP IRYS (0.001 ETH)
                 </button>
 
@@ -989,15 +970,12 @@
     </section>
     
     <section class="chiaroscuro-bg p-6 rounded-2xl mb-6 relative z-10 border border-rose-950">
-    <!-- Section Header -->
     <div class="border-b border-stone-900 pb-3 mb-5">
         <h2 class="text-lg font-black font-cinzel text-stone-100 uppercase tracking-tight">👑 Protocol Architecture Deployment</h2>
         <p class="text-[9px] font-mono text-stone-500 uppercase tracking-wide">AUTONOMOUS INFRASTRUCTURE DEPLOYMENT & STATE RELINQUISHMENT PROTOCOL</p>
     </div>
     
-    <!-- Grid System Container (12 Columns) -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <!-- ฝั่งซ้าย: Target Cell & Protocol Allocation (4 Columns) -->
         <div class="lg:col-span-4 flex flex-col justify-center">
             <div class="bg-stone-950 p-4 rounded-xl border border-stone-900 shadow-[inset_0_0_20px_rgba(0,0,0,0.9)]">
                 <label class="text-[10px] text-stone-400 font-mono font-bold block mb-2 uppercase tracking-widest text-center border-b border-stone-900 pb-2">TARGET CELL POSITION IDENTIFIER</label>
@@ -1009,7 +987,6 @@
                 </div>
             </div>
         </div>
-<!-- ฝั่งขวา: The Sovereign Immolation Ritual (8 Columns) -->
         <div class="lg:col-span-8 bg-stone-950 border border-red-950 p-5 rounded-xl flex flex-col justify-between shadow-[0_0_20px_rgba(220,38,38,0.05)] hover:border-red-700/50 transition-colors">
             <div>
                 <h3 class="text-red-500 font-black font-mono text-sm mb-2 uppercase tracking-wider flex items-center gap-2"><span>🩸</span> THE SOVEREIGN IMMOLATION RITUAL</h3>
@@ -1050,7 +1027,7 @@
                         <input type="text" id="prop2" value="TRANSFERABLE" class="w-full bg-black border border-stone-900 p-2 text-[10px] font-mono text-stone-200 rounded" />
                     </div>
                 </div>
-                <button onclick="buildAndUploadMetadata(this)" class="w-full bg-gradient-to-r from-amber-900 to-amber-700 text-black font-black font-mono text-[10px] py-3 rounded-lg uppercase tracking-wider">COMPILE & TRANSMIT MANIFEST JSON</button>
+                <button onclick="window.buildAndUploadMetadata(this)" class="w-full bg-gradient-to-r from-amber-900 to-amber-700 text-black font-black font-mono text-[10px] py-3 rounded-lg uppercase tracking-wider">COMPILE & TRANSMIT MANIFEST JSON</button>
             </div>
 
             <div class="space-y-3 border border-stone-900 p-4 rounded-xl bg-black/40">
@@ -1138,7 +1115,6 @@
         <button onclick="saveArchitectGateways(this)" class="px-5 py-2.5 bg-amber-700 text-black font-black text-[10px] rounded uppercase hover:bg-amber-600 transition-colors w-full md:w-auto mt-2">RE-ALIGN VECTORS</button>
     </div>
 
-    <!-- SYSTEM LOG SECTION -->
     <section class="chiaroscuro-bg mt-6 p-4 rounded-xl border border-slate-900">
         <span class="text-[10px] font-mono text-slate-500 uppercase block border-b border-slate-900 pb-2">// SYSTEM EVENT REAL-TIME TELEMETRY STREAM LOG</span>
         <div id="systemLogBox" class="mt-3 text-[10px] font-mono h-28 overflow-y-auto scroll-dark text-slate-500 space-y-1 select-text">
@@ -1146,7 +1122,6 @@
         </div>
     </section>
 
-    <!-- DOCTRINE SECTION -->
     <section class="chiaroscuro-bg p-4 rounded-xl my-6 border border-slate-900 bg-black/50 text-center relative z-10">
         <h4 class="text-[10px] font-black font-cinzel text-slate-500 uppercase tracking-widest mb-2">
             ⚖ THE ARCHITECT ABDICATION & FORENSIC INTEGRITY DOCTRINE 🔱
@@ -1160,7 +1135,6 @@
         </p>
     </section>
 
-    <!-- FOOTER SECTION -->
     <footer class="mt-4 chiaroscuro-bg p-4 rounded-xl font-mono text-[10px] text-slate-500 relative z-10">
         <div id="systemFooterLog" class="h-12 overflow-y-auto leading-relaxed scroll-dark">> [SYSTEM]: Integrity scan complete. Global nodes aligned. No external backend infrastructure recognized pursuant to the autarchic provisions of the Machiavellian Protocol. THE SOVEREIGN ABSOLUTE 🔱.</div>
         <div class="mt-4 pt-4 border-t border-slate-800/50 text-center text-slate-500 uppercase tracking-widest leading-relaxed">
@@ -1168,13 +1142,9 @@
         </div>
     </footer>
 
-
 <script>
 "use strict";
 
-// ============================================================================
-// 🛡️ SECURITY & ENVIRONMENT INITIALIZATION
-// ============================================================================
 if (window.self !== window.top) {
     try {
         if (window.top.location.hostname !== window.self.location.hostname) {
@@ -1340,10 +1310,7 @@ const WETH_ABI = [
     "function balanceOf(address account) view returns (uint256)"
 ];
 
-// ============================================================================
-// 🧠 STATE MANAGEMENT
-// ============================================================================
-let provider = null, signer = null, secureContract = null, irys = null;
+let provider = null, signer = null, secureContract = null;
 let readOnlyProvider = null, readOnlyContract = null;
 let pollingInterval = null; 
 let activeRawProvider = null; 
@@ -1351,7 +1318,7 @@ let activeTimers = [];
 
 const GLOBAL_NODE_CACHE = new Map();
 const MAX_NODE_CACHE = 50;
-const PENDING_AUTOMAP_REQUESTS = new Map(); // ป้องกัน RPC ยิงซ้ำซ้อน (แก้เว็บหน่วง)
+const PENDING_AUTOMAP_REQUESTS = new Map();
 
 let isFetchingProposalsLock = false; 
 let searchDebounceTimer = null;
@@ -1368,49 +1335,10 @@ let currentLoadedMediaData = {
 
 let irysTargetFieldType = ""; 
 let isTransactionPending = false;
-
-// 🛡️ [FIX-1] ป้องกันการกดเติมเงิน (irys.fund) ซ้ำเร็วเกินไป
-// กันไม่ให้เสียเงินจริงซ้ำๆ ตอนเจอบั๊ก "failed to post funding tx / doesn't exist" ของ Irys bundler
-let lastFundAttemptAt = 0;
-const FUND_COOLDOWN_MS = 60000; // ต้องรออย่างน้อย 60 วิ ระหว่างการเติมเงินแต่ละครั้ง
 let isSyncingState = false;
 
 const LOG_MAX_ROWS = 100;
 let _logScrollQueued = false;
-
-// ============================================================================
-// 🛠️ UTILITY & FORMATTING
-// ============================================================================
-
-function extractIrysId(input) {
-    if (!input) return "";
-    let clean = input.trim();
-    
-    // ปล่อยผ่าน URL ปกติ ไม่ให้โดนหั่นพัง
-    if ((clean.startsWith('http://') || clean.startsWith('https://')) && !clean.includes('gateway.irys.xyz/')) {
-        return clean;
-    }
-
-    if (clean.includes('gateway.irys.xyz/')) {
-        clean = clean.split('gateway.irys.xyz/')[1].split('/')[0];
-    } else if (clean.startsWith('ar://')) {
-        clean = clean.replace('ar://', '');
-    } else if (clean.startsWith('irys://')) {
-        clean = clean.replace('irys://', '');
-    } else {
-        clean = clean.split('/')[0];
-    }
-    return clean.replace(/[^a-zA-Z0-9_-]/g, '');
-}
-
-function buildIrysUrl(txId) {
-    const cleanId = extractIrysId(txId);
-    if (!cleanId) return "";
-    if (cleanId.startsWith('http://') || cleanId.startsWith('https://')) {
-        return cleanId;
-    }
-    return `https://gateway.irys.xyz/${cleanId}`;
-}
 
 function appendLog(msg, colorClass = 'text-slate-400') {
     const box = document.getElementById('systemLogBox');
@@ -1440,9 +1368,6 @@ function appendLog(msg, colorClass = 'text-slate-400') {
     }
 }
 
-// ============================================================================
-// 🛡️ 1. ระบบล็อกธุรกรรมขั้นเด็ดขาด (ป้องกันการกดซ้ำที่หน้าเว็บ)
-// ============================================================================
 function lockSystem() {
     if (isTransactionPending || localStorage.getItem('tx_pending') === 'true') {
         showNotification("⚠️ SYSTEM ENFORCEMENT: ธุรกรรมกำลังประมวลผล ห้ามกดย้ำเพื่อป้องกันการเสียค่า Gas ฟรี", "error");
@@ -1465,9 +1390,6 @@ function lockSystem() {
     return true;
 }
 
-// ============================================================================
-// 🛡️ 2. ระบบปลดล็อกหน้าจอ
-// ============================================================================
 function unlockSystem(force = false) {
     isTransactionPending = false;
     localStorage.removeItem('tx_pending');
@@ -1507,22 +1429,6 @@ function validateTokenRange(id) {
         return false;
     }
     return parsed;
-}
-
-const blobGcCache = new Map();
-const MAX_BLOB_CACHE_SIZE = 50;
-
-function registerBlobForGc(url, objectUrl) {
-    if (!url || !objectUrl) return;
-    if (blobGcCache.has(url)) return;
-    
-    if (blobGcCache.size >= MAX_BLOB_CACHE_SIZE) {
-        const oldestKey = blobGcCache.keys().next().value;
-        const oldestObjUrl = blobGcCache.get(oldestKey);
-        try { URL.revokeObjectURL(oldestObjUrl); } catch(e) {}
-        blobGcCache.delete(oldestKey);
-    }
-    blobGcCache.set(url, objectUrl);
 }
 
 function fmtUnits(value, decimals = 18) {
@@ -1616,9 +1522,6 @@ async function promptUserForFile(acceptType = 'image/*,video/*') {
     });
 }
 
-// ============================================================================
-// ⚡ 3. TRANSACTION ENGINE (ETHERS V6) - อัปเกรดความปลอดภัย
-// ============================================================================
 async function runTx(btnInput, label, methodName, args = [], overrides = {}, options = {}) {
     const { manageLock = true, manageButton = true, sync = true } = options;
 
@@ -1677,7 +1580,6 @@ async function runTx(btnInput, label, methodName, args = [], overrides = {}, opt
     }
 }
 
-
 async function checkGasSurge() {
     if(!provider) return false;
     try {
@@ -1696,9 +1598,6 @@ async function checkGasSurge() {
     } catch (e) { return false; }
 }
 
-// ============================================================================
-// 📡 DATA FETCHING & CACHING
-// ============================================================================
 function getImperialRank(tokenId) {
     const id = parseInt(tokenId);
     if(isNaN(id)) return "UNASSIGNED";
@@ -1708,64 +1607,6 @@ function getImperialRank(tokenId) {
     if (id >= 201 && id <= 332) return "THE COUNCIL RED MACHINE";
     if (id === 333) return "SOVEREIGN IMMORTAL 333 ";
     return "UNKNOWN ENTITY";
-}
-
-async function fetchWithCacheSovereign(url, signal = null) {
-    if (!url || url.trim() === "") return url;
-    let cache = null; let objectUrl = null;
-
-    try {
-        if (window.caches) {
-            cache = await caches.open('sovereign-matrix-cache-v1');
-            const cachedResponse = await cache.match(url);
-            if (cachedResponse) {
-                const blob = await cachedResponse.blob();
-                objectUrl = URL.createObjectURL(blob);
-                registerBlobForGc(url, objectUrl);
-                return objectUrl;
-            }
-        }
-    } catch (e) {}
-    
-    let cleanUri = extractIrysId(url);
-    const fetchFromGateway = async (gatewayUrl) => {
-        let retries = 3; let delay = 1000;
-        while (retries > 0) {
-            try {
-                const res = await fetch(gatewayUrl, { signal });
-                if (!res.ok) throw new Error(`Gateway HTTP ${res.status}`);
-                return await res.blob();
-            } catch (err) {
-                retries--;
-                if (retries === 0) throw err;
-                await new Promise(r => setTimeout(r, delay)); delay *= 2; 
-            }
-        }
-    };
-
-    let timerId;
-    const timeoutGuardian = new Promise((_, reject) => {
-        timerId = setTimeout(() => reject(new Error("GATEWAY_TIMEOUT")), 8000);
-        if (signal) {
-            signal.addEventListener('abort', () => {
-                clearTimeout(timerId);
-                reject(new Error("ABORTED"));
-            });
-        }
-    });
-
-    try {
-        const targetUrl = cleanUri.startsWith('http') ? cleanUri : `https://gateway.irys.xyz/${cleanUri}`;
-        const blob = await Promise.race([fetchFromGateway(targetUrl), timeoutGuardian]);
-        if (cache) cache.put(url, new Response(blob)).catch(e => {});
-        objectUrl = URL.createObjectURL(blob);
-        registerBlobForGc(url, objectUrl);
-        return objectUrl;
-    } catch (err) {
-        return cleanUri.startsWith('http') ? cleanUri : `https://gateway.irys.xyz/${cleanUri}`;
-    } finally {
-        clearTimeout(timerId);
-    }
 }
 
 async function autoMap(tokenId) {
@@ -1811,7 +1652,7 @@ async function autoMap(tokenId) {
 
             let metadata = null;
             if (tokenUri && tokenUri.trim() !== "") {
-                const cleanUri = extractIrysId(tokenUri);
+                const cleanUri = window.extractIrysId(tokenUri);
                 const targetUrl = cleanUri.startsWith('http') ? cleanUri : `https://gateway.irys.xyz/${cleanUri}`;
                 try {
                     const controller = new AbortController();
@@ -1842,11 +1683,11 @@ async function autoMap(tokenId) {
                 owner: deedData.owner || deedData[0], 
                 isActivated: deedData.active !== undefined ? deedData.active : deedData[1], 
                 isSanctified: deedData.sanctified !== undefined ? deedData.sanctified : deedData[2],
-                front: buildIrysUrl(deedData.front || deedData[3]), 
-                back: buildIrysUrl(deedData.back || deedData[4]), 
-                video: buildIrysUrl(deedData.video || deedData[5]),
+                front: window.buildIrysUrl(deedData.front || deedData[3]), 
+                back: window.buildIrysUrl(deedData.back || deedData[4]), 
+                video: window.buildIrysUrl(deedData.video || deedData[5]),
                 dna: deedData.dna || deedData[6] || "", 
-                hiddenProperty: buildIrysUrl(deedData.hidden || deedData[7]), 
+                hiddenProperty: window.buildIrysUrl(deedData.hidden || deedData[7]), 
                 rawMetadata: metadata,
                 votingLockUntil: votingLockUntil ? Number(votingLockUntil) : 0
             };
@@ -1868,9 +1709,6 @@ async function autoMap(tokenId) {
     return requestPromise;
 }
 
-// ============================================================================
-// 🎨 UI & NOTIFICATIONS
-// ============================================================================
 function showNotification(msg, type = 'error') {
     const popup = document.createElement('div');
     const bgColor = type === 'error' 
@@ -2009,9 +1847,6 @@ function updateBridgeStatus(msg, type) {
     });
 }
 
-// ============================================================================
-// 💸 IRYS FUNDING UI OVERLAY (แยกสเตปจ่ายเงินออกจากสเตปอัปโหลด)
-// ============================================================================
 function showFundingOverlay(costStr) {
     const overlay = document.createElement('div');
     overlay.id = 'irysFundingOverlay';
@@ -2032,239 +1867,6 @@ function hideFundingOverlay() {
     const overlay = document.getElementById('irysFundingOverlay');
     if (overlay) overlay.remove();
 }
-
-// ============================================================================
-// 🌉 IRYS SDK BRIDGE
-// ============================================================================
-async function ensureIrysReady(timeoutMs = 60000) {
-    if (irys) return true;
-    
-    if (!activeRawProvider) throw new Error("EVM Provider Uninitialized. Please connect Web3 Wallet first.");
-    
-    if (typeof window.InitSovereignIrys !== 'function') {
-        throw new Error("Irys Custom Bundle (irys-bundle.js) is missing or failed to load.");
-    }
-
-    updateBridgeStatus("ENGAGING IRYS BRIDGE...", "warning");
-    appendLog("Engaging isolated Irys Settlement Bridge via Custom Sovereign Bundle...", "text-blue-400");
-
-    try {
-        const initPromise = (async () => {
-            irys = await window.InitSovereignIrys(activeRawProvider);
-            return true;
-        })();
-
-        const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Irys initialization timeout")), timeoutMs));
-
-        await Promise.race([initPromise, timeoutPromise]);
-
-        updateBridgeStatus("✅ IRYS PERMANENT BRIDGE ONLINE", "success");
-        appendLog("Autonomous Irys permanent settlement bridge successfully engaged.", "text-emerald-400 font-bold");
-        return true;
-    } catch (err) {
-        irys = null;
-        updateBridgeStatus("⚠ BRIDGE ERROR (CHECK LOG)", "error");
-        appendLog(`[IRYS FAULT] Bridge protocol initialization failed: ${err.message}`, "text-rose-500 font-bold");
-        throw err;
-    }
-}
-
-async function withNetworkRetry(fn, retries = 3, delay = 1000) {
-    for (let i = 0; i < retries; i++) {
-        try { return await fn(); }
-        catch (e) {
-            if (i === retries - 1) throw e;
-            await new Promise(r => setTimeout(r, delay * Math.pow(2, i)));
-        }
-    }
-}
-
-// ============================================================================
-// 🌉 4. IRYS SDK BRIDGE (อัปเกรด UX: แยก UI จ่ายเงิน และ Progress Bar)
-// ============================================================================
-async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = null) {
-    await ensureIrysReady();
-    const size = isFile ? payload.size : new Blob([payload]).size;
-    
-    const price = await withNetworkRetry(() => irys.getPrice(size));
-    const initialBalance = await withNetworkRetry(() => irys.getLoadedBalance());
-
-    if (initialBalance.isLessThan(price)) {
-        const diffWithBuffer = price.minus(initialBalance).multipliedBy(115).dividedToIntegerBy(100);
-        const costStr = fmtUnits(diffWithBuffer.toString());
-
-        // 🛡️ [FIX-1] เช็ค cooldown ก่อน ป้องกันกดรัว/retry ถี่จนเสียเงินซ้ำ
-        const msSinceLastFund = Date.now() - lastFundAttemptAt;
-        if (msSinceLastFund < FUND_COOLDOWN_MS) {
-            const waitSec = Math.ceil((FUND_COOLDOWN_MS - msSinceLastFund) / 1000);
-            throw new Error(`กรุณารออีก ${waitSec} วินาทีก่อนเติมเงินรอบใหม่ (ระบบกันเสียเงินซ้ำจากธุรกรรมก่อนหน้าที่อาจยังไม่เข้าระบบ)`);
-        }
-        
-        updateBridgeStatus("AWAITING FUNDING TX...", "warning");
-        appendLog(`Awaiting user transaction: Funding ${costStr} ETH`, "text-yellow-400");
-        
-        const isConfirmed = await requestFundConfirmation(costStr);
-        if (!isConfirmed) throw new Error("User declined funding.");
-        
-        // 🚀 แสดงหน้าจอรอจ่ายเงิน (ยังไม่โชว์หลอดอัปโหลด)
-        showFundingOverlay(costStr);
-        lastFundAttemptAt = Date.now();
-
-        // ✅ [FIX-2] เจอ error "failed to post funding tx / ... doesn't exist" (บั๊กที่รู้จักของ Irys SDK)
-        // อย่าเพิ่งถือว่าล้มเหลวทันที เพราะ tx อาจ confirm บนเชนจริงแล้ว แค่ bundler sync ช้า/พลาดจังหวะ
-        // ให้ไปรอเช็คยอดเงินจริง (getLoadedBalance) ก่อน ค่อยฟันธงว่าล้มเหลวจริงหรือไม่
-        let fundCallFailed = false;
-        try {
-            await irys.fund(diffWithBuffer);
-        } catch (fundErr) {
-            const feMsg = (fundErr && fundErr.message) || "";
-            const isUserRejection = /user rejected|declined|denied|cancelled|user declined/i.test(feMsg);
-            if (isUserRejection) {
-                hideFundingOverlay();
-                throw new Error("การทำธุรกรรมเติมเงินถูกยกเลิกโดยผู้ใช้");
-            }
-            fundCallFailed = true;
-            appendLog(`[IRYS FUND WARNING] ${sanitizeForDOM(feMsg)} — กำลังตรวจสอบยอดเงินอีกครั้งก่อนสรุปว่าล้มเหลวจริง (ไม่ต้องกดซ้ำตอนนี้)`, "text-yellow-500");
-        }
-        
-        appendLog(fundCallFailed
-            ? "Funding TX status uncertain (bundler notify failed). Verifying on-chain balance before giving up..."
-            : "Funding TX confirmed on-chain. Awaiting Bundler synchronization...", "text-yellow-400");
-        updateBridgeStatus("SYNCING BUNDLER...", "warning");
-
-        const titleEl = document.getElementById('fundOverlayTitle');
-        const subEl = document.getElementById('fundOverlaySub');
-        if(titleEl) titleEl.textContent = "SYNCING BUNDLER...";
-        if(subEl) subEl.innerHTML = "กำลังตรวจสอบยอดเงินเข้า Irys Node...<br><span class='text-emerald-400'>(ใช้เวลาประมาณ 10-45 วินาที กรุณาอย่าปิดหน้านี้หรือกดเติมเงินซ้ำ)</span>";
-
-        let isSynced = false;
-        let attempts = 0;
-        // ✅ ถ้า fund() throw มาก่อน ให้รอนานขึ้น (30 รอบ x 3 วิ = ~90 วิ) เผื่อ tx confirm ช้า
-        const maxAttempts = fundCallFailed ? 30 : 15;
-        
-        while (!isSynced && attempts < maxAttempts) {
-            await new Promise(resolve => setTimeout(resolve, 3000));
-            const currentBalance = await withNetworkRetry(() => irys.getLoadedBalance());
-            if (currentBalance.isGreaterThan(initialBalance)) {
-                isSynced = true;
-            }
-            attempts++;
-        }
-
-        hideFundingOverlay(); // ปิดหน้าจอรอจ่ายเงินเมื่อเงินเข้าแล้ว
-
-        if (!isSynced) {
-            if (fundCallFailed) {
-                throw new Error("ตรวจสอบยอดเงินแล้วยังไม่พบว่าเข้าระบบ — กรุณาอย่ากดเติมเงินซ้ำทันที ให้เช็คยอด ETH ที่ถูกหักในกระเป๋าก่อน แล้วลองใหม่อีกครั้งในอีกสักครู่ (เก็บ error id ไว้ถ้าต้องติดต่อฝ่ายซัพพอร์ตของ Irys)");
-            }
-            throw new Error("Bundler synchronization timeout. Please retry upload in a few minutes.");
-        }
-        
-        appendLog("Bundler synchronized successfully. Proceeding to upload.", "text-emerald-400");
-    }
-
-    updateBridgeStatus("STREAMING PAYLOAD...", "warning");
-    let receipt;
-    if (isFile) {
-        const env = detectUploadEnvironment();
-        // 🚀 โชว์หลอด Progress Bar ตรงนี้! (เงินผ่านแล้ว เริ่มอัปโหลดจริง)
-        if (progressCtrl) progressCtrl.show(); 
-        receipt = await uploadWithRetry(payload, tags, env, progressCtrl || { set:()=>{}, complete:()=>{} });
-        if (progressCtrl) progressCtrl.complete();
-    } else {
-        receipt = await irys.upload(payload, { tags });
-    }
-    updateBridgeStatus("PERMANENTLY ONLINE", "success");
-    return receipt;
-}
-
-
-// ============================================================================
-// 💰 IRYS PRE-FUND SYSTEM (ระบบเติมเครดิตล่วงหน้า Bypass การเซ็นกระเป๋า)
-// ============================================================================
-async function executeIrysTopUp(amountEthStr) {
-    if (!lockSystem()) return; // ใช้ระบบ Lock เดิมของคุณเพื่อป้องกันการกดเบิ้ล
-    // 🛡️ [FIX-1] เช็ค cooldown ก่อนยิง irys.fund() ซ้ำ ป้องกันเสียเงินซ้ำจากการกดรีทราย
-    const msSinceLastFund = Date.now() - lastFundAttemptAt;
-    if (msSinceLastFund < FUND_COOLDOWN_MS) {
-        const waitSec = Math.ceil((FUND_COOLDOWN_MS - msSinceLastFund) / 1000);
-        showNotification(`กรุณารออีก ${waitSec} วินาทีก่อนเติมเงินรอบใหม่ (กันเสียเงินซ้ำจากธุรกรรมก่อนหน้าที่อาจยังไม่เข้าระบบ)`, "warning");
-        unlockSystem();
-        return;
-    }
-    try {
-        await ensureIrysReady();
-        
-        // ✅ [จุดที่แก้บั๊ก] ดึงยอดเงินตั้งต้น มาไว้ "ก่อน" จ่ายเงิน
-        const initialBalance = await irys.getLoadedBalance();
-        lastFundAttemptAt = Date.now();
-        
-        // แปลงหน่วย ETH เป็น Wei (ใช้ ethers.js ที่มีอยู่ในระบบคุณอยู่แล้ว)
-        const amountWei = ethers.parseEther(amountEthStr);
-        
-        showFundingOverlay(amountEthStr);
-        appendLog(`Initiating Irys Top-up: ${amountEthStr} ETH...`, "text-blue-400");
-        
-        // ✅ [FIX-2] สั่งจ่ายเงิน — ถ้า SDK โยน error "doesn't exist" (บั๊กที่รู้จักของ Irys)
-        // อย่าเพิ่งฟันธงว่าล้มเหลว ให้ไปรอเช็คยอดเงินจริงก่อน (เพราะ tx อาจ confirm อยู่บนเชนแล้วจริงๆ)
-        let fundCallFailed = false;
-        try {
-            await irys.fund(amountWei.toString());
-        } catch (fundErr) {
-            const feMsg = (fundErr && fundErr.message) || "";
-            const isUserRejection = /user rejected|declined|denied|cancelled|user declined/i.test(feMsg);
-            if (isUserRejection) throw fundErr; // โยนต่อให้ catch ข้างนอกจัดการข้อความยกเลิกตามปกติ
-            fundCallFailed = true;
-            appendLog(`[IRYS FUND WARNING] ${sanitizeForDOM(feMsg)} — กำลังตรวจสอบยอดเงินอีกครั้งก่อนสรุปว่าล้มเหลวจริง (ไม่ต้องกดซ้ำตอนนี้)`, "text-yellow-500");
-        }
-        
-        const titleEl = document.getElementById('fundOverlayTitle');
-        const subEl = document.getElementById('fundOverlaySub');
-        if(titleEl) titleEl.textContent = "SYNCING BUNDLER...";
-        if(subEl) subEl.innerHTML = "กำลังตรวจสอบยอดเครดิตของคุณ...<br><span class='text-emerald-400'>(ใช้เวลาประมาณ 10-45 วินาที กรุณาอย่ากดเติมเงินซ้ำ)</span>";
-
-        let isSynced = false;
-        let attempts = 0;
-        const maxTopUpAttempts = fundCallFailed ? 30 : 15; // รอนานขึ้นถ้า fund() เพิ่ง throw มา
-        
-        while (!isSynced && attempts < maxTopUpAttempts) {
-            await new Promise(resolve => setTimeout(resolve, 3000));
-            // ✅ ตอนนี้ currentBalance จะเอามาเทียบกับ initialBalance (ยอดก่อนจ่าย) ได้อย่างถูกต้องแล้ว
-            const currentBalance = await irys.getLoadedBalance();
-            if (currentBalance.isGreaterThan(initialBalance)) {
-                isSynced = true;
-            }
-            attempts++;
-        }
-        
-        hideFundingOverlay();
-        
-        if (isSynced) {
-            showNotification(`เติมเครดิตเข้า Irys สำเร็จ! คุณสามารถอัปโหลดไฟล์ได้ทันทีโดยไม่ต้องเซ็นกระเป๋าอีก`, "success");
-            appendLog(`Irys balance topped up successfully.`, "text-emerald-400");
-        } else if (fundCallFailed) {
-            // ✅ [FIX-2] ไม่ฟันธงว่า "สำเร็จ" เพราะ fund() เพิ่ง throw error มา — บอกตามจริงและเตือนไม่ให้กดซ้ำทันที
-            showNotification(`ไม่แน่ใจว่าเติมเงินสำเร็จหรือไม่ (bundler แจ้ง error) — กรุณาอย่ากดเติมเงินซ้ำตอนนี้ เช็คยอด ETH ในกระเป๋าก่อน แล้วลองใหม่อีกครั้งในอีกสักครู่`, "warning");
-            appendLog(`Top-up status uncertain after fund() error — please verify wallet balance before retrying.`, "text-yellow-500");
-        } else {
-            showNotification(`เติมเงินสำเร็จ แต่ระบบกำลังซิงค์ยอด กรุณารอสักครู่`, "warning");
-        }
-        
-    } catch (err) {
-        hideFundingOverlay();
-        const msg = err.message || "Unknown error";
-        if (msg.includes("declined") || msg.includes("rejected") || msg.includes("cancelled") || msg.includes("user rejected")) {
-            appendLog("User cancelled the top-up transaction.", "text-yellow-500");
-            showNotification("ยกเลิกการเติมเครดิต", "warning");
-        } else {
-            appendLog(`Top-up Failed: ${msg}`, "text-red-500");
-            showNotification(`Top-up Failed: ${msg}`, "error");
-        }
-    } finally {
-        unlockSystem(); // ปลดล็อกระบบตามมาตรฐานเดิมของคุณ
-    }
-}
-
 
 function openIdentityAuthModal() { document.getElementById('identityAuthModal')?.classList.remove('hidden'); }
 function closeIdentityAuthModal() { document.getElementById('identityAuthModal')?.classList.add('hidden'); }
@@ -2427,9 +2029,6 @@ async function loadDeedMetadata(tokenId) {
     }
 }
 
-// ============================================================================
-// 🌐 RPC & WALLET CONNECTION (ETHERS V6)
-// ============================================================================
 async function initReadOnlyRPC() {
     const endpoints = [
         'https://base-mainnet.g.alchemy.com/v2/QTZrknzCeDDEXAFCEBCMM',
@@ -2564,7 +2163,7 @@ async function handleAccountsChangedEvent(accounts) {
         provider = null;
         signer = null;
         secureContract = null;
-        irys = null; 
+        window.irys = null; 
     } else {
         appendLog("Identity vector shift detected. Re-authenticating wallet...", "text-yellow-400");
         const fakeEvent = { currentTarget: document.getElementById('btnConnect') };
@@ -2729,7 +2328,7 @@ async function connectWallet(e) {
             document.getElementById('robotPanel')?.classList.remove('admin-unlocked');
         }
         
-        ensureIrysReady(60000).catch(e => console.warn("Irys init deferred:", e));
+        window.ensureIrysReady(60000).catch(e => console.warn("Irys init deferred:", e));
 
         await syncContractStates();
         setupRealTimeEvents(); 
@@ -3129,9 +2728,6 @@ function sanitizeForDOM(str) {
     return stringified.replace(reg, (match) => (map[match]));
 }
 
-// ============================================================================
-// 🏛️ GOVERNANCE & TIMELOCK EXECUTION
-// ============================================================================
 async function executeQueueProposal(pId, e) {
     const receipt = await runTx(e, `QUEUE_PROPOSAL_#${pId}`, "queueProposal", [pId]);
     if (receipt) {
@@ -3147,9 +2743,6 @@ async function triggerExecuteProposal(pId, e) {
     }
 }
 
-// ============================================================================
-// 🛠️ IRYS DATACHAIN UTILITY
-// ============================================================================
 function openDeedUploadTrigger(tokenId, fieldType) {
     activeTargetDeedUploadSlot = tokenId;
     irysTargetFieldType = fieldType;
@@ -3158,394 +2751,6 @@ function openDeedUploadTrigger(tokenId, fieldType) {
     document.getElementById('deedActionFileUploader')?.click();
 }
 
-function detectUploadEnvironment() {
-    const ua = navigator.userAgent || "";
-    const platform = navigator.platform || "";
-    const isIOS = /iPad|iPhone|iPod/.test(ua) || (platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-    const isAndroid = /Android/i.test(ua);
-    const isMobile = isIOS || isAndroid || /Mobi|Mobile/i.test(ua);
-    const deviceMemory = navigator.deviceMemory || (isMobile ? 2 : 8);
-
-    let chunkSize, batchSize;
-    if (isIOS) {
-        chunkSize = 2 * 1024 * 1024;   
-        batchSize = 1;
-    } else if (isMobile || deviceMemory <= 4) {
-        chunkSize = 2 * 1024 * 1024;   
-        batchSize = 2;
-    } else {
-        chunkSize = 5 * 1024 * 1024;   
-        batchSize = 3;
-    }
-    return { isIOS, isAndroid, isMobile, deviceMemory, chunkSize, batchSize };
-}
-
-
-function createProgressController(totalBytes) {
-    const shell = document.getElementById('uploadProgressShell');
-    const fill = document.getElementById('uploadProgressFill');
-    const label = document.getElementById('uploadProgressLabel');
-    let lastPaint = 0;
-    let pct = 0;
-
-    function paint(force) {
-        const now = performance.now();
-        if (!force && now - lastPaint < 400) return;
-        lastPaint = now;
-        if (fill) fill.style.width = pct + '%';
-        if (label) label.textContent = pct + '%';
-        if (shell) shell.setAttribute('aria-valuenow', String(pct));
-    }
-    return {
-        show: () => { if (shell) shell.classList.remove('hidden'); paint(true); },
-        set: (uploadedBytes) => {
-            if (!totalBytes) return;
-            const next = Math.min(100, Math.round((uploadedBytes / totalBytes) * 100));
-            if (next !== pct) { pct = next; paint(false); }
-        },
-        complete: () => { pct = 100; paint(true); },
-        hide: () => {
-            if (shell) shell.classList.add('hidden');
-            if (fill) fill.style.width = '0%';
-            if (label) label.textContent = '0%';
-        }
-    };
-}
-
-async function uploadWithRetry(file, tags, env, progress, maxRetries = 4) {
-    let attempt = 0;
-    let lastErr;
-    
-    while (attempt <= maxRetries) {
-        const uploader = irys.uploader.chunkedUploader;
-        
-        // บังคับยัด Config ใหม่เข้าไปใน Irys SDK
-        try { if (typeof uploader.setChunkSize === 'function') uploader.setChunkSize(env.chunkSize); } catch (e) {}
-        try { if (typeof uploader.setBatchSize === 'function') uploader.setBatchSize(env.batchSize); } catch (e) {}
-
-        const onChunk = (info) => {
-            try { progress.set(info && (info.totalUploaded ?? info.offset) || 0); } catch (e) {}
-        };
-        try { uploader.on && uploader.on('chunkUpload', onChunk); } catch (e) {}
-
-        try {
-            // ส่ง batchSize เข้าไปใน options ตอน upload ด้วยเพื่อให้ SDK ทำงานแบบ Parallel
-            const response = await uploader.uploadFile(file, { 
-                chunkSize: env.chunkSize, 
-                batchSize: env.batchSize, 
-                tags 
-            });
-            progress.complete();
-            return response;
-        } catch (err) {
-            lastErr = err;
-            const msg = (err && err.message ? err.message : String(err)).toLowerCase();
-            const isUserAbort = msg.includes('declined') || msg.includes('rejected by user') || msg.includes('user denied');
-            if (isUserAbort) throw err;
-            
-            attempt++;
-            if (attempt > maxRetries) break;
-            
-            // 4. แก้ปัญหา Rate Limit: ถ้าโดนเตะ ให้ถอยฉากรอ (Exponential Backoff) แล้วค่อยยิงใหม่
-            const backoff = Math.min(8000, 1000 * Math.pow(2, attempt - 1));
-            appendLog(`[NETWORK] Throttling detected. Retrying chunk in ${backoff/1000}s (Attempt ${attempt}/${maxRetries})...`, "text-amber-400");
-            await new Promise(r => setTimeout(r, backoff));
-        } finally {
-            try { uploader.off && uploader.off('chunkUpload', onChunk); } catch (e) {}
-        }
-    }
-    throw lastErr;
-}
-
-function evaluateIosSafeguard(env, file, isVideo) {
-    if (!env.isIOS) return { ok: true };
-    const IOS_VIDEO_SOFT_LIMIT = 150 * 1024 * 1024; 
-    if (isVideo && file.size > IOS_VIDEO_SOFT_LIMIT) {
-        return {
-            ok: false,
-            message: `iOS Safari memory constraint: video payloads above ~150MB risk an out-of-memory tab crash. Please upload from a desktop browser, or compress the clip below 150MB.`
-        };
-    }
-    return { ok: true };
-}
-
-function isMemoryCeilingError(err) {
-    const m = (err && err.message ? err.message : String(err)).toLowerCase();
-    return m.includes('fetch') || m.includes('load failed') || m.includes('out of memory') ||
-           m.includes('allocation') || m.includes('quota');
-}
-
-async function processDeedUploadAssignment(event) {
-    if (!lockSystem()) return; 
-
-    const file = event.target.files[0];
-    const targetSlotAtInit = activeTargetDeedUploadSlot;
-    if (!file || targetSlotAtInit === null) { unlockSystem(); return; }
-    
-    if (!irys) { 
-        showNotification("Operation suspended: Establish permanent settlement bridge path beforehand.", "error"); 
-        unlockSystem();
-        return; 
-    }
-    
-    let irysTxId = ""; 
-    const maxByteSize = 300 * 1024 * 1024; 
-    if (file.size > maxByteSize) {
-        appendLog(`Payload rejected: ${sanitizeForDOM(file.name)} exceeds explicit 300 MB maximum constraints.`, "text-red-500 font-bold");
-        showNotification("Structural exception: Upload payload sizes are strictly confined below the 300 MB threshold.", "error");
-        event.target.value = "";
-        unlockSystem();
-        return;
-    }
-
-    let userIntentType = 'image';
-    if (irysTargetFieldType === 'front') {
-        const frontSelection = document.querySelector('input[name="frontType"]:checked');
-        if (frontSelection) userIntentType = frontSelection.value;
-    } else if (irysTargetFieldType === 'back') {
-        const backSelection = document.querySelector('input[name="backType"]:checked');
-        if (backSelection) userIntentType = backSelection.value;
-    } else if (irysTargetFieldType === 'video') {
-        userIntentType = 'video';
-    }
-
-    const isActuallyVideo = file.type.startsWith('video/');
-    if ((userIntentType === 'video' && !isActuallyVideo) || (userIntentType === 'image' && isActuallyVideo)) {
-        appendLog("SECURITY ALERT: โหมดที่เลือก (IMG/VID) ขัดแย้งกับประเภทไฟล์ที่อัปโหลด", "text-red-500 font-bold");
-        showNotification("EXCEPTION: กรุณาอัปโหลดไฟล์ให้ตรงกับโหมดตัวเลือกบนแท่นอัปโหลด", "error");
-        event.target.value = "";
-        unlockSystem();
-        return;
-    }
-
-    if (userIntentType === 'video') {
-        const videoDataUrl = URL.createObjectURL(file);
-        const videoHelper = document.createElement('video');
-        videoHelper.preload = 'metadata';
-        videoHelper.muted = true; 
-        videoHelper.playsInline = true; 
-        
-        let timeoutId;
-        const isValidDuration = await Promise.race([
-            new Promise((resolve) => {
-                videoHelper.onloadedmetadata = function() { 
-                    if (!isFinite(videoHelper.duration) || isNaN(videoHelper.duration)) {
-                        resolve(false);
-                    } else {
-                        resolve(videoHelper.duration <= 60.5); 
-                    }
-                };
-                videoHelper.onerror = function() { resolve(false); };
-                videoHelper.src = videoDataUrl; 
-            }),
-            new Promise((resolve) => {
-                timeoutId = setTimeout(() => { resolve(false); }, 8000); 
-            })
-        ]).finally(() => {
-            clearTimeout(timeoutId); 
-            videoHelper.removeAttribute('src'); 
-            videoHelper.load();
-            URL.revokeObjectURL(videoDataUrl); 
-            videoHelper.remove(); 
-        });
-
-        if (!isValidDuration) {
-            appendLog(`Payload rejected: Portrait chronograph loop spans longer than 60 seconds or metadata is corrupted.`, "text-red-500 font-bold");
-            showNotification("Structural exception: Personal vertical branding chronographs must resolve under a 60-second limit and possess valid metadata.", "error");
-            event.target.value = "";
-            unlockSystem();
-            return;
-        }
-    }
-
-    const env = detectUploadEnvironment();
-    const guard = evaluateIosSafeguard(env, file, userIntentType === 'video' || isActuallyVideo);
-    if (!guard.ok) {
-        appendLog(`Payload blocked by iOS safe-guard: ${sanitizeForDOM(guard.message)}`, "text-red-500 font-bold");
-        showNotification(sanitizeForDOM(guard.message), "error");
-        event.target.value = "";
-        unlockSystem();
-        return;
-    }
-
-    const progress = createProgressController(file.size);
-    appendLog(`Committing source file ${sanitizeForDOM(file.name)} via Adaptive Chunking Protocol to Irys Datachain...`, "text-blue-400");
-    
-    try {
-        updateBridgeStatus(`NODE #${targetSlotAtInit}: MEASURING SETTLEMENT FEES...`, "warning");
-        const tags = [{ name: "Content-Type", value: file.type }];
-        const response = await executeIrysUpload(file, tags, true, progress);
-        irysTxId = response.data ? response.data.id : response.id;
-        
-        appendLog(`Payload anchored permanently. Irys TXID: ${sanitizeForDOM(irysTxId)}`, "text-emerald-400 font-bold");
-        updateBridgeStatus(`NODE #${targetSlotAtInit}: PERMANENTLY ONLINE`, "success");
-        
-        const isStillOnSameNode = (String(targetSlotAtInit) === String(globalSelectedTokenId));
-        const finalIrysUrl = buildIrysUrl(irysTxId);
-        
-        const card = document.getElementById('sovereignFlipCard');
-        
-        // [PATCH]: ย้ายการอัปเดต Input fields และ DOM ทั้งหมดเข้ามาอยู่ใน Scope ของ isStillOnSameNode
-        if (isStillOnSameNode) {
-            if (irysTargetFieldType === 'front') {
-                const elF = document.getElementById('forgeFrontUri'); if(elF) elF.value = irysTxId;
-                const elT = document.getElementById('novaTokenId'); if(elT) elT.value = targetSlotAtInit;
-                renderToViewport('previewFrontContainer', finalIrysUrl, "", userIntentType);
-                currentLoadedMediaData.front = irysTxId;
-                currentLoadedMediaData.frontType = userIntentType;
-                if (card) card.classList.remove('flipped');
-            } else if (irysTargetFieldType === 'video') {
-                const elV = document.getElementById('novaVideoUri'); if(elV) elV.value = irysTxId;
-                const elT = document.getElementById('novaTokenId'); if(elT) elT.value = targetSlotAtInit;
-                renderToViewport('previewFrontContainer', finalIrysUrl, "", "video");
-                currentLoadedMediaData.video = irysTxId;
-                if (card) card.classList.remove('flipped');
-            } else if (irysTargetFieldType === 'back') {
-                const elB = document.getElementById('forgeBackUri'); if(elB) elB.value = irysTxId;
-                renderToViewport('previewBackContainer', finalIrysUrl, "", userIntentType);
-                currentLoadedMediaData.back = irysTxId;
-                currentLoadedMediaData.backType = userIntentType;
-                if (card) card.classList.add('flipped');
-            }
-        } else {
-            appendLog(`Notice: Node changed during upload. Uploaded Irys TXID (${sanitizeForDOM(irysTxId)}) is safely retained in Datachain but not applied to current inputs.`, "text-yellow-500 font-bold");
-        }
-        
-        progress.complete();
-        showNotification(`Upload Success: ไฟล์ถูกบันทึกลง Irys Datachain สำเร็จ`, "success");
-    } catch (err) {
-        const errorMsg = typeof decodeContractError === 'function' ? decodeContractError(err) : (err.message || "Unknown Error");
-        const sanitizedMsg = sanitizeForDOM(errorMsg);
-
-        if (sanitizedMsg === "USER_CANCELLED_TX" || err.message?.toLowerCase().includes("user declined")) {
-            appendLog("Irys upload or wallet execution was aborted by the user.", "text-yellow-500");
-            showNotification("การอัปโหลดหรือเติมเงินถูกยกเลิกโดยผู้ใช้", "warning");
-        } else {
-            appendLog(`Irys permanent transmission process faulted or canceled: ${sanitizedMsg}`, "text-red-500");
-            updateBridgeStatus(`NODE #${targetSlotAtInit}: STREAM BROKEN`, "error");
-            if (isMemoryCeilingError(err)) {
-                showNotification("Memory-ceiling failure detected. Try a smaller file.", "error");
-            } else {
-                showNotification(`System Exception: ${sanitizedMsg}`, "error");
-            }
-        }
-    } finally {
-        progress.hide();
-        event.target.value = "";
-        unlockSystem(); 
-    }
-}
-
-async function buildAndUploadMetadata(e) {
-    if (!irys) { 
-        showNotification("Operation suspended: Establish permanent settlement bridge path beforehand.", "error"); 
-        return; 
-    }
-    if (!lockSystem()) return;
-
-    const btn = toggleButtonLoading(e, true);
-    try {
-        const rootNameInput = document.getElementById('propName');
-        const rootName = (rootNameInput && rootNameInput.value.trim() !== "") 
-                         ? rootNameInput.value.trim() 
-                         : "THE IMPERIAL SOVEREIGNTY DEED";
-
-        const dynamicAttributes = []; 
-
-        for (let i = 1; i <= 7; i++) {
-            const keyInput = document.getElementById(`propKey${i}`);
-            const valInput = document.getElementById(`prop${i}`);
-            
-            const key = typeof sanitizeForJSON === 'function' ? sanitizeForJSON(keyInput ? keyInput.value : "") : (keyInput ? keyInput.value : "");
-            const val = typeof sanitizeForJSON === 'function' ? sanitizeForJSON(valInput ? valInput.value : "") : (valInput ? valInput.value : "");
-
-            if (key !== "" && val !== "") {
-                dynamicAttributes.push({ trait_type: key, value: val });
-            }
-        }
-
-        const frontUri = document.getElementById('forgeFrontUri')?.value.trim() || (currentLoadedMediaData.front || "");
-        const backUri = document.getElementById('forgeBackUri')?.value.trim() || (currentLoadedMediaData.back || "");
-        const videoUri = document.getElementById('novaVideoUri')?.value.trim() || (currentLoadedMediaData.video || "");
-        
-        if (typeof isMaliciousURI === 'function' && (isMaliciousURI(frontUri) || isMaliciousURI(backUri) || isMaliciousURI(videoUri))) {
-            throw new Error("Malicious Payload detected in URIs. Operation aborted.");
-        }
-
-        const frontTypeElement = document.querySelector('input[name="frontType"]:checked');
-        const backTypeElement = document.querySelector('input[name="backType"]:checked');
-        
-        const frontType = frontTypeElement ? frontTypeElement.value : "image";
-        const backType = backTypeElement ? backTypeElement.value : "image";
-
-        const metadata = {
-            name: rootName,
-            description: "IMPERIAL SOVEREIGN ARCHITECTURE - Absolute Immutable Autarkic Identity Manifest",
-            attributes: dynamicAttributes
-        };
-
-        if (frontUri) {
-            const finalFrontUrl = buildIrysUrl(frontUri);
-            if (frontType === "video") {
-                metadata.animation_url = finalFrontUrl;
-                metadata.image = finalFrontUrl; 
-            } else {
-                metadata.image = finalFrontUrl;
-            }
-        }
-
-        if (backUri) {
-            metadata.properties = {
-                reverse_deed: {
-                    type: backType,
-                    uri: buildIrysUrl(backUri),
-                    unlocked: true
-                }
-            };
-        }
-
-        if (videoUri) {
-            metadata.animation_url = buildIrysUrl(videoUri);
-        }
-
-        const dataToUpload = JSON.stringify(metadata);
-        
-        const tags = [{ name: "Content-Type", value: "application/json" }];
-        updateBridgeStatus(`SEALING ARCHITECT'S MANIFEST UNTO THE LEDGER...`, "warning");
-        appendLog(`Dynamic metadata strictly formatted for OpenSea compatibility. Sealing payload...`, "text-yellow-400");
-        
-        const receipt = await executeIrysUpload(dataToUpload, tags, false);
-        const irysTxId = receipt.id;
-        
-        appendLog(`Metadata completely sealed. Mapping pathway straight to NOVA protocol input (Irys ID: ${sanitizeForDOM(irysTxId)})`, "text-emerald-400 font-bold");
-        updateBridgeStatus(`METADATA SCHEMATIC ONLINE`, "success");
-        
-        const hiddenInput = document.getElementById('novaHiddenInput');
-        if(hiddenInput) {
-            hiddenInput.value = irysTxId;
-            hiddenInput.classList.add('border-emerald-500', 'bg-emerald-900/20');
-            setTimeout(() => hiddenInput.classList.remove('border-emerald-500', 'bg-emerald-900/20'), 2500);
-        }
-    } catch(err) {
-        const errorMsg = typeof decodeContractError === 'function' ? decodeContractError(err) : (err.message || "Unknown Error");
-        const sanitizedMsg = sanitizeForDOM(errorMsg);
-
-        if (err.code === 4001 || sanitizedMsg === "USER_CANCELLED_TX" || err.message?.toLowerCase().includes("user rejected") || err.message?.toLowerCase().includes("denied transaction") || err.message?.toLowerCase().includes("declined")) {
-            appendLog("Metadata registration funding sequence aborted by user.", "text-yellow-500");
-            showNotification("การเติมเงินอัปโหลดเจตจำนงถูกยกเลิก", "warning");
-        } else {
-            appendLog(`Metadata compilation aborted: ${sanitizedMsg}`, "text-red-500");
-            showNotification(sanitizedMsg, "error");
-        }
-    } finally {
-        unlockSystem();
-        if(btn) toggleButtonLoading(btn, false);
-    }
-}
-
-// ============================================================================
-// ⚙️ ADMIN & ARCHITECT OPERATIONS
-// ============================================================================
 async function executeSetParams(e) {
     if (!secureContract) { showNotification("Action suspended: Authenticate wallet signature first.", "error"); return; }
     const mint = document.getElementById('inputAdminMint')?.value.trim();
@@ -3685,7 +2890,6 @@ async function executeCastVote(btn) {
     const tokenIdBn = BigInt(tokenId);
 
     try {
-        // [PATCH]: Pre-Flight Ownership Validation (ลด RPC Load ก่อนถึงจังหวะ EstimateGas)
         const userAddress = await signer.getAddress();
         const activeOwner = await secureContract.ownerOf(tokenIdBn);
         if (activeOwner.toLowerCase() !== userAddress.toLowerCase()) {
@@ -3703,7 +2907,6 @@ async function executeCastVote(btn) {
         appendLog(`Matrix key node #${tokenId} has signed ratification code for Directive #${rawPropId}.`, "text-emerald-400 font-bold");
     }
 }
-
 
 function toggleForgeButtonState() {
     const checkbox = document.getElementById('forgeConsentCheckbox');
@@ -3764,16 +2967,15 @@ async function triggerForge(type, e) {
 
         const btn = toggleButtonLoading(e, true);
         try {
-            if (!irys) throw new Error("Irys SDK Bridge is offline. Establish wallet connection first.");
+            if (!window.irys) throw new Error("Irys SDK Bridge is offline. Establish wallet connection first.");
 
             appendLog(`Inscribing back-end media onto permanent Irys Datachain...`, "text-blue-400");
             const tags = [{ name: "Content-Type", value: file.type }];
-            const response = await executeIrysUpload(file, tags, true); 
+            const response = await window.executeIrysUpload(file, tags, true); 
             const backMediaTxId = response.data ? response.data.id : response.id; 
 
             appendLog(`Back-end media successfully anchored: ${sanitizeForDOM(backMediaTxId)}`, "text-emerald-400 font-bold");
             
-            // [PATCH]: STATE SANITY CHECK ก่อนยิง On-Chain ป้องกัน Cross-Node Tampering
             if (String(tokenId) !== String(globalSelectedTokenId)) {
                 appendLog(`SECURITY HALT: User changed node matrix during Irys upload. Execution aborted to prevent corruption on Node #${tokenId}.`, "text-red-500 font-bold");
                 showNotification(`SECURITY ENFORCEMENT: ตรวจพบการเปลี่ยนเซลล์ระหว่างอัปโหลด ธุรกรรม On-Chain ถูกระงับเพื่อป้องกันข้อมูลเสียหาย`, "error");
@@ -3872,16 +3074,15 @@ async function executeArchitectMint(e) {
 
         const btn = toggleButtonLoading(e, true);
         try {
-            if (!irys) throw new Error("Irys SDK Bridge is offline.");
+            if (!window.irys) throw new Error("Irys SDK Bridge is offline.");
 
             appendLog(`Inscribing Architect's back-end media onto permanent Irys Datachain...`, "text-blue-400");
             const tags = [{ name: "Content-Type", value: file.type }];
-            const response = await executeIrysUpload(file, tags, true); 
+            const response = await window.executeIrysUpload(file, tags, true); 
             const backMediaTxId = response.data ? response.data.id : response.id; 
 
             appendLog(`Back-end media successfully anchored: ${sanitizeForDOM(backMediaTxId)}`, "text-emerald-400 font-bold");
             
-            // [PATCH]: STATE SANITY CHECK
             if (String(tokenId) !== String(globalSelectedTokenId)) {
                 appendLog(`SECURITY HALT: Matrix cell changed mid-flight. Architect Mint aborted.`, "text-red-500 font-bold");
                 showNotification(`SECURITY ENFORCEMENT: ตรวจพบการเปลี่ยนเซลล์ระหว่างอัปโหลด ระบบระงับการทำงาน`, "error");
@@ -3971,14 +3172,13 @@ async function executeArchitectRemint(e) {
 
         const btn = toggleButtonLoading(e, true);
         try {
-            if (!irys) throw new Error("Irys SDK Bridge is offline.");
+            if (!window.irys) throw new Error("Irys SDK Bridge is offline.");
 
             appendLog(`Inscribing back-end media onto permanent Irys Datachain...`, "text-blue-400");
             const tags = [{ name: "Content-Type", value: file.type }];
-            const response = await executeIrysUpload(file, tags, true); 
+            const response = await window.executeIrysUpload(file, tags, true); 
             const backMediaTxId = response.data ? response.data.id : response.id; 
 
-            // [PATCH]: STATE SANITY CHECK
             if (String(tokenId) !== String(globalSelectedTokenId)) {
                 appendLog(`SECURITY HALT: Matrix cell changed mid-flight. Architect Remint aborted.`, "text-red-500 font-bold");
                 showNotification(`SECURITY ENFORCEMENT: ตรวจพบการเปลี่ยนเซลล์ระหว่างอัปโหลด ระบบระงับการทำงาน`, "error");
@@ -4027,7 +3227,6 @@ async function executeArchitectRemint(e) {
         unlockSystem();
     }
 }
-
 
 function closeNovaWarn(isConfirmed) {
     const modal = document.getElementById('novaWarnModal');
@@ -4104,6 +3303,7 @@ async function triggerIdentityNova(e) {
         appendLog(`THE SOVEREIGN NOVA: High ascension ritual over node element #${tokenId} integrated permanently into on-chain forensics!`, "text-blue-400 font-bold");
     }
 }
+
 
 async function executeUpdateIdentity(e) {
     if (!secureContract || !signer) { 
