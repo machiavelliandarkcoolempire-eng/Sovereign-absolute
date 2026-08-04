@@ -1,18 +1,20 @@
 import { WebUploader } from "@irys/web-upload";
 import { WebEthereum } from "@irys/web-upload-ethereum";
 import { EthersV6Adapter } from "@irys/web-upload-ethereum-ethers-v6";
-import { ethers } from "ethers";
 
-window.InitSovereignIrys = async function(rawProvider) {
+// 💡 ไม่ต้อง import ethers แล้ว เพราะเราใช้ signer ที่ส่งมาจากหน้าบ้านโดยตรง
+
+window.InitSovereignIrys = async function(signer) {
     try {
-        const provider = new ethers.BrowserProvider(rawProvider);
-        
-        // ใช้ Modular SDK เชื่อมต่อกับ Base Mainnet
-        // Irys ใช้คำว่า "ethereum" เป็นชื่อ Token สำหรับจ่ายค่าแก๊สบน L2 (Base)
+        // 🎯 ดึง Dedicated RPC (Alchemy Key 2)
+        const dedicatedIrisRpc = "https://base-mainnet.g.alchemy.com/v2/wR5UgtUrkfPjKnqfMhm8k";
+
         const irysUploader = await WebUploader(WebEthereum)
-            .withAdapter(EthersV6Adapter(provider))
-            .withRpc("https://mainnet.base.org") // บังคับชี้ไปที่ Base
-            .withToken("ethereum"); 
+            .withAdapter(EthersV6Adapter(signer)) // 🔴 โยน signer ที่รับมาจาก index.html เข้าไปโดยตรง
+            .withRpc(dedicatedIrisRpc)
+            .withNetwork("mainnet") 
+            .withToken("base-eth")  
+            .build();               
             
         return irysUploader;
     } catch (error) {

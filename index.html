@@ -7,81 +7,33 @@
     <meta http-equiv="X-Frame-Options" content="DENY" />
     <meta name="referrer" content="no-referrer" />
     <title>THE IMPERIAL SOVEREIGN DEED</title>
-    <script>
-        if (window.top !== window.self) {
-            document.documentElement.replaceChildren();
-            try { window.top.location = window.self.location; } catch (_) { /* CSP frame-ancestors remains authoritative. */ }
-        }
-    </script>
     
-    <!-- ✅ แก้ไข connect-src: อนุญาตโดเมน *.irys.xyz ทั้งหมดเพื่อป้องกัน CORS/Network Error -->
+    <!-- ✅ อนุญาตโดเมน *.irys.xyz ทั้งหมดเพื่อป้องกัน CORS/Network Error -->
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; media-src 'self' blob: https:; connect-src 'self' https://mainnet.base.org https://base.llamarpc.com https://base-rpc.publicnode.com https://base-mainnet.g.alchemy.com wss://base-mainnet.g.alchemy.com https://*.irys.xyz wss://relay.walletconnect.com wss://relay.walletconnect.org https://rpc.walletconnect.com https://api.web3modal.com https://api.reown.com wss:; frame-ancestors 'none'; base-uri 'none'; object-src 'none'; form-action 'self';">
 
-
-    <!-- 🌟 1. โหลด CSS ที่ Vercel บิ้วให้ -->
+    <!-- 🌟 โหลด CSS และ Script ต่างๆ -->
     <link rel="stylesheet" href="./dist.css" />
-
-    <style>
-        html, body { background-color: #000000 !important; }
-        body { visibility: hidden; }
-        body.app-ready { visibility: visible; }
-        
-        /* SEC Compliance Override via CSS (Zero JS Modification) */
-        #displayCouncilPool span {
-            font-size: 0 !important;
-        }
-        #displayCouncilPool span::after {
-            content: "ETH (Ecosystem Vault Allocation)";
-            font-size: 0.75rem; /* text-xs */
-            letter-spacing: normal;
-        }
-    </style>
-    
-    <!-- 📦 ETHERS V6 & WALLETCONNECT & HLS -->
-    <script src="https://unpkg.com/@walletconnect/ethereum-provider@2.11.1/dist/index.umd.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-
-    <!-- 🌟 2. โหลด Polyfill -->
-    <script src="./web3-polyfill.js"></script>
-
-    <!-- 🌟 3. โหลด Irys SDK -->
-    <script src="./irys-bundle.js"></script>
-
-</head>
-
-
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=JetBrains+Mono:wght@400;700;800&display=swap');
-
-        html, body { background-color: #000000 !important; }
-        body { visibility: hidden; }
-        body.app-ready { visibility: visible; }
-
-        /* SEC Compliance Override via CSS (Zero JS Modification) */
-        #displayCouncilPool span {
-            font-size: 0 !important;
-        }
-        #displayCouncilPool span::after {
-            content: "ETH (Ecosystem Vault Allocation)";
-            font-size: 0.75rem; /* text-xs */
-            letter-spacing: normal;
-        }
-    </style>
-
-    <!-- 📦 ETHERS V6 & WALLETCONNECT & HLS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://unpkg.com/@walletconnect/ethereum-provider@2.11.1/dist/index.umd.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-
-    <!-- 🌟 2. โหลด Polyfill -->
     <script src="./web3-polyfill.js"></script>
-
-    <!-- 🌟 3. โหลด Irys SDK -->
     <script src="./irys-bundle.js"></script>
-</head>
-    
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=JetBrains+Mono:wght@400;700;800&display=swap');
+
+        /* ✅ แก้จอดำตรงนี้: ลบคำสั่งซ่อนหน้าจอออกแล้ว หน้าเว็บจะโชว์ทันที */
+        html, body { background-color: #000000 !important; }
+
+        /* SEC Compliance Override via CSS */
+        #displayCouncilPool span {
+            font-size: 0 !important;
+        }
+        #displayCouncilPool span::after {
+            content: "ETH (Ecosystem Vault Allocation)";
+            font-size: 0.75rem;
+            letter-spacing: normal;
+        }
 
         :root {
             --void: #000000;
@@ -244,6 +196,7 @@
             width: 100%;
             max-width: 320px;
             aspect-ratio: 9 / 16;
+            margin: 0 auto;
         }
         .deed-card-inner {
             position: relative;
@@ -739,7 +692,7 @@
             <span class="flex items-center gap-2"><span class="w-4 h-4 rounded border rank-gold"></span> GOLD (11-99)</span>
             <span class="flex items-center gap-2"><span class="w-4 h-4 rounded border rank-silver"></span> SILVER (101-200)</span>
             <span class="flex items-center gap-2"><span class="w-4 h-4 rounded border rank-red"></span> RED (201-332)</span>
-            <span class="flex items-center gap-2"><span class="w-4 h-4 rounded border rank-imperial"></span> SOVEREIGN IMMOTAL 333</span>
+            <span class="flex items-center gap-2"><span class="w-4 h-4 rounded border rank-imperial"></span> SOVEREIGN IMMORTAL 333</span>
         </div>
     </section>
 
@@ -1197,10 +1150,9 @@
             This protocol operates an exclusive, private digital identity infrastructure accessible solely via direct curation. All proceeds represent lawful studio service fees. Reserve allocations fund software R&D and Ecosystem Infrastructure Support Grants. Minting and on-chain operations are executed 100% self-sovereignly by curated pass holders. This protocol does not offer public sales, securities, or financial returns.
         </div>
     </footer>
-    
-    
-    
-<script>
+  
+  
+  <script>
 "use strict";
 
 // ============================================================================
@@ -1404,6 +1356,7 @@ let isTransactionPending = false;
 
 const FUND_COOLDOWN_MS = 180000; // 🛡️ 3 Minutes Cooldown
 let isSyncingState = false;
+let pendingSyncRequest = false;
 
 const LOG_MAX_ROWS = 100;
 let _logScrollQueued = false;
@@ -1566,15 +1519,22 @@ function appendLog(msg, colorClass = 'text-slate-400') {
     }
 }
 
+// ประกาศไว้นอกฟังก์ชัน (Global Scope)
+let flipTimeout = null;
+
 function toggleCardFlip() {
     const card = document.getElementById('sovereignFlipCard');
     if (!card) return;
 
+    // ล้าง Timeout เก่าทิ้งทันทีหากมีการกดซ้ำก่อนครบลูป 800ms
+    if (flipTimeout) {
+        clearTimeout(flipTimeout);
+        flipTimeout = null;
+    }
+
     const isCurrentlyFlipped = card.classList.contains('flipped');
-    
     const frontContainer = document.getElementById('previewFrontContainer');
     const backContainer = document.getElementById('previewBackContainer');
-    
     const frontVideo = frontContainer?.querySelector('video');
     const backVideo = backContainer?.querySelector('video');
 
@@ -1588,19 +1548,23 @@ function toggleCardFlip() {
                 frontVideo.load(); 
             }
         }
-        if (backVideo) {
-            if (backVideo._hlsInstance) {
-                backVideo._hlsInstance.attachMedia(backVideo);
-                backVideo._hlsInstance.startLoad();
-                backVideo.play().catch(()=>{});
-            } else if (backVideo.dataset.cullSrc) {
-                backVideo.src = backVideo.dataset.cullSrc;
-                backVideo.removeAttribute('data-cull-src');
-                backVideo.load();
-                backVideo.play().catch(()=>{});
-            }
-        }
         card.classList.add('flipped');
+        
+        flipTimeout = setTimeout(() => {
+            if (backVideo) {
+                if (backVideo._hlsInstance) {
+                    backVideo._hlsInstance.attachMedia(backVideo);
+                    backVideo._hlsInstance.startLoad();
+                    backVideo.play().catch(() => {});
+                } else if (backVideo.dataset.cullSrc) {
+                    backVideo.src = backVideo.dataset.cullSrc;
+                    backVideo.removeAttribute('data-cull-src');
+                    backVideo.load();
+                    backVideo.play().catch(() => {});
+                }
+            }
+            flipTimeout = null;
+        }, 800);
     } else {
         if (backVideo) {
             if (backVideo._hlsInstance) {
@@ -1611,21 +1575,27 @@ function toggleCardFlip() {
                 backVideo.load(); 
             }
         }
-        if (frontVideo) {
-            if (frontVideo._hlsInstance) {
-                frontVideo._hlsInstance.attachMedia(frontVideo);
-                frontVideo._hlsInstance.startLoad();
-                frontVideo.play().catch(()=>{});
-            } else if (frontVideo.dataset.cullSrc) {
-                frontVideo.src = frontVideo.dataset.cullSrc;
-                frontVideo.removeAttribute('data-cull-src');
-                frontVideo.load();
-                frontVideo.play().catch(()=>{});
-            }
-        }
         card.classList.remove('flipped');
+        
+        flipTimeout = setTimeout(() => {
+            if (frontVideo) {
+                if (frontVideo._hlsInstance) {
+                    frontVideo._hlsInstance.attachMedia(frontVideo);
+                    frontVideo._hlsInstance.startLoad();
+                    frontVideo.play().catch(() => {});
+                } else if (frontVideo.dataset.cullSrc) {
+                    frontVideo.src = frontVideo.dataset.cullSrc;
+                    frontVideo.removeAttribute('data-cull-src');
+                    frontVideo.load();
+                    frontVideo.play().catch(() => {});
+                }
+            }
+            flipTimeout = null;
+        }, 800);
     }
 }
+
+
 
 // ============================================================================
 // 🛡️ 1. ระบบล็อกธุรกรรมขั้นเด็ดขาด (ป้องกันการกดซ้ำที่หน้าเว็บ)
@@ -1693,14 +1663,13 @@ window.addEventListener('pageshow', (e) => {
 
 function isMaliciousURI(uri) {
     if (!uri) return false;
+    if (/^[a-zA-Z0-9_-]{43}$/.test(uri)) return false;
     try {
         const parsed = new URL(uri, window.location.origin);
         const protocol = parsed.protocol.toLowerCase();
         return ['javascript:', 'vbscript:', 'data:', 'file:'].includes(protocol);
     } catch (e) {
-        const sanitized = uri.replace(/[^a-zA-Z0-9+.-:]/g, "").toLowerCase();
-        return sanitized.startsWith("javascript:") || sanitized.startsWith("vbscript:") || 
-               sanitized.startsWith("data:") || sanitized.startsWith("file:");
+        return true;
     }
 }
 
@@ -1716,16 +1685,16 @@ function isValidSovereignInput(text) {
 }
 
 function validateTokenRange(id) {
-    const parsed = parseInt(id, 10);
-    if (isNaN(parsed) || parsed < 1 || parsed > 333) {
-        showNotification(`Input Validation Failed: Token ID must be explicitly between 1 and 333. You entered: ${id}`, "error");
+    const num = Number(id);
+    if (!Number.isInteger(num) || num < 1 || num > 333) {
+        showNotification(`Input Validation Failed: Token ID must be explicitly an integer between 1 and 333. You entered: ${id}`, "error");
         return false;
     }
-    return parsed;
+    return num;
 }
 
 const blobGcCache = new Map();
-const MAX_BLOB_CACHE_SIZE = 50;
+const MAX_BLOB_CACHE_SIZE = 5;
 
 function registerBlobForGc(url, objectUrl) {
     if (!url || !objectUrl) return;
@@ -1924,6 +1893,9 @@ function getImperialRank(tokenId) {
     return "UNKNOWN ENTITY";
 }
 
+// ============================================================================
+// 🛡️ DIRECTIVE 3: Ethers v6 Multicall3 & Targeted Event Lifecycles
+// ============================================================================
 async function autoMap(tokenId) {
     const tId = String(tokenId);
     if (GLOBAL_NODE_CACHE.has(tId)) {
@@ -1947,15 +1919,23 @@ async function autoMap(tokenId) {
 
             try {
                 const multicall = new ethers.Contract(MULTICALL3_ADDRESS, MULTICALL3_ABI, readOnlyProvider || provider);
+                
+                // 🛡️ FIX MULTICALL3 REVERT CASCADE: allowFailure set to true
                 const calls = [
-                    { target: CONTRACT_ADDRESS, allowFailure: false, callData: activeContract.interface.encodeFunctionData("getDeedData", [tokenBigNum]) },
+                    { target: CONTRACT_ADDRESS, allowFailure: true, callData: activeContract.interface.encodeFunctionData("getDeedData", [tokenBigNum]) },
                     { target: CONTRACT_ADDRESS, allowFailure: true, callData: activeContract.interface.encodeFunctionData("tokenURI", [tokenBigNum]) },
                     { target: CONTRACT_ADDRESS, allowFailure: true, callData: activeContract.interface.encodeFunctionData("tokenVotingLockUntil", [tokenBigNum]) }
                 ];
                 const results = await multicall.aggregate3(calls);
-                deedData = activeContract.interface.decodeFunctionResult("getDeedData", results[0].returnData);
+                
+                // 🛡️ EXPLICIT RESULT CHECKING: Prevent decoding crashes on reverted calls
+                deedData = results[0].success ? activeContract.interface.decodeFunctionResult("getDeedData", results[0].returnData) : null;
                 tokenUri = results[1].success ? activeContract.interface.decodeFunctionResult("tokenURI", results[1].returnData)[0] : "";
                 votingLockUntil = results[2].success ? activeContract.interface.decodeFunctionResult("tokenVotingLockUntil", results[2].returnData)[0] : 0n;
+
+                if (!deedData) {
+                    throw new Error("Node unminted or burned (getDeedData reverted)");
+                }
             } catch (mcErr) {
                 console.warn("[MULTICALL FALLBACK] autoMap:", mcErr);
                 [deedData, tokenUri, votingLockUntil] = await Promise.all([
@@ -2027,6 +2007,178 @@ async function autoMap(tokenId) {
     PENDING_AUTOMAP_REQUESTS.set(tId, requestPromise);
     return requestPromise;
 }
+
+function setupRealTimeEvents() {
+    if (!secureContract) return;
+    
+    // 🛡️ FIX EVENT LISTENER ANNIHILATION: Targeted stripping
+    ["ProposalCreated", "ProposalExecuted", "ProposalQueued", "SovereignForged", "SovereignSanctified", "Transfer"].forEach(e => {
+        try { secureContract.removeAllListeners(e); } catch (err) {}
+    });
+    
+    secureContract.on("ProposalCreated", async () => {
+        appendLog("New structural directive disseminated to Council. Synchronizing indices...", "text-purple-400");
+        await fetchAndDisplayProposals();
+    });
+    secureContract.on("ProposalExecuted", async () => {
+        appendLog("Legislative financial directive ratified and capital released.", "text-emerald-400");
+        await fetchAndDisplayProposals();
+        await syncContractStates();
+    });
+    secureContract.on("ProposalQueued", async (pId) => {
+        appendLog(`Directive #${pId} committed to Timelock vault. Awaiting period completion.`, "text-yellow-500");
+        await fetchAndDisplayProposals();
+    });
+    secureContract.on("SovereignForged", async (owner, tokenId) => {
+        appendLog("A structural matrix element has been newly born into existence.", "text-yellow-400");
+        await syncContractStates();
+        GLOBAL_NODE_CACHE.clear();
+        if (globalSelectedTokenId && String(tokenId) === String(globalSelectedTokenId)) {
+            await auditTokenFromLedger(globalSelectedTokenId);
+        }
+    });
+    secureContract.on("SovereignSanctified", async (tokenId, dna) => {
+        appendLog("A component matrix element has achieved high ascension (NOVA).", "text-blue-400");
+        await syncContractStates();
+        GLOBAL_NODE_CACHE.clear();
+        if (globalSelectedTokenId && String(tokenId) === String(globalSelectedTokenId)) {
+            await auditTokenFromLedger(globalSelectedTokenId);
+        }
+    });
+    
+    let transferTimeout;
+    secureContract.on("Transfer", (from, to, tokenId) => {
+        clearTimeout(transferTimeout);
+        transferTimeout = setTimeout(async () => {
+            await syncContractStates();
+            if (globalSelectedTokenId && String(tokenId) === String(globalSelectedTokenId)) {
+                await auditTokenFromLedger(globalSelectedTokenId);
+            }
+        }, 2000);
+    });
+
+    if (pollingInterval) clearInterval(pollingInterval);
+    pollingInterval = setInterval(() => syncContractStates(), 45000); 
+}
+
+// ประกาศ Global Scope ป้องกัน Rate Limit สแปม RPC
+let lastSyncTime = 0;
+const SYNC_COOLDOWN_MS = 2000; 
+
+async function syncContractStates() {
+    const now = Date.now();
+    
+    if (isSyncingState || (now - lastSyncTime < SYNC_COOLDOWN_MS)) { 
+        if (!pendingSyncRequest) {
+            pendingSyncRequest = true; 
+            setTimeout(() => {
+                pendingSyncRequest = false;
+                syncContractStates();
+            }, SYNC_COOLDOWN_MS);
+        }
+        return; 
+    }
+    
+    isSyncingState = true;
+    lastSyncTime = Date.now();
+    
+    const activeContract = secureContract || readOnlyContract;
+    if (!activeContract) {
+        isSyncingState = false;
+        return;
+    }
+    
+    try {
+        let tStatus, rMint, rNova, accRewardPerNode;
+
+        try {
+            const multicall = new ethers.Contract(MULTICALL3_ADDRESS, MULTICALL3_ABI, readOnlyProvider || provider);
+            const calls = [
+                { target: CONTRACT_ADDRESS, allowFailure: true, callData: activeContract.interface.encodeFunctionData("treasuryStatus") },
+                { target: CONTRACT_ADDRESS, allowFailure: true, callData: activeContract.interface.encodeFunctionData("mintPrice") },
+                { target: CONTRACT_ADDRESS, allowFailure: true, callData: activeContract.interface.encodeFunctionData("novaFee") },
+                { target: CONTRACT_ADDRESS, allowFailure: true, callData: activeContract.interface.encodeFunctionData("accCouncilRewardPerNode") }
+            ];
+            const results = await multicall.aggregate3(calls);
+            
+            if (results[0].success) tStatus = activeContract.interface.decodeFunctionResult("treasuryStatus", results[0].returnData);
+            if (results[1].success) rMint = activeContract.interface.decodeFunctionResult("mintPrice", results[1].returnData)[0];
+            if (results[2].success) rNova = activeContract.interface.decodeFunctionResult("novaFee", results[2].returnData)[0];
+            if (results[3].success) accRewardPerNode = activeContract.interface.decodeFunctionResult("accCouncilRewardPerNode", results[3].returnData)[0];
+            
+        } catch (mcErr) {
+            console.warn("[MULTICALL FALLBACK] syncContractStates:", mcErr);
+            tStatus = await activeContract.treasuryStatus().catch(() => null);
+            rMint = await activeContract.mintPrice().catch(() => 0n);
+            rNova = await activeContract.novaFee().catch(() => 0n);
+            accRewardPerNode = await activeContract.accCouncilRewardPerNode().catch(() => 0n);
+        }
+
+        if (!tStatus) throw new Error("INVALID_STATE_PAYLOAD");
+
+        const activeSupply = tStatus.activeSupply !== undefined ? tStatus.activeSupply : (tStatus[2] || 0n);
+        const historicalMint = tStatus.historicalMint !== undefined ? tStatus.historicalMint : (tStatus[3] || 0n);
+        const reservePerNFT = tStatus.reservePerNFT !== undefined ? tStatus.reservePerNFT : (tStatus[4] || 0n);
+        const reserve = tStatus.reserve !== undefined ? tStatus.reserve : (tStatus[0] || 0n);
+
+        const reserveBn = BigInt(reserve);
+        const activeSupplyBn = BigInt(activeSupply);
+        const dustWei = activeSupplyBn > 0n ? (reserveBn % activeSupplyBn) : 0n;
+
+        requestAnimationFrame(() => {
+            const updateText = (id, val) => {
+                const el = document.getElementById(id);
+                if(el) el.textContent = val;
+            };
+
+            updateText('lblMintPrice', rMint !== undefined ? fmtUnits(rMint) : "0.0");
+            updateText('lblNovaFee', rNova !== undefined ? fmtUnits(rNova) : "0.0");
+            updateText('displaySupply', `${activeSupply.toString()} / 333`);
+            updateText('lblHistoricalMint', historicalMint.toString());
+            updateText('lblReservePerNFT', fmtUnits(reservePerNFT));
+            updateText('dustVisualizer', dustWei.toString());
+
+            // [CORRECTION]: Phase 4 Sovereign Treasury Liquidation Sync
+            const exitResEl = document.getElementById('exitResPerNft');
+            const exitRefundEl = document.getElementById('exitRefund');
+
+            if (exitResEl) exitResEl.textContent = fmtUnits(reservePerNFT) + " ETH";
+
+            if (exitRefundEl) {
+                // Strictly enforce 15% Exit Tax (User receives 85%)
+                const refundWei = (BigInt(reservePerNFT) * 85n) / 100n;
+                exitRefundEl.textContent = fmtUnits(refundWei) + " ETH";
+            }
+
+            const councilEl = document.getElementById('displayCouncilPool');
+            if (councilEl) {
+                councilEl.replaceChildren(document.createTextNode((accRewardPerNode !== undefined ? fmtUnits(accRewardPerNode, 4) : "0.0000") + " "));
+                const span = document.createElement('span');
+                span.className = "text-xs text-stone-600";
+                span.textContent = "ETH / NODE";
+                councilEl.appendChild(span);
+            }
+
+            const reserveEl = document.getElementById('displayReserve');
+            if (reserveEl) {
+                reserveEl.replaceChildren(document.createTextNode(fmtUnits(reserve, 2) + " "));
+                const span = document.createElement('span');
+                span.className = "text-xs text-stone-600";
+                span.textContent = "ETH";
+                reserveEl.appendChild(span);
+            }
+        });
+
+        await fetchAndDisplayProposals();
+        
+    } catch (err) { 
+        console.error("[STATE SYNC ERROR]", err);
+        appendLog("Unable to query state properties from smart contract registry. Re-index recommended.", "text-red-500"); 
+    } finally {
+        isSyncingState = false;
+    }
+}
+
 
 // ============================================================================
 // 🎨 UI & NOTIFICATIONS
@@ -2232,6 +2384,7 @@ async function ensureIrysReady(timeoutMs = 60000) {
     if (irys) return true;
     
     if (!activeRawProvider) throw new Error("EVM Provider Uninitialized. Please connect Web3 Wallet first.");
+    if (!signer) throw new Error("EVM Signer Uninitialized. Wallet connection required.");
     
     if (typeof window.InitSovereignIrys !== 'function') {
         throw new Error("Irys Custom Bundle (irys-bundle.js) is missing or failed to load.");
@@ -2242,7 +2395,13 @@ async function ensureIrysReady(timeoutMs = 60000) {
 
     try {
         const initPromise = (async () => {
-            irys = await window.InitSovereignIrys(activeRawProvider);
+            // [CORRECTION]: Explicitly pass the Signer to the Irys Adapter
+            if (typeof window.WebUploader !== 'undefined' && typeof window.WebEthersV6 !== 'undefined') {
+                const irysAdapter = window.WebEthersV6(signer);
+                irys = await window.WebUploader(irysAdapter).withProvider(activeRawProvider);
+            } else {
+                irys = await window.InitSovereignIrys(signer); 
+            }
             return true;
         })();
 
@@ -2272,8 +2431,60 @@ async function withNetworkRetry(fn, retries = 3, delay = 1000) {
 }
 
 // ============================================================================
-// 🌉 4. IRYS SDK BRIDGE (🔥 MODULAR V14 UPGRADE 🔥)
+// 🛡️ DIRECTIVE 2: Irys SDK 0.0.4 Browser Client Upgrade & Funding
 // ============================================================================
+async function uploadWithRetry(file, tags, env, progress, maxRetries = 4) {
+    let attempt = 0;
+    let lastErr;
+    
+    while (attempt <= maxRetries) {
+        try {
+            const onChunk = (chunkInfo) => {
+                try { progress.set(chunkInfo && (chunkInfo.totalUploaded ?? chunkInfo.offset) || 0); } catch (e) {}
+            };
+            
+            if (irys.uploader && irys.uploader.chunkedUploader) {
+                // 🛡️ PREVENT EVENT LISTENER LEAKING: Strip existing listeners before binding
+                if (typeof irys.uploader.off === 'function') {
+                    try { irys.uploader.off('chunkUpload'); } catch (e) {}
+                }
+                if (typeof irys.uploader.on === 'function') {
+                    irys.uploader.on('chunkUpload', onChunk);
+                }
+
+                // 🛡️ BROWSER COMPATIBLE CHUNKING CONFIGURATION
+                irys.uploader.chunkedUploader.setChunkSize(env.chunkSize);
+                irys.uploader.chunkedUploader.setBatchSize(env.batchSize);
+
+                // 🛡️ BROWSER COMPATIBLE UPLOAD METHOD
+                const response = await irys.uploader.chunkedUploader.uploadData(file, { tags: tags });
+                progress.complete();
+                return response;
+            } else {
+                throw new Error("Irys chunkedUploader is not available in this SDK version.");
+            }
+        } catch (err) {
+            lastErr = err;
+            const msg = (err && err.message ? err.message : String(err)).toLowerCase();
+            const isUserAbort = msg.includes('declined') || msg.includes('rejected by user') || msg.includes('user denied');
+            if (isUserAbort) throw err;
+            
+            attempt++;
+            if (attempt > maxRetries) break;
+            
+            const backoff = Math.min(8000, 1000 * Math.pow(2, attempt - 1));
+            appendLog(`[NETWORK] Throttling detected. Retrying chunk in ${backoff/1000}s (Attempt ${attempt}/${maxRetries})...`, "text-amber-400");
+            await new Promise(r => setTimeout(r, backoff));
+        } finally {
+            // 🛡️ CLEANUP: Ensure listener is removed regardless of outcome
+            if (irys.uploader && typeof irys.uploader.off === 'function') {
+                try { irys.uploader.off('chunkUpload'); } catch (e) {}
+            }
+        }
+    }
+    throw lastErr;
+}
+
 async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = null) {
     await ensureIrysReady();
     const size = isFile ? payload.size : new Blob([payload]).size;
@@ -2309,7 +2520,8 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
 
         let fundCallFailed = false;
         try {
-            await irys.fund(diffWithBuffer.toString());
+            // 🛡️ SANITIZE BIGINT/BIGNUMBER FUNDING: Prevent scientific notation EVM crash
+            await irys.fund(diffWithBuffer.toFixed(0));
         } catch (fundErr) {
             const feMsg = (fundErr && fundErr.message) || "";
             const isUserRejection = /user rejected|declined|denied|cancelled|user declined/i.test(feMsg);
@@ -2542,7 +2754,7 @@ async function executeGatewayUnlock(event) {
             const ownedIds = userTokens.map(t => t.toString()).join(", ");
 
             closeIdentityAuthModal();
-            const vault = document.getElementById('memberDnaVault');
+            const vault = document.getElementById('memberDnaStudio');
             if(vault) {
                 vault.classList.remove('hidden');
                 document.getElementById('dnaVerifyTokenId').value = userTokens[0].toString();
@@ -2789,6 +3001,11 @@ function setupWalletEventListeners(rawProvider) {
 }
 
 async function handleAccountsChangedEvent(accounts) {
+    // 🛡️ FIX: Destroy orphaned listeners BEFORE clearing state
+    if (secureContract && typeof secureContract.removeAllListeners === 'function') {
+        secureContract.removeAllListeners();
+    }
+
     GLOBAL_NODE_CACHE.clear();
     currentLoadedMediaData = { 
         front: "", frontType: "image", 
@@ -2855,6 +3072,19 @@ function handleChainChangedEvent(newChainId) {
     }
 }
 
+// ============================================================================
+// 🛡️ DIRECTIVE 4: Lock Integrity & EIP-6963 Wallet Discovery
+// ============================================================================
+
+// 🛡️ EIP-6963 Multi-Injected Provider Discovery Protocol
+const eip6963Providers = [];
+window.addEventListener("eip6963:announceProvider", (event) => {
+    if (event.detail && event.detail.provider) {
+        eip6963Providers.push(event.detail);
+    }
+});
+window.dispatchEvent(new Event("eip6963:requestProvider"));
+
 async function connectWallet(e) {
     const btn = typeof toggleButtonLoading === 'function' ? toggleButtonLoading(e, true) : null;
     
@@ -2871,15 +3101,27 @@ async function connectWallet(e) {
             ]);
         };
 
-        if (typeof window.ethereum !== 'undefined' && !explicitWalletConnect) {
-            appendLog("Primary Route Engaged: Injected Web3 Provider detected.", "text-blue-400");
+        if (!explicitWalletConnect) {
+            appendLog("Primary Route Engaged: EIP-6963 / Injected Web3 Provider discovery.", "text-blue-400");
             
-            if (window.ethereum.providers && Array.isArray(window.ethereum.providers)) {
-                rawProvider = window.ethereum.providers.find(p => p.isCoinbaseWallet) 
-                        || window.ethereum.providers.find(p => p.isMetaMask) 
-                        || window.ethereum;
+            // 🛡️ MODERNIZE WALLET PROVIDER DISCOVERY (EIP-6963)
+            if (eip6963Providers.length > 0) {
+                const preferred = eip6963Providers.find(p => 
+                    p.info.name.toLowerCase().includes('coinbase') || 
+                    p.info.name.toLowerCase().includes('metamask')
+                );
+                rawProvider = preferred ? preferred.provider : eip6963Providers[0].provider;
+            } else if (typeof window.ethereum !== 'undefined') {
+                // Legacy Fallback
+                if (window.ethereum.providers && Array.isArray(window.ethereum.providers)) {
+                    rawProvider = window.ethereum.providers.find(p => p.isCoinbaseWallet) 
+                            || window.ethereum.providers.find(p => p.isMetaMask) 
+                            || window.ethereum;
+                } else {
+                    rawProvider = window.coinbaseWalletExtension || window.ethereum;
+                }
             } else {
-                rawProvider = window.coinbaseWalletExtension || window.ethereum;
+                throw new Error("No Web3 Provider found. Please install a wallet.");
             }
             
             await rawProvider.request({ method: 'eth_requestAccounts' });
@@ -2999,158 +3241,6 @@ async function connectWallet(e) {
     } finally {
         if (btn && typeof toggleButtonLoading === 'function') toggleButtonLoading(btn, false);
     }
-}
-
-function setupRealTimeEvents() {
-    if (!secureContract) return;
-    secureContract.removeAllListeners();
-    
-    secureContract.on("ProposalCreated", async () => {
-        appendLog("New structural directive disseminated to Council. Synchronizing indices...", "text-purple-400");
-        await fetchAndDisplayProposals();
-    });
-    secureContract.on("ProposalExecuted", async () => {
-        appendLog("Legislative financial directive ratified and capital released.", "text-emerald-400");
-        await fetchAndDisplayProposals();
-        await syncContractStates();
-    });
-    secureContract.on("ProposalQueued", async (pId) => {
-        appendLog(`Directive #${pId} committed to Timelock vault. Awaiting period completion.`, "text-yellow-500");
-        await fetchAndDisplayProposals();
-    });
-    secureContract.on("SovereignForged", async (owner, tokenId) => {
-        appendLog("A structural matrix element has been newly born into existence.", "text-yellow-400");
-        await syncContractStates();
-        GLOBAL_NODE_CACHE.clear();
-        if (globalSelectedTokenId && String(tokenId) === String(globalSelectedTokenId)) {
-            await auditTokenFromLedger(globalSelectedTokenId);
-        }
-    });
-    secureContract.on("SovereignSanctified", async (tokenId, dna) => {
-        appendLog("A component matrix element has achieved high ascension (NOVA).", "text-blue-400");
-        await syncContractStates();
-        GLOBAL_NODE_CACHE.clear();
-        if (globalSelectedTokenId && String(tokenId) === String(globalSelectedTokenId)) {
-            await auditTokenFromLedger(globalSelectedTokenId);
-        }
-    });
-    
-    let transferTimeout;
-    secureContract.on("Transfer", (from, to, tokenId) => {
-        clearTimeout(transferTimeout);
-        transferTimeout = setTimeout(async () => {
-            await syncContractStates();
-            if (globalSelectedTokenId && String(tokenId) === String(globalSelectedTokenId)) {
-                await auditTokenFromLedger(globalSelectedTokenId);
-            }
-        }, 2000);
-    });
-
-    if (pollingInterval) clearInterval(pollingInterval);
-    pollingInterval = setInterval(() => syncContractStates(), 45000); 
-}
-
-let pendingSyncRequest = false;
-let isSyncingState = false;
-
-async function syncContractStates() {
-    if (isSyncingState) { 
-        pendingSyncRequest = true; 
-        return; 
-    }
-    isSyncingState = true;
-    
-    const activeContract = secureContract || readOnlyContract;
-    if (!activeContract) {
-        isSyncingState = false;
-        return;
-    }
-    
-    try {
-        let tStatus, rMint, rNova, accRewardPerNode;
-
-        try {
-            const multicall = new ethers.Contract(MULTICALL3_ADDRESS, MULTICALL3_ABI, readOnlyProvider || provider);
-            const calls = [
-                { target: CONTRACT_ADDRESS, allowFailure: false, callData: activeContract.interface.encodeFunctionData("treasuryStatus") },
-                { target: CONTRACT_ADDRESS, allowFailure: false, callData: activeContract.interface.encodeFunctionData("mintPrice") },
-                { target: CONTRACT_ADDRESS, allowFailure: false, callData: activeContract.interface.encodeFunctionData("novaFee") },
-                { target: CONTRACT_ADDRESS, allowFailure: false, callData: activeContract.interface.encodeFunctionData("accCouncilRewardPerNode") }
-            ];
-            const results = await multicall.aggregate3(calls);
-            
-            tStatus = activeContract.interface.decodeFunctionResult("treasuryStatus", results[0].returnData);
-            rMint = activeContract.interface.decodeFunctionResult("mintPrice", results[1].returnData)[0];
-            rNova = activeContract.interface.decodeFunctionResult("novaFee", results[2].returnData)[0];
-            accRewardPerNode = activeContract.interface.decodeFunctionResult("accCouncilRewardPerNode", results[3].returnData)[0];
-        } catch (mcErr) {
-            console.warn("[MULTICALL FALLBACK] syncContractStates:", mcErr);
-            tStatus = await activeContract.treasuryStatus();
-            rMint = await activeContract.mintPrice();
-            rNova = await activeContract.novaFee();
-            accRewardPerNode = await activeContract.accCouncilRewardPerNode();
-        }
-
-        if (!tStatus) throw new Error("INVALID_STATE_PAYLOAD");
-
-        const activeSupply = tStatus.activeSupply !== undefined ? tStatus.activeSupply : (tStatus[2] || 0n);
-        const historicalMint = tStatus.historicalMint !== undefined ? tStatus.historicalMint : (tStatus[3] || 0n);
-        const reservePerNFT = tStatus.reservePerNFT !== undefined ? tStatus.reservePerNFT : (tStatus[4] || 0n);
-        const reserve = tStatus.reserve !== undefined ? tStatus.reserve : (tStatus[0] || 0n);
-
-        const reserveBn = BigInt(reserve);
-        const activeSupplyBn = BigInt(activeSupply);
-        const dustWei = activeSupplyBn > 0n ? (reserveBn % activeSupplyBn) : 0n;
-
-        requestAnimationFrame(() => {
-            const updateText = (id, val) => {
-                const el = document.getElementById(id);
-                if(el) el.textContent = val;
-            };
-
-            updateText('lblMintPrice', fmtUnits(rMint));
-            updateText('lblNovaFee', fmtUnits(rNova));
-            updateText('displaySupply', `${activeSupply.toString()} / 333`);
-            updateText('lblHistoricalMint', historicalMint.toString());
-            updateText('lblReservePerNFT', fmtUnits(reservePerNFT));
-            updateText('dustVisualizer', dustWei.toString());
-
-            const councilEl = document.getElementById('displayCouncilPool');
-            if (councilEl) {
-                councilEl.replaceChildren(document.createTextNode(fmtUnits(accRewardPerNode, 4) + " "));
-                const span = document.createElement('span');
-                span.className = "text-xs text-stone-600";
-                span.textContent = "ETH / NODE";
-                councilEl.appendChild(span);
-            }
-
-            const reserveEl = document.getElementById('displayReserve');
-            if (reserveEl) {
-                reserveEl.replaceChildren(document.createTextNode(fmtUnits(reserve, 2) + " "));
-                const span = document.createElement('span');
-                span.className = "text-xs text-stone-600";
-                span.textContent = "ETH";
-                reserveEl.appendChild(span);
-            }
-        });
-
-        await fetchAndDisplayProposals();
-        
-    } catch (err) { 
-        console.error("[STATE SYNC ERROR]", err);
-        appendLog("Unable to query state properties from smart contract registry. Re-index recommended.", "text-red-500"); 
-    } finally {
-        isSyncingState = false;
-        if (pendingSyncRequest) {
-            pendingSyncRequest = false;
-            setTimeout(() => syncContractStates(), 1500);
-        }
-    }
-}
-
-function clearAllTimers() {
-    activeTimers.forEach(clearInterval);
-    activeTimers = [];
 }
 
 let pendingProposalsRequest = false;
@@ -3481,52 +3571,6 @@ function createProgressController(totalBytes) {
     };
 }
 
-async function uploadWithRetry(file, tags, env, progress, maxRetries = 4) {
-    let attempt = 0;
-    let lastErr;
-    
-    while (attempt <= maxRetries) {
-        try {
-            // 🛡️ MODULAR IRYS SDK PROGRESS HOOK
-            const onChunk = (chunkInfo) => {
-                try { progress.set(chunkInfo && (chunkInfo.totalUploaded ?? chunkInfo.offset) || 0); } catch (e) {}
-            };
-            
-            if (irys.uploader && typeof irys.uploader.on === 'function') {
-                irys.uploader.on('chunkUpload', onChunk);
-            }
-
-            // 🛡️ MODULAR IRYS SDK UPLOAD WITH CHUNKING ENFORCEMENT
-            const uploadOptions = { 
-                tags: tags,
-                chunked: true,
-                chunkSize: env.chunkSize,
-                batchSize: env.batchSize
-            };
-
-            const response = await irys.uploadFile(file, uploadOptions);
-            progress.complete();
-            return response;
-        } catch (err) {
-            lastErr = err;
-            const msg = (err && err.message ? err.message : String(err)).toLowerCase();
-            const isUserAbort = msg.includes('declined') || msg.includes('rejected by user') || msg.includes('user denied');
-            if (isUserAbort) throw err;
-            
-            attempt++;
-            if (attempt > maxRetries) break;
-            
-            const backoff = Math.min(8000, 1000 * Math.pow(2, attempt - 1));
-            appendLog(`[NETWORK] Throttling detected. Retrying chunk in ${backoff/1000}s (Attempt ${attempt}/${maxRetries})...`, "text-amber-400");
-            await new Promise(r => setTimeout(r, backoff));
-        } finally {
-            if (irys.uploader && typeof irys.uploader.off === 'function') {
-                try { irys.uploader.off('chunkUpload'); } catch (e) {}
-            }
-        }
-    }
-    throw lastErr;
-}
 
 function evaluateIosSafeguard(env, file, isVideo) {
     if (!env.isIOS) return { ok: true };
@@ -4538,9 +4582,9 @@ function renderLoadingSkeleton(container) {
     container.appendChild(skeleton);
 }
 
-// ---------------------------------------------------------
-// Absolute Cache-First Protocol (The Engine)
-// ---------------------------------------------------------
+// ============================================================================
+// 🛡️ DIRECTIVE 1: iOS Safari WebKit Memory Leak & GC Fixes
+// ============================================================================
 async function resolveMediaUrl(urlList, signal, mimeType) {
     const CACHE_NAME = 'eter-v6-asset-vault';
     const isVideo = mimeType === 'video';
@@ -4560,7 +4604,7 @@ async function resolveMediaUrl(urlList, signal, mimeType) {
         throw new Error('ALL GATEWAYS SEVERED (VIDEO STREAMING)');
     }
     
-    // 1. LOCAL EXECUTION: ตรวจสอบในเครื่องผู้ใช้ก่อน (Zero-Latency)
+    // 1. LOCAL EXECUTION: Zero-Latency Cache Check
     if ('caches' in window) {
         try {
             const cache = await caches.open(CACHE_NAME);
@@ -4570,17 +4614,23 @@ async function resolveMediaUrl(urlList, signal, mimeType) {
                 
                 if (cachedResponse) {
                     const blob = await cachedResponse.blob();
+                    const objUrl = URL.createObjectURL(blob);
+                    
+                    // 🛡️ STRICT GC: Revoke immediately if aborted mid-flight
                     if (signal.aborted) { 
-                        URL.revokeObjectURL(URL.createObjectURL(blob)); 
+                        URL.revokeObjectURL(objUrl); 
                         throw new Error('Aborted'); 
                     }
-                    return { url: URL.createObjectURL(blob), isBlob: true, sourceUrl: url };
+                    
+                    // 🛡️ STRICT GC: Register Blob for Garbage Collection
+                    registerBlobForGc(cleanUrl, objUrl);
+                    return { url: objUrl, isBlob: true, sourceUrl: url };
                 }
             }
-        } catch (e) { /* ปล่อยผ่านหากเบราว์เซอร์บล็อก Cache */ }
+        } catch (e) { /* Fallback to network if cache is blocked */ }
     }
 
-    // 2. NETWORK FETCH & STORE: หากไม่มีในเครื่อง ให้ดึงจาก Network และฝังลง Cache
+    // 2. NETWORK FETCH & STORE
     for (const url of urlList) {
         if (signal.aborted) throw new Error('Aborted');
         
@@ -4592,17 +4642,24 @@ async function resolveMediaUrl(urlList, signal, mimeType) {
         try {
             const response = await fetch(url, { signal });
             if (response.ok) {
+                const cleanUrl = url.split('?')[0]; 
                 if ('caches' in window) {
                     const cache = await caches.open(CACHE_NAME);
-                    const cleanUrl = url.split('?')[0]; 
                     cache.put(cleanUrl, response.clone()).catch(() => {}); 
                 }
+                
                 const blob = await response.blob();
+                const objUrl = URL.createObjectURL(blob);
+                
+                // 🛡️ STRICT GC: Revoke immediately if aborted mid-flight
                 if (signal.aborted) { 
-                    URL.revokeObjectURL(URL.createObjectURL(blob)); 
+                    URL.revokeObjectURL(objUrl); 
                     throw new Error('Aborted'); 
                 }
-                return { url: URL.createObjectURL(blob), isBlob: true, sourceUrl: url };
+                
+                // 🛡️ STRICT GC: Register Blob for Garbage Collection
+                registerBlobForGc(cleanUrl, objUrl);
+                return { url: objUrl, isBlob: true, sourceUrl: url };
             }
         } catch (e) {
             continue; 
@@ -4668,14 +4725,23 @@ function renderMediaToDOM(container, resolvedMedia, mediaType, abortSignal) {
         container._activeBlobUrl = null;
     }
 
+    // [CORRECTION]: Aggressive iOS WebKit Garbage Collection
     while (container.firstChild) {
         const child = container.firstChild;
         if (child.tagName === 'VIDEO' || child.tagName === 'IMG') {
             if (typeof videoCullingObserver !== 'undefined') {
                 videoCullingObserver.unobserve(child);
             }
-            child.removeAttribute('src');
-            if (child.tagName === 'VIDEO') child.load(); 
+            
+            if (child.tagName === 'VIDEO') {
+                child.pause();
+                child.src = ""; // Force WebKit to drop the buffer
+                child.innerHTML = ""; // Annihilate ghost <source> nodes
+                child.removeAttribute('src');
+                child.load(); // Flush the hardware decoder
+            } else {
+                child.removeAttribute('src');
+            }
         }
         container.removeChild(child);
     }
