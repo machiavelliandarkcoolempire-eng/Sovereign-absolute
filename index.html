@@ -8,24 +8,29 @@
     <meta name="referrer" content="no-referrer" />
     <title>THE IMPERIAL SOVEREIGN DEED</title>
     
-    <!-- ✅ อนุญาตโดเมน *.irys.xyz ทั้งหมดเพื่อป้องกัน CORS/Network Error -->
+    <script>
+        if (window.top !== window.self) {
+            document.documentElement.replaceChildren();
+            try { window.top.location = window.self.location; } catch (_) { /* CSP frame-ancestors remains authoritative. */ }
+        }
+    </script>
+    
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; media-src 'self' blob: https:; connect-src 'self' https://mainnet.base.org https://base.llamarpc.com https://base-rpc.publicnode.com https://base-mainnet.g.alchemy.com wss://base-mainnet.g.alchemy.com https://*.irys.xyz wss://relay.walletconnect.com wss://relay.walletconnect.org https://rpc.walletconnect.com https://api.web3modal.com https://api.reown.com wss:; frame-ancestors 'none'; base-uri 'none'; object-src 'none'; form-action 'self';">
 
-    <!-- 🌟 โหลด CSS และ Script ต่างๆ -->
     <link rel="stylesheet" href="./dist.css" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script src="https://unpkg.com/@walletconnect/ethereum-provider@2.11.1/dist/index.umd.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-    <script src="./web3-polyfill.js"></script>
-    <script src="./irys-bundle.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script defer src="https://unpkg.com/@walletconnect/ethereum-provider@2.11.1/dist/index.umd.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <script defer src="./web3-polyfill.js"></script>
+    <script defer src="./irys-bundle.js"></script>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=JetBrains+Mono:wght@400;700;800&display=swap');
 
-        /* ✅ แก้จอดำตรงนี้: ลบคำสั่งซ่อนหน้าจอออกแล้ว หน้าเว็บจะโชว์ทันที */
         html, body { background-color: #000000 !important; }
+        body { visibility: hidden; }
+        body.app-ready { visibility: visible; }
 
-        /* SEC Compliance Override via CSS */
         #displayCouncilPool span {
             font-size: 0 !important;
         }
@@ -67,18 +72,17 @@
             content: '';
             position: fixed;
             inset: 0;
-            pointer-events: none;
-            z-index: 0;
-            background:
-                radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.85) 100%);
+            pointer-events: none !important;
+            z-index: -1 !important;
+            background: radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.85) 100%);
             mix-blend-mode: multiply;
         }
         body::after {
             content: '';
             position: fixed;
             inset: 0;
-            pointer-events: none;
-            z-index: 0;
+            pointer-events: none !important;
+            z-index: -1 !important;
             opacity: 0.035;
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
         }
@@ -552,7 +556,6 @@
     
     <div id="memberDnaStudio" class="hidden mb-6 relative z-10">
     <div class="chiaroscuro-bg p-6 rounded-2xl border border-rose-950">
-        <!-- Header Section -->
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-stone-900 pb-3 mb-5 gap-2">
             <div>
                 <h2 class="text-lg font-black font-cinzel text-rose-400 uppercase tracking-tight">SOVEREIGN NOVA: ON-CHAIN FORENSIC TRUTH</h2>
@@ -562,13 +565,11 @@
         </div>
 
         <div class="space-y-4 font-mono">
-            <!-- 1. TOKEN ID -->
             <div class="p-3 bg-stone-950 border border-stone-900 rounded-lg">
                 <label class="text-[10px] text-amber-500 font-bold block mb-1 uppercase">1. TOKEN ID</label>
                 <input type="number" id="dnaVerifyTokenId" min="1" max="333" placeholder="TOKEN ID (1-333)" class="w-full bg-black border border-rose-950 p-2.5 text-sm text-amber-500 rounded outline-none focus:border-amber-600 transition-all" />
             </div>
 
-            <!-- 2. DNA -->
             <div class="p-3 bg-stone-950 border border-stone-900 rounded-lg">
                 <label class="text-[10px] text-amber-500 font-bold block mb-1 uppercase">2. DNA = IDENTITY DNA : YOUR NAME</label>
                 <div class="p-2.5 bg-black/80 rounded border border-rose-950/50">
@@ -576,7 +577,6 @@
                 </div>
             </div>
 
-            <!-- 3. VIDEO -->
             <div class="p-3 bg-stone-950 border border-stone-900 rounded-lg">
                 <label class="text-[10px] text-amber-500 font-bold block mb-1 uppercase">3. VIDEO : LINK , ID IRYS-XYZ</label>
                 <div class="p-2.5 bg-black/80 rounded border border-stone-900 text-[10px] flex justify-between items-center gap-2">
@@ -585,11 +585,9 @@
                 </div>
             </div>
 
-            <!-- 4. HIDDEN -->
             <div class="p-3 bg-stone-950 border border-stone-900 rounded-lg space-y-2.5">
                 <label class="text-[10px] text-amber-500 font-bold block uppercase">4. HIDDEN</label>
                 
-                <!-- Timestamps & Pixel Anchor -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-[9px]">
                     <div class="p-2 bg-black/80 rounded border border-stone-900">
                         <span class="text-stone-500 block uppercase font-bold">SANCTIFIED TIMESTAMPS</span>
@@ -601,7 +599,6 @@
                     </div>
                 </div>
 
-                <!-- Filter Enhancements -->
                 <div class="p-2 bg-black/90 rounded border border-stone-900/80 text-[8px] text-stone-400 flex flex-wrap justify-between gap-1">
                     <span>ปรับแสง: <strong class="text-amber-400">+50</strong></span>
                     <span>คอนทราสต์: <strong class="text-amber-400">+20</strong></span>
@@ -610,7 +607,6 @@
                     <span>รายละเอียด: <strong class="text-amber-400">+50</strong></span>
                 </div>
 
-                <!-- Forensic Deepfake & Image Analysis -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-[9px]">
                     <div class="p-2 bg-black/80 rounded border border-stone-900">
                         <span class="text-rose-400 block uppercase font-bold">AI DEEP FAKE NEWS (VIDEO)</span>
@@ -623,12 +619,10 @@
                 </div>
             </div>
 
-            <!-- Action Button -->
             <button onclick="processIdentityDnaInspectionOnChain()" class="w-full bg-rose-950/40 text-rose-300 border border-rose-700 text-[11px] font-black py-3.5 rounded-lg uppercase hover:bg-rose-900/60 transition-all tracking-widest shadow-[0_0_15px_rgba(153,27,27,0.2)] cursor-pointer mt-2">
                 EXTRACT ON-CHAIN STRUCTURAL TRACE — autoMap() 🧬
             </button>
 
-            <!-- Status Banner (เชื่อมกับ JS แล้ว) -->
             <div id="dnaAnalysisTerminalOut" class="p-2 bg-stone-950 border border-stone-800 rounded text-center mt-2 text-[9px] text-stone-500 font-mono uppercase tracking-widest">
                 AWAITING FORENSIC EXTRACTION...
             </div>
@@ -683,7 +677,6 @@
                 <span class="text-[10px] font-mono text-stone-500 uppercase whitespace-nowrap">ACTIVE: <span id="matrixActiveCount" class="text-amber-500 font-bold">0</span>/333</span>
             </div>
         </div><div id="matrixGridContainer" class="grid grid-cols-6 sm:grid-cols-10 md:grid-cols-12 lg:grid-cols-16 gap-2 max-h-[400px] overflow-y-auto scroll-dark pr-3 p-2 bg-black/30 rounded-xl border border-stone-900/50 shadow-inner">
-            <!-- Skeletons will be replaced by JS -->
         </div>
         
         <div class="flex flex-wrap gap-5 mt-6 text-tiny font-mono uppercase text-stone-400 bg-black/40 p-4 rounded-xl border border-stone-800">
@@ -835,7 +828,6 @@
                     ⚡ ENGAGE IRYS BRIDGE
                 </button>
                 
-                <!-- จัดระเบียบปุ่ม TOP-UP ใหม่: ใส่ w-full md:w-auto ปรับสี และใช้ฟอนต์ Mono -->
                 <button onclick="executeIrysTopUp('0.001')" type="button" class="w-full md:w-auto px-4 py-2 bg-blue-950 border border-blue-900 text-blue-300 hover:bg-blue-900 text-[10px] font-mono font-bold uppercase rounded shadow-[0_0_10px_rgba(30,58,138,0.2)] transition-colors">
                     TOP-UP IRYS (0.001 ETH)
                 </button>
@@ -846,7 +838,7 @@
             </div>
             <div>
                 <label class="text-[9px] text-stone-400 font-mono block mb-1 uppercase">FRONT <span id="frontTypeLabel" class="text-amber-500 font-bold">IMAGE</span> SOURCE REFERENCE URI</label>
-                <input type="text" id="forgeFrontUri" placeholder="e.g. Irys Tx ID (43 chars) or full URL" class="w-full bg-stone-950 border border-stone-900 p-3 text-sm font-mono text-stone-200 rounded outline-none focus:border-amber-600 transition-all" />
+                <input type="text" id="forgeFrontUri" maxlength="128" placeholder="e.g. Irys Tx ID (43 chars) or full URL" class="w-full bg-stone-950 border border-stone-900 p-3 text-sm font-mono text-stone-200 rounded outline-none focus:border-amber-600 transition-all" />
                 <p class="text-[9px] font-mono text-stone-600 mt-1 uppercase">MAPS CODE TARGET TO → <span id="frontMapTarget" class="text-amber-500 font-bold">frontURI / imageURI</span></p>
             </div>
         </div>
@@ -865,11 +857,12 @@
             </div>
             <div>
                 <label class="text-[9px] text-stone-400 font-mono block mb-1 uppercase">BACK <span id="backTypeLabel" class="text-amber-500 font-bold">IMAGE</span> SOURCE REFERENCE URI</label>
-                <input type="text" id="forgeBackUri" placeholder="e.g. Irys Tx ID (43 chars) or full URL" class="w-full bg-stone-950 border border-stone-900 p-3 text-sm font-mono text-stone-200 rounded outline-none focus:border-amber-600 transition-all" />
+                <input type="text" id="forgeBackUri" maxlength="128" placeholder="e.g. Irys Tx ID (43 chars) or full URL" class="w-full bg-stone-950 border border-stone-900 p-3 text-sm font-mono text-stone-200 rounded outline-none focus:border-amber-600 transition-all" />
                 <p class="text-[9px] font-mono text-stone-600 mt-1 uppercase">MAPS CODE TARGET TO → <span id="backMapTarget" class="text-amber-500 font-bold">backURI / imageURI</span></p>
             </div>
         </div>
     </section>
+
 
     <section class="chiaroscuro-bg p-6 rounded-2xl mb-6 relative z-10 border border-rose-950">
         <div class="border-b border-stone-900 pb-3 mb-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
@@ -886,15 +879,15 @@
             </div>
             <div>
                 <label class="text-[9px] text-stone-400 font-mono block mb-1 uppercase">② Identity DNA : (YOUNAME)</label>
-                <input type="text" id="novaDnaInput" placeholder='e.g. Anchor identifier sequence mapping coordinates' class="w-full bg-stone-950 border border-stone-900 p-3 text-sm font-mono text-rose-300 rounded outline-none focus:border-rose-600 transition-all" />
+                <input type="text" id="novaDnaInput" maxlength="1024" placeholder='e.g. Anchor identifier sequence mapping coordinates' class="w-full bg-stone-950 border border-stone-900 p-3 text-sm font-mono text-rose-300 rounded outline-none focus:border-rose-600 transition-all" />
             </div>
             <div>
                 <label class="text-[9px] text-stone-400 font-mono block mb-1 uppercase">③ Video URI (video)</label>
-                <input type="text" id="novaVideoUri" placeholder="Irys Tx ID (43 chars) or full URI" class="w-full bg-stone-950 border border-stone-900 p-3 text-sm font-mono text-amber-400 rounded outline-none focus:border-amber-500 transition-all" />
+                <input type="text" id="novaVideoUri" maxlength="128" placeholder="Irys Tx ID (43 chars) or full URI" class="w-full bg-stone-950 border border-stone-900 p-3 text-sm font-mono text-amber-400 rounded outline-none focus:border-amber-500 transition-all" />
             </div>
             <div>
                 <label class="text-[9px] text-stone-400 font-mono block mb-1 uppercase">④ Chrono-Map/Pixel Anchor (dna) (hiddenProperty)</label>
-                <input type="text" id="novaHiddenInput" placeholder="Irys Tx ID (43 chars) or full URI" class="w-full bg-stone-950 border border-rose-950 p-3 text-sm font-mono text-rose-400 rounded outline-none focus:border-rose-600 transition-all" />
+                <input type="text" id="novaHiddenInput" maxlength="1024" placeholder="Irys Tx ID (43 chars) or full URI" class="w-full bg-stone-950 border border-rose-950 p-3 text-sm font-mono text-rose-400 rounded outline-none focus:border-rose-600 transition-all" />
             </div>
         </div>
 
@@ -952,7 +945,7 @@
                     <span class="text-[9px] font-mono text-amber-500 uppercase tracking-wider block mb-2">// DISSEMINATE STRUCTURAL DIRECTIVE (COUNCIL 12 ONLY)</span>
                     <div class="grid grid-cols-3 gap-2 mb-2">
                         <input type="text" id="propAmountInput" placeholder="ETH AMT" class="bg-stone-950 border border-stone-900 p-2.5 text-[10px] font-mono text-stone-200 rounded outline-none" />
-                        <input type="text" id="propTargetInput" placeholder="PAYEE HEX ADDR" class="bg-stone-950 border border-stone-900 p-2.5 text-[10px] font-mono text-stone-200 rounded outline-none" />
+                        <input type="text" id="propTargetInput" maxlength="128" placeholder="PAYEE HEX ADDR" class="bg-stone-950 border border-stone-900 p-2.5 text-[10px] font-mono text-stone-200 rounded outline-none" />
                         <input type="number" id="propDurationInput" min="1" max="30" placeholder="DAYS(1-30)" class="bg-stone-950 border border-stone-900 p-2.5 text-[10px] font-mono text-stone-200 rounded outline-none" />
                     </div>
                 </div>
@@ -972,15 +965,12 @@
     </section>
     
     <section class="chiaroscuro-bg p-6 rounded-2xl mb-6 relative z-10 border border-rose-950">
-    <!-- Section Header -->
     <div class="border-b border-stone-900 pb-3 mb-5">
         <h2 class="text-lg font-black font-cinzel text-stone-100 uppercase tracking-tight">👑 Protocol Architecture Deployment</h2>
         <p class="text-[9px] font-mono text-stone-500 uppercase tracking-wide">AUTONOMOUS INFRASTRUCTURE DEPLOYMENT & STATE RELINQUISHMENT PROTOCOL</p>
     </div>
     
-    <!-- Grid System Container (12 Columns) -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <!-- ฝั่งซ้าย: Target Cell & Protocol Allocation (4 Columns) -->
         <div class="lg:col-span-4 flex flex-col justify-center">
             <div class="bg-stone-950 p-4 rounded-xl border border-stone-900 shadow-[inset_0_0_20px_rgba(0,0,0,0.9)]">
                 <label class="text-[10px] text-stone-400 font-mono font-bold block mb-2 uppercase tracking-widest text-center border-b border-stone-900 pb-2">TARGET CELL POSITION IDENTIFIER</label>
@@ -992,7 +982,6 @@
                 </div>
             </div>
         </div>
-<!-- ฝั่งขวา: The Sovereign Immolation Ritual (8 Columns) -->
         <div class="lg:col-span-8 bg-stone-950 border border-red-950 p-5 rounded-xl flex flex-col justify-between shadow-[0_0_20px_rgba(220,38,38,0.05)] hover:border-red-700/50 transition-colors">
             <div>
                 <h3 class="text-red-500 font-black font-mono text-sm mb-2 uppercase tracking-wider flex items-center gap-2"><span>🩸</span> THE SOVEREIGN IMMOLATION RITUAL</h3>
@@ -1021,7 +1010,7 @@
                 <span class="text-[10px] font-mono font-bold text-amber-500 uppercase tracking-widest block border-b border-stone-900 pb-1">⚙ MANIFEST COMPONENT (2 AUTO-MAP FIELDS)</span>
                 <div>
                     <label class="text-[9px] text-stone-500 font-mono block mb-1">ROOT PROPERTY NAME</label>
-                    <input type="text" id="propName" value="THE IMPERIAL SOVEREIGN DEED ♠️" class="w-full bg-stone-950 border border-stone-900 p-2.5 text-[10px] font-mono text-stone-200 rounded outline-none" />
+                    <input type="text" id="propName" maxlength="128" value="THE IMPERIAL SOVEREIGN DEED ♠️" class="w-full bg-stone-950 border border-stone-900 p-2.5 text-[10px] font-mono text-stone-200 rounded outline-none" />
                 </div>
                 <div class="space-y-2 max-h-64 overflow-y-auto scroll-dark pr-1">
                     <div class="bg-stone-950 p-2.5 rounded border border-stone-900">
@@ -1094,7 +1083,7 @@
                 
                 <div>
                     <label class="text-[9px] text-stone-500 font-mono block mb-1 uppercase">Target Address (สำหรับ Free Mint)</label>
-                    <input type="text" id="adminTargetAddress" placeholder="0x... EVM Address ปลายทาง" class="w-full bg-stone-950 border border-stone-900 p-2.5 text-xs font-mono text-emerald-400 rounded outline-none focus:border-emerald-600 transition-all" />
+                    <input type="text" id="adminTargetAddress" maxlength="128" placeholder="0x... EVM Address ปลายทาง" class="w-full bg-stone-950 border border-stone-900 p-2.5 text-xs font-mono text-emerald-400 rounded outline-none focus:border-emerald-600 transition-all" />
                 </div>
 
                 <div class="grid grid-cols-1 gap-2 pt-1">
@@ -1121,7 +1110,6 @@
         <button onclick="saveArchitectGateways(this)" class="px-5 py-2.5 bg-amber-700 text-black font-black text-[10px] rounded uppercase hover:bg-amber-600 transition-colors w-full md:w-auto mt-2">RE-ALIGN VECTORS</button>
     </div>
 
-    <!-- SYSTEM LOG SECTION -->
     <section class="chiaroscuro-bg mt-6 p-4 rounded-xl border border-slate-900">
         <span class="text-[10px] font-mono text-slate-500 uppercase block border-b border-slate-900 pb-2">// SYSTEM EVENT REAL-TIME TELEMETRY STREAM LOG</span>
         <div id="systemLogBox" class="mt-3 text-[10px] font-mono h-28 overflow-y-auto scroll-dark text-slate-500 space-y-1 select-text">
@@ -1129,7 +1117,6 @@
         </div>
     </section>
 
-    <!-- DOCTRINE SECTION -->
     <section class="chiaroscuro-bg p-4 rounded-xl my-6 border border-slate-900 bg-black/50 text-center relative z-10">
         <h4 class="text-[10px] font-black font-cinzel text-slate-500 uppercase tracking-widest mb-2">
             ⚖ THE ARCHITECT ABDICATION & FORENSIC INTEGRITY DOCTRINE 🔱
@@ -1143,7 +1130,6 @@
         </p>
     </section>
 
-    <!-- FOOTER SECTION -->
     <footer class="mt-4 chiaroscuro-bg p-4 rounded-xl font-mono text-[10px] text-slate-500 relative z-10">
         <div id="systemFooterLog" class="h-12 overflow-y-auto leading-relaxed scroll-dark">> [SYSTEM]: Integrity scan complete. Global nodes aligned. No external backend infrastructure recognized pursuant to the autarchic provisions of the Machiavellian Protocol. THE SOVEREIGN ABSOLUTE 🔱.</div>
         <div class="mt-4 pt-4 border-t border-slate-800/50 text-center text-slate-500 uppercase tracking-widest leading-relaxed">
@@ -1151,22 +1137,59 @@
         </div>
     </footer>
   
-  
-  <script>
+<script>
 "use strict";
 
-// ============================================================================
-// 🛡️ SECURITY & ENVIRONMENT INITIALIZATION
-// ============================================================================
-if (window.self !== window.top) {
-    try {
-        if (window.top.location.hostname !== window.self.location.hostname) {
-            window.top.location.replace(window.self.location.href);
-        }
-    } catch (e) {
-        window.location.replace("about:blank");
+let isTransactionPending = false;
+let walletSessionController = new AbortController();
+
+function lockSystem() {
+    if (isTransactionPending) {
+        showNotification("⚠️ SYSTEM ENFORCEMENT: ธุรกรรมกำลังประมวลผล ห้ามกดย้ำ", "error");
+        return false;
     }
+    isTransactionPending = true;
+    document.body.style.pointerEvents = 'none';
+
+    if (!document.getElementById('txLockOverlay')) {
+        const overlay = document.createElement('div');
+        overlay.id = 'txLockOverlay';
+        overlay.className = 'fixed inset-0 bg-black/90 z-[999999] flex flex-col items-center justify-center pointer-events-auto';
+        
+        const spinner = document.createElement('div');
+        spinner.className = 'text-amber-500 text-4xl mb-4 animate-spin';
+        spinner.textContent = '⏳';
+        
+        const title = document.createElement('div');
+        title.className = 'text-rose-500 font-bold font-mono text-sm tracking-widest uppercase';
+        title.textContent = 'TRANSACTION IN PROGRESS';
+        
+        const btn = document.createElement('button');
+        btn.className = 'mt-8 px-4 py-2 border border-red-500 text-red-500 text-[10px] hover:bg-red-950 rounded cursor-pointer pointer-events-auto';
+        btn.textContent = 'FORCE UNLOCK (กดเมื่อค้างนานเกิน 1 นาที)';
+        btn.onclick = () => unlockSystem(true);
+
+        overlay.append(spinner, title, btn);
+        document.body.appendChild(overlay);
+    }
+    return true;
 }
+
+function unlockSystem(force = false) {
+    isTransactionPending = false;
+    document.body.style.pointerEvents = 'auto';
+    
+    const overlay = document.getElementById('txLockOverlay');
+    if (overlay) overlay.remove();
+    
+    localStorage.removeItem('tx_pending');
+    localStorage.removeItem('tx_pending_ts');
+    
+    if (force) showNotification("ปลดล็อกระบบฉุกเฉินแล้ว", "warning");
+}
+
+window.addEventListener('DOMContentLoaded', () => unlockSystem(false));
+window.addEventListener('pageshow', () => unlockSystem(false));
 
 const CONTRACT_ADDRESS = "0x920c1f00EF178B3C060BD39a6a3f449BA2b230C9";
 const WETH_ADDRESS = "0x4200000000000000000000000000000000000006";
@@ -1324,12 +1347,8 @@ const WETH_ABI = [
     "function balanceOf(address account) view returns (uint256)"
 ];
 
-// ============================================================================
-// 🧠 STATE MANAGEMENT & DOM CACHE
-// ============================================================================
 let provider = null, signer = null, secureContract = null, irys = null;
 let readOnlyProvider = null, readOnlyContract = null;
-let pollingInterval = null; 
 let activeRawProvider = null; 
 let activeTimers = [];
 
@@ -1352,18 +1371,74 @@ let currentLoadedMediaData = {
 };
 
 let irysTargetFieldType = ""; 
-let isTransactionPending = false;
 
-const FUND_COOLDOWN_MS = 180000; // 🛡️ 3 Minutes Cooldown
 let isSyncingState = false;
 let pendingSyncRequest = false;
 
 const LOG_MAX_ROWS = 100;
 let _logScrollQueued = false;
 
-// ============================================================================
-// 🛡️ DIRECTIVE 2 & 5: GLOBAL INJECTIONS & OBSERVERS
-// ============================================================================
+let mcQueue = [];
+let mcTimer = false;
+
+// [VECTOR 2] MICROTASK QUEUE FOR ZERO-LATENCY MULTICALL
+async function debouncedMulticall(providerInstance, calls) {
+    return new Promise((resolve, reject) => {
+        if (!providerInstance) return reject(new Error("Provider instance is null"));
+        mcQueue.push({ calls, resolve, reject });
+        
+        if (!mcTimer) {
+            mcTimer = true;
+            queueMicrotask(async () => {
+                mcTimer = false;
+                const currentBatch = [...mcQueue];
+                mcQueue = [];
+                if (currentBatch.length === 0) return;
+
+                try {
+                    const multicall = new ethers.Contract(MULTICALL3_ADDRESS, MULTICALL3_ABI, providerInstance);
+                    const allCalls = currentBatch.flatMap(item => item.calls);
+                    let results = [];
+                    
+                    if (allCalls.length > 100) {
+                        for (let i = 0; i < allCalls.length; i += 100) {
+                            const chunk = allCalls.slice(i, i + 100);
+                            const chunkResults = await multicall.aggregate3(chunk);
+                            results = results.concat(chunkResults);
+                        }
+                    } else {
+                        results = await multicall.aggregate3(allCalls);
+                    }
+                    
+                    if (!results || results.length !== allCalls.length) {
+                        throw new Error("Multicall returned mismatched results length");
+                    }
+
+                    let offset = 0;
+                    for (const item of currentBatch) {
+                        const itemResults = results.slice(offset, offset + item.calls.length);
+                        item.resolve(itemResults);
+                        offset += item.calls.length;
+                    }
+                } catch (err) {
+                    currentBatch.forEach(item => item.reject(err));
+                }
+            });
+        }
+    });
+}
+
+function clearAllTimers() {
+    if (activeTimers && activeTimers.length > 0) {
+        activeTimers.forEach(timerId => clearInterval(timerId));
+        activeTimers = [];
+    }
+    if (searchDebounceTimer) {
+        clearTimeout(searchDebounceTimer);
+        searchDebounceTimer = null;
+    }
+}
+
 function checkPendingNova() {
     const pendingTxId = localStorage.getItem('pending_nova_txid');
     const pendingToken = localStorage.getItem('pending_nova_token');
@@ -1383,6 +1458,7 @@ const videoCullingObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
         const video = entry.target;
         if (entry.isIntersecting) {
+            video.style.display = 'block';
             if (video.dataset.cullSrc) {
                 video.src = video.dataset.cullSrc;
                 video.removeAttribute('data-cull-src');
@@ -1392,9 +1468,11 @@ const videoCullingObserver = new IntersectionObserver((entries) => {
             video.play().catch(() => {});
         } else {
             video.pause();
+            video.style.display = 'none';
             if (video._hlsInstance) {
                 video._hlsInstance.stopLoad();
-            } else if (video.src) {
+            }
+            if (video.src) {
                 video.dataset.cullSrc = video.src;
                 video.removeAttribute('src');
                 video.load();
@@ -1402,18 +1480,6 @@ const videoCullingObserver = new IntersectionObserver((entries) => {
         }
     });
 }, { rootMargin: "150px" });
-
-// ============================================================================
-// 🛠️ UTILITY & FORMATTING
-// ============================================================================
-
-function getLastFundAttempt() {
-    return parseInt(localStorage.getItem('sov_last_fund_attempt') || '0', 10);
-}
-
-function setLastFundAttempt(timestamp) {
-    localStorage.setItem('sov_last_fund_attempt', timestamp.toString());
-}
 
 function extractIrysId(input) {
     if (!input) return "";
@@ -1519,163 +1585,62 @@ function appendLog(msg, colorClass = 'text-slate-400') {
     }
 }
 
-// ประกาศไว้นอกฟังก์ชัน (Global Scope)
-let flipTimeout = null;
+let isFlippingLock = false;
 
+// [VECTOR 1] 3D CARD FLIP OPTIMIZATION (No display:none, No GPU Thrashing)
 function toggleCardFlip() {
+    if (isFlippingLock) return;
     const card = document.getElementById('sovereignFlipCard');
     if (!card) return;
 
-    // ล้าง Timeout เก่าทิ้งทันทีหากมีการกดซ้ำก่อนครบลูป 800ms
-    if (flipTimeout) {
-        clearTimeout(flipTimeout);
-        flipTimeout = null;
-    }
-
+    isFlippingLock = true;
     const isCurrentlyFlipped = card.classList.contains('flipped');
-    const frontContainer = document.getElementById('previewFrontContainer');
-    const backContainer = document.getElementById('previewBackContainer');
-    const frontVideo = frontContainer?.querySelector('video');
-    const backVideo = backContainer?.querySelector('video');
+    const frontVideo = document.getElementById('previewFrontContainer')?.querySelector('video');
+    const backVideo = document.getElementById('previewBackContainer')?.querySelector('video');
 
-    if (!isCurrentlyFlipped) {
-        if (frontVideo) {
-            if (frontVideo._hlsInstance) {
-                frontVideo._hlsInstance.stopLoad();
-            } else if (frontVideo.src) {
-                frontVideo.dataset.cullSrc = frontVideo.src;
-                frontVideo.removeAttribute('src'); 
-                frontVideo.load(); 
-            }
+    if (frontVideo) frontVideo.style.transform = 'translateZ(0)';
+    if (backVideo) backVideo.style.transform = 'translateZ(0)';
+
+    const swapVideos = () => {
+        if (!isCurrentlyFlipped) {
+            if (frontVideo) { frontVideo.pause(); frontVideo.style.visibility = 'hidden'; frontVideo.style.opacity = '0'; }
+            if (backVideo) { backVideo.style.visibility = 'visible'; backVideo.style.opacity = '1'; backVideo.play().catch(()=>{}); }
+        } else {
+            if (backVideo) { backVideo.pause(); backVideo.style.visibility = 'hidden'; backVideo.style.opacity = '0'; }
+            if (frontVideo) { frontVideo.style.visibility = 'visible'; frontVideo.style.opacity = '1'; frontVideo.play().catch(()=>{}); }
         }
-        card.classList.add('flipped');
-        
-        flipTimeout = setTimeout(() => {
-            if (backVideo) {
-                if (backVideo._hlsInstance) {
-                    backVideo._hlsInstance.attachMedia(backVideo);
-                    backVideo._hlsInstance.startLoad();
-                    backVideo.play().catch(() => {});
-                } else if (backVideo.dataset.cullSrc) {
-                    backVideo.src = backVideo.dataset.cullSrc;
-                    backVideo.removeAttribute('data-cull-src');
-                    backVideo.load();
-                    backVideo.play().catch(() => {});
-                }
-            }
-            flipTimeout = null;
-        }, 800);
-    } else {
-        if (backVideo) {
-            if (backVideo._hlsInstance) {
-                backVideo._hlsInstance.stopLoad();
-            } else if (backVideo.src) {
-                backVideo.dataset.cullSrc = backVideo.src;
-                backVideo.removeAttribute('src'); 
-                backVideo.load(); 
-            }
+    };
+
+    const onTransitionEnd = (e) => {
+        if (e && (e.target !== card || e.propertyName !== 'transform')) return;
+        card.removeEventListener('transitionend', onTransitionEnd);
+        swapVideos();
+        isFlippingLock = false;
+    };
+
+    card.addEventListener('transitionend', onTransitionEnd);
+    card.classList.toggle('flipped');
+
+    setTimeout(() => {
+        if (isFlippingLock) {
+            card.removeEventListener('transitionend', onTransitionEnd);
+            swapVideos();
+            isFlippingLock = false;
         }
-        card.classList.remove('flipped');
-        
-        flipTimeout = setTimeout(() => {
-            if (frontVideo) {
-                if (frontVideo._hlsInstance) {
-                    frontVideo._hlsInstance.attachMedia(frontVideo);
-                    frontVideo._hlsInstance.startLoad();
-                    frontVideo.play().catch(() => {});
-                } else if (frontVideo.dataset.cullSrc) {
-                    frontVideo.src = frontVideo.dataset.cullSrc;
-                    frontVideo.removeAttribute('data-cull-src');
-                    frontVideo.load();
-                    frontVideo.play().catch(() => {});
-                }
-            }
-            flipTimeout = null;
-        }, 800);
-    }
+    }, 1000);
 }
-
-
-
-// ============================================================================
-// 🛡️ 1. ระบบล็อกธุรกรรมขั้นเด็ดขาด (ป้องกันการกดซ้ำที่หน้าเว็บ)
-// ============================================================================
-function lockSystem() {
-    if (isTransactionPending || localStorage.getItem('tx_pending') === 'true') {
-        showNotification("⚠️ SYSTEM ENFORCEMENT: ธุรกรรมกำลังประมวลผล ห้ามกดย้ำเพื่อป้องกันการเสียค่า Gas ฟรี", "error");
-        return false;
-    }
-    isTransactionPending = true;
-    localStorage.setItem('tx_pending', 'true');
-    localStorage.setItem('tx_pending_ts', Date.now().toString());
-    
-    document.body.style.pointerEvents = 'none';
-
-    const overlay = document.createElement('div');
-    overlay.id = 'txLockOverlay';
-    overlay.className = 'fixed inset-0 bg-black/90 z-[999999] flex flex-col items-center justify-center pointer-events-auto';
-    
-    const spinner = document.createElement('div');
-    spinner.className = 'text-amber-500 text-4xl mb-4 animate-spin';
-    spinner.textContent = '⏳';
-    
-    const title = document.createElement('div');
-    title.className = 'text-rose-500 font-bold font-mono text-sm tracking-widest uppercase';
-    title.textContent = 'TRANSACTION IN PROGRESS';
-    
-    const sub = document.createElement('div');
-    sub.className = 'text-slate-400 font-mono text-[10px] mt-2';
-    sub.textContent = 'กรุณารอจนกว่ากระเป๋าจะยืนยันเสร็จสิ้น... (ห้ามรีเฟรช)';
-    
-    const btn = document.createElement('button');
-    btn.className = 'mt-8 px-4 py-2 border border-red-500 text-red-500 text-[10px] hover:bg-red-950 rounded cursor-pointer';
-    btn.textContent = 'FORCE UNLOCK (กดเมื่อค้างนานเกิน 1 นาทีเท่านั้น)';
-    btn.onclick = () => unlockSystem(true);
-
-    overlay.append(spinner, title, sub, btn);
-    document.body.appendChild(overlay);
-
-    return true;
-}
-
-function unlockSystem(force = false) {
-    isTransactionPending = false;
-    localStorage.removeItem('tx_pending');
-    document.body.style.pointerEvents = 'auto';
-    const overlay = document.getElementById('txLockOverlay');
-    if (overlay) overlay.remove();
-    if (force) showNotification("ปลดล็อกระบบฉุกเฉินแล้ว คุณสามารถทำรายการใหม่ได้", "warning");
-}
-
-document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') {
-        const txPendingTs = parseInt(localStorage.getItem('tx_pending_ts') || '0', 10);
-        if (txPendingTs > 0 && Date.now() - txPendingTs > 5 * 60 * 1000) {
-            unlockSystem(true);
-        }
-    }
-});
-window.addEventListener('pageshow', (e) => {
-    if (e.persisted) {
-        unlockSystem(true);
-    }
-});
 
 function isMaliciousURI(uri) {
     if (!uri) return false;
-    if (/^[a-zA-Z0-9_-]{43}$/.test(uri)) return false;
+    const cleanUri = uri.trim().toLowerCase();
+    if (/^[a-zA-Z0-9_-]{43}$/.test(cleanUri)) return false;
+    if (/^(javascript|data|vbscript):/i.test(cleanUri)) return true;
     try {
-        const parsed = new URL(uri, window.location.origin);
-        const protocol = parsed.protocol.toLowerCase();
-        return ['javascript:', 'vbscript:', 'data:', 'file:'].includes(protocol);
+        const parsed = new URL(cleanUri);
+        return ['javascript:', 'vbscript:', 'data:', 'file:'].includes(parsed.protocol);
     } catch (e) {
-        return true;
+        return !cleanUri.startsWith('http://') && !cleanUri.startsWith('https://') && !cleanUri.startsWith('ar://') && !cleanUri.startsWith('irys://');
     }
-}
-
-function sanitizeForJSON(text) {
-    if (!text || typeof text !== 'string') return "";
-    return text.replace(/[<>]/g, "").trim(); 
 }
 
 function isValidSovereignInput(text) {
@@ -1694,19 +1659,24 @@ function validateTokenRange(id) {
 }
 
 const blobGcCache = new Map();
-const MAX_BLOB_CACHE_SIZE = 5;
 
-function registerBlobForGc(url, objectUrl) {
+function registerBlobForGc(url, objectUrl, isVideo = false) {
     if (!url || !objectUrl) return;
     if (blobGcCache.has(url)) return;
     
-    if (blobGcCache.size >= MAX_BLOB_CACHE_SIZE) {
+    if (isVideo) {
+        for (const [k, v] of blobGcCache.entries()) {
+            if (v.isVideo) {
+                URL.revokeObjectURL(v.url);
+                blobGcCache.delete(k);
+            }
+        }
+    } else if (blobGcCache.size >= 5) {
         const oldestKey = blobGcCache.keys().next().value;
-        const oldestObjUrl = blobGcCache.get(oldestKey);
-        try { URL.revokeObjectURL(oldestObjUrl); } catch(e) {}
+        URL.revokeObjectURL(blobGcCache.get(oldestKey).url);
         blobGcCache.delete(oldestKey);
     }
-    blobGcCache.set(url, objectUrl);
+    blobGcCache.set(url, { url: objectUrl, isVideo });
 }
 
 function fmtUnits(value, decimals = 18) {
@@ -1739,14 +1709,17 @@ function decodeContractError(err) {
     }
     if (!secureContract) return err.message || "Unknown execution error";
     try {
-        if (err.data) {
-            const decodedError = secureContract.interface.parseError(err.data);
-            if (decodedError?.name) return decodedError.name;
-        } else if (err.error?.data?.originalError?.data) {
-            const decodedError = secureContract.interface.parseError(err.error.data.originalError.data);
+        let data = err.data || err.error?.data?.originalError?.data || err.error?.data || err.reason;
+        if (typeof data === 'object' && data !== null && data.data) {
+            data = data.data;
+        }
+        
+        if (typeof data === 'string' && data.startsWith('0x')) {
+            const decodedError = secureContract.interface.parseError(data);
             if (decodedError?.name) return decodedError.name;
         }
-        const match = (err.message || "").match(/custom error '([a-zA-Z0-9_]+)'/);
+
+        const match = (err.message || "").match(/custom error ['"]?([a-zA-Z0-9_]+)['"]?/i);
         if (match) return match[1];
     } catch (e) {}
     return err.reason || err.message || "Transaction reverted by EVM";
@@ -1761,10 +1734,21 @@ async function promptUserForFile(acceptType = 'image/*,video/*') {
 
         let isSettled = false;
 
+        const handleFocusFallback = () => {
+            setTimeout(() => {
+                if (!isSettled && fileInput.files.length === 0) handleCancel();
+            }, 15000); 
+        };
+
+        const handleBlur = () => {
+            window.addEventListener('focus', handleFocusFallback, { once: true });
+        };
+
         const cleanup = () => {
             if (fileInput.parentNode === document.body) {
                 document.body.removeChild(fileInput);
             }
+            window.removeEventListener('blur', handleBlur);
             window.removeEventListener('focus', handleFocusFallback);
         };
 
@@ -1782,39 +1766,27 @@ async function promptUserForFile(acceptType = 'image/*,video/*') {
             resolve(null);
         };
 
-        const handleFocusFallback = () => {
-            setTimeout(() => {
-                if (!isSettled && fileInput.files.length === 0) handleCancel();
-            }, 15000); 
-        };
-
         fileInput.addEventListener('change', handleFileChange, { once: true });
         fileInput.addEventListener('cancel', handleCancel, { once: true });
 
-        window.addEventListener('blur', () => {
-            window.addEventListener('focus', handleFocusFallback, { once: true });
-        }, { once: true });
+        window.addEventListener('blur', handleBlur, { once: true });
 
         document.body.appendChild(fileInput);
         fileInput.click();
     });
 }
 
-// ============================================================================
-// ⚡ 3. TRANSACTION ENGINE (ETHERS V6)
-// ============================================================================
 async function runTx(btnInput, label, methodName, args = [], overrides = {}, options = {}) {
     const { manageLock = true, manageButton = true, sync = true } = options;
 
     if (!secureContract || !signer) {
-        showNotification("SYSTEM ENFORCEMENT: กรุณาเชื่อมต่อกระเป๋าก่อน", "error");
+        showNotification("SYSTEM ENFORCEMENT: Please connect your wallet first.", "error");
         return false;
     }
 
-    const estimateFn = secureContract[methodName].estimateGas;
-    const sendFn = secureContract[methodName];
-    if (typeof estimateFn !== "function" || typeof sendFn !== "function") {
-        showNotification(`STRUCTURAL EXCEPTION: ไม่พบฟังก์ชัน '${methodName}'`, "error");
+    const contractMethod = secureContract[methodName];
+    if (typeof contractMethod !== "function" || typeof contractMethod.estimateGas !== "function") {
+        showNotification(`STRUCTURAL EXCEPTION: Function '${methodName}' not found.`, "error");
         return false;
     }
 
@@ -1826,30 +1798,34 @@ async function runTx(btnInput, label, methodName, args = [], overrides = {}, opt
 
         let estimatedGas;
         try {
-            estimatedGas = await estimateFn(...args, overrides);
+            estimatedGas = await contractMethod.estimateGas(...args, overrides);
         } catch (gasErr) {
             if (gasErr.code === 4001 || gasErr?.message?.includes("user rejected")) throw gasErr; 
             throw { code: 'UNPREDICTABLE_GAS_LIMIT', originalError: gasErr };
         }
 
         const gasLimit = (estimatedGas * 120n) / 100n;
-        const finalOverrides = { ...overrides, gasLimit };
+        const finalOverrides = { ...overrides, gasLimit, enableAbort: walletSessionController.signal };
 
-        const tx = await sendFn(...args, finalOverrides);
+        const tx = await contractMethod(...args, finalOverrides);
         appendLog(`Transaction [${label}] initiated: ${tx.hash}`, "text-blue-400");
         
-        const receipt = await tx.wait();
+        const receipt = await Promise.race([
+            tx.wait(),
+            new Promise((_, reject) => setTimeout(() => reject(new Error("TX_WAIT_TIMEOUT")), 120000))
+        ]);
+
         appendLog(`Transaction confirmed in block ${receipt.blockNumber}`, "text-emerald-400");
         if (sync) await syncContractStates();
         return receipt;
         
     } catch (err) {
         if (err.code === 'UNPREDICTABLE_GAS_LIMIT') {
-            showNotification(`Transaction Failed: ธุรกรรมถูกปฏิเสธโดยเงื่อนไขของ Smart Contract (Gas Error)`, "error");
+            showNotification(`Transaction Failed: Rejected by Smart Contract conditions (Gas Error).`, "error");
         } else {
             const msg = decodeContractError(err);
             if (msg === "USER_CANCELLED_TX" || err.code === 4001) {
-                showNotification("ธุรกรรมถูกยกเลิกโดยผู้ใช้", "warning");
+                showNotification("Transaction cancelled by user.", "warning");
             } else {
                 showNotification(`Transaction Failed: ${msg}`, "error");
             }
@@ -1860,6 +1836,7 @@ async function runTx(btnInput, label, methodName, args = [], overrides = {}, opt
         if (btn) toggleButtonLoading(btn, false);
     }
 }
+
 
 async function checkGasSurge() {
     if(!provider) return false;
@@ -1879,9 +1856,6 @@ async function checkGasSurge() {
     } catch (e) { return false; }
 }
 
-// ============================================================================
-// 📡 DATA FETCHING & CACHING
-// ============================================================================
 function getImperialRank(tokenId) {
     const id = parseInt(tokenId);
     if(isNaN(id)) return "UNASSIGNED";
@@ -1893,9 +1867,6 @@ function getImperialRank(tokenId) {
     return "UNKNOWN ENTITY";
 }
 
-// ============================================================================
-// 🛡️ DIRECTIVE 3: Ethers v6 Multicall3 & Targeted Event Lifecycles
-// ============================================================================
 async function autoMap(tokenId) {
     const tId = String(tokenId);
     if (GLOBAL_NODE_CACHE.has(tId)) {
@@ -1918,17 +1889,13 @@ async function autoMap(tokenId) {
             let deedData, tokenUri, votingLockUntil;
 
             try {
-                const multicall = new ethers.Contract(MULTICALL3_ADDRESS, MULTICALL3_ABI, readOnlyProvider || provider);
-                
-                // 🛡️ FIX MULTICALL3 REVERT CASCADE: allowFailure set to true
                 const calls = [
-                    { target: CONTRACT_ADDRESS, allowFailure: true, callData: activeContract.interface.encodeFunctionData("getDeedData", [tokenBigNum]) },
-                    { target: CONTRACT_ADDRESS, allowFailure: true, callData: activeContract.interface.encodeFunctionData("tokenURI", [tokenBigNum]) },
-                    { target: CONTRACT_ADDRESS, allowFailure: true, callData: activeContract.interface.encodeFunctionData("tokenVotingLockUntil", [tokenBigNum]) }
+                    { target: CONTRACT_ADDRESS, allowFailure: true, callData: activeContract.interface.encodeFunctionData("getDeedData", [tokenBigNum.toString()]) },
+                    { target: CONTRACT_ADDRESS, allowFailure: true, callData: activeContract.interface.encodeFunctionData("tokenURI", [tokenBigNum.toString()]) },
+                    { target: CONTRACT_ADDRESS, allowFailure: true, callData: activeContract.interface.encodeFunctionData("tokenVotingLockUntil", [tokenBigNum.toString()]) }
                 ];
-                const results = await multicall.aggregate3(calls);
+                const results = await debouncedMulticall(readOnlyProvider || provider, calls);
                 
-                // 🛡️ EXPLICIT RESULT CHECKING: Prevent decoding crashes on reverted calls
                 deedData = results[0].success ? activeContract.interface.decodeFunctionResult("getDeedData", results[0].returnData) : null;
                 tokenUri = results[1].success ? activeContract.interface.decodeFunctionResult("tokenURI", results[1].returnData)[0] : "";
                 votingLockUntil = results[2].success ? activeContract.interface.decodeFunctionResult("tokenVotingLockUntil", results[2].returnData)[0] : 0n;
@@ -1939,9 +1906,9 @@ async function autoMap(tokenId) {
             } catch (mcErr) {
                 console.warn("[MULTICALL FALLBACK] autoMap:", mcErr);
                 [deedData, tokenUri, votingLockUntil] = await Promise.all([
-                    activeContract.getDeedData(tokenBigNum),
-                    activeContract.tokenURI(tokenBigNum).catch(() => ""),
-                    activeContract.tokenVotingLockUntil(tokenBigNum).catch(() => 0n)
+                    activeContract.getDeedData(tokenBigNum.toString()),
+                    activeContract.tokenURI(tokenBigNum.toString()).catch(() => ""),
+                    activeContract.tokenVotingLockUntil(tokenBigNum.toString()).catch(() => 0n)
                 ]);
             }
 
@@ -1952,13 +1919,14 @@ async function autoMap(tokenId) {
                 try {
                     const controller = new AbortController();
                     const timeoutId = setTimeout(() => controller.abort(), 5000); 
-                    const metaResponse = await fetch(targetUrl, { signal: controller.signal });
+                    const metaResponse = await fetch(targetUrl, { signal: walletSessionController.signal });
                     clearTimeout(timeoutId); 
                     
                     if (metaResponse.ok) {
-                        const contentType = metaResponse.headers.get("content-type");
-                        if (contentType && contentType.includes("application/json")) {
-                            metadata = await metaResponse.json();
+                        // [VECTOR 4] PRE-FLIGHT CONTENT LENGTH CHECK
+                        const contentLength = metaResponse.headers.get('content-length');
+                        if (contentLength && parseInt(contentLength) > 51200) {
+                            console.warn(`[autoMap] Payload exceeds 50KB limit. Rejected to protect UI thread.`);
                         } else {
                             const text = await metaResponse.text();
                             if (text.length > 51200) { 
@@ -1998,6 +1966,7 @@ async function autoMap(tokenId) {
             GLOBAL_NODE_CACHE.set(tId, result);
             return result;
         } catch (err) { 
+            if (err.name === 'AbortError') return null;
             return null; 
         } finally {
             PENDING_AUTOMAP_REQUESTS.delete(tId);
@@ -2008,13 +1977,11 @@ async function autoMap(tokenId) {
     return requestPromise;
 }
 
+// [VECTOR 2] EVENT-DRIVEN SYNC (No 45s Polling)
 function setupRealTimeEvents() {
-    if (!secureContract) return;
+    if (!secureContract || !provider) return;
     
-    // 🛡️ FIX EVENT LISTENER ANNIHILATION: Targeted stripping
-    ["ProposalCreated", "ProposalExecuted", "ProposalQueued", "SovereignForged", "SovereignSanctified", "Transfer"].forEach(e => {
-        try { secureContract.removeAllListeners(e); } catch (err) {}
-    });
+    try { secureContract.removeAllListeners(); } catch (err) {}
     
     secureContract.on("ProposalCreated", async () => {
         appendLog("New structural directive disseminated to Council. Synchronizing indices...", "text-purple-400");
@@ -2057,11 +2024,16 @@ function setupRealTimeEvents() {
         }, 2000);
     });
 
-    if (pollingInterval) clearInterval(pollingInterval);
-    pollingInterval = setInterval(() => syncContractStates(), 45000); 
+    let lastBlockSync = 0;
+    provider.on('block', (blockNum) => {
+        const now = Date.now();
+        if (now - lastBlockSync > 10000) { 
+            lastBlockSync = now;
+            syncContractStates();
+        }
+    });
 }
 
-// ประกาศ Global Scope ป้องกัน Rate Limit สแปม RPC
 let lastSyncTime = 0;
 const SYNC_COOLDOWN_MS = 2000; 
 
@@ -2092,14 +2064,13 @@ async function syncContractStates() {
         let tStatus, rMint, rNova, accRewardPerNode;
 
         try {
-            const multicall = new ethers.Contract(MULTICALL3_ADDRESS, MULTICALL3_ABI, readOnlyProvider || provider);
             const calls = [
                 { target: CONTRACT_ADDRESS, allowFailure: true, callData: activeContract.interface.encodeFunctionData("treasuryStatus") },
                 { target: CONTRACT_ADDRESS, allowFailure: true, callData: activeContract.interface.encodeFunctionData("mintPrice") },
                 { target: CONTRACT_ADDRESS, allowFailure: true, callData: activeContract.interface.encodeFunctionData("novaFee") },
                 { target: CONTRACT_ADDRESS, allowFailure: true, callData: activeContract.interface.encodeFunctionData("accCouncilRewardPerNode") }
             ];
-            const results = await multicall.aggregate3(calls);
+            const results = await debouncedMulticall(readOnlyProvider || provider, calls);
             
             if (results[0].success) tStatus = activeContract.interface.decodeFunctionResult("treasuryStatus", results[0].returnData);
             if (results[1].success) rMint = activeContract.interface.decodeFunctionResult("mintPrice", results[1].returnData)[0];
@@ -2138,14 +2109,12 @@ async function syncContractStates() {
             updateText('lblReservePerNFT', fmtUnits(reservePerNFT));
             updateText('dustVisualizer', dustWei.toString());
 
-            // [CORRECTION]: Phase 4 Sovereign Treasury Liquidation Sync
             const exitResEl = document.getElementById('exitResPerNft');
             const exitRefundEl = document.getElementById('exitRefund');
 
             if (exitResEl) exitResEl.textContent = fmtUnits(reservePerNFT) + " ETH";
 
             if (exitRefundEl) {
-                // Strictly enforce 15% Exit Tax (User receives 85%)
                 const refundWei = (BigInt(reservePerNFT) * 85n) / 100n;
                 exitRefundEl.textContent = fmtUnits(refundWei) + " ETH";
             }
@@ -2179,10 +2148,6 @@ async function syncContractStates() {
     }
 }
 
-
-// ============================================================================
-// 🎨 UI & NOTIFICATIONS
-// ============================================================================
 function showNotification(msg, type = 'error') {
     const popup = document.createElement('div');
     const bgColor = type === 'error' 
@@ -2263,6 +2228,8 @@ function requestMediaConfirmation(uri, dnaString, mediaTypeHint = "") {
             video.muted = true;
             video.loop = true;
             video.controls = true;
+            video.playsInline = true;
+            video.setAttribute('webkit-playsinline', 'true');
             video.className = "max-h-full max-w-full object-contain";
             container.appendChild(video);
         } else {
@@ -2279,6 +2246,13 @@ function requestMediaConfirmation(uri, dnaString, mediaTypeHint = "") {
             if (mediaSettled) return;
             mediaSettled = true;
             modal.classList.add('hidden');
+            
+            const activeVideo = container.querySelector('video');
+            if (activeVideo) {
+                activeVideo.pause();
+                activeVideo.removeAttribute('src');
+                activeVideo.load();
+            }
             container.replaceChildren(); 
             resolve(approved);
         };
@@ -2321,9 +2295,6 @@ function updateBridgeStatus(msg, type) {
     });
 }
 
-// ============================================================================
-// 💸 IRYS FUNDING UI OVERLAY (SAFE DOM INJECTION)
-// ============================================================================
 function showFundingOverlay(costStr) {
     window._fundPollingActive = true; 
     
@@ -2344,9 +2315,9 @@ function showFundingOverlay(costStr) {
     sub.id = 'fundOverlaySub';
     sub.className = 'text-slate-300 font-mono text-xs mt-4 text-center px-4';
     
-    const subText1 = document.createTextNode('กรุณากดยืนยันธุรกรรมในกระเป๋า (MetaMask/Wallet) ของคุณ');
+    const subText1 = document.createTextNode('Please confirm the transaction in your wallet');
     const br = document.createElement('br');
-    const subText2 = document.createTextNode('เพื่อเติมเงินค่าอัปโหลดจำนวน ');
+    const subText2 = document.createTextNode('to fund the upload cost of ');
     const costSpan = document.createElement('span');
     costSpan.className = 'text-yellow-400 font-bold';
     costSpan.textContent = `${costStr} ETH`;
@@ -2355,9 +2326,10 @@ function showFundingOverlay(costStr) {
     
     const pulse = document.createElement('div');
     pulse.className = 'text-slate-500 font-mono text-[10px] mt-6 animate-pulse';
-    pulse.textContent = '(ระบบจะเริ่มอัปโหลดไฟล์ทันทีที่ธุรกรรมสำเร็จ ห้ามปิดหน้านี้)';
+    pulse.textContent = '(Upload will begin automatically once confirmed. Do not close this page.)';
     
     const cancelBtn = document.createElement('button');
+    cancelBtn.id = 'fundCancelBtn';
     cancelBtn.className = 'mt-8 px-4 py-2 border border-red-500 text-red-500 text-[10px] hover:bg-red-950 rounded cursor-pointer font-bold tracking-widest transition-colors';
     cancelBtn.textContent = '[ FORCE CLOSE / ABORT ]';
     cancelBtn.onclick = () => {
@@ -2377,9 +2349,6 @@ function hideFundingOverlay() {
     if (overlay) overlay.remove();
 }
 
-// ============================================================================
-// 🌉 IRYS SDK BRIDGE (MODULAR UPGRADE)
-// ============================================================================
 async function ensureIrysReady(timeoutMs = 60000) {
     if (irys) return true;
     
@@ -2395,7 +2364,6 @@ async function ensureIrysReady(timeoutMs = 60000) {
 
     try {
         const initPromise = (async () => {
-            // [CORRECTION]: Explicitly pass the Signer to the Irys Adapter
             if (typeof window.WebUploader !== 'undefined' && typeof window.WebEthersV6 !== 'undefined') {
                 const irysAdapter = window.WebEthersV6(signer);
                 irys = await window.WebUploader(irysAdapter).withProvider(activeRawProvider);
@@ -2405,7 +2373,7 @@ async function ensureIrysReady(timeoutMs = 60000) {
             return true;
         })();
 
-        const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Irys initialization timeout")), timeoutMs));
+        const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Irys initialization timeout")), 4000));
 
         await Promise.race([initPromise, timeoutPromise]);
 
@@ -2430,33 +2398,29 @@ async function withNetworkRetry(fn, retries = 3, delay = 1000) {
     }
 }
 
-// ============================================================================
-// 🛡️ DIRECTIVE 2: Irys SDK 0.0.4 Browser Client Upgrade & Funding
-// ============================================================================
 async function uploadWithRetry(file, tags, env, progress, maxRetries = 4) {
     let attempt = 0;
     let lastErr;
     
     while (attempt <= maxRetries) {
+        const onChunk = async (chunkInfo) => {
+            try { progress.set(chunkInfo && (chunkInfo.totalUploaded ?? chunkInfo.offset) || 0); } catch (e) {}
+            if (env.isMobile) {
+                await new Promise(r => setTimeout(r, 50));
+            }
+        };
         try {
-            const onChunk = (chunkInfo) => {
-                try { progress.set(chunkInfo && (chunkInfo.totalUploaded ?? chunkInfo.offset) || 0); } catch (e) {}
-            };
-            
             if (irys.uploader && irys.uploader.chunkedUploader) {
-                // 🛡️ PREVENT EVENT LISTENER LEAKING: Strip existing listeners before binding
                 if (typeof irys.uploader.off === 'function') {
-                    try { irys.uploader.off('chunkUpload'); } catch (e) {}
+                    try { irys.uploader.off('chunkUpload', onChunk); } catch (e) {}
                 }
                 if (typeof irys.uploader.on === 'function') {
                     irys.uploader.on('chunkUpload', onChunk);
                 }
 
-                // 🛡️ BROWSER COMPATIBLE CHUNKING CONFIGURATION
                 irys.uploader.chunkedUploader.setChunkSize(env.chunkSize);
                 irys.uploader.chunkedUploader.setBatchSize(env.batchSize);
 
-                // 🛡️ BROWSER COMPATIBLE UPLOAD METHOD
                 const response = await irys.uploader.chunkedUploader.uploadData(file, { tags: tags });
                 progress.complete();
                 return response;
@@ -2476,9 +2440,8 @@ async function uploadWithRetry(file, tags, env, progress, maxRetries = 4) {
             appendLog(`[NETWORK] Throttling detected. Retrying chunk in ${backoff/1000}s (Attempt ${attempt}/${maxRetries})...`, "text-amber-400");
             await new Promise(r => setTimeout(r, backoff));
         } finally {
-            // 🛡️ CLEANUP: Ensure listener is removed regardless of outcome
             if (irys.uploader && typeof irys.uploader.off === 'function') {
-                try { irys.uploader.off('chunkUpload'); } catch (e) {}
+                try { irys.uploader.off('chunkUpload', onChunk); } catch (e) {}
             }
         }
     }
@@ -2487,7 +2450,8 @@ async function uploadWithRetry(file, tags, env, progress, maxRetries = 4) {
 
 async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = null) {
     await ensureIrysReady();
-    const size = isFile ? payload.size : new Blob([payload]).size;
+    // [VECTOR 3] JSON SIZE CALCULATION FIX
+    const size = isFile ? payload.size : new TextEncoder().encode(payload).length;
     
     const price = await withNetworkRetry(() => irys.getPrice(size));
     const initialBalance = await withNetworkRetry(() => irys.getLoadedBalance());
@@ -2502,12 +2466,6 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
         }
 
         const costStr = ethers.formatEther(diffWithBuffer.toString()).substring(0, 8);
-
-        const msSinceLastFund = Date.now() - getLastFundAttempt();
-        if (msSinceLastFund < FUND_COOLDOWN_MS) {
-            const waitSec = Math.ceil((FUND_COOLDOWN_MS - msSinceLastFund) / 1000);
-            throw new Error(`ระบบป้องกันการเสียเงินซ้ำ: กรุณารออีก ${waitSec} วินาที ก่อนทำรายการใหม่`);
-        }
         
         updateBridgeStatus("AWAITING FUNDING TX...", "warning");
         appendLog(`Awaiting user transaction: Funding ${costStr} ETH`, "text-yellow-400");
@@ -2516,21 +2474,33 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
         if (!isConfirmed) throw new Error("User declined funding.");
         
         showFundingOverlay(costStr);
-        setLastFundAttempt(Date.now());
+
+        // [VECTOR 3] FUNDING ABORT DESYNC FIX
+        const cancelBtn = document.getElementById('fundCancelBtn');
+        if (cancelBtn) {
+            cancelBtn.textContent = '[ REJECT IN WALLET ]';
+            cancelBtn.disabled = true;
+            cancelBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        }
 
         let fundCallFailed = false;
-        try {
-            // 🛡️ SANITIZE BIGINT/BIGNUMBER FUNDING: Prevent scientific notation EVM crash
-            await irys.fund(diffWithBuffer.toFixed(0));
-        } catch (fundErr) {
-            const feMsg = (fundErr && fundErr.message) || "";
-            const isUserRejection = /user rejected|declined|denied|cancelled|user declined/i.test(feMsg);
-            if (isUserRejection) {
-                hideFundingOverlay();
-                throw new Error("การทำธุรกรรมเติมเงินถูกยกเลิกโดยผู้ใช้");
+        const pendingFundTx = localStorage.getItem('irys_pending_fund_tx');
+        if (pendingFundTx && pendingFundTx !== 'pending') {
+            appendLog("Resuming pending funding transaction polling...", "text-yellow-400");
+        } else {
+            try {
+                const fundRes = await irys.fund(diffWithBuffer.toFixed(0));
+                localStorage.setItem('irys_pending_fund_tx', fundRes.id || 'pending');
+            } catch (fundErr) {
+                const feMsg = (fundErr && fundErr.message) || "";
+                const isUserRejection = /user rejected|declined|denied|cancelled|user declined/i.test(feMsg);
+                if (isUserRejection) {
+                    hideFundingOverlay();
+                    throw new Error("Funding transaction cancelled by user.");
+                }
+                fundCallFailed = true;
+                appendLog(`[IRYS FUND WARNING] Transaction confirmed on Blockchain but Irys Node response delayed. Entering polling mode...`, "text-yellow-500");
             }
-            fundCallFailed = true;
-            appendLog(`[IRYS FUND WARNING] ธุรกรรมสำเร็จบน Blockchain แต่ Irys Node ตอบสนองช้า กำลังเข้าสู่โหมดรอตรวจสอบยอด...`, "text-yellow-500");
         }
         
         appendLog("Funding TX confirmed on-chain. Awaiting Bundler synchronization...", "text-yellow-400");
@@ -2541,11 +2511,11 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
         if(titleEl) titleEl.textContent = "SYNCING BUNDLER (BASE NETWORK)...";
         if(subEl) {
             subEl.replaceChildren();
-            const t1 = document.createTextNode("เงินถูกโอนออกจากกระเป๋าแล้ว กำลังรอ Irys อัปเดตยอด...");
+            const t1 = document.createTextNode("Funds transferred. Awaiting Irys balance update...");
             const br = document.createElement('br');
             const span = document.createElement('span');
             span.className = "text-emerald-400 font-bold";
-            span.textContent = "(Base Network อาจใช้เวลา 1-3 นาที ห้ามปิดหน้านี้และห้ามกดเติมเงินซ้ำเด็ดขาด)";
+            span.textContent = "(Base Network may take 1-3 minutes. Do not close this page or fund again.)";
             subEl.append(t1, br, span);
         }
 
@@ -2554,6 +2524,7 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
         const maxAttempts = 36;
         
         while (!isSynced && attempts < maxAttempts && window._fundPollingActive) {
+            if (!irys || !signer || !provider) { window._fundPollingActive = false; throw new Error("Wallet session severed during sync"); }
             await new Promise(resolve => setTimeout(resolve, 5000));
             try {
                 const currentBalance = await withNetworkRetry(() => irys.getLoadedBalance());
@@ -2568,13 +2539,14 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
         hideFundingOverlay();
 
         if (!window._fundPollingActive) {
-            throw new Error("ผู้ใช้กดยกเลิกการรอ (เงินของคุณยังคงปลอดภัยอยู่ในระบบ Irys)");
+            throw new Error("User cancelled waiting (Your funds remain safe in the Irys system).");
         }
 
         if (!isSynced) {
-            throw new Error("เงินของคุณถูกโอนเข้า Irys แล้ว (เช็คในกระเป๋าได้) แต่เซิร์ฟเวอร์ Irys อัปเดตยอดช้ากว่าปกติ กรุณารอประมาณ 3-5 นาที แล้วกด 'อัปโหลด' ใหม่อีกครั้ง **โดยไม่ต้องกดเติมเงินซ้ำ**");
+            throw new Error("Funds transferred to Irys, but server update is delayed. Please wait 3-5 minutes and click 'Upload' again without refunding.");
         }
         
+        localStorage.removeItem('irys_pending_fund_tx');
         appendLog("Bundler synchronized successfully. Proceeding to upload.", "text-emerald-400");
     }
 
@@ -2592,38 +2564,40 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
     return receipt;
 }
 
-// ============================================================================
-// 💰 IRYS PRE-FUND SYSTEM
-// ============================================================================
 async function executeIrysTopUp(amountEthStr) {
     if (!lockSystem()) return; 
-    const msSinceLastFund = Date.now() - getLastFundAttempt();
-    if (msSinceLastFund < FUND_COOLDOWN_MS) {
-        const waitSec = Math.ceil((FUND_COOLDOWN_MS - msSinceLastFund) / 1000);
-        showNotification(`ระบบป้องกันการเสียเงินซ้ำ: กรุณารออีก ${waitSec} วินาที (เงินรอบที่แล้วกำลังรอ Irys อัปเดตยอด)`, "warning");
-        unlockSystem();
-        return;
-    }
     try {
         await ensureIrysReady();
         
         const initialBalance = await irys.getLoadedBalance();
-        setLastFundAttempt(Date.now());
         
         const amountWei = ethers.parseEther(amountEthStr);
         
         showFundingOverlay(amountEthStr);
         appendLog(`Initiating Irys Top-up: ${amountEthStr} ETH...`, "text-blue-400");
         
+        const cancelBtn = document.getElementById('fundCancelBtn');
+        if (cancelBtn) {
+            cancelBtn.textContent = '[ REJECT IN WALLET ]';
+            cancelBtn.disabled = true;
+            cancelBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        }
+
         let fundCallFailed = false;
-        try {
-            await irys.fund(amountWei.toString());
-        } catch (fundErr) {
-            const feMsg = (fundErr && fundErr.message) || "";
-            const isUserRejection = /user rejected|declined|denied|cancelled|user declined/i.test(feMsg);
-            if (isUserRejection) throw fundErr; 
-            fundCallFailed = true;
-            appendLog(`[IRYS FUND WARNING] ธุรกรรมสำเร็จบน Blockchain แต่ Irys Node ตอบสนองช้า กำลังเข้าสู่โหมดรอตรวจสอบยอด...`, "text-yellow-500");
+        const pendingFundTx = localStorage.getItem('irys_pending_fund_tx');
+        if (pendingFundTx && pendingFundTx !== 'pending') {
+            appendLog("Resuming pending funding transaction polling...", "text-yellow-400");
+        } else {
+            try {
+                const fundRes = await irys.fund(amountWei.toString());
+                localStorage.setItem('irys_pending_fund_tx', fundRes.id || 'pending');
+            } catch (fundErr) {
+                const feMsg = (fundErr && fundErr.message) || "";
+                const isUserRejection = /user rejected|declined|denied|cancelled|user declined/i.test(feMsg);
+                if (isUserRejection) throw fundErr; 
+                fundCallFailed = true;
+                appendLog(`[IRYS FUND WARNING] Transaction confirmed on Blockchain but Irys Node response delayed. Entering polling mode...`, "text-yellow-500");
+            }
         }
         
         const titleEl = document.getElementById('fundOverlayTitle');
@@ -2631,11 +2605,11 @@ async function executeIrysTopUp(amountEthStr) {
         if(titleEl) titleEl.textContent = "SYNCING BUNDLER (BASE NETWORK)...";
         if(subEl) {
             subEl.replaceChildren();
-            const t1 = document.createTextNode("เงินถูกโอนออกจากกระเป๋าแล้ว กำลังรอ Irys อัปเดตยอด...");
+            const t1 = document.createTextNode("Funds transferred. Awaiting Irys balance update...");
             const br = document.createElement('br');
             const span = document.createElement('span');
             span.className = "text-emerald-400 font-bold";
-            span.textContent = "(Base Network อาจใช้เวลา 1-3 นาที ห้ามปิดหน้านี้และห้ามกดเติมเงินซ้ำเด็ดขาด)";
+            span.textContent = "(Base Network may take 1-3 minutes. Do not close this page or fund again.)";
             subEl.append(t1, br, span);
         }
 
@@ -2644,6 +2618,7 @@ async function executeIrysTopUp(amountEthStr) {
         const maxTopUpAttempts = 36; 
         
         while (!isSynced && attempts < maxTopUpAttempts && window._fundPollingActive) {
+            if (!irys || !signer || !provider) { window._fundPollingActive = false; throw new Error("Wallet session severed during sync"); }
             await new Promise(resolve => setTimeout(resolve, 5000));
             try {
                 const currentBalance = await irys.getLoadedBalance();
@@ -2658,14 +2633,15 @@ async function executeIrysTopUp(amountEthStr) {
         hideFundingOverlay();
         
         if (!window._fundPollingActive) {
-            throw new Error("ผู้ใช้กดยกเลิกการรอ (เงินของคุณยังคงปลอดภัยอยู่ในระบบ Irys)");
+            throw new Error("User cancelled waiting (Your funds remain safe in the Irys system).");
         }
 
         if (isSynced) {
-            showNotification(`ยอดเงินอัปเดตเข้า Irys สำเร็จ! คุณสามารถกดอัปโหลดไฟล์ได้ทันที`, "success");
+            localStorage.removeItem('irys_pending_fund_tx');
+            showNotification(`Irys balance updated successfully! You can now upload the file.`, "success");
             appendLog(`Irys balance topped up successfully.`, "text-emerald-400");
         } else {
-            showNotification(`เงินเข้า Irys แล้วแต่เซิร์ฟเวอร์แสดงผลช้า กรุณารอ 3 นาทีแล้วกด "อัปโหลด" ได้เลยโดยไม่ต้องเติมเงินซ้ำ`, "warning");
+            showNotification(`Funds in Irys but server display is delayed. Wait 3 minutes and click 'Upload' without refunding.`, "warning");
             appendLog(`Top-up TX confirmed on Base, but Irys node is lagging. Funds are safe.`, "text-yellow-500");
         }
         
@@ -2674,7 +2650,7 @@ async function executeIrysTopUp(amountEthStr) {
         const msg = err.message || "Unknown error";
         if (msg.includes("declined") || msg.includes("rejected") || msg.includes("cancelled") || msg.includes("user rejected")) {
             appendLog("User cancelled the top-up transaction.", "text-yellow-500");
-            showNotification("ยกเลิกการทำรายการ", "warning");
+            showNotification("Transaction cancelled.", "warning");
         } else {
             appendLog(`Top-up Exception: ${msg}`, "text-red-500");
             showNotification(msg, "error");
@@ -2723,7 +2699,7 @@ async function checkHolding(account) {
 
 function executeArchitectCentralizedUpload(type) {
     if (globalSelectedTokenId === null) {
-        showNotification("Centralized Controller Exception: กรุณาเลือกพิกัดเซลล์ Token ID บน Matrix ก่อนสั่งการ", "error");
+        showNotification("Centralized Controller Exception: Please select a Token ID cell coordinate on the Matrix first.", "error");
         return;
     }
     openDeedUploadTrigger(globalSelectedTokenId, type);
@@ -2739,7 +2715,7 @@ function resetAdminInputs() {
 
 async function executeGatewayUnlock(event) {
     if (!secureContract || !signer) {
-        showNotification("CRITICAL ERROR: WALLET NOT CONNECTED - กรุณาเชื่อมต่อกระเป๋าก่อน", "error");
+        showNotification("CRITICAL ERROR: WALLET NOT CONNECTED - Please connect your wallet first.", "error");
         return;
     }
     if (!lockSystem()) return; 
@@ -2760,16 +2736,16 @@ async function executeGatewayUnlock(event) {
                 document.getElementById('dnaVerifyTokenId').value = userTokens[0].toString();
                 vault.scrollIntoView({ behavior: 'smooth' });
             }
-            appendLog(`ACCESS GRANTED: ยืนยันสิทธิ์ผู้ถือครองโฉนดหมายเลข [${ownedIds}] ปลดล็อคห้องแลปสำเร็จ`, "text-cyan-400 font-bold");
-            showNotification(`ยินดีต้อนรับ! คุณเข้าใช้งานด้วยสิทธิ์ผู้ถือโฉนดหมายเลข: ${ownedIds}`, "success");
+            appendLog(`ACCESS GRANTED: Verified ownership of deed node [${ownedIds}] Laboratory unlocked successfully.`, "text-cyan-400 font-bold");
+            showNotification(`Welcome! Access granted via deed node: ${ownedIds}`, "success");
         } else {
-            showNotification("ACCESS DENIED: กระเป๋านี้ไม่ได้ถือครองโฉนด (เบอร์ 1-333) สิทธิ์ถูกปฏิเสธ", "error");
-            appendLog(`ACCESS DENIED: กระเป๋า ${address.slice(0,6)}... ไม่พบโฉนดในระบบ`, "text-red-500 font-bold");
+            showNotification("ACCESS DENIED: Wallet does not hold a deed (1-333). Access rejected.", "error");
+            appendLog(`ACCESS DENIED: Wallet ${address.slice(0,6)}... no deed found in system.`, "text-red-500 font-bold");
             closeIdentityAuthModal();
         }
     } catch (err) {
         console.error("Blockchain Query Error:", err);
-        showNotification("VALIDATION FAILED: เกิดข้อผิดพลาดในการดึงข้อมูลจาก Blockchain", "error");
+        showNotification("VALIDATION FAILED: Error retrieving data from Blockchain.", "error");
     } finally {
         unlockSystem();
         if (btn) toggleButtonLoading(btn, false);
@@ -2793,7 +2769,7 @@ async function processIdentityDnaInspectionOnChain() {
     }
 
     try {
-        const currentOwner = await activeContract.ownerOf(BigInt(tokenId));
+        const currentOwner = await activeContract.ownerOf(BigInt(tokenId).toString());
         if (!currentOwner || currentOwner === ethers.ZeroAddress) {
             if(terminalOut) terminalOut.textContent = "❌ FORENSICS EXCEPTION: NODE DOES NOT EXIST ON-CHAIN";
             return;
@@ -2845,49 +2821,29 @@ async function loadDeedMetadata(tokenId) {
     }
 }
 
-// ==========================================
-// 1. GLOBAL INSTANCES DECLARATION (แยกวงชัดเจน)
-// ==========================================
-
-// สำหรับสัญญาหลัก / งานทั่วไป
-let readOnlyProvider = null;
-let readOnlyContract = null;
-
-// สำหรับ IRIS โดยเฉพาะ (Dedicated High-Throughput)
 let irisProvider = null;
 let irisContract = null;
 
-// ==========================================
-// 2. CONFIGURATION & CONSTANTS
-// ==========================================
 const BASE_CHAIN_ID = 8453;
 
-// RPC Endpoints สำหรับ General Contract (Key 1)
 const GENERAL_ENDPOINTS = [
-    'https://base-mainnet.g.alchemy.com/v2/QTZrknzCeDDEXAFCEBCMM',
     'https://mainnet.base.org',                                   
     'https://base.llamarpc.com',                                  
     'https://base-rpc.publicnode.com'
 ];
 
-// RPC Endpoints สำหรับ Iris Dedicated Pipeline (Key 2)
 const IRIS_ENDPOINTS = [
-    'https://base-mainnet.g.alchemy.com/v2/wR5UgtUrkfPjKnqfMhm8k',
     'https://mainnet.base.org',                                   
     'https://base.llamarpc.com',                                  
     'https://base-rpc.publicnode.com'
 ];
-
-// ==========================================
-// 3. RPC INITIALIZATION FUNCTIONS
-// ==========================================
 
 function createFallbackProvider(endpoints) {
     const configs = endpoints.map((url, index) => {
         const p = new ethers.JsonRpcProvider(url, BASE_CHAIN_ID, { staticNetwork: true });
         return { provider: p, priority: index + 1, weight: 1 };
     });
-    return new ethers.FallbackProvider(configs);
+    return new ethers.FallbackProvider(configs, 1);
 }
 
 async function initReadOnlyRPC() {
@@ -2897,7 +2853,7 @@ async function initReadOnlyRPC() {
         
         readOnlyContract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, readOnlyProvider);
         
-        appendLog('General Multi-RPC Online (Alchemy Key 1 Prioritized).', 'text-emerald-400');
+        appendLog('General Multi-RPC Online.', 'text-emerald-400');
         await syncContractStates();
     } catch (err) {
         readOnlyProvider = null;
@@ -2914,7 +2870,7 @@ async function initIrisRPC(irisAddress, irisAbi) {
         
         irisContract = new ethers.Contract(irisAddress, irisAbi, irisProvider);
         
-        appendLog('Dedicated Iris RPC Online (Alchemy Key 2 Isolated).', 'text-cyan-400');
+        appendLog('Dedicated Iris RPC Online.', 'text-cyan-400');
     } catch (err) {
         irisProvider = null;
         irisContract = null;
@@ -2932,22 +2888,26 @@ async function bootSystemRPCs(irisAddress, irisAbi) {
 }
 
 function loadArchitectGateways() {
-    const l1 = localStorage.getItem('sov_gate_l1') || "https://www.linkedin.com/in/machiavellian-dark-cool-441976219";
-    const l2 = localStorage.getItem('sov_gate_l2') || "https://x.com/BungthongS45922";
-    const l3 = localStorage.getItem('sov_gate_l3') || "https://discord.gg/SM7vaDKB";
-    const l4 = localStorage.getItem('sov_gate_club') || "https://discord.gg/SM7vaDKB";
+    const l1 = localStorage.getItem('sov_gate_l1');
+    const safeL1 = (!l1 || isMaliciousURI(l1)) ? "https://www.linkedin.com/in/machiavellian-dark-cool-441976219" : l1;
+    const l2 = localStorage.getItem('sov_gate_l2');
+    const safeL2 = (!l2 || isMaliciousURI(l2)) ? "https://x.com/BungthongS45922" : l2;
+    const l3 = localStorage.getItem('sov_gate_l3');
+    const safeL3 = (!l3 || isMaliciousURI(l3)) ? "https://discord.gg/SM7vaDKB" : l3;
+    const l4 = localStorage.getItem('sov_gate_club');
+    const safeL4 = (!l4 || isMaliciousURI(l4)) ? "https://discord.gg/SM7vaDKB" : l4;
 
     const lnk1 = document.getElementById('linkSocial1'), lnk2 = document.getElementById('linkSocial2'), lnk3 = document.getElementById('linkSocial3'), lnk4 = document.getElementById('linkSocialClubHouse');
-    if(lnk1) lnk1.href = l1;
-    if(lnk2) lnk2.href = l2;
-    if(lnk3) lnk3.href = l3;
-    if(lnk4) lnk4.href = l4;
+    if(lnk1) lnk1.href = safeL1;
+    if(lnk2) lnk2.href = safeL2;
+    if(lnk3) lnk3.href = safeL3;
+    if(lnk4) lnk4.href = safeL4;
 
     const inp1 = document.getElementById('inputLink1'), inp2 = document.getElementById('inputLink2'), inp3 = document.getElementById('inputLink3'), inp4 = document.getElementById('inputLinkClubHouse');
-    if(inp1) inp1.value = l1;
-    if(inp2) inp2.value = l2;
-    if(inp3) inp3.value = l3;
-    if(inp4) inp4.value = l4;
+    if(inp1) inp1.value = safeL1;
+    if(inp2) inp2.value = safeL2;
+    if(inp3) inp3.value = safeL3;
+    if(inp4) inp4.value = safeL4;
 }
 
 function saveArchitectGateways(e) {
@@ -2983,12 +2943,21 @@ function saveArchitectGateways(e) {
 }
 
 function setupWalletEventListeners(rawProvider) {
-    if (activeRawProvider && typeof activeRawProvider.removeListener === 'function') {
-        try {
-            activeRawProvider.removeListener('accountsChanged', handleAccountsChangedEvent);
-            activeRawProvider.removeListener('chainChanged', handleChainChangedEvent);
-        } catch (err) {
-            console.warn("Cleanup of legacy provider telemetry bypassed:", err);
+    if (activeRawProvider) {
+        if (typeof activeRawProvider.removeAllListeners === 'function') {
+            try {
+                activeRawProvider.removeAllListeners('accountsChanged');
+                activeRawProvider.removeAllListeners('chainChanged');
+            } catch (err) {
+                console.warn("Cleanup of legacy provider telemetry bypassed:", err);
+            }
+        } else if (typeof activeRawProvider.removeListener === 'function') {
+            try {
+                activeRawProvider.removeListener('accountsChanged', handleAccountsChangedEvent);
+                activeRawProvider.removeListener('chainChanged', handleChainChangedEvent);
+            } catch (err) {
+                console.warn("Cleanup of legacy provider telemetry bypassed:", err);
+            }
         }
     }
 
@@ -3001,7 +2970,9 @@ function setupWalletEventListeners(rawProvider) {
 }
 
 async function handleAccountsChangedEvent(accounts) {
-    // 🛡️ FIX: Destroy orphaned listeners BEFORE clearing state
+    if (walletSessionController) walletSessionController.abort();
+    walletSessionController = new AbortController();
+
     if (secureContract && typeof secureContract.removeAllListeners === 'function') {
         secureContract.removeAllListeners();
     }
@@ -3014,7 +2985,7 @@ async function handleAccountsChangedEvent(accounts) {
     };
     
     if (!accounts || accounts.length === 0) {
-        showNotification("SECURITY PROTOCOL: กระเป๋าถูกตัดการเชื่อมต่อ ระบบเข้าสู่โหมด Standby", "error");
+        showNotification("SECURITY PROTOCOL: Wallet disconnected. System entering Standby mode.", "error");
         
         const connectBtn = document.getElementById('btnConnect');
         if (connectBtn) {
@@ -3065,18 +3036,13 @@ function handleChainChangedEvent(newChainId) {
     const wrongNetwork = parsedChainId !== 8453n;
     setNetworkHardLock(wrongNetwork, newChainId);
     if (wrongNetwork) {
-        showNotification('SECURITY WARNING: ตรวจพบการเปลี่ยน Network กรุณากลับมาที่ Base Mainnet', 'error');
+        showNotification('SECURITY WARNING: Network change detected. Please return to Base Mainnet.', 'error');
     } else {
         appendLog('Network telemetries fully realigned over Base Mainnet.', 'text-emerald-400');
         syncContractStates();
     }
 }
 
-// ============================================================================
-// 🛡️ DIRECTIVE 4: Lock Integrity & EIP-6963 Wallet Discovery
-// ============================================================================
-
-// 🛡️ EIP-6963 Multi-Injected Provider Discovery Protocol
 const eip6963Providers = [];
 window.addEventListener("eip6963:announceProvider", (event) => {
     if (event.detail && event.detail.provider) {
@@ -3086,6 +3052,9 @@ window.addEventListener("eip6963:announceProvider", (event) => {
 window.dispatchEvent(new Event("eip6963:requestProvider"));
 
 async function connectWallet(e) {
+    if (walletSessionController) walletSessionController.abort();
+    walletSessionController = new AbortController();
+
     const btn = typeof toggleButtonLoading === 'function' ? toggleButtonLoading(e, true) : null;
     
     try {
@@ -3104,7 +3073,6 @@ async function connectWallet(e) {
         if (!explicitWalletConnect) {
             appendLog("Primary Route Engaged: EIP-6963 / Injected Web3 Provider discovery.", "text-blue-400");
             
-            // 🛡️ MODERNIZE WALLET PROVIDER DISCOVERY (EIP-6963)
             if (eip6963Providers.length > 0) {
                 const preferred = eip6963Providers.find(p => 
                     p.info.name.toLowerCase().includes('coinbase') || 
@@ -3112,7 +3080,6 @@ async function connectWallet(e) {
                 );
                 rawProvider = preferred ? preferred.provider : eip6963Providers[0].provider;
             } else if (typeof window.ethereum !== 'undefined') {
-                // Legacy Fallback
                 if (window.ethereum.providers && Array.isArray(window.ethereum.providers)) {
                     rawProvider = window.ethereum.providers.find(p => p.isCoinbaseWallet) 
                             || window.ethereum.providers.find(p => p.isMetaMask) 
@@ -3179,6 +3146,10 @@ async function connectWallet(e) {
         
         provider = new ethers.BrowserProvider(rawProvider);
         signer = await provider.getSigner();
+        
+        if (secureContract) {
+            secureContract.removeAllListeners();
+        }
         secureContract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
         
         const isAuthorizedUser = await checkHolding(account);
@@ -3233,10 +3204,10 @@ async function connectWallet(e) {
         const errorMsg = typeof decodeContractError === 'function' ? decodeContractError(error) : error.message;
         if (errorMsg === "USER_CANCELLED_TX" || error?.code === 4001 || error?.code === -32002 || error.message.includes("WALLET_TIMEOUT")) {
             appendLog(`Wallet process interrupted: ${error.message}`, "text-yellow-500");
-            showNotification("กระบวนการถูกยกเลิก หรือกระเป๋ากำลังรอการยืนยัน", "warning");
+            showNotification("Process cancelled or wallet awaiting confirmation.", "warning");
         } else {
             appendLog(`Network anomaly encountered: ${error.message}`, 'text-red-500'); 
-            showNotification("การเชื่อมต่อกระเป๋าล้มเหลว", "error");
+            showNotification("Wallet connection failed.", "error");
         }
     } finally {
         if (btn && typeof toggleButtonLoading === 'function') toggleButtonLoading(btn, false);
@@ -3275,12 +3246,11 @@ async function fetchAndDisplayProposals() {
         let timelockDelay = 172800; 
         
         try {
-            const multicall = new ethers.Contract(MULTICALL3_ADDRESS, MULTICALL3_ABI, readOnlyProvider || provider);
             const calls = [
                 { target: CONTRACT_ADDRESS, allowFailure: true, callData: activeContract.interface.encodeFunctionData("ABSOLUTE_QUORUM") },
                 { target: CONTRACT_ADDRESS, allowFailure: true, callData: activeContract.interface.encodeFunctionData("TIMELOCK_DELAY") }
             ];
-            const results = await multicall.aggregate3(calls);
+            const results = await debouncedMulticall(readOnlyProvider || provider, calls);
             if (results[0].success) targetVotes = Number(activeContract.interface.decodeFunctionResult("ABSOLUTE_QUORUM", results[0].returnData)[0]);
             if (results[1].success) timelockDelay = Number(activeContract.interface.decodeFunctionResult("TIMELOCK_DELAY", results[1].returnData)[0]);
         } catch (rpcErr) {
@@ -3303,14 +3273,13 @@ async function fetchAndDisplayProposals() {
             let resolvedProps = [];
             
             try {
-                const multicall = new ethers.Contract(MULTICALL3_ADDRESS, MULTICALL3_ABI, readOnlyProvider || provider);
                 const calls = chunk.map(id => ({
                     target: CONTRACT_ADDRESS,
                     allowFailure: true,
-                    callData: activeContract.interface.encodeFunctionData("proposals", [id])
+                    callData: activeContract.interface.encodeFunctionData("proposals", [id.toString()])
                 }));
                 
-                const results = await multicall.aggregate3(calls);
+                const results = await debouncedMulticall(readOnlyProvider || provider, calls);
                 
                 for (let idx = 0; idx < results.length; idx++) {
                     if (results[idx].success) {
@@ -3323,7 +3292,7 @@ async function fetchAndDisplayProposals() {
             } catch (mcErr) {
                 console.warn("[MULTICALL FALLBACK] Proposals:", mcErr);
                 const fallbackResults = await Promise.all(
-                    chunk.map(id => activeContract.proposals(id).then(p => ({ id, p })).catch(() => null))
+                    chunk.map(id => activeContract.proposals(id.toString()).then(p => ({ id, p })).catch(() => null))
                 );
                 resolvedProps = fallbackResults.filter(res => res !== null);
             }
@@ -3412,6 +3381,10 @@ async function fetchAndDisplayProposals() {
                     } else {
                         expSpan.className = "text-amber-500 font-bold";
                         const timerId = setInterval(() => {
+                            if (!expSpan.isConnected) {
+                                clearInterval(timerId);
+                                return;
+                            }
                             const now = Math.floor(Date.now() / 1000);
                             const diff = executeReadyAt - now;
                             if (diff <= 0) {
@@ -3487,11 +3460,7 @@ function sanitizeForDOM(str) {
     return stringified.replace(reg, (match) => (map[match]));
 }
 
-// ============================================================================
-// 🏛️ GOVERNANCE & TIMELOCK EXECUTION
-// ============================================================================
 async function executeQueueProposal(pId, e) {
-    // 🛡️ STRICT STRING FORMATTING
     const receipt = await runTx(e, `QUEUE_PROPOSAL_#${pId}`, "queueProposal", [pId.toString()]);
     if (receipt) {
         await fetchAndDisplayProposals();
@@ -3500,16 +3469,12 @@ async function executeQueueProposal(pId, e) {
 }
 
 async function triggerExecuteProposal(pId, e) {
-    // 🛡️ STRICT STRING FORMATTING
     const receipt = await runTx(e, `EXECUTE_PROPOSAL_#${pId}`, "executeProposal", [pId.toString()]);
     if (receipt) {
         appendLog(`Capital payload for Directive #${pId} discharged. Reserve balances reallocated.`, "text-emerald-400 font-bold");
     }
 }
 
-// ============================================================================
-// 🛠️ IRYS DATACHAIN UTILITY
-// ============================================================================
 function openDeedUploadTrigger(tokenId, fieldType) {
     activeTargetDeedUploadSlot = tokenId;
     irysTargetFieldType = fieldType;
@@ -3571,7 +3536,6 @@ function createProgressController(totalBytes) {
     };
 }
 
-
 function evaluateIosSafeguard(env, file, isVideo) {
     if (!env.isIOS) return { ok: true };
     const IOS_VIDEO_SOFT_LIMIT = 150 * 1024 * 1024; 
@@ -3590,6 +3554,7 @@ function isMemoryCeilingError(err) {
            m.includes('allocation') || m.includes('quota');
 }
 
+
 async function processDeedUploadAssignment(event) {
     if (!lockSystem()) return; 
 
@@ -3604,10 +3569,11 @@ async function processDeedUploadAssignment(event) {
     }
     
     let irysTxId = ""; 
-    const maxByteSize = 300 * 1024 * 1024; 
+    const env = detectUploadEnvironment();
+    const maxByteSize = env.isMobile ? 100 * 1024 * 1024 : 300 * 1024 * 1024; 
     if (file.size > maxByteSize) {
-        appendLog(`Payload rejected: ${sanitizeForDOM(file.name)} exceeds explicit 300 MB maximum constraints.`, "text-red-500 font-bold");
-        showNotification("Structural exception: Upload payload sizes are strictly confined below the 300 MB threshold.", "error");
+        appendLog(`Payload rejected: ${sanitizeForDOM(file.name)} exceeds explicit ${env.isMobile ? '100' : '300'} MB maximum constraints.`, "text-red-500 font-bold");
+        showNotification(`Structural exception: Upload payload sizes are strictly confined below the ${env.isMobile ? '100' : '300'} MB threshold.`, "error");
         event.target.value = "";
         unlockSystem();
         return;
@@ -3633,48 +3599,9 @@ async function processDeedUploadAssignment(event) {
         return;
     }
 
-    if (userIntentType === 'video') {
-        const blobToInspect = file; 
-        const videoDataUrl = URL.createObjectURL(blobToInspect);
-        const videoHelper = document.createElement('video');
-        videoHelper.preload = 'metadata';
-        videoHelper.muted = true; 
-        videoHelper.playsInline = true; 
-        
-        let timeoutId;
-        const isValidDuration = await Promise.race([
-            new Promise((resolve) => {
-                videoHelper.onloadedmetadata = function() { 
-                    if (!isFinite(videoHelper.duration) || isNaN(videoHelper.duration)) {
-                        resolve(true); 
-                    } else {
-                        resolve(videoHelper.duration <= 60.5); 
-                    }
-                };
-                videoHelper.onerror = function() { resolve(true); }; 
-                videoHelper.src = videoDataUrl; 
-            }),
-            new Promise((resolve) => {
-                timeoutId = setTimeout(() => { resolve(true); }, 5000); 
-            })
-        ]).finally(() => {
-            clearTimeout(timeoutId); 
-            videoHelper.removeAttribute('src'); 
-            videoHelper.load();
-            URL.revokeObjectURL(videoDataUrl); 
-            videoHelper.remove(); 
-        });
+    // [VECTOR 1] REMOVED HIDDEN VIDEO DOM INSTANTIATION TO PREVENT OOM CRASHES
+    // Duration validation is deferred to backend/indexer.
 
-        if (!isValidDuration) {
-            appendLog(`Payload rejected: Portrait chronograph loop spans longer than 60 seconds.`, "text-red-500 font-bold");
-            showNotification("Structural exception: Personal vertical branding chronographs must resolve under a 60-second limit.", "error");
-            event.target.value = "";
-            unlockSystem();
-            return;
-        }
-    }
-
-    const env = detectUploadEnvironment();
     const guard = evaluateIosSafeguard(env, file, userIntentType === 'video' || isActuallyVideo);
     if (!guard.ok) {
         appendLog(`Payload blocked by iOS safe-guard: ${sanitizeForDOM(guard.message)}`, "text-red-500 font-bold");
@@ -3765,8 +3692,8 @@ async function buildAndUploadMetadata(e) {
             const keyInput = document.getElementById(`propKey${i}`);
             const valInput = document.getElementById(`prop${i}`);
             
-            const key = typeof sanitizeForJSON === 'function' ? sanitizeForJSON(keyInput ? keyInput.value : "") : (keyInput ? keyInput.value : "");
-            const val = typeof sanitizeForJSON === 'function' ? sanitizeForJSON(valInput ? valInput.value : "") : (valInput ? valInput.value : "");
+            const key = typeof sanitizeAlphanumeric === 'function' ? sanitizeAlphanumeric(keyInput ? keyInput.value : "") : (keyInput ? keyInput.value : "");
+            const val = typeof sanitizeAlphanumeric === 'function' ? sanitizeAlphanumeric(valInput ? valInput.value : "") : (valInput ? valInput.value : "");
 
             if (key !== "" && val !== "") {
                 dynamicAttributes.push({ trait_type: key, value: val });
@@ -3855,9 +3782,6 @@ async function buildAndUploadMetadata(e) {
     }
 }
 
-// ============================================================================
-// ⚙️ ADMIN & ARCHITECT OPERATIONS
-// ============================================================================
 async function executeSetParams(e) {
     if (!secureContract) { showNotification("Action suspended: Authenticate wallet signature first.", "error"); return; }
     const mint = document.getElementById('inputAdminMint')?.value.trim();
@@ -3873,7 +3797,6 @@ async function executeSetParams(e) {
         return;
     }
 
-    // 🛡️ STRICT STRING FORMATTING
     const receipt = await runTx(e, "SET_PARAMS", "setParams", [m.toString(), n.toString()]);
     if (receipt) {
         appendLog("Economic parameters updated successfully (setParams ratified).", "text-emerald-400");
@@ -3932,7 +3855,7 @@ async function executeCreateProposal(e) {
             const tid = Number(userTokens[i]);
             if (primarchNodes.includes(tid)) {
                 hasCouncil = true;
-                const lastTime = await secureContract.lastProposalTime(BigInt(tid));
+                const lastTime = await secureContract.lastProposalTime(BigInt(tid).toString());
                 const cooldownPeriod = await secureContract.PROPOSAL_COOLDOWN().catch(() => 604800n);
                 if (currentEpoch >= Number(lastTime) + Number(cooldownPeriod)) { 
                     eligibleTokenId = tid;
@@ -3942,11 +3865,11 @@ async function executeCreateProposal(e) {
         }
 
         if (!hasCouncil) {
-            showNotification("ACCESS DENIED: สิทธิ์การตั้งวาระถูกจำกัดเฉพาะ Golden Sovereign Council 12 ท่าน", "error");
+            showNotification("ACCESS DENIED: Proposal rights restricted to the 12 Golden Sovereign Council members.", "error");
             return;
         }
         if (eligibleTokenId === 0) {
-            showNotification("COOLDOWN ACTIVE: โหนดสภาของคุณเพิ่งตั้งวาระไป กรุณารอ 7 วัน (Proposal Cooldown)", "warning");
+            showNotification("COOLDOWN ACTIVE: Your node recently proposed. Please wait 7 days.", "warning");
             return;
         }
 
@@ -3973,7 +3896,6 @@ async function executeCreateProposal(e) {
         const amount = ethers.parseEther(rawAmount);
         const durationSeconds = BigInt(daysInt) * 86400n; 
 
-        // 🛡️ STRICT STRING FORMATTING
         const receipt = await runTx(btn, "CREATE_PROPOSAL", "createProposal", [amount.toString(), target, durationSeconds.toString()], {}, { manageButton: false });
         if (receipt) {
             appendLog("Executive financial directive introduced to the chamber for voting weight collection.", "text-emerald-400 font-bold");
@@ -3982,7 +3904,7 @@ async function executeCreateProposal(e) {
             document.getElementById('propDurationInput').value = '';
         }
     } catch (err) {
-        showNotification("System Warning: ล้มเหลวในการตรวจสอบสิทธิสภาพบุคคลบนเครือข่าย", "error");
+        showNotification("System Warning: Failed to verify on-chain identity rights.", "error");
     } finally {
         if (btn) toggleButtonLoading(btn, false);
     }
@@ -4001,18 +3923,17 @@ async function executeCastVote(btn) {
 
     try {
         const userAddress = await signer.getAddress();
-        const activeOwner = await secureContract.ownerOf(tokenIdBn);
+        const activeOwner = await secureContract.ownerOf(tokenIdBn.toString());
         if (activeOwner.toLowerCase() !== userAddress.toLowerCase()) {
-            showNotification(`ACCESS DENIED: กระเป๋าปัจจุบันของคุณไม่ใช่ผู้ถือครองโฉนดหมายเลข #${tokenId}`, "error");
+            showNotification(`ACCESS DENIED: Current wallet does not own deed node #${tokenId}`, "error");
             appendLog(`Vote cast blocked: Node #${tokenId} not owned by the active wallet.`, "text-red-500 font-bold");
             return;
         }
     } catch (e) {
-        showNotification("System Warning: ล้มเหลวในการตรวจสอบสิทธิ์ผู้ถือครองโฉนด โฉนดอาจยังไม่ถูกสร้าง", "error");
+        showNotification("System Warning: Failed to verify deed ownership. Node may not exist.", "error");
         return;
     }
 
-    // 🛡️ STRICT STRING FORMATTING
     const receipt = await runTx(btn, `CAST_VOTE_#${rawPropId}`, "castVote", [propId.toString(), tokenIdBn.toString()]);
     if (receipt) {
         appendLog(`Matrix key node #${tokenId} has signed ratification code for Directive #${rawPropId}.`, "text-emerald-400 font-bold");
@@ -4046,17 +3967,16 @@ async function triggerForge(type, e) {
         
         const targetTokenId = globalSelectedTokenId;
         if (!targetTokenId) {
-            showNotification("STRUCTURAL EXCEPTION: กรุณาคลิกเลือกพิกัด Token ID บน Matrix ก่อนดำเนินการ", "error");
+            showNotification("STRUCTURAL EXCEPTION: Please select a Token ID coordinate on the Matrix first.", "error");
             unlockSystem(); return;
         }
 
         const existingFrontUri = document.getElementById('forgeFrontUri')?.value.trim();
         if (!existingFrontUri) {
-            showNotification("METADATA EXCEPTION: หมายเลขนี้ยังไม่เปิดให้มิ้นต์ (Architect ยังไม่ได้กำหนดรูปภาพด้านหน้า)", "error");
+            showNotification("METADATA EXCEPTION: Node not ready for minting (Architect has not assigned Obverse URI).", "error");
             unlockSystem(); return;
         }
 
-        // DIRECTIVE 1: ดึงราคา Global Price ปัจจุบันจาก Smart Contract โดยตรง (ตามแผนการขายทีละเฟส)
         const currentMintPriceWei = await secureContract.mintPrice();
 
         const file = await promptUserForFile('image/*,video/*');
@@ -4065,7 +3985,6 @@ async function triggerForge(type, e) {
             unlockSystem(); return;
         }
 
-        // DIRECTIVE 4: Pass full file to preserve MOOV atom (No slice)
         const blobToInspect = file; 
             
         const previewObjectUrl = URL.createObjectURL(blobToInspect);
@@ -4099,7 +4018,7 @@ async function triggerForge(type, e) {
             
             if (progress) progress.complete();
 
-            appendLog(`Back-end media successfully anchored: ${sanitizeForDOM(backMediaTxId)}`, "text-emerald-400 font-bold");
+            appendLog(`Back-end media successfully anchored: ${sanitizeAlphanumeric(backMediaTxId)}`, "text-emerald-400 font-bold");
 
             const backUriField = document.getElementById('forgeBackUri');
             if (backUriField) backUriField.value = backMediaTxId;
@@ -4109,7 +4028,6 @@ async function triggerForge(type, e) {
             const tokenIdBn = BigInt(targetTokenId);
             const methodName = (type === 'REBIRTH') ? 'SOVEREIGN_REBIRTH' : 'SOVEREIGN_REMINT';
 
-            // 🛡️ STRICT STRING FORMATTING (จ่ายเงินตามราคา Global ปัจจุบัน)
             const receipt = await runTx(
                 e, `${methodName}_#${targetTokenId}`, methodName,
                 [tokenIdBn.toString(), existingFrontUri, backMediaTxId], { value: currentMintPriceWei.toString() },
@@ -4123,11 +4041,11 @@ async function triggerForge(type, e) {
             }
         } catch (err) {
             const errorMsg = typeof decodeContractError === 'function' ? decodeContractError(err) : (err.message || "Unknown Error");
-            const sanitizedMsg = sanitizeForDOM(errorMsg);
+            const sanitizedMsg = sanitizeAlphanumeric(errorMsg);
 
             if (err.code === 4001 || sanitizedMsg === "USER_CANCELLED_TX" || err.message?.toLowerCase().includes("user rejected") || err.message?.toLowerCase().includes("declined")) {
                 appendLog("Forge execution cancelled by operator signature denial.", "text-yellow-500");
-                showNotification("ธุรกรรมถูกยกเลิกโดยผู้ใช้", "warning");
+                showNotification("Transaction cancelled by user.", "warning");
             } else if (err.code === "UNPREDICTABLE_GAS_LIMIT" || err.message?.toLowerCase().includes("cannot estimate gas")) {
                 appendLog("Network rejected estimateGas: Execution will likely fail on-chain.", "text-red-500 font-bold");
                 showNotification("Gas estimation failed (Contract Revert Risk).", "error");
@@ -4146,7 +4064,6 @@ async function triggerForge(type, e) {
     }
 }
 
-
 async function executeArchitectMint(e) {
     if (!secureContract) { showNotification("Action suspended: Authenticate wallet signature first.", "error"); return; }
     if (!lockSystem()) return;
@@ -4159,25 +4076,25 @@ async function executeArchitectMint(e) {
         const rawId = document.getElementById('novaTokenId')?.value.trim() || targetTokenId;
         const tokenId = validateTokenRange(rawId);
         if (!tokenId) {
-            showNotification("STRUCTURAL EXCEPTION: กรุณาคลิกเลือกพิกัด Token ID บน Matrix ก่อน", "error");
+            showNotification("STRUCTURAL EXCEPTION: Please select a Token ID coordinate on the Matrix first.", "error");
             unlockSystem(); return;
         }
 
         const targetAddress = document.getElementById('adminTargetAddress')?.value.trim();
         if (!targetAddress || !ethers.isAddress(targetAddress)) {
-            showNotification("STRUCTURAL EXCEPTION: กรุณาระบุ EVM Target Address ให้ถูกต้องก่อนสั่งการ", "error");
+            showNotification("STRUCTURAL EXCEPTION: Please specify a valid EVM Target Address.", "error");
             unlockSystem(); return;
         }
 
         const existingFrontUri = document.getElementById('forgeFrontUri')?.value.trim() || currentLoadedMediaData.front;
         if (!existingFrontUri) {
-            showNotification("METADATA EXCEPTION: การมิ้นต์ถูกระงับ! สถาปนิกต้องผูก Front URI ก่อนเสมอ", "error");
+            showNotification("METADATA EXCEPTION: Node not ready for minting (Architect has not assigned Obverse URI).", "error");
             unlockSystem(); return;
         }
 
         const file = await promptUserForFile('image/*,video/*');
         if (!file) {
-            appendLog("[SYSTEM] ยกเลิกการเลือกไฟล์ ปลดล็อกระบบสถาปนิก", "text-yellow-500");
+            appendLog("[SYSTEM] File selection cancelled. Architect system unlocked.", "text-yellow-500");
             unlockSystem(); return;
         }
 
@@ -4204,7 +4121,7 @@ async function executeArchitectMint(e) {
             const response = await executeIrysUpload(file, tags, true); 
             const backMediaTxId = response.data ? response.data.id : response.id; 
 
-            appendLog(`Back-end media successfully anchored: ${sanitizeForDOM(backMediaTxId)}`, "text-emerald-400 font-bold");
+            appendLog(`Back-end media successfully anchored: ${sanitizeAlphanumeric(backMediaTxId)}`, "text-emerald-400 font-bold");
             
             const backUriField = document.getElementById('forgeBackUri');
             if (backUriField) backUriField.value = backMediaTxId;
@@ -4212,7 +4129,6 @@ async function executeArchitectMint(e) {
             appendLog(`Initiating ARCHITECT_MINT for Node #${tokenId} to ${targetAddress.slice(0,6)}...`, "text-yellow-400");
             const tokenIdBn = BigInt(tokenId);
 
-            // 🛡️ STRICT STRING FORMATTING
             const receipt = await runTx(
                 e, `ARCHITECT_MINT_#${tokenId}`, "ARCHITECT_MINT",
                 [tokenIdBn.toString(), targetAddress, existingFrontUri, backMediaTxId], {},
@@ -4223,15 +4139,15 @@ async function executeArchitectMint(e) {
                 if (typeof GLOBAL_NODE_CACHE !== 'undefined' && GLOBAL_NODE_CACHE?.clear) GLOBAL_NODE_CACHE.clear();
                 if (typeof auditTokenFromLedger === 'function') await auditTokenFromLedger(tokenId);
                 appendLog(`ARCHITECT MINT EXECUTED FLAWLESSLY ON-CHAIN.`, "text-emerald-400 font-bold");
-                showNotification(`Architect Mint complete. ส่งมอบสิทธิ์ให้ ${targetAddress.slice(0,6)} สำเร็จ!`, "success");
+                showNotification(`Architect Mint complete. Rights transferred to ${targetAddress.slice(0,6)} successfully!`, "success");
             }
         } catch (err) {
             const errorMsg = typeof decodeContractError === 'function' ? decodeContractError(err) : (err.message || "Unknown Error");
-            const sanitizedMsg = sanitizeForDOM(errorMsg);
+            const sanitizedMsg = sanitizeAlphanumeric(errorMsg);
 
             if (err.code === 4001 || sanitizedMsg === "USER_CANCELLED_TX" || err.message?.toLowerCase().includes("user rejected") || err.message?.toLowerCase().includes("declined")) {
                 appendLog("Architect mint sequence aborted due to signature denial.", "text-yellow-500");
-                showNotification("ธุรกรรมถูกยกเลิกโดยผู้ใช้", "warning");
+                showNotification("Transaction cancelled by user.", "warning");
             } else if (err.code === "UNPREDICTABLE_GAS_LIMIT" || err.message?.toLowerCase().includes("cannot estimate gas")) {
                 appendLog("Network rejected estimateGas: Execution will likely fail on-chain.", "text-red-500 font-bold");
                 showNotification("Gas estimation failed (Contract Revert Risk).", "error");
@@ -4261,17 +4177,16 @@ async function executeArchitectRemint(e) {
         const rawId = document.getElementById('novaTokenId')?.value.trim() || targetTokenId;
         const tokenId = validateTokenRange(rawId);
         if (!tokenId) {
-            showNotification("STRUCTURAL EXCEPTION: กรุณาคลิกเลือกพิกัด Token ID บน Matrix ก่อน", "error");
+            showNotification("STRUCTURAL EXCEPTION: Please select a Token ID coordinate on the Matrix first.", "error");
             unlockSystem(); return;
         }
 
         const existingFrontUri = document.getElementById('forgeFrontUri')?.value.trim() || currentLoadedMediaData.front;
         if (!existingFrontUri) {
-            showNotification("METADATA EXCEPTION: การรีมิ้นต์ถูกระงับ! ต้องผูก Front URI ก่อนเสมอ (ยังไม่เปิดให้มิ้นต์)", "error");
+            showNotification("METADATA EXCEPTION: Node not ready for minting (Architect has not assigned Obverse URI).", "error");
             unlockSystem(); return;
         }
 
-        // DIRECTIVE 1: ดึงราคา Global Price ปัจจุบันจาก Smart Contract โดยตรง
         const currentMintPriceWei = await secureContract.mintPrice();
 
         const file = await promptUserForFile('image/*,video/*');
@@ -4279,7 +4194,6 @@ async function executeArchitectRemint(e) {
             unlockSystem(); return;
         }
 
-        // DIRECTIVE 4: Pass full file to preserve MOOV atom
         const previewObjectUrl = URL.createObjectURL(file);
         let isConfirmed = false;
         
@@ -4309,7 +4223,6 @@ async function executeArchitectRemint(e) {
             
             const tokenIdBn = BigInt(tokenId);
 
-            // 🛡️ STRICT STRING FORMATTING
             const receipt = await runTx(
                 e, `SOVEREIGN_REMINT_#${tokenId}`, "SOVEREIGN_REMINT",
                 [tokenIdBn.toString(), existingFrontUri, backMediaTxId], { value: currentMintPriceWei.toString() },
@@ -4319,16 +4232,17 @@ async function executeArchitectRemint(e) {
             if (receipt) {
                 if (typeof GLOBAL_NODE_CACHE !== 'undefined' && GLOBAL_NODE_CACHE?.clear) GLOBAL_NODE_CACHE.clear();
                 if (typeof auditTokenFromLedger === 'function') await auditTokenFromLedger(tokenId);
+                await syncActiveMatrixNodes(); 
                 appendLog(`Sovereign REMINT executed flawlessly on-chain.`, "text-emerald-400 font-bold");
-                showNotification("Reminting complete. โฉนดถูกสร้างใหม่และดึงกลับสู่ระบบแล้ว!", "success");
+                showNotification("Reminting complete. Deed reconstructed and pulled back into the system!", "success");
             }
         } catch (err) {
             const errorMsg = typeof decodeContractError === 'function' ? decodeContractError(err) : (err.message || "Unknown Error");
-            const sanitizedMsg = sanitizeForDOM(errorMsg);
+            const sanitizedMsg = sanitizeAlphanumeric(errorMsg);
 
             if (err.code === 4001 || sanitizedMsg === "USER_CANCELLED_TX" || err.message?.toLowerCase().includes("user rejected") || err.message?.toLowerCase().includes("declined")) {
                 appendLog("Architect Remint aborted by signature denial.", "text-yellow-500");
-                showNotification("ธุรกรรมการรีมิ้นต์ถูกยกเลิกโดยผู้ใช้", "warning");
+                showNotification("Transaction cancelled by user.", "warning");
             } else if (err.code === "UNPREDICTABLE_GAS_LIMIT" || err.message?.toLowerCase().includes("cannot estimate gas")) {
                 appendLog("Network rejected estimateGas: Execution will likely fail on-chain.", "text-red-500 font-bold");
                 showNotification("Gas estimation failed (Contract Revert Risk).", "error");
@@ -4353,11 +4267,16 @@ function closeNovaWarn(isConfirmed) {
     if (isConfirmed) {
         const ackCheckbox = document.getElementById('novaAck');
         if (ackCheckbox && !ackCheckbox.checked) {
-            showNotification("EXCEPTION: คุณต้องติ๊กยอมรับเงื่อนไขความเสี่ยงก่อนดำเนินการ", "error");
+            showNotification("EXCEPTION: You must acknowledge the risk conditions before proceeding.", "error");
+            if (modal) modal.classList.remove('hidden');
             return;
         }
         const fakeEvent = { currentTarget: document.getElementById('novaConfirmBtn') };
         triggerIdentityNova(fakeEvent);
+    } else {
+        localStorage.removeItem('pending_nova_txid');
+        localStorage.removeItem('pending_nova_token');
+        appendLog("Pending Nova state cleared by user abort.", "text-yellow-500");
     }
 }
 
@@ -4402,26 +4321,23 @@ async function triggerIdentityNova(e) {
         const isDnaValid = typeof isValidSovereignInput === 'function' ? isValidSovereignInput(dna) : true;
         
         if (!isDnaValid || (typeof isMaliciousURI === 'function' && (isMaliciousURI(video) || isMaliciousURI(hidden)))) {
-            appendLog("SECURITY ALERT: ตรวจพบโครงสร้างอัตลักษณ์ปนเปื้อน หรือ URI อันตราย พิธีกรรม NOVA ถูกระงับ", "text-red-500 font-bold");
-            showNotification("ACCESS DENIED: โครงสร้างข้อมูลอัตลักษณ์ปนเปื้อน ไม่อนุญาตให้ฝังคำสั่งคอมพิวเตอร์ลงบน Blockchain", "error");
+            appendLog("SECURITY ALERT: Contaminated identity structure or malicious URI detected. NOVA ritual suspended.", "text-red-500 font-bold");
+            showNotification("ACCESS DENIED: Contaminated identity structure. Code injection blocked.", "error");
             return;
         }
 
         fee = await secureContract.novaFee();
     } catch(globalErr) {
         console.error(globalErr);
-        showNotification("System Warning: ล้มเหลวในการเตรียมพิธีกรรม NOVA", "error");
+        showNotification("System Warning: Failed to prepare NOVA ritual.", "error");
         return;
     }
 
-    // 🛡️ STRICT STRING FORMATTING
     const receipt = await runTx(e, `SOVEREIGN_NOVA_#${tokenId}`, "THE_SOVEREIGN_NOVA", [id.toString(), dna, video, hidden], { value: fee.toString() });
     if (receipt) {
-        // DIRECTIVE 2: CLEAR CACHE ON SUCCESSFUL ON-CHAIN EXECUTION
         localStorage.removeItem('pending_nova_txid');
         localStorage.removeItem('pending_nova_token');
         
-        // 🛡️ AGGRESSIVE CACHE INVALIDATION
         GLOBAL_NODE_CACHE.delete(id.toString());
         if ('caches' in window) {
             try { await caches.delete('eter-v6-asset-vault'); } catch(e) {}
@@ -4469,19 +4385,17 @@ async function executeUpdateIdentity(e) {
 
         if (typeof isMaliciousURI === 'function' && (isMaliciousURI(frontUri) || isMaliciousURI(backUri) || isMaliciousURI(videoUri))) {
             appendLog("SECURITY ALERT: Unsafe URI payload detected and neutralized.", "text-red-500 font-bold");
-            showNotification("ACCESS DENIED: ตรวจพบ URI อันตราย การอัปเดตอัตลักษณ์ถูกระงับ", "error");
+            showNotification("ACCESS DENIED: Malicious URI detected. Identity update suspended.", "error");
             return;
         }
     } catch(globalErr) {
         console.error(globalErr);
-        showNotification("System Warning: ล้มเหลวในการเตรียมการอัปเดตอัตลักษณ์", "error");
+        showNotification("System Warning: Failed to prepare identity update.", "error");
         return;
     }
 
-    // 🛡️ STRICT STRING FORMATTING
     const receipt = await runTx(e, `UPDATE_IDENTITY_#${tokenId}`, "updateIdentity", [tokenId.toString(), frontUri, backUri, videoUri]);
     if (receipt) {
-        // 🛡️ AGGRESSIVE CACHE INVALIDATION
         GLOBAL_NODE_CACHE.delete(tokenId.toString());
         if ('caches' in window) {
             try { await caches.delete('eter-v6-asset-vault'); } catch(e) {}
@@ -4499,31 +4413,29 @@ async function executeSovereignSupport(e) {
     if(!tokenId) return;
 
     try {
-        const lockTimestamp = await secureContract.tokenVotingLockUntil(BigInt(tokenId));
+        const lockTimestamp = await secureContract.tokenVotingLockUntil(BigInt(tokenId).toString());
         const currentEpoch = Math.floor(Date.now() / 1000);
         if (lockTimestamp > BigInt(currentEpoch)) {
-            const unlockDate = new Date(Number(lockTimestamp) * 1000).toLocaleString('th-TH');
-            showNotification(`TokenLockedInVoting: โทเค็นยังติดล็อกสิทธิ์โหวตจนถึงเวลา ${unlockDate} ไม่สามารถทำลายโฉนดได้`, "error");
+            const unlockDate = new Date(Number(lockTimestamp) * 1000).toLocaleString('en-US');
+            showNotification(`TokenLockedInVoting: Token voting rights locked until ${unlockDate} Immolation blocked.`, "error");
             appendLog(`Immolation blocked: Node #${tokenId} still locked in voting until ${unlockDate}.`, "text-red-500");
             return;
         }
     } catch (lockErr) {
-        showNotification("System Warning: ล้มเหลวในการตรวจสอบสถานะการล็อกสิทธิ์โหวต", "error");
+        showNotification("System Warning: Failed to verify voting lock status.", "error");
         return;
     }
 
-    // 1. [CRITICAL] ERC-6551 Legacy Asset Hijacking (Pre-Flight Validation)
     try {
-        const tbaAddress = await secureContract.getTBA(BigInt(tokenId));
+        const tbaAddress = await secureContract.getTBA(BigInt(tokenId).toString());
         const ethBal = await provider.getBalance(tbaAddress);
         const wethContract = new ethers.Contract(WETH_ADDRESS, WETH_ABI, provider);
-        const wethBal = await wethContract.balanceOf(tbaAddress).catch(() => 0n);
+        const wethBal = await wethContract.balanceOf(tbaAddress); 
         
         if (ethBal > 0n || wethBal > 0n) {
-            showNotification("CRITICAL: กรุณาโอนสินทรัพย์ทั้งหมด (ETH/WETH) ออกจาก TBA ก่อนทำการ Burn เพื่อป้องกันการสูญหายถาวร", "error");
+            showNotification("CRITICAL: Please transfer all assets (ETH/WETH) out of the TBA before burning to prevent permanent loss.", "error");
             appendLog(`Immolation blocked: TBA ${tbaAddress} contains residual assets (${ethers.formatEther(ethBal)} ETH, ${ethers.formatEther(wethBal)} WETH).`, "text-red-500 font-bold");
             
-            // DOM Enforcement: Lock UI button temporarily
             const btnBurn = document.getElementById('btnBurnToken');
             if (btnBurn) {
                 btnBurn.disabled = true;
@@ -4531,7 +4443,7 @@ async function executeSovereignSupport(e) {
                 setTimeout(() => {
                     btnBurn.disabled = false;
                     btnBurn.classList.remove('opacity-50', 'cursor-not-allowed');
-                }, 5000); // ปลดล็อกหลัง 5 วินาที
+                }, 5000);
             }
             return;
         }
@@ -4551,15 +4463,11 @@ async function executeSovereignSupport(e) {
 
     const receipt = await runTx(e, `SOVEREIGN_SUPPORT_#${tokenId}`, "sovereignSupport", [tokenId.toString()]);
     if (receipt) {
+        await syncActiveMatrixNodes(); 
         appendLog(`Sovereign Ultimatum protocol deployed: Node element #${tokenId} completely incinerated. Allocated macro liquid capital repatriated to key holder.`, "text-red-400 font-bold");
-        showNotification("ทำลายโฉนดสำเร็จ ทุนสนับสนุนถูกโอนกลับเข้ากระเป๋าของคุณแล้ว", "success");
+        showNotification("Immolation successful. Support funds repatriated to your wallet.", "success");
     }
 }
-
-
-// ============================================================================
-// 🎥 ULTRA-STABLE MEDIA RENDERER & CANVAS ENGINE
-// ============================================================================
 
 function renderEmptyState(container, text, colorClass = "text-slate-500") {
     container.replaceChildren();
@@ -4582,29 +4490,34 @@ function renderLoadingSkeleton(container) {
     container.appendChild(skeleton);
 }
 
-// ============================================================================
-// 🛡️ DIRECTIVE 1: iOS Safari WebKit Memory Leak & GC Fixes
-// ============================================================================
 async function resolveMediaUrl(urlList, signal, mimeType) {
     const CACHE_NAME = 'eter-v6-asset-vault';
     const isVideo = mimeType === 'video';
     
-    // 📱 MOBILE FIRST: iOS Safari OOM Protection
+    // [PHASE 1]: VIDEO STREAMING GATEWAY CHECK
     if (isVideo) {
         for (const url of urlList) {
             if (signal.aborted) throw new Error('Aborted');
             try {
                 const testResponse = await fetch(url, { method: 'GET', signal, headers: { Range: "bytes=0-0" } });
-                if (testResponse.ok || testResponse.status === 206) {
-                    const cleanUrl = url.split('?')[0]; 
-                    return { url: cleanUrl, isBlob: false, sourceUrl: url };
+                
+                // 🛡️ ป้องกัน HTTP Error แฝงตัว (Silent Fail)
+                if (!testResponse.ok && testResponse.status !== 206) {
+                    throw new Error('HTTP ' + testResponse.status);
                 }
-            } catch (e) { continue; }
+
+                const cleanUrl = url.split('?')[0]; 
+                return { url: cleanUrl, isBlob: false, sourceUrl: url };
+            } catch (e) { 
+                // 🚨 คืนค่า Safeguard ของท่าน: หยุดการทำงานทันทีหากถูกสั่ง Abort
+                if (e.name === 'AbortError') throw e;
+                continue; 
+            }
         }
         throw new Error('ALL GATEWAYS SEVERED (VIDEO STREAMING)');
     }
     
-    // 1. LOCAL EXECUTION: Zero-Latency Cache Check
+    // [PHASE 2]: LOCAL CACHE RETRIEVAL
     if ('caches' in window) {
         try {
             const cache = await caches.open(CACHE_NAME);
@@ -4616,21 +4529,19 @@ async function resolveMediaUrl(urlList, signal, mimeType) {
                     const blob = await cachedResponse.blob();
                     const objUrl = URL.createObjectURL(blob);
                     
-                    // 🛡️ STRICT GC: Revoke immediately if aborted mid-flight
                     if (signal.aborted) { 
                         URL.revokeObjectURL(objUrl); 
                         throw new Error('Aborted'); 
                     }
                     
-                    // 🛡️ STRICT GC: Register Blob for Garbage Collection
-                    registerBlobForGc(cleanUrl, objUrl);
+                    registerBlobForGc(cleanUrl, objUrl, false);
                     return { url: objUrl, isBlob: true, sourceUrl: url };
                 }
             }
-        } catch (e) { /* Fallback to network if cache is blocked */ }
+        } catch (e) { }
     }
 
-    // 2. NETWORK FETCH & STORE
+    // [PHASE 3]: DECENTRALIZED GATEWAY FALLBACK LOOP
     for (const url of urlList) {
         if (signal.aborted) throw new Error('Aborted');
         
@@ -4641,36 +4552,38 @@ async function resolveMediaUrl(urlList, signal, mimeType) {
 
         try {
             const response = await fetch(url, { signal });
-            if (response.ok) {
-                const cleanUrl = url.split('?')[0]; 
-                if ('caches' in window) {
-                    const cache = await caches.open(CACHE_NAME);
-                    cache.put(cleanUrl, response.clone()).catch(() => {}); 
-                }
-                
-                const blob = await response.blob();
-                const objUrl = URL.createObjectURL(blob);
-                
-                // 🛡️ STRICT GC: Revoke immediately if aborted mid-flight
-                if (signal.aborted) { 
-                    URL.revokeObjectURL(objUrl); 
-                    throw new Error('Aborted'); 
-                }
-                
-                // 🛡️ STRICT GC: Register Blob for Garbage Collection
-                registerBlobForGc(cleanUrl, objUrl);
-                return { url: objUrl, isBlob: true, sourceUrl: url };
+            
+            // 🛡️ ป้องกัน HTTP Error แฝงตัว (Silent Fail)
+            if (!response.ok) throw new Error('HTTP ' + response.status);
+            
+            const cleanUrl = url.split('?')[0]; 
+            if ('caches' in window) {
+                const cache = await caches.open(CACHE_NAME);
+                cache.put(cleanUrl, response.clone()).catch(() => {}); 
             }
+            
+            const blob = await response.blob();
+            const objUrl = URL.createObjectURL(blob);
+            
+            if (signal.aborted) { 
+                URL.revokeObjectURL(objUrl); 
+                throw new Error('Aborted'); 
+            }
+            
+            registerBlobForGc(cleanUrl, objUrl, false);
+            return { url: objUrl, isBlob: true, sourceUrl: url };
         } catch (e) {
+            // 🚨 คืนค่า Safeguard ของท่าน: หยุดการทำงานทันทีหากถูกสั่ง Abort
+            if (e.name === 'AbortError') throw e;
             continue; 
         }
     }
+    
+    // [PHASE 4]: TOTAL FAILURE STATE
     throw new Error('ALL GATEWAYS SEVERED');
 }
 
-// ---------------------------------------------------------
-// Core Rendering Logic
-// ---------------------------------------------------------
+
 async function renderToViewport(containerId, path, defaultText, explicitMediaType = null) {
     const container = document.getElementById(containerId);
     if (!container) return;
@@ -4702,10 +4615,14 @@ async function renderToViewport(containerId, path, defaultText, explicitMediaTyp
         
         if (masterController.signal.aborted) return;
         
-        // ปลดปล่อยขุมพลัง Cache-First Engine (พร้อม iOS OOM Protection)
         const resolvedMedia = await resolveMediaUrl(urlsToTry, masterController.signal, mimeType);
         
-        if (masterController.signal.aborted) return;
+        if (masterController.signal.aborted) {
+            if (resolvedMedia && resolvedMedia.isBlob && resolvedMedia.url) {
+                URL.revokeObjectURL(resolvedMedia.url);
+            }
+            return;
+        }
 
         renderMediaToDOM(container, resolvedMedia, mimeType, masterController.signal);
 
@@ -4720,12 +4637,11 @@ function renderMediaToDOM(container, resolvedMedia, mediaType, abortSignal) {
         container._hlsInstance.destroy();
         container._hlsInstance = null;
     }
-    if (container._activeBlobUrl) {
+    if (container._activeBlobUrl && container._activeBlobUrl !== resolvedMedia.url) {
         URL.revokeObjectURL(container._activeBlobUrl);
         container._activeBlobUrl = null;
     }
 
-    // [CORRECTION]: Aggressive iOS WebKit Garbage Collection
     while (container.firstChild) {
         const child = container.firstChild;
         if (child.tagName === 'VIDEO' || child.tagName === 'IMG') {
@@ -4735,10 +4651,10 @@ function renderMediaToDOM(container, resolvedMedia, mediaType, abortSignal) {
             
             if (child.tagName === 'VIDEO') {
                 child.pause();
-                child.src = ""; // Force WebKit to drop the buffer
-                child.innerHTML = ""; // Annihilate ghost <source> nodes
+                child.src = ""; 
+                child.innerHTML = ""; 
                 child.removeAttribute('src');
-                child.load(); // Flush the hardware decoder
+                child.load(); 
             } else {
                 child.removeAttribute('src');
             }
@@ -4830,11 +4746,6 @@ function updateVideoSlotsUI() {
     }
 }
 
-// ============================================================================
-// 🗺️ MATRIX GRID & AUDIT ENGINE (WORLD-CLASS 4K | MOBILE-FIRST OPTIMIZED)
-// ============================================================================
-
-// 🛡️ Global Safe State & Mobile Context
 if (typeof window.matrixDOMCache === 'undefined') window.matrixDOMCache = new Map();
 if (typeof window.searchDebounceTimer === 'undefined') window.searchDebounceTimer = null;
 if (typeof window.currentAuditSession === 'undefined') window.currentAuditSession = 0;
@@ -4842,7 +4753,6 @@ if (typeof window.currentLoadedMediaData === 'undefined') {
     window.currentLoadedMediaData = { front: "", back: "", video: "" };
 }
 
-// [MOBILE FACT]: ตรวจจับ Touch Device เพื่อลบขยะ Visual อย่าง Sticky Hover
 const IS_TOUCH_DEVICE = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
 
 function handleSlotClick(slotNum) {
@@ -4882,7 +4792,6 @@ function handleSlotClick(slotNum) {
     if (frontContainer) {
         frontContainer.replaceChildren();
         
-        // [MOBILE FACT]: ใช้ transform และ will-change เพื่อดันเข้า GPU ล้วนๆ ประหยัดแบตเตอรี่
         const divBox = document.createElement('div');
         divBox.className = "flex flex-col items-center justify-center p-4 font-mono text-center h-full w-full bg-slate-950 z-10 relative";
         divBox.style.willChange = "transform, opacity";
@@ -4910,18 +4819,17 @@ function handleSlotClick(slotNum) {
 }
 
 function applySlotToNova(slotNum) { 
-    // โค้ดส่วนนี้รักษา Logic เดิม 100%
     const uriInput = document.getElementById(`vSlotUri${slotNum}`); 
     if (uriInput && uriInput.value) {
         const novaVideoUri = document.getElementById('novaVideoUri'); 
         if (novaVideoUri) {
             const sanitizedVal = typeof sanitizeForDOM === 'function' ? sanitizeForDOM(uriInput.value) : uriInput.value;
             novaVideoUri.value = sanitizedVal; 
-            if (typeof showNotification === 'function') showNotification(`Template Framework 0${slotNum} Applied: Video URI ถูกโอนย้ายไปยัง NOVA ASCENSION เรียบร้อยแล้ว`, "success"); 
+            if (typeof showNotification === 'function') showNotification(`Template Framework 0${slotNum} Applied: Video URI successfully transferred to NOVA ASCENSION.`, "success"); 
             if (typeof appendLog === 'function') appendLog(`Matrix Framework 0${slotNum} applied to NOVA upgrade pipeline.`, "text-blue-400 font-bold"); 
         } 
     } else {
-        if (typeof showNotification === 'function') showNotification("EXCEPTION: กรุณาใส่ลิงก์ Irys Tx ID หรือ URL ในช่อง Template ก่อนกด SELECT & APPLY", "error"); 
+        if (typeof showNotification === 'function') showNotification("EXCEPTION: Please enter an Irys Tx ID or URL in the Template field before applying.", "error"); 
     } 
 }
 
@@ -4983,7 +4891,6 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
         let previousState = (pollForUpdate && typeof GLOBAL_NODE_CACHE !== 'undefined') ? GLOBAL_NODE_CACHE.get(String(tokenId)) : null;
 
         while (attempts < maxAttempts) {
-            // [MOBILE FACT]: หยุดกระบวนการ Polling ทันทีเมื่อผู้ใช้พับจอหรือสลับแอป (Page Visibility API)
             if (document.hidden) {
                 if (typeof appendLog === 'function') appendLog("System idle: Background execution suspended to preserve matrix integrity.", "text-slate-500");
                 break;
@@ -5044,7 +4951,7 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
         }
 
         try {
-            const onChainTBA = await activeContract.getTBA(BigInt(tokenId));
+            const onChainTBA = await activeContract.getTBA(BigInt(tokenId).toString());
             if (mySession !== window.currentAuditSession) return; 
             const safeTBA = typeof sanitizeForDOM === 'function' ? sanitizeForDOM(onChainTBA) : onChainTBA;
             if (tbaInputElem) tbaInputElem.value = safeTBA;
@@ -5154,7 +5061,7 @@ async function refreshTbaBalances(tbaAddress, sessionRef) {
         const wethContract = new ethers.Contract(wethAddr, wethAbi, netProvider); 
         const [ethBal, wethBal] = await Promise.all([
             netProvider.getBalance(tbaAddress), 
-            wethContract.balanceOf(tbaAddress).catch(() => 0n) 
+            wethContract.balanceOf(tbaAddress)
         ]); 
         if (typeof sessionRef !== 'undefined' && sessionRef !== window.currentAuditSession) return; 
         
@@ -5174,7 +5081,6 @@ function filterSovereignGrid() {
         const targetParsedInt = query !== "" ? parseInt(query, 10) : null;
 
         window.matrixDOMCache.forEach((node, id) => {
-            // [MOBILE FACT]: ใช้ display 'flex' / 'none' ยังมีประสิทธิภาพดี แต่ควรเสริม CSS content-visibility สำหรับลิสต์ยาว
             if (query === "" || id.toString() === query || (targetParsedInt !== null && id === targetParsedInt)) { 
                 node.style.display = 'flex'; 
             } else { 
@@ -5244,18 +5150,15 @@ function setupMatrixGrid() {
         node.id = `node-${i}`;
         node.setAttribute('data-token-id', i.toString());
         
-        // [MOBILE FACT]: ตัด hover ออกในกรณีที่เป็นทัชสกรีนเพื่อแก้ปัญหา Sticky Hover
         const hoverClass = IS_TOUCH_DEVICE ? "active:bg-slate-800" : "hover:bg-slate-800";
         node.className = `matrix-node aspect-square w-full bg-slate-950 border rounded flex flex-col items-center justify-center font-mono text-[8px] sm:text-[10px] md:text-xs text-slate-500 cursor-pointer p-1 sm:p-2 transition-colors ${hoverClass} ${rankClass}`;
         
         node.style.contentVisibility = 'auto';
         node.style.contain = 'strict';
-        
-        // [MOBILE FACT]: บังคับเบราว์เซอร์ลบค่า 300ms Click Delay ในระดับ CSS-IN-JS
         node.style.touchAction = 'manipulation';
         
         const innerDiv = document.createElement('div');
-        innerDiv.className = "flex justify-center w-full items-center leading-none pointer-events-none"; // ป้องกัน event หลงไปติด child
+        innerDiv.className = "flex justify-center w-full items-center leading-none pointer-events-none"; 
         
         const numSpan = document.createElement('span');
         numSpan.textContent = i.toString().padStart(3, '0');
@@ -5322,13 +5225,11 @@ function onTypeToggle(station) {
 
 function revealApp() { document.body.classList.add('app-ready'); }
 
-// 🚀 INITIALIZATION PIPELINE
 const initializeSystem = () => {
     setupMatrixGrid();
     
     const grid = document.getElementById('matrixGridContainer'); 
     if (grid && !grid.dataset.clickAttached) {
-        // [MOBILE FACT]: เปลี่ยนจาก click เป็น pointerup เพื่อตอบสนองทันทีบนหน้าจอทัชสกรีน พร้อม Fallback
         const eventType = IS_TOUCH_DEVICE ? 'pointerup' : 'click';
         
         grid.addEventListener(eventType, async (e) => { 
@@ -5339,7 +5240,7 @@ const initializeSystem = () => {
             if (!tokenId) return;
 
             if (typeof isTransactionPending !== 'undefined' && isTransactionPending) {
-                if (typeof showNotification === 'function') showNotification("SYSTEM ENFORCEMENT: ธุรกรรมกำลังประมวลผล ไม่สามารถสลับเซลล์ได้", "error");
+                if (typeof showNotification === 'function') showNotification("SYSTEM ENFORCEMENT: Transaction processing. Cannot switch cells.", "error");
                 return;
             }
 
@@ -5350,17 +5251,15 @@ const initializeSystem = () => {
                 await auditTokenFromLedger(tokenId);
             } catch (err) {
                 console.error(`[MATRIX GRID EXCEPTION] Failed to inspect node #${tokenId}:`, err);
-                if (typeof showNotification === 'function') showNotification("ไม่สามารถดึงข้อมูลพิกัดเซลล์ที่เลือกได้", "error");
+                if (typeof showNotification === 'function') showNotification("Failed to retrieve selected cell coordinate data.", "error");
             }
         });
         grid.dataset.clickAttached = "true";
     }
 
-    // [MOBILE FACT]: ป้องกัน Layout Thrashing เมื่อแป้นพิมพ์ S25 (Android) เด้งขึ้น
     if (window.visualViewport) {
         window.visualViewport.addEventListener("resize", () => {
             if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') {
-                // ปล่อยให้ OS จัดการ Scroll ไม่ต้องให้ Grid รีเรนเดอร์ใหม่
                 document.body.style.height = `${window.visualViewport.height}px`;
             }
         });
