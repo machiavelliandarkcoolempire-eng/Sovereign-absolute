@@ -38,14 +38,15 @@
     </style>
     
     <!-- 📦 ETHERS V6 & WALLETCONNECT & HLS -->
-    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <!-- 🛠 FIX: เอา defer ออก เพื่อบังคับให้โหลดและรันให้เสร็จก่อนไฟล์ถัดไป -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://unpkg.com/@walletconnect/ethereum-provider@2.11.1/dist/index.umd.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 
-    <!-- 🌟 2. โหลด Polyfill -->
+    <!-- 🌟 2. โหลด Polyfill (รันต่อจาก ethers ทันที) -->
     <script src="./web3-polyfill.js"></script>
 
-    <!-- 🌟 3. โหลด Irys SDK -->
+    <!-- 🌟 3. โหลด Irys SDK (รันต่อจาก Polyfill ทันที) -->
     <script src="./irys-bundle.js"></script>
 
 </head>
@@ -1169,8 +1170,7 @@
             This protocol operates an exclusive, private digital identity infrastructure accessible solely via direct curation. All proceeds represent lawful studio service fees. Reserve allocations fund software R&D and Ecosystem Infrastructure Support Grants. Minting and on-chain operations are executed 100% self-sovereignly by curated pass holders. This protocol does not offer public sales, securities, or financial returns.
         </div>
     </footer>
-    
-    
+
 
 
 
@@ -1750,7 +1750,7 @@ function fmtUnits(value, decimals = 18) {
         if (parts.length === 1) {
             return parts[0] + ".0000";
         }
-        const fraction = parts[1].padEnd(4, '0').slice(0, 4);
+        const fraction = (parts[1] || "").padEnd(4, '0').slice(0, 4);
         return `${parts[0]}.${fraction}`;
     } catch (e) { 
         return "0.0000"; 
@@ -2177,7 +2177,7 @@ async function syncContractStates() {
             const exitRefundVal = fmtUnits(refundWei) + " ETH";
             updateText('exitRefund', exitRefundVal);
 
-            const councilVal = (accRewardPerNode !== undefined ? fmtUnits(accRewardPerNode, 4) : "0.0000") + " ";
+            const councilVal = (accRewardPerNode !== undefined ? fmtUnits(accRewardPerNode) : "0.0000") + " ";
             if (window._domStateCache['displayCouncilPool'] !== councilVal) {
                 const councilEl = document.getElementById('displayCouncilPool');
                 if (councilEl) {
@@ -2190,7 +2190,7 @@ async function syncContractStates() {
                 }
             }
 
-            const reserveVal = fmtUnits(reserve, 2) + " ";
+            const reserveVal = fmtUnits(reserve) + " ";
             if (window._domStateCache['displayReserve'] !== reserveVal) {
                 const reserveEl = document.getElementById('displayReserve');
                 if (reserveEl) {
@@ -2907,8 +2907,8 @@ async function loadDeedMetadata(tokenId) {
     }
 }
 
-let irisProvider = null;
-let irisContract = null;
+let irysProvider = null;
+let irysContract = null;
 
 const BASE_CHAIN_ID = 8453;
 
@@ -2919,7 +2919,7 @@ const GENERAL_ENDPOINTS = [
     'https://base-rpc.publicnode.com'
 ];
 
-const IRIS_ENDPOINTS = [
+const IRYS_ENDPOINTS = [
     'https://base-mainnet.g.alchemy.com/v2/wR5UgtUrkfPjKnqfMhm8k',
     'https://mainnet.base.org',                                   
     'https://base.llamarpc.com',                                  
@@ -2931,7 +2931,7 @@ function createFallbackProvider(endpoints) {
         const p = new ethers.JsonRpcProvider(url, BASE_CHAIN_ID, { staticNetwork: true });
         return { provider: p, priority: index + 1, weight: 1 };
     });
-    return new ethers.FallbackProvider(configs, 1);
+    return new ethers.FallbackProvider(configs, BASE_CHAIN_ID);
 }
 
 async function initReadOnlyRPC() {
@@ -2951,29 +2951,30 @@ async function initReadOnlyRPC() {
     }
 }
 
-async function initIrisRPC(irisAddress, irisAbi) {
+async function initIrysRPC(irysAddress, irysAbi) {
     try {
-        irisProvider = createFallbackProvider(IRIS_ENDPOINTS);
-        await irisProvider.getNetwork();
+        irysProvider = createFallbackProvider(IRYS_ENDPOINTS);
+        await irysProvider.getNetwork();
         
-        irisContract = new ethers.Contract(irisAddress, irisAbi, irisProvider);
+        irysContract = new ethers.Contract(irysAddress, irysAbi, irysProvider);
         
-        appendLog('Dedicated Iris RPC Online (Alchemy Key 2 Isolated).', 'text-cyan-400');
+        appendLog('Dedicated Irys RPC Online (Alchemy Key 2 Isolated).', 'text-cyan-400');
     } catch (err) {
-        irisProvider = null;
-        irisContract = null;
-        appendLog(`CRITICAL: Iris Dedicated RPC Failed: ${err.message}`, 'text-red-500');
-        showNotification('Unable to connect Iris Pipeline to Base Mainnet.', 'error');
+        irysProvider = null;
+        irysContract = null;
+        appendLog(`CRITICAL: Irys Dedicated RPC Failed: ${err.message}`, 'text-red-500');
+        showNotification('Unable to connect Irys Pipeline to Base Mainnet.', 'error');
     }
 }
 
-async function bootSystemRPCs(irisAddress, irisAbi) {
+async function bootSystemRPCs(irysAddress, irysAbi) {
     appendLog('Booting Multi-Tunnel RPC Infrastructure...', 'text-slate-400');
     await Promise.allSettled([
         initReadOnlyRPC(),
-        initIrisRPC(irisAddress, irisAbi)
+        initIrysRPC(irysAddress, irysAbi)
     ]);
 }
+
 
 function loadArchitectGateways() {
     const l1 = localStorage.getItem('sov_gate_l1');
@@ -3134,7 +3135,9 @@ function handleChainChangedEvent(newChainId) {
 const eip6963Providers = [];
 window.addEventListener("eip6963:announceProvider", (event) => {
     if (event.detail && event.detail.provider) {
-        eip6963Providers.push(event.detail);
+        if (!eip6963Providers.some(p => p.info.uuid === event.detail.info.uuid)) {
+            eip6963Providers.push(event.detail);
+        }
     }
 });
 window.dispatchEvent(new Event("eip6963:requestProvider"));
@@ -3183,7 +3186,7 @@ async function connectWallet(e) {
         } 
         else {
             appendLog("Secondary Route Engaged: Initializing WalletConnect V2.", "text-yellow-400");
-            const EthereumProviderCtor = window.WalletConnectProvider?.EthereumProvider;
+            const EthereumProviderCtor = window.WalletConnectProvider?.EthereumProvider || window.WalletConnectProvider;
             if (!EthereumProviderCtor) throw new Error("WalletConnect V2 Runtime Bundle unresolved.");
 
             if (!window.walletConnectProvider) {
@@ -5603,5 +5606,5 @@ window.addEventListener('load', async () => {
 });
 
 </script>
-</bidy>
+</body>
 </html>
