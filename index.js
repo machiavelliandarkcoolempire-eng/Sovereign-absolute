@@ -1,24 +1,30 @@
 import { WebUploader } from "@irys/web-upload";
-import { WebBaseEth } from "@irys/web-upload-ethereum"; 
+import { WebBaseEth } from "@irys/web-upload-base-eth"; 
 import { EthersV6Adapter } from "@irys/web-upload-ethereum-ethers-v6";
-import { ethers } from "ethers";
+import { Buffer } from "buffer";
+
+// Guarantee the Irys SDK sees the Buffer, bridging esbuild and your web3-polyfill.js
+window.Buffer = window.Buffer || Buffer;
 
 window.InitSovereignIrys = async function(inputParam) {
     try {
         const dedicatedIrisRpc = "https://base-mainnet.g.alchemy.com/v2/wR5UgtUrkfPjKnqfMhm8k";
 
-        // 🟢 AUTO-RESOLVE LOGIC: แปลง Input ทุกรูปแบบให้กลายเป็น BrowserProvider
-        let targetProvider = inputParam;
+        let targetProvider;
 
+        // 🟢 AUTO-RESOLVE LOGIC: Flawlessly handle MetaMask, Signers, and WalletConnect
         if (!inputParam) {
-            // ถ้าไม่ส่งอะไรมาเลย ให้ดึงจาก window.ethereum ในเครื่องผู้ใช้
-            targetProvider = new ethers.BrowserProvider(window.ethereum);
+            // Fallback to injected window.ethereum
+            targetProvider = new window.ethers.BrowserProvider(window.ethereum);
         } else if (inputParam.provider) {
-            // ถ้าเผลอส่ง Signer เข้ามา ให้ดึง .provider ที่ซ่อนอยู่ข้างในออกมากู้สถานการณ์
+            // Input is a Signer; extract the underlying provider
             targetProvider = inputParam.provider;
-        } else if (!inputParam.getSigner && typeof window.ethereum !== "undefined") {
-            // ถ้าส่ง window.ethereum หรือ Object อื่นที่ไม่มี getSigner เข้ามา
-            targetProvider = new ethers.BrowserProvider(window.ethereum);
+        } else if (typeof inputParam.getSigner === 'function') {
+            // Input is already an ethers BrowserProvider
+            targetProvider = inputParam;
+        } else {
+            // Input is a raw EIP-1193 provider (e.g., WalletConnect)
+            targetProvider = new window.ethers.BrowserProvider(inputParam);
         }
 
         const irysUploader = await WebUploader(WebBaseEth) 
