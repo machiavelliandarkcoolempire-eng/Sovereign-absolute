@@ -2549,6 +2549,7 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
             cancelBtn.classList.add('opacity-50', 'cursor-not-allowed');
         }
 
+        // 1. Recovery Check from Code 1 (Prevents Double Funding)
         const pendingFundTx = localStorage.getItem('irys_pending_fund_tx');
         if (pendingFundTx && pendingFundTx !== 'pending') {
             appendLog("Resuming pending funding transaction polling...", "text-yellow-400");
@@ -2560,10 +2561,17 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
             } catch (fundErr) {
                 const feMsg = (fundErr && fundErr.message) || "";
                 const isUserRejection = /user rejected|declined|denied|cancelled|user declined/i.test(feMsg);
-                hideFundingOverlay();
+                
                 if (isUserRejection) {
+                    hideFundingOverlay();
                     throw new Error("Funding transaction cancelled by user.");
+                }
+                
+                // 2. RPC Lag Handling from Code 2 (Fault Tolerance)
+                if (feMsg.includes("400") || feMsg.includes("doesn't exist") || feMsg.includes("failed to post funding tx")) {
+                    appendLog("[IRYS RPC LAG] Transaction sent, but Irys indexer is slow. Engaging polling sync...", "text-yellow-500");
                 } else {
+                    hideFundingOverlay();
                     throw new Error(`Funding transaction failed to broadcast: ${feMsg}`);
                 }
             }
@@ -2590,7 +2598,10 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
         const maxAttempts = 36;
         
         while (!isSynced && attempts < maxAttempts && window._fundPollingActive) {
-            if (!irys || !signer || !provider) { window._fundPollingActive = false; throw new Error("Wallet session severed during sync"); }
+            if (!irys || !signer || !provider) { 
+                window._fundPollingActive = false; 
+                throw new Error("Wallet session severed during sync"); 
+            }
             await new Promise(resolve => setTimeout(resolve, 5000));
             try {
                 const currentBalance = await withNetworkRetry(() => irys.getLoadedBalance());
@@ -5227,17 +5238,7 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
             if (btnTransfer) btnTransfer.disabled = false;
         }
 
-        const claimBtn = document.getElementById('executeClaimRewardBtn');
-        const warningTxt = document.getElementById('rewardExclusionWarning');
-        const numericTokenId = Number(tokenId);
-        
-        if (numericTokenId === 50 || numericTokenId === 100) {
-            if (claimBtn) claimBtn.classList.add('hidden');
-            if (warningTxt) warningTxt.classList.remove('hidden');
-        } else {
-            if (claimBtn) claimBtn.classList.remove('hidden');
-            if (warningTxt) warningTxt.classList.add('hidden');
-        }
+        // 🚨 THE PURGE: ลบตรรกะ Claim Reward ทิ้งทั้งหมดแล้ว โค้ดสะอาด 100%
 
         try {
             const onChainTBA = await activeContract.getTBA(BigInt(tokenId).toString());
