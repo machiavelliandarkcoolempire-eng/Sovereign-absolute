@@ -14,10 +14,11 @@
         }
     </script>
     
-    <!-- ✅ แก้ไข connect-src: อนุญาตโดเมน *.irys.xyz ทั้งหมดเพื่อป้องกัน CORS/Network Error -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; media-src 'self' blob: https:; connect-src 'self' https://mainnet.base.org https://base.llamarpc.com https://base-rpc.publicnode.com https://base-mainnet.g.alchemy.com wss://base-mainnet.g.alchemy.com https://*.irys.xyz wss://relay.walletconnect.com wss://relay.walletconnect.org https://rpc.walletconnect.com https://api.web3modal.com https://api.reown.com wss:; frame-ancestors 'none'; base-uri 'none'; object-src 'none'; form-action 'self';">
-
-
+    <!-- index.html : PHASE 4 : FIX 8 (CSP & Referrer Meta Tags) -->
+<meta name="referrer" content="strict-origin-when-cross-origin" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; media-src 'self' blob: https:; connect-src 'self' https://mainnet.base.org https://base.llamarpc.com https://base-rpc.publicnode.com https://base-mainnet.g.alchemy.com wss://base-mainnet.g.alchemy.com https://*.irys.xyz https://arweave.net https://ar-io.net wss://relay.walletconnect.com wss://relay.walletconnect.org https://rpc.walletconnect.com https://api.web3modal.com https://api.reown.com wss:; frame-ancestors 'none'; base-uri 'none'; object-src 'none'; form-action 'self';">
+    
+    
     <!-- 🌟 1. โหลด CSS ที่ Vercel บิ้วให้ -->
     <link rel="stylesheet" href="./dist.css" />
 
@@ -38,14 +39,15 @@
     </style>
     
     <!-- 📦 ETHERS V6 & WALLETCONNECT & HLS -->
-    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <!-- 🛠 FIX: เอา defer ออก เพื่อบังคับให้โหลดและรันให้เสร็จก่อนไฟล์ถัดไป -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://unpkg.com/@walletconnect/ethereum-provider@2.11.1/dist/index.umd.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 
-    <!-- 🌟 2. โหลด Polyfill -->
+    <!-- 🌟 2. โหลด Polyfill (รันต่อจาก ethers ทันที) -->
     <script src="./web3-polyfill.js"></script>
 
-    <!-- 🌟 3. โหลด Irys SDK -->
+    <!-- 🌟 3. โหลด Irys SDK (รันต่อจาก Polyfill ทันที) -->
     <script src="./irys-bundle.js"></script>
 
 </head>
@@ -289,15 +291,15 @@
         .matrix-node {
             position: relative;
             transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
-            content-visibility: auto;
-            contain-intrinsic-size: 2rem;
             background: radial-gradient(circle at 50% 30%, rgba(30, 41, 59, 0.5) 0%, rgba(2, 4, 12, 0.85) 100%);
         }
-        .matrix-node:hover {
-            transform: scale(1.18) translateY(-1px);
-            z-index: 20;
-            will-change: transform;
-            box-shadow: 0 0 16px 2px rgba(251, 191, 36, 0.45);
+        @media (hover: hover) {
+            .matrix-node:hover {
+                transform: scale(1.18) translateY(-1px);
+                z-index: 20;
+                will-change: transform;
+                box-shadow: 0 0 16px 2px rgba(251, 191, 36, 0.45);
+            }
         }
         .matrix-node::before {
             content: '';
@@ -1169,13 +1171,11 @@
             This protocol operates an exclusive, private digital identity infrastructure accessible solely via direct curation. All proceeds represent lawful studio service fees. Reserve allocations fund software R&D and Ecosystem Infrastructure Support Grants. Minting and on-chain operations are executed 100% self-sovereignly by curated pass holders. This protocol does not offer public sales, securities, or financial returns.
         </div>
     </footer>
-    
-    
+
 
 
 
 <script>
-
 "use strict";
 
 let isTransactionPending = false;
@@ -1513,7 +1513,8 @@ const videoCullingObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
         const video = entry.target;
         if (entry.isIntersecting) {
-            video.style.display = 'block';
+            video.style.visibility = 'visible';
+            video.style.opacity = '1';
             if (video.dataset.cullSrc) {
                 video.src = video.dataset.cullSrc;
                 video.removeAttribute('data-cull-src');
@@ -1523,7 +1524,8 @@ const videoCullingObserver = new IntersectionObserver((entries) => {
             video.play().catch(() => {});
         } else {
             video.pause();
-            video.style.display = 'none';
+            video.style.visibility = 'hidden';
+            video.style.opacity = '0';
             if (video._hlsInstance) {
                 video._hlsInstance.stopLoad();
             }
@@ -1750,7 +1752,7 @@ function fmtUnits(value, decimals = 18) {
         if (parts.length === 1) {
             return parts[0] + ".0000";
         }
-        const fraction = parts[1].padEnd(4, '0').slice(0, 4);
+        const fraction = (parts[1] || "").padEnd(4, '0').slice(0, 4);
         return `${parts[0]}.${fraction}`;
     } catch (e) { 
         return "0.0000"; 
@@ -1799,9 +1801,6 @@ async function promptUserForFile(acceptType = 'image/*,video/*') {
         };
 
         const cleanup = () => {
-            if (fileInput.parentNode === document.body) {
-                document.body.removeChild(fileInput);
-            }
             window.removeEventListener('blur', handleBlur);
             window.removeEventListener('focus', handleFocusFallback);
         };
@@ -1825,7 +1824,6 @@ async function promptUserForFile(acceptType = 'image/*,video/*') {
 
         window.addEventListener('blur', handleBlur, { once: true });
 
-        document.body.appendChild(fileInput);
         fileInput.click();
     });
 }
@@ -1859,7 +1857,7 @@ async function runTx(btnInput, label, methodName, args = [], overrides = {}, opt
         }
 
         const gasLimit = (estimatedGas * 120n) / 100n;
-        const finalOverrides = { ...overrides, gasLimit, enableAbort: walletSessionController.signal };
+        const finalOverrides = { ...overrides, gasLimit };
 
         const tx = await contractMethod(...args, finalOverrides);
         appendLog(`Transaction [${label}] initiated: ${tx.hash}`, "text-blue-400");
@@ -1971,9 +1969,12 @@ async function autoMap(tokenId) {
                 const targetUrl = cleanUri.startsWith('http') ? cleanUri : `https://gateway.irys.xyz/${cleanUri}`;
                 try {
                     const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 5000); 
-                    const metaResponse = await fetch(targetUrl, { signal: walletSessionController.signal });
-                    clearTimeout(timeoutId); 
+                    const timeoutId = setTimeout(() => controller.abort(), 5000);
+                    const abortHandler = () => controller.abort();
+                    walletSessionController.signal.addEventListener('abort', abortHandler);
+                    const metaResponse = await fetch(targetUrl, { signal: controller.signal });
+                    clearTimeout(timeoutId);
+                    walletSessionController.signal.removeEventListener('abort', abortHandler);
                     
                     if (metaResponse.ok) {
                         const contentLength = metaResponse.headers.get('content-length');
@@ -2177,7 +2178,7 @@ async function syncContractStates() {
             const exitRefundVal = fmtUnits(refundWei) + " ETH";
             updateText('exitRefund', exitRefundVal);
 
-            const councilVal = (accRewardPerNode !== undefined ? fmtUnits(accRewardPerNode, 4) : "0.0000") + " ";
+            const councilVal = (accRewardPerNode !== undefined ? fmtUnits(accRewardPerNode) : "0.0000") + " ";
             if (window._domStateCache['displayCouncilPool'] !== councilVal) {
                 const councilEl = document.getElementById('displayCouncilPool');
                 if (councilEl) {
@@ -2190,7 +2191,7 @@ async function syncContractStates() {
                 }
             }
 
-            const reserveVal = fmtUnits(reserve, 2) + " ";
+            const reserveVal = fmtUnits(reserve) + " ";
             if (window._domStateCache['displayReserve'] !== reserveVal) {
                 const reserveEl = document.getElementById('displayReserve');
                 if (reserveEl) {
@@ -2489,7 +2490,9 @@ async function uploadWithRetry(file, tags, env, progress, maxRetries = 4) {
                 irys.uploader.chunkedUploader.setChunkSize(env.chunkSize);
                 irys.uploader.chunkedUploader.setBatchSize(env.batchSize);
 
-                const response = await irys.uploader.chunkedUploader.uploadData(file, { tags: tags });
+                const arrayBuffer = await file.arrayBuffer();
+                const buffer = new Uint8Array(arrayBuffer);
+                const response = await irys.uploader.chunkedUploader.uploadData(buffer, { tags: tags });
                 progress.complete();
                 return response;
             } else {
@@ -2560,10 +2563,16 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
             } catch (fundErr) {
                 const feMsg = (fundErr && fundErr.message) || "";
                 const isUserRejection = /user rejected|declined|denied|cancelled|user declined/i.test(feMsg);
-                hideFundingOverlay();
+                
                 if (isUserRejection) {
+                    hideFundingOverlay();
                     throw new Error("Funding transaction cancelled by user.");
+                }
+                
+                if (feMsg.includes("400") || feMsg.includes("doesn't exist") || feMsg.includes("failed to post funding tx")) {
+                    appendLog("[IRYS RPC LAG] Transaction sent, but Irys indexer is slow. Engaging polling sync...", "text-yellow-500");
                 } else {
+                    hideFundingOverlay();
                     throw new Error(`Funding transaction failed to broadcast: ${feMsg}`);
                 }
             }
@@ -2590,7 +2599,10 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
         const maxAttempts = 36;
         
         while (!isSynced && attempts < maxAttempts && window._fundPollingActive) {
-            if (!irys || !signer || !provider) { window._fundPollingActive = false; throw new Error("Wallet session severed during sync"); }
+            if (!irys || !signer || !provider) { 
+                window._fundPollingActive = false; 
+                throw new Error("Wallet session severed during sync"); 
+            }
             await new Promise(resolve => setTimeout(resolve, 5000));
             try {
                 const currentBalance = await withNetworkRetry(() => irys.getLoadedBalance());
@@ -2624,7 +2636,8 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
         receipt = await uploadWithRetry(payload, tags, env, progressCtrl || { set:()=>{}, complete:()=>{} });
         if (progressCtrl) progressCtrl.complete();
     } else {
-        receipt = await irys.upload(payload, { tags });
+        const buffer = new TextEncoder().encode(payload);
+        receipt = await irys.upload(buffer, { tags });
     }
     updateBridgeStatus("PERMANENTLY ONLINE", "success");
     return receipt;
@@ -2766,6 +2779,8 @@ async function checkHolding(account) {
 async function executeArchitectCentralizedUpload(type) {
     if (!secureContract || !signer) { showNotification("Action suspended: Authenticate wallet signature first.", "error"); return; }
     
+    if (!irys) { showNotification("Please ENGAGE IRYS BRIDGE before uploading.", "error"); return; }
+    
     try {
         const userAddress = await signer.getAddress();
         let onChainArchitect = ethers.ZeroAddress;
@@ -2791,13 +2806,6 @@ async function executeArchitectCentralizedUpload(type) {
     openDeedUploadTrigger(globalSelectedTokenId, type);
 }
 
-function resetAdminInputs() {
-    const inputsToClear = ['forgeFrontUri', 'forgeBackUri', 'novaVideoUri', 'novaDnaInput', 'novaHiddenInput'];
-    inputsToClear.forEach(id => {
-        const el = document.getElementById(id);
-        if(el) el.value = "";
-    });
-}
 
 async function executeGatewayUnlock(event) {
     if (!secureContract || !signer) {
@@ -2816,7 +2824,7 @@ async function executeGatewayUnlock(event) {
             const ownedIds = userTokens.map(t => t.toString()).join(", ");
 
             closeIdentityAuthModal();
-            const vault = document.getElementById('memberDnaStudio');
+            const vault = document.getElementById('memberDnaVault');
             if(vault) {
                 vault.classList.remove('hidden');
                 document.getElementById('dnaVerifyTokenId').value = userTokens[0].toString();
@@ -2837,6 +2845,7 @@ async function executeGatewayUnlock(event) {
         if (btn) toggleButtonLoading(btn, false);
     }
 }
+
 
 async function processIdentityDnaInspectionOnChain() {
     const tokenIdInput = document.getElementById('dnaVerifyTokenId');
@@ -2899,16 +2908,34 @@ async function loadDeedMetadata(tokenId) {
     if (!mappedNode?.rawMetadata?.attributes || !Array.isArray(mappedNode.rawMetadata.attributes)) return; 
     
     const attrs = mappedNode.rawMetadata.attributes;
+    const container = document.getElementById('propDisplay1')?.parentElement?.parentElement || document.body;
+
     for(let i = 0; i < attrs.length; i++) {
-        const targetElement = document.getElementById(`propDisplay${i+1}`); 
+        let targetElement = document.getElementById(`propDisplay${i+1}`); 
+        
+        if(!targetElement && container !== document.body) {
+            const div = document.createElement('div');
+            div.className = "p-2 bg-black/80 rounded border border-stone-900 flex flex-col mt-2";
+            const spanTitle = document.createElement('span');
+            spanTitle.className = "text-stone-500 block uppercase font-bold text-[9px]";
+            spanTitle.textContent = attrs[i].trait_type || `PROPERTY ${i+1}`;
+            targetElement = document.createElement('span');
+            targetElement.id = `propDisplay${i+1}`;
+            targetElement.className = "text-amber-500 font-bold mb-1";
+            div.appendChild(spanTitle);
+            div.appendChild(targetElement);
+            container.appendChild(div);
+        }
+
         if(targetElement && attrs[i] && typeof attrs[i] === 'object' && 'value' in attrs[i]) {
             targetElement.textContent = String(attrs[i].value);
         }
     }
 }
 
-let irisProvider = null;
-let irisContract = null;
+
+let irysProvider = null;
+let irysContract = null;
 
 const BASE_CHAIN_ID = 8453;
 
@@ -2919,7 +2946,7 @@ const GENERAL_ENDPOINTS = [
     'https://base-rpc.publicnode.com'
 ];
 
-const IRIS_ENDPOINTS = [
+const IRYS_ENDPOINTS = [
     'https://base-mainnet.g.alchemy.com/v2/wR5UgtUrkfPjKnqfMhm8k',
     'https://mainnet.base.org',                                   
     'https://base.llamarpc.com',                                  
@@ -2931,7 +2958,7 @@ function createFallbackProvider(endpoints) {
         const p = new ethers.JsonRpcProvider(url, BASE_CHAIN_ID, { staticNetwork: true });
         return { provider: p, priority: index + 1, weight: 1 };
     });
-    return new ethers.FallbackProvider(configs, 1);
+    return new ethers.FallbackProvider(configs, BASE_CHAIN_ID);
 }
 
 async function initReadOnlyRPC() {
@@ -2951,29 +2978,30 @@ async function initReadOnlyRPC() {
     }
 }
 
-async function initIrisRPC(irisAddress, irisAbi) {
+async function initIrysRPC(irysAddress, irysAbi) {
     try {
-        irisProvider = createFallbackProvider(IRIS_ENDPOINTS);
-        await irisProvider.getNetwork();
+        irysProvider = createFallbackProvider(IRYS_ENDPOINTS);
+        await irysProvider.getNetwork();
         
-        irisContract = new ethers.Contract(irisAddress, irisAbi, irisProvider);
+        irysContract = new ethers.Contract(irysAddress, irysAbi, irysProvider);
         
-        appendLog('Dedicated Iris RPC Online (Alchemy Key 2 Isolated).', 'text-cyan-400');
+        appendLog('Dedicated Irys RPC Online (Alchemy Key 2 Isolated).', 'text-cyan-400');
     } catch (err) {
-        irisProvider = null;
-        irisContract = null;
-        appendLog(`CRITICAL: Iris Dedicated RPC Failed: ${err.message}`, 'text-red-500');
-        showNotification('Unable to connect Iris Pipeline to Base Mainnet.', 'error');
+        irysProvider = null;
+        irysContract = null;
+        appendLog(`CRITICAL: Irys Dedicated RPC Failed: ${err.message}`, 'text-red-500');
+        showNotification('Unable to connect Irys Pipeline to Base Mainnet.', 'error');
     }
 }
 
-async function bootSystemRPCs(irisAddress, irisAbi) {
+async function bootSystemRPCs(irysAddress, irysAbi) {
     appendLog('Booting Multi-Tunnel RPC Infrastructure...', 'text-slate-400');
     await Promise.allSettled([
         initReadOnlyRPC(),
-        initIrisRPC(irisAddress, irisAbi)
+        initIrysRPC(irysAddress, irysAbi)
     ]);
 }
+
 
 function loadArchitectGateways() {
     const l1 = localStorage.getItem('sov_gate_l1');
@@ -3084,10 +3112,6 @@ async function handleAccountsChangedEvent(accounts) {
         document.getElementById('adminSector')?.classList.add('hidden');
         document.getElementById('robotPanel')?.classList.add('hidden');
         
-        if (pollingInterval) {
-            clearInterval(pollingInterval);
-            pollingInterval = null;
-        }
         clearAllTimers();
         
         provider = null;
@@ -3134,7 +3158,9 @@ function handleChainChangedEvent(newChainId) {
 const eip6963Providers = [];
 window.addEventListener("eip6963:announceProvider", (event) => {
     if (event.detail && event.detail.provider) {
-        eip6963Providers.push(event.detail);
+        if (!eip6963Providers.some(p => p.info.uuid === event.detail.info.uuid)) {
+            eip6963Providers.push(event.detail);
+        }
     }
 });
 window.dispatchEvent(new Event("eip6963:requestProvider"));
@@ -3183,7 +3209,7 @@ async function connectWallet(e) {
         } 
         else {
             appendLog("Secondary Route Engaged: Initializing WalletConnect V2.", "text-yellow-400");
-            const EthereumProviderCtor = window.WalletConnectProvider?.EthereumProvider;
+            const EthereumProviderCtor = window.WalletConnectProvider?.EthereumProvider || window.WalletConnectProvider;
             if (!EthereumProviderCtor) throw new Error("WalletConnect V2 Runtime Bundle unresolved.");
 
             if (!window.walletConnectProvider) {
@@ -3232,6 +3258,9 @@ async function connectWallet(e) {
             if (overlay) overlay.classList.add('hidden');
         }
         
+        if (provider) {
+            provider.removeAllListeners();
+        }
         provider = new ethers.BrowserProvider(rawProvider);
         signer = await provider.getSigner();
         
@@ -4063,19 +4092,18 @@ async function executeCreateProposal(e) {
         
         let eligibleTokenId = 0;
         let hasCouncil = false;
-        let isAnyTokenOnCooldown = false;
         const currentEpoch = Math.floor(Date.now() / 1000);
 
         for (let i = 0; i < userTokens.length; i++) {
             const tid = Number(userTokens[i]);
-            if (primarchNodes.includes(tid)) {
+            const isCouncilNode = await secureContract.isCouncil(tid.toString()).catch(() => primarchNodes.includes(tid));
+            if (isCouncilNode) {
                 hasCouncil = true;
-                const lastTime = await secureContract.lastProposalTime(BigInt(tid).toString());
+                const lastTime = await secureContract.lastProposalTime(tid.toString());
                 const cooldownPeriod = await secureContract.PROPOSAL_COOLDOWN().catch(() => 604800n);
-                if (currentEpoch < Number(lastTime) + Number(cooldownPeriod)) { 
-                    isAnyTokenOnCooldown = true;
-                } else if (eligibleTokenId === 0) {
+                if (currentEpoch >= Number(lastTime) + Number(cooldownPeriod)) { 
                     eligibleTokenId = tid;
+                    break;
                 }
             }
         }
@@ -4084,8 +4112,8 @@ async function executeCreateProposal(e) {
             showNotification("ACCESS DENIED: Proposal rights restricted to the 12 Golden Sovereign Council members.", "error");
             return;
         }
-        if (isAnyTokenOnCooldown || eligibleTokenId === 0) {
-            showNotification("COOLDOWN ACTIVE: A node in your possession recently proposed. Please wait 7 days.", "warning");
+        if (eligibleTokenId === 0) {
+            showNotification("COOLDOWN ACTIVE: All your council nodes are on cooldown. Please wait 7 days.", "warning");
             return;
         }
 
@@ -4175,6 +4203,19 @@ async function executeCastVote(btn) {
     }
 }
 
+async function executeClaimReward(tokenId, btn) {
+    if (!secureContract || !signer) { showNotification("Action suspended: Authenticate wallet signature first.", "error"); return; }
+    try {
+        const receipt = await runTx(btn, `CLAIM_REWARD_#${tokenId}`, "claimReward", [tokenId.toString()]);
+        if (receipt) {
+            appendLog(`Dividend claimed successfully for Council Node #${tokenId}.`, "text-emerald-400 font-bold");
+            showNotification("Dividend claimed successfully.", "success");
+            await auditTokenFromLedger(tokenId); 
+        }
+    } catch (err) {
+        console.error(err);
+    }
+}
 
 function toggleForgeButtonState() {
     const checkbox = document.getElementById('forgeConsentCheckbox');
@@ -4579,35 +4620,20 @@ async function triggerIdentityNova(e) {
     let id, dna, video, hidden, tokenId, fee;
     try {
         const userAddress = await signer.getAddress();
-        let onChainArchitect = ethers.ZeroAddress;
-        let onChainOwner = ethers.ZeroAddress;
-        try {
-            onChainArchitect = await secureContract.architect();
-            onChainOwner = await secureContract.owner();
-        } catch (e) {}
-
-        const isOwnerOrArchitect = (
-            userAddress.toLowerCase() === onChainArchitect.toLowerCase() ||
-            userAddress.toLowerCase() === onChainOwner.toLowerCase()
-        );
-        
         const rawId = document.getElementById('novaTokenId')?.value.trim();
         tokenId = validateTokenRange(rawId);
         if(!tokenId) return;
-
         id = BigInt(tokenId);
 
-        if (!isOwnerOrArchitect) {
-            try {
-                const activeOwner = await secureContract.ownerOf(id.toString());
-                if (activeOwner.toLowerCase() !== userAddress.toLowerCase()) {
-                    showNotification("SECURITY ENFORCEMENT: You do not own this specific deed node.", "error");
-                    return;
-                }
-            } catch (err) {
-                showNotification("SECURITY ENFORCEMENT: Node does not exist or ownership verification failed.", "error");
+        try {
+            const activeOwner = await secureContract.ownerOf(id.toString());
+            if (activeOwner.toLowerCase() !== userAddress.toLowerCase()) {
+                showNotification("SECURITY ENFORCEMENT: You do not own this specific deed node. Only the owner can execute NOVA.", "error");
                 return;
             }
+        } catch (err) {
+            showNotification("SECURITY ENFORCEMENT: Node does not exist or ownership verification failed.", "error");
+            return;
         }
 
         dna = document.getElementById('novaDnaInput')?.value.trim() || "";
@@ -4652,44 +4678,24 @@ async function executeUpdateIdentity(e) {
     let tokenId, frontUri, backUri, videoUri;
     try {
         const userAddress = await signer.getAddress();
-        let onChainArchitect = ethers.ZeroAddress;
-        let onChainOwner = ethers.ZeroAddress;
-        try {
-            onChainArchitect = await secureContract.architect();
-            onChainOwner = await secureContract.owner();
-        } catch (e) {}
-
-        const isOwnerOrArchitect = (
-            userAddress.toLowerCase() === onChainArchitect.toLowerCase() ||
-            userAddress.toLowerCase() === onChainOwner.toLowerCase()
-        );
-
         const rawId = document.getElementById('novaTokenId')?.value.trim();
         tokenId = validateTokenRange(rawId);
         if(!tokenId) return;
-        
+
         try {
             const isSanctified = await secureContract.isSanctified(tokenId.toString());
             if (!isSanctified) {
                 showNotification("SECURITY ENFORCEMENT: Node has not achieved NOVA ascension. Sanctify first.", "error");
                 return;
             }
-        } catch (err) {
-            showNotification("SECURITY ENFORCEMENT: Failed to verify Sanctified status.", "error");
-            return;
-        }
-
-        if (!isOwnerOrArchitect) {
-            try {
-                const activeOwner = await secureContract.ownerOf(tokenId.toString());
-                if (activeOwner.toLowerCase() !== userAddress.toLowerCase()) {
-                    showNotification("SECURITY ENFORCEMENT: You do not own this specific deed node.", "error");
-                    return;
-                }
-            } catch (err) {
-                showNotification("SECURITY ENFORCEMENT: Node does not exist or ownership verification failed.", "error");
+            const activeOwner = await secureContract.ownerOf(tokenId.toString());
+            if (activeOwner.toLowerCase() !== userAddress.toLowerCase()) {
+                showNotification("SECURITY ENFORCEMENT: You do not own this specific deed node.", "error");
                 return;
             }
+        } catch (err) {
+            showNotification("SECURITY ENFORCEMENT: Node does not exist or ownership verification failed.", "error");
+            return;
         }
 
         frontUri = document.getElementById('forgeFrontUri')?.value.trim() || currentLoadedMediaData.front || "";
@@ -4783,7 +4789,7 @@ async function resolveMediaUrl(urlList, signal, mimeType) {
         for (const url of urlList) {
             if (signal.aborted) throw new Error('Aborted');
             try {
-                const testResponse = await fetch(url, { method: 'GET', signal, headers: { Range: "bytes=0-0" } });
+                const testResponse = await fetch(url, { method: 'HEAD', signal });
                 
                 if (!testResponse.ok && testResponse.status !== 206) {
                     throw new Error('HTTP ' + testResponse.status);
@@ -5151,7 +5157,7 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
     const mySession = ++window.currentAuditSession;
 
     try {
-        window.globalSelectedTokenId = tokenId;
+        globalSelectedTokenId = tokenId;
         autoMapMetadata(tokenId);
         if (typeof updateVideoSlotsUI === 'function') updateVideoSlotsUI();
         
@@ -5224,18 +5230,6 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
             if (btnTransfer) btnTransfer.disabled = false;
         }
 
-        const claimBtn = document.getElementById('executeClaimRewardBtn');
-        const warningTxt = document.getElementById('rewardExclusionWarning');
-        const numericTokenId = Number(tokenId);
-        
-        if (numericTokenId === 50 || numericTokenId === 100) {
-            if (claimBtn) claimBtn.classList.add('hidden');
-            if (warningTxt) warningTxt.classList.remove('hidden');
-        } else {
-            if (claimBtn) claimBtn.classList.remove('hidden');
-            if (warningTxt) warningTxt.classList.add('hidden');
-        }
-
         try {
             const onChainTBA = await activeContract.getTBA(BigInt(tokenId).toString());
             if (mySession !== window.currentAuditSession) return; 
@@ -5297,6 +5291,29 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
             sanctifiedSpan.textContent = mappedNode.isSanctified ? 'AFFIRMED' : 'DORMANT';
 
             displayData.append(line1, rankSpan, br, line2, sanctifiedSpan);
+
+            try {
+                const isDivEligible = await activeContract.isDividendEligible(tokenId.toString());
+                if (isDivEligible) {
+                    const accReward = await activeContract.accCouncilRewardPerNode();
+                    const reg = await activeContract.registry(tokenId.toString());
+                    const rewardDebt = reg.rewardDebt !== undefined ? reg.rewardDebt : reg[7];
+                    const credit = await activeContract.rewardCredit(tokenId.toString());
+                    
+                    const accumulated = BigInt(accReward) - BigInt(rewardDebt);
+                    const pending = BigInt(credit) + accumulated;
+                    const payoutWei = pending / 1000000000000000000n;
+                    
+                    if (payoutWei > 0n) {
+                        const claimBtn = document.createElement('button');
+                        claimBtn.className = "mt-3 px-4 py-2 bg-emerald-950 border border-emerald-500 text-emerald-400 rounded text-[10px] font-bold uppercase hover:bg-emerald-900 transition-colors shadow-[0_0_10px_rgba(16,185,129,0.2)] w-full";
+                        claimBtn.textContent = `CLAIM DIVIDEND: ${ethers.formatEther(payoutWei.toString())} ETH`;
+                        claimBtn.onclick = (e) => executeClaimReward(tokenId, e);
+                        displayData.appendChild(document.createElement('br'));
+                        displayData.appendChild(claimBtn);
+                    }
+                }
+            } catch (e) { console.warn("Dividend check failed", e); }
         }
 
         const settleTokenInput = document.getElementById('settleTokenId');
@@ -5346,6 +5363,7 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
         if (typeof unlockSystem === 'function') unlockSystem();
     }
 }
+
 
 function setTbaBalanceDisplay(eth, weth) { 
     const ethElem = document.getElementById('tbaEthBalance'); 
@@ -5545,7 +5563,7 @@ const initializeSystem = async () => {
     
     const grid = document.getElementById('matrixGridContainer'); 
     if (grid && !grid.dataset.clickAttached) {
-        const eventType = IS_TOUCH_DEVICE ? 'pointerup' : 'click';
+        const eventType = 'click';
         
         grid.addEventListener(eventType, async (e) => { 
             const targetNode = e.target.closest('.matrix-node'); 
@@ -5581,6 +5599,7 @@ const initializeSystem = async () => {
     }
 };
 
+
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
         revealApp();
@@ -5603,5 +5622,5 @@ window.addEventListener('load', async () => {
 });
 
 </script>
-</bidy>
+</body>
 </html>
