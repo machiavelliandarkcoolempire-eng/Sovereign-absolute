@@ -851,7 +851,7 @@
                     <input type="radio" name="frontType" value="video" class="ml-2 accent-rose-500 cursor-pointer w-4 h-4" onchange="onTypeToggle('front')" /> <span class="text-rose-500 font-bold ml-1">VIDEO ANIMATION</span>
                 </span>
                 
-                <button id="btnConnectIrys" type="button" class="w-full md:w-auto px-4 py-2 bg-slate-900 border border-blue-900 text-blue-400 font-mono text-sm hover:bg-blue-950 hover:text-blue-300 transition-colors duration-300 shadow-[0_0_15px_rgba(30,58,138,0.3)]">
+                <button id="btnConnectIrys" onclick="ensureIrysReady()" type="button" class="w-full md:w-auto px-4 py-2 bg-slate-900 border border-blue-900 text-blue-400 font-mono text-sm hover:bg-blue-950 hover:text-blue-300 transition-colors duration-300 shadow-[0_0_15px_rgba(30,58,138,0.3)]">
                     ⚡ ENGAGE IRYS BRIDGE
                 </button>
                 
@@ -1173,10 +1173,15 @@
     </footer>
 
 
-
-
 <script>
 "use strict";
+
+// 🛡️ SECURITY PRIMITIVE: Strict Alphanumeric Sanitization for JSON Payloads
+function sanitizeAlphanumeric(str) {
+    if (str === null || str === undefined) return "";
+    // Strips out dangerous characters that could break JSON or inject malicious scripts
+    return String(str).replace(/[^a-zA-Z0-9\s\-_.,!?'"()|]/g, '').trim();
+}
 
 let isTransactionPending = false;
 let walletSessionController = new AbortController();
@@ -1443,7 +1448,7 @@ async function debouncedMulticall(providerInstance, calls) {
         
         if (!mcTimer) {
             mcTimer = true;
-            setTimeout(async () => {
+            queueMicrotask(async () => {
                 mcTimer = false;
                 const currentBatch = [...mcQueue];
                 mcQueue = [];
@@ -1478,7 +1483,7 @@ async function debouncedMulticall(providerInstance, calls) {
                 } catch (err) {
                     currentBatch.forEach(item => item.reject(err));
                 }
-            }, 0);
+            });
         }
     });
 }
@@ -1688,7 +1693,7 @@ function toggleCardFlip() {
 
 function isMaliciousURI(uri) {
     if (!uri) return false;
-    const cleanUri = uri.trim().toLowerCase();
+    const cleanUri = uri.replace(/[\x00-\x20\x7F]/g, '').toLowerCase();
     if (/^[a-zA-Z0-9_-]{43}$/.test(cleanUri)) return false;
     if (/^(javascript|data|vbscript):/i.test(cleanUri)) return true;
     try {
@@ -1752,7 +1757,7 @@ function fmtUnits(value, decimals = 18) {
         if (parts.length === 1) {
             return parts[0] + ".0000";
         }
-        const fraction = (parts[1] || "").padEnd(4, '0').slice(0, 4);
+        const fraction = parts[1].padEnd(4, '0').slice(0, 4);
         return `${parts[0]}.${fraction}`;
     } catch (e) { 
         return "0.0000"; 
@@ -1787,43 +1792,44 @@ async function promptUserForFile(acceptType = 'image/*,video/*') {
         fileInput.type = 'file';
         fileInput.accept = acceptType;
         fileInput.style.display = 'none';
+        fileInput.id = 'temp-file-input-' + Date.now();
 
         let isSettled = false;
 
-        const handleFocusFallback = () => {
-            setTimeout(() => {
-                if (!isSettled && fileInput.files.length === 0) handleCancel();
-            }, 15000); 
-        };
-
-        const handleBlur = () => {
-            window.addEventListener('focus', handleFocusFallback, { once: true });
-        };
-
         const cleanup = () => {
-            window.removeEventListener('blur', handleBlur);
+            if (isSettled) return;
+            isSettled = true;
+            if (fileInput.parentNode) {
+                fileInput.parentNode.removeChild(fileInput);
+            }
             window.removeEventListener('focus', handleFocusFallback);
         };
 
+        const handleFocusFallback = () => {
+            setTimeout(() => {
+                if (!isSettled && fileInput.files.length === 0) {
+                    cleanup();
+                    resolve(null);
+                }
+            }, 500); 
+        };
+
         const handleFileChange = (event) => {
-            if (isSettled) return;
-            isSettled = true;
+            const file = event.target.files[0] || null;
             cleanup();
-            resolve(event.target.files[0] || null);
+            resolve(file);
         };
 
         const handleCancel = () => {
-            if (isSettled) return;
-            isSettled = true;
             cleanup();
             resolve(null);
         };
 
         fileInput.addEventListener('change', handleFileChange, { once: true });
         fileInput.addEventListener('cancel', handleCancel, { once: true });
+        window.addEventListener('focus', handleFocusFallback, { once: true });
 
-        window.addEventListener('blur', handleBlur, { once: true });
-
+        document.body.appendChild(fileInput);
         fileInput.click();
     });
 }
@@ -1857,7 +1863,7 @@ async function runTx(btnInput, label, methodName, args = [], overrides = {}, opt
         }
 
         const gasLimit = (estimatedGas * 120n) / 100n;
-        const finalOverrides = { ...overrides, gasLimit };
+        const finalOverrides = { ...overrides, gasLimit, enableAbort: walletSessionController.signal };
 
         const tx = await contractMethod(...args, finalOverrides);
         appendLog(`Transaction [${label}] initiated: ${tx.hash}`, "text-blue-400");
@@ -1969,22 +1975,43 @@ async function autoMap(tokenId) {
                 const targetUrl = cleanUri.startsWith('http') ? cleanUri : `https://gateway.irys.xyz/${cleanUri}`;
                 try {
                     const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 5000);
-                    const abortHandler = () => controller.abort();
-                    walletSessionController.signal.addEventListener('abort', abortHandler);
-                    const metaResponse = await fetch(targetUrl, { signal: controller.signal });
-                    clearTimeout(timeoutId);
-                    walletSessionController.signal.removeEventListener('abort', abortHandler);
+                    const timeoutId = setTimeout(() => controller.abort(), 5000); 
+                    const metaResponse = await fetch(targetUrl, { signal: walletSessionController.signal });
+                    clearTimeout(timeoutId); 
                     
                     if (metaResponse.ok) {
                         const contentLength = metaResponse.headers.get('content-length');
                         if (contentLength && parseInt(contentLength) > 51200) {
                             console.warn(`[autoMap] Payload exceeds 50KB limit. Rejected to protect UI thread.`);
                         } else {
-                            const text = await metaResponse.text();
-                            if (text.length > 51200) { 
+                            const reader = metaResponse.body.getReader();
+                            let receivedLength = 0;
+                            let chunks = [];
+                            let isOversized = false;
+
+                            while(true) {
+                                const {done, value} = await reader.read();
+                                if (done) break;
+                                chunks.push(value);
+                                receivedLength += value.length;
+                                if (receivedLength > 51200) {
+                                    isOversized = true;
+                                    reader.cancel();
+                                    break;
+                                }
+                            }
+
+                            if (isOversized) {
                                 console.warn(`[autoMap] Payload exceeds 50KB limit. Rejected to protect UI thread.`);
                             } else {
+                                const text = new TextDecoder("utf-8").decode(
+                                    chunks.reduce((acc, val) => {
+                                        const c = new Uint8Array(acc.length + val.length);
+                                        c.set(acc, 0);
+                                        c.set(val, acc.length);
+                                        return c;
+                                    }, new Uint8Array(0))
+                                );
                                 try {
                                     metadata = JSON.parse(text);
                                 } catch (parseErr) {
@@ -2178,7 +2205,7 @@ async function syncContractStates() {
             const exitRefundVal = fmtUnits(refundWei) + " ETH";
             updateText('exitRefund', exitRefundVal);
 
-            const councilVal = (accRewardPerNode !== undefined ? fmtUnits(accRewardPerNode) : "0.0000") + " ";
+            const councilVal = (accRewardPerNode !== undefined ? fmtUnits(accRewardPerNode, 4) : "0.0000") + " ";
             if (window._domStateCache['displayCouncilPool'] !== councilVal) {
                 const councilEl = document.getElementById('displayCouncilPool');
                 if (councilEl) {
@@ -2191,7 +2218,7 @@ async function syncContractStates() {
                 }
             }
 
-            const reserveVal = fmtUnits(reserve) + " ";
+            const reserveVal = fmtUnits(reserve, 2) + " ";
             if (window._domStateCache['displayReserve'] !== reserveVal) {
                 const reserveEl = document.getElementById('displayReserve');
                 if (reserveEl) {
@@ -2490,9 +2517,11 @@ async function uploadWithRetry(file, tags, env, progress, maxRetries = 4) {
                 irys.uploader.chunkedUploader.setChunkSize(env.chunkSize);
                 irys.uploader.chunkedUploader.setBatchSize(env.batchSize);
 
+                // 🟢 MASTERCLASS FIX: แปลง File เป็น Buffer ให้ Irys รู้จัก (แก้ Error no .pipe method)
                 const arrayBuffer = await file.arrayBuffer();
-                const buffer = new Uint8Array(arrayBuffer);
+                const buffer = window.Buffer.from(arrayBuffer);
                 const response = await irys.uploader.chunkedUploader.uploadData(buffer, { tags: tags });
+                
                 progress.complete();
                 return response;
             } else {
@@ -2569,8 +2598,9 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
                     throw new Error("Funding transaction cancelled by user.");
                 }
                 
-                if (feMsg.includes("400") || feMsg.includes("doesn't exist") || feMsg.includes("failed to post funding tx")) {
-                    appendLog("[IRYS RPC LAG] Transaction sent, but Irys indexer is slow. Engaging polling sync...", "text-yellow-500");
+                // 🟢 MASTERCLASS FIX: ดักจับ Error 400 ของ Irys ให้มันไปนั่งรอเช็คยอดเงินเงียบๆ แทนที่จะพัง
+                if (feMsg.includes("400") && feMsg.includes("doesn't exist")) {
+                    appendLog("[IRYS LAG] Transaction sent but Irys server is lagging. Forcing sync mode...", "text-yellow-500");
                 } else {
                     hideFundingOverlay();
                     throw new Error(`Funding transaction failed to broadcast: ${feMsg}`);
@@ -2636,7 +2666,8 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
         receipt = await uploadWithRetry(payload, tags, env, progressCtrl || { set:()=>{}, complete:()=>{} });
         if (progressCtrl) progressCtrl.complete();
     } else {
-        const buffer = new TextEncoder().encode(payload);
+        // 🟢 MASTERCLASS FIX: บังคับใช้ Buffer สำหรับ JSON Payload (แก้ Error no .pipe method)
+        const buffer = window.Buffer.from(payload, "utf-8");
         receipt = await irys.upload(buffer, { tags });
     }
     updateBridgeStatus("PERMANENTLY ONLINE", "success");
@@ -2779,8 +2810,6 @@ async function checkHolding(account) {
 async function executeArchitectCentralizedUpload(type) {
     if (!secureContract || !signer) { showNotification("Action suspended: Authenticate wallet signature first.", "error"); return; }
     
-    if (!irys) { showNotification("Please ENGAGE IRYS BRIDGE before uploading.", "error"); return; }
-    
     try {
         const userAddress = await signer.getAddress();
         let onChainArchitect = ethers.ZeroAddress;
@@ -2806,6 +2835,13 @@ async function executeArchitectCentralizedUpload(type) {
     openDeedUploadTrigger(globalSelectedTokenId, type);
 }
 
+function resetAdminInputs() {
+    const inputsToClear = ['forgeFrontUri', 'forgeBackUri', 'novaVideoUri', 'novaDnaInput', 'novaHiddenInput'];
+    inputsToClear.forEach(id => {
+        const el = document.getElementById(id);
+        if(el) el.value = "";
+    });
+}
 
 async function executeGatewayUnlock(event) {
     if (!secureContract || !signer) {
@@ -2824,7 +2860,7 @@ async function executeGatewayUnlock(event) {
             const ownedIds = userTokens.map(t => t.toString()).join(", ");
 
             closeIdentityAuthModal();
-            const vault = document.getElementById('memberDnaVault');
+            const vault = document.getElementById('memberDnaStudio');
             if(vault) {
                 vault.classList.remove('hidden');
                 document.getElementById('dnaVerifyTokenId').value = userTokens[0].toString();
@@ -2845,7 +2881,6 @@ async function executeGatewayUnlock(event) {
         if (btn) toggleButtonLoading(btn, false);
     }
 }
-
 
 async function processIdentityDnaInspectionOnChain() {
     const tokenIdInput = document.getElementById('dnaVerifyTokenId');
@@ -2908,62 +2943,17 @@ async function loadDeedMetadata(tokenId) {
     if (!mappedNode?.rawMetadata?.attributes || !Array.isArray(mappedNode.rawMetadata.attributes)) return; 
     
     const attrs = mappedNode.rawMetadata.attributes;
-    const container = document.getElementById('propDisplay1')?.parentElement?.parentElement || document.body;
-
     for(let i = 0; i < attrs.length; i++) {
-        let targetElement = document.getElementById(`propDisplay${i+1}`); 
-        
-        if(!targetElement && container !== document.body) {
-            const div = document.createElement('div');
-            div.className = "p-2 bg-black/80 rounded border border-stone-900 flex flex-col mt-2";
-            const spanTitle = document.createElement('span');
-            spanTitle.className = "text-stone-500 block uppercase font-bold text-[9px]";
-            spanTitle.textContent = attrs[i].trait_type || `PROPERTY ${i+1}`;
-            targetElement = document.createElement('span');
-            targetElement.id = `propDisplay${i+1}`;
-            targetElement.className = "text-amber-500 font-bold mb-1";
-            div.appendChild(spanTitle);
-            div.appendChild(targetElement);
-            container.appendChild(div);
-        }
-
+        const targetElement = document.getElementById(`propDisplay${i+1}`); 
         if(targetElement && attrs[i] && typeof attrs[i] === 'object' && 'value' in attrs[i]) {
             targetElement.textContent = String(attrs[i].value);
         }
     }
 }
 
-
-let irysProvider = null;
-let irysContract = null;
-
-const BASE_CHAIN_ID = 8453;
-
-const GENERAL_ENDPOINTS = [
-    'https://base-mainnet.g.alchemy.com/v2/QTZrknzCeDDEXAFCEBCMM',
-    'https://mainnet.base.org',                                   
-    'https://base.llamarpc.com',                                  
-    'https://base-rpc.publicnode.com'
-];
-
-const IRYS_ENDPOINTS = [
-    'https://base-mainnet.g.alchemy.com/v2/wR5UgtUrkfPjKnqfMhm8k',
-    'https://mainnet.base.org',                                   
-    'https://base.llamarpc.com',                                  
-    'https://base-rpc.publicnode.com'
-];
-
-function createFallbackProvider(endpoints) {
-    const configs = endpoints.map((url, index) => {
-        const p = new ethers.JsonRpcProvider(url, BASE_CHAIN_ID, { staticNetwork: true });
-        return { provider: p, priority: index + 1, weight: 1 };
-    });
-    return new ethers.FallbackProvider(configs, BASE_CHAIN_ID);
-}
-
 async function initReadOnlyRPC() {
     try {
-        readOnlyProvider = createFallbackProvider(GENERAL_ENDPOINTS);
+        readOnlyProvider = new ethers.JsonRpcProvider('https://mainnet.base.org');
         await readOnlyProvider.getNetwork();
         
         readOnlyContract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, readOnlyProvider);
@@ -2978,30 +2968,10 @@ async function initReadOnlyRPC() {
     }
 }
 
-async function initIrysRPC(irysAddress, irysAbi) {
-    try {
-        irysProvider = createFallbackProvider(IRYS_ENDPOINTS);
-        await irysProvider.getNetwork();
-        
-        irysContract = new ethers.Contract(irysAddress, irysAbi, irysProvider);
-        
-        appendLog('Dedicated Irys RPC Online (Alchemy Key 2 Isolated).', 'text-cyan-400');
-    } catch (err) {
-        irysProvider = null;
-        irysContract = null;
-        appendLog(`CRITICAL: Irys Dedicated RPC Failed: ${err.message}`, 'text-red-500');
-        showNotification('Unable to connect Irys Pipeline to Base Mainnet.', 'error');
-    }
-}
-
-async function bootSystemRPCs(irysAddress, irysAbi) {
+async function bootSystemRPCs() {
     appendLog('Booting Multi-Tunnel RPC Infrastructure...', 'text-slate-400');
-    await Promise.allSettled([
-        initReadOnlyRPC(),
-        initIrysRPC(irysAddress, irysAbi)
-    ]);
+    await initReadOnlyRPC();
 }
-
 
 function loadArchitectGateways() {
     const l1 = localStorage.getItem('sov_gate_l1');
@@ -3112,6 +3082,9 @@ async function handleAccountsChangedEvent(accounts) {
         document.getElementById('adminSector')?.classList.add('hidden');
         document.getElementById('robotPanel')?.classList.add('hidden');
         
+        if (typeof pollingInterval !== 'undefined' && pollingInterval) {
+            clearInterval(pollingInterval);
+        }
         clearAllTimers();
         
         provider = null;
@@ -3158,9 +3131,7 @@ function handleChainChangedEvent(newChainId) {
 const eip6963Providers = [];
 window.addEventListener("eip6963:announceProvider", (event) => {
     if (event.detail && event.detail.provider) {
-        if (!eip6963Providers.some(p => p.info.uuid === event.detail.info.uuid)) {
-            eip6963Providers.push(event.detail);
-        }
+        eip6963Providers.push(event.detail);
     }
 });
 window.dispatchEvent(new Event("eip6963:requestProvider"));
@@ -3209,7 +3180,7 @@ async function connectWallet(e) {
         } 
         else {
             appendLog("Secondary Route Engaged: Initializing WalletConnect V2.", "text-yellow-400");
-            const EthereumProviderCtor = window.WalletConnectProvider?.EthereumProvider || window.WalletConnectProvider;
+            const EthereumProviderCtor = window.WalletConnectProvider?.EthereumProvider;
             if (!EthereumProviderCtor) throw new Error("WalletConnect V2 Runtime Bundle unresolved.");
 
             if (!window.walletConnectProvider) {
@@ -3258,9 +3229,6 @@ async function connectWallet(e) {
             if (overlay) overlay.classList.add('hidden');
         }
         
-        if (provider) {
-            provider.removeAllListeners();
-        }
         provider = new ethers.BrowserProvider(rawProvider);
         signer = await provider.getSigner();
         
@@ -3497,7 +3465,8 @@ async function fetchAndDisplayProposals() {
                 stats.appendChild(valDiv); 
                 stats.appendChild(voteDiv);
 
-                const pct = Math.min((massVotesNum / targetVotes) * 100, 100).toFixed(1);
+                const pct = Math.min((massVotesNum / targetVotes) * 100, 
+                100).toFixed(1);
                 const progressContainer = document.createElement('div');
                 progressContainer.className = "w-full bg-slate-900 rounded-full h-1.5 mt-2 overflow-hidden";
                 const progressBar = document.createElement('div');
@@ -3697,7 +3666,6 @@ function isMemoryCeilingError(err) {
            m.includes('allocation') || m.includes('quota');
 }
 
-
 async function processDeedUploadAssignment(event) {
     if (!lockSystem()) return; 
 
@@ -3822,24 +3790,6 @@ async function buildAndUploadMetadata(e) {
     }
     if (!secureContract || !signer) { showNotification("Action suspended: Authenticate wallet signature first.", "error"); return; }
     
-    try {
-        const userAddress = await signer.getAddress();
-        let onChainArchitect = ethers.ZeroAddress;
-        let onChainOwner = ethers.ZeroAddress;
-        try {
-            onChainArchitect = await secureContract.architect();
-            onChainOwner = await secureContract.owner();
-        } catch (err) {}
-
-        if (userAddress.toLowerCase() !== onChainArchitect.toLowerCase() && userAddress.toLowerCase() !== onChainOwner.toLowerCase()) {
-            showNotification("SECURITY ENFORCEMENT: Architect privileges required.", "error");
-            return;
-        }
-    } catch (err) {
-        showNotification("System Warning: Failed to verify privileges.", "error");
-        return;
-    }
-
     const targetTokenId = document.getElementById('novaTokenId')?.value.trim() || globalSelectedTokenId;
     if (!targetTokenId) {
         showNotification("STRUCTURAL EXCEPTION: Please select a Token ID coordinate on the Matrix first.", "error");
@@ -3951,26 +3901,109 @@ async function buildAndUploadMetadata(e) {
     }
 }
 
-async function executeSetParams(e) {
-    if (!secureContract || !signer) { showNotification("Action suspended: Authenticate wallet signature first.", "error"); return; }
+async function closeNovaWarn(isConfirmed) {
+    const modal = document.getElementById('novaWarnModal');
+    if (modal) modal.classList.add('hidden');
     
-    try {
-        const userAddress = await signer.getAddress();
-        let onChainArchitect = ethers.ZeroAddress;
-        let onChainOwner = ethers.ZeroAddress;
-        try {
-            onChainArchitect = await secureContract.architect();
-            onChainOwner = await secureContract.owner();
-        } catch (err) {}
-
-        if (userAddress.toLowerCase() !== onChainArchitect.toLowerCase() && userAddress.toLowerCase() !== onChainOwner.toLowerCase()) {
-            showNotification("SECURITY ENFORCEMENT: Architect privileges required.", "error");
-            return;
-        }
-    } catch (err) {
-        showNotification("System Warning: Failed to verify privileges.", "error");
+    if (!isConfirmed) {
+        showNotification("Nova Consecration aborted by user.", "warning");
         return;
     }
+
+    const ackCheckbox = document.getElementById('novaAck');
+    if (ackCheckbox && !ackCheckbox.checked) {
+        showNotification("You must acknowledge the irreversible nature of this action.", "error");
+        return;
+    }
+
+    if (!secureContract || !signer) {
+        showNotification("Action suspended: Authenticate wallet signature first.", "error");
+        return;
+    }
+
+    const tokenId = document.getElementById('novaTokenId')?.value.trim();
+    const dna = document.getElementById('novaDnaInput')?.value.trim();
+    const videoUri = document.getElementById('novaVideoUri')?.value.trim();
+    const hiddenUri = document.getElementById('novaHiddenInput')?.value.trim();
+
+    if (!tokenId || !dna || !videoUri || !hiddenUri) {
+        showNotification("Incomplete parameters for Nova Consecration.", "error");
+        return;
+    }
+
+    const btn = document.getElementById('novaConfirmBtn');
+    if (btn) toggleButtonLoading(btn, true);
+
+    try {
+        const currentNovaFeeWei = await secureContract.novaFee();
+        const tokenIdBn = BigInt(tokenId);
+
+        const receipt = await runTx(
+            btn, `THE_SOVEREIGN_NOVA_#${tokenId}`, "THE_SOVEREIGN_NOVA",
+            [tokenIdBn.toString(), dna, videoUri, hiddenUri], { value: currentNovaFeeWei.toString() },
+            { manageLock: true, manageButton: false }
+        );
+
+        if (receipt) {
+            appendLog(`NOVA ASCENSION executed flawlessly on-chain for Node #${tokenId}.`, "text-emerald-400 font-bold");
+            showNotification("NOVA ASCENSION complete. Identity permanently anchored.", "success");
+            localStorage.removeItem('pending_nova_txid');
+            localStorage.removeItem('pending_nova_token');
+            if (typeof auditTokenFromLedger === 'function') await auditTokenFromLedger(tokenId);
+        }
+    } catch (err) {
+        const errorMsg = typeof decodeContractError === 'function' ? decodeContractError(err) : (err.message || "Unknown Error");
+        if (err.code === 4001 || errorMsg === "USER_CANCELLED_TX") {
+            showNotification("Transaction cancelled by user.", "warning");
+        } else {
+            showNotification(`Transaction failed: ${errorMsg}`, "error");
+        }
+    } finally {
+        if (btn) toggleButtonLoading(btn, false);
+    }
+}
+
+async function executeUpdateIdentity(btn) {
+    if (!secureContract || !signer) {
+        showNotification("Action suspended: Authenticate wallet signature first.", "error");
+        return;
+    }
+
+    const tokenId = document.getElementById('novaTokenId')?.value.trim();
+    const frontUri = document.getElementById('forgeFrontUri')?.value.trim() || currentLoadedMediaData.front || "";
+    const backUri = document.getElementById('forgeBackUri')?.value.trim() || currentLoadedMediaData.back || "";
+    const videoUri = document.getElementById('novaVideoUri')?.value.trim() || currentLoadedMediaData.video || "";
+
+    if (!tokenId) {
+        showNotification("Please select a Token ID coordinate.", "error");
+        return;
+    }
+
+    try {
+        const tokenIdBn = BigInt(tokenId);
+        const receipt = await runTx(
+            btn, `UPDATE_IDENTITY_#${tokenId}`, "updateIdentity",
+            [tokenIdBn.toString(), frontUri, backUri, videoUri], {},
+            { manageLock: true, manageButton: true }
+        );
+
+        if (receipt) {
+            appendLog(`Identity updated successfully for Node #${tokenId}.`, "text-emerald-400 font-bold");
+            showNotification("Identity updated successfully.", "success");
+            if (typeof auditTokenFromLedger === 'function') await auditTokenFromLedger(tokenId);
+        }
+    } catch (err) {
+        const errorMsg = typeof decodeContractError === 'function' ? decodeContractError(err) : (err.message || "Unknown Error");
+        if (err.code === 4001 || errorMsg === "USER_CANCELLED_TX") {
+            showNotification("Transaction cancelled by user.", "warning");
+        } else {
+            showNotification(`Transaction failed: ${errorMsg}`, "error");
+        }
+    }
+}
+
+async function executeSetParams(e) {
+    if (!secureContract || !signer) { showNotification("Action suspended: Authenticate wallet signature first.", "error"); return; }
 
     const mint = document.getElementById('inputAdminMint')?.value.trim();
     const nova = document.getElementById('inputAdminNova')?.value.trim();
@@ -3993,32 +4026,9 @@ async function executeSetParams(e) {
 
 async function executeSetBaseUri(e) {
     if (!secureContract || !signer) { showNotification("Action suspended: Authenticate wallet signature first.", "error"); return; }
-    
-    try {
-        const userAddress = await signer.getAddress();
-        let onChainArchitect = ethers.ZeroAddress;
-        let onChainOwner = ethers.ZeroAddress;
-        try {
-            onChainArchitect = await secureContract.architect();
-            onChainOwner = await secureContract.owner();
-        } catch (err) {}
-
-        if (userAddress.toLowerCase() !== onChainArchitect.toLowerCase() && userAddress.toLowerCase() !== onChainOwner.toLowerCase()) {
-            showNotification("SECURITY ENFORCEMENT: Architect privileges required.", "error");
-            return;
-        }
-    } catch (err) {
-        showNotification("System Warning: Failed to verify privileges.", "error");
-        return;
-    }
 
     let uri = document.getElementById('inputBaseUri')?.value.trim();
     if(!uri) return;
-    if (typeof isMaliciousURI === 'function' && isMaliciousURI(uri)) {
-        showNotification("STRUCTURAL EXCEPTION: Invalid URI Scheme detected.", "error");
-        appendLog("Base URI rejected pre-flight: malicious/invalid URI scheme.", "text-red-500 font-bold");
-        return;
-    }
 
     const receipt = await runTx(e, "SET_BASE_URI", "setBaseURI", [uri]);
     if (receipt) {
@@ -4028,24 +4038,6 @@ async function executeSetBaseUri(e) {
 
 async function executeExtractWETHRoyalty(e) {
     if (!secureContract || !signer) { showNotification("Action suspended: Authenticate wallet signature first.", "error"); return; }
-    
-    try {
-        const userAddress = await signer.getAddress();
-        let onChainArchitect = ethers.ZeroAddress;
-        let onChainOwner = ethers.ZeroAddress;
-        try {
-            onChainArchitect = await secureContract.architect();
-            onChainOwner = await secureContract.owner();
-        } catch (err) {}
-
-        if (userAddress.toLowerCase() !== onChainArchitect.toLowerCase() && userAddress.toLowerCase() !== onChainOwner.toLowerCase()) {
-            showNotification("SECURITY ENFORCEMENT: Architect privileges required.", "error");
-            return;
-        }
-    } catch (err) {
-        showNotification("System Warning: Failed to verify privileges.", "error");
-        return;
-    }
 
     const receipt = await runTx(e, "EXTRACT_WETH_ROYALTY", "extractWETHRoyalty", []);
     if (receipt) {
@@ -4056,24 +4048,6 @@ async function executeExtractWETHRoyalty(e) {
 
 async function executeContractPause(status, e) {
     if (!secureContract || !signer) { showNotification("Action suspended: Authenticate wallet signature first.", "error"); return; }
-    
-    try {
-        const userAddress = await signer.getAddress();
-        let onChainArchitect = ethers.ZeroAddress;
-        let onChainOwner = ethers.ZeroAddress;
-        try {
-            onChainArchitect = await secureContract.architect();
-            onChainOwner = await secureContract.owner();
-        } catch (err) {}
-
-        if (userAddress.toLowerCase() !== onChainArchitect.toLowerCase() && userAddress.toLowerCase() !== onChainOwner.toLowerCase()) {
-            showNotification("SECURITY ENFORCEMENT: Architect privileges required.", "error");
-            return;
-        }
-    } catch (err) {
-        showNotification("System Warning: Failed to verify privileges.", "error");
-        return;
-    }
 
     const receipt = await runTx(e, status ? "PAUSE" : "UNPAUSE", status ? "pause" : "unpause", []);
     if (receipt) {
@@ -4082,40 +4056,11 @@ async function executeContractPause(status, e) {
 }
 
 async function executeCreateProposal(e) {
-    if (!secureContract || !signer) { showNotification("Action suspended: Sovereign council credentials needed.", "error"); return; }
-
+    if (!lockSystem()) return;
     const btn = toggleButtonLoading(e, true);
+    
     try {
-        const userAddress = await signer.getAddress();
-        const userTokens = await secureContract.walletOfOwner(userAddress);
-        const primarchNodes = [1,2,3,4,5,6,7,8,9,10,50,100];
-        
-        let eligibleTokenId = 0;
-        let hasCouncil = false;
-        const currentEpoch = Math.floor(Date.now() / 1000);
-
-        for (let i = 0; i < userTokens.length; i++) {
-            const tid = Number(userTokens[i]);
-            const isCouncilNode = await secureContract.isCouncil(tid.toString()).catch(() => primarchNodes.includes(tid));
-            if (isCouncilNode) {
-                hasCouncil = true;
-                const lastTime = await secureContract.lastProposalTime(tid.toString());
-                const cooldownPeriod = await secureContract.PROPOSAL_COOLDOWN().catch(() => 604800n);
-                if (currentEpoch >= Number(lastTime) + Number(cooldownPeriod)) { 
-                    eligibleTokenId = tid;
-                    break;
-                }
-            }
-        }
-
-        if (!hasCouncil) {
-            showNotification("ACCESS DENIED: Proposal rights restricted to the 12 Golden Sovereign Council members.", "error");
-            return;
-        }
-        if (eligibleTokenId === 0) {
-            showNotification("COOLDOWN ACTIVE: All your council nodes are on cooldown. Please wait 7 days.", "warning");
-            return;
-        }
+        if (!secureContract || !signer) { showNotification("Action suspended: Sovereign council credentials needed.", "error"); return; }
 
         const rawAmount = document.getElementById('propAmountInput')?.value.trim();
         const target = document.getElementById('propTargetInput')?.value.trim();
@@ -4147,17 +4092,16 @@ async function executeCreateProposal(e) {
         
         const durationSeconds = BigInt(daysInt) * 86400n; 
 
-        const receipt = await runTx(btn, "CREATE_PROPOSAL", "createProposal", [amount.toString(), target, durationSeconds.toString()], {}, { manageButton: false });
+        const receipt = await runTx(e, "CREATE_PROPOSAL", "createProposal", [amount.toString(), target, durationSeconds.toString()], {}, { manageLock: false, manageButton: false });
         if (receipt) {
             appendLog("Executive financial directive introduced to the chamber for voting weight collection.", "text-emerald-400 font-bold");
             document.getElementById('propAmountInput').value = '';
             document.getElementById('propTargetInput').value = '';
             document.getElementById('propDurationInput').value = '';
         }
-    } catch (err) {
-        showNotification("System Warning: Failed to verify on-chain identity rights.", "error");
     } finally {
         if (btn) toggleButtonLoading(btn, false);
+        unlockSystem();
     }
 }
 
@@ -4178,42 +4122,9 @@ async function executeCastVote(btn) {
     const propId = BigInt(rawPropId);
     const tokenIdBn = BigInt(tokenId);
 
-    const primarchNodes = [1,2,3,4,5,6,7,8,9,10,50,100];
-    if (!primarchNodes.includes(Number(tokenId))) {
-        showNotification("ACCESS DENIED: Only Council Nodes possess voting rights.", "error");
-        return;
-    }
-
-    try {
-        const userAddress = await signer.getAddress();
-        const activeOwner = await secureContract.ownerOf(tokenIdBn.toString());
-        if (activeOwner.toLowerCase() !== userAddress.toLowerCase()) {
-            showNotification(`ACCESS DENIED: Current wallet does not own deed node #${tokenId}`, "error");
-            appendLog(`Vote cast blocked: Node #${tokenId} not owned by the active wallet.`, "text-red-500 font-bold");
-            return;
-        }
-    } catch (e) {
-        showNotification("System Warning: Failed to verify deed ownership. Node may not exist.", "error");
-        return;
-    }
-
     const receipt = await runTx(btn, `CAST_VOTE_#${rawPropId}`, "castVote", [propId.toString(), tokenIdBn.toString()]);
     if (receipt) {
         appendLog(`Matrix key node #${tokenId} has signed ratification code for Directive #${rawPropId}.`, "text-emerald-400 font-bold");
-    }
-}
-
-async function executeClaimReward(tokenId, btn) {
-    if (!secureContract || !signer) { showNotification("Action suspended: Authenticate wallet signature first.", "error"); return; }
-    try {
-        const receipt = await runTx(btn, `CLAIM_REWARD_#${tokenId}`, "claimReward", [tokenId.toString()]);
-        if (receipt) {
-            appendLog(`Dividend claimed successfully for Council Node #${tokenId}.`, "text-emerald-400 font-bold");
-            showNotification("Dividend claimed successfully.", "success");
-            await auditTokenFromLedger(tokenId); 
-        }
-    } catch (err) {
-        console.error(err);
     }
 }
 
@@ -4235,11 +4146,16 @@ function toggleForgeButtonState() {
 }
 
 async function triggerForge(type, e) {
-    if (!secureContract) { showNotification("Action suspended: Authenticate wallet signature first.", "error"); return; }
-
+    if (!lockSystem()) return;
+    const btn = toggleButtonLoading(e, true);
+    let previewObjectUrl = null;
+    let progress = null;
+    
     try {
+        if (!secureContract) { showNotification("Action suspended: Authenticate wallet signature first.", "error"); return; }
+
         const isSurge = await checkGasSurge();
-        if (isSurge) { return; }
+        if (isSurge) return;
         
         const targetTokenId = globalSelectedTokenId;
         if (!targetTokenId) {
@@ -4263,6 +4179,11 @@ async function triggerForge(type, e) {
             return;
         }
 
+        if (typeof isMaliciousURI === 'function' && isMaliciousURI(existingFrontUri)) {
+            showNotification("SECURITY ENFORCEMENT: Malicious URI detected in Manifest.", "error");
+            return;
+        }
+
         const currentMintPriceWei = await secureContract.mintPrice();
 
         const file = await promptUserForFile('image/*,video/*');
@@ -4271,103 +4192,93 @@ async function triggerForge(type, e) {
             return;
         }
 
-        const blobToInspect = file; 
-            
-        const previewObjectUrl = URL.createObjectURL(blobToInspect);
+        const env = detectUploadEnvironment();
+        const isVideo = file.type.startsWith('video/');
+
+        const guard = evaluateIosSafeguard(env, file, isVideo);
+        if (!guard.ok) {
+            appendLog(`Payload blocked by iOS safe-guard: ${sanitizeForDOM(guard.message)}`, "text-red-500 font-bold");
+            showNotification(sanitizeForDOM(guard.message), "error");
+            return;
+        }
+
+        previewObjectUrl = URL.createObjectURL(file);
         const dnaField = document.getElementById('novaDnaInput')?.value.trim() || "N/A";
         let isConfirmed = false;
         
-        try {
-            if (typeof requestMediaConfirmation === "function") {
-                isConfirmed = await requestMediaConfirmation(previewObjectUrl, dnaField, file.type);
-            } else { isConfirmed = true; }
-        } finally {
-            URL.revokeObjectURL(previewObjectUrl); 
+        if (typeof requestMediaConfirmation === "function") {
+            isConfirmed = await requestMediaConfirmation(previewObjectUrl, dnaField, file.type);
+        } else { 
+            isConfirmed = true; 
         }
         
-        if (!isConfirmed) { return; }
+        if (!isConfirmed) return;
 
-        if (!lockSystem()) return;
-        const btn = toggleButtonLoading(e, true);
-        let progress = null;
+        if (!irys) throw new Error("Irys SDK Bridge is offline. Establish wallet connection first.");
 
-        try {
-            if (!irys) throw new Error("Irys SDK Bridge is offline. Establish wallet connection first.");
+        appendLog(`Inscribing back-end media onto permanent Irys Datachain...`, "text-blue-400");
+        const tags = [{ name: "Content-Type", value: file.type }];
+        
+        progress = createProgressController(file.size);
+        if (progress) progress.show();
+        
+        const response = await executeIrysUpload(file, tags, true, progress); 
+        const backMediaTxId = response.data ? response.data.id : response.id; 
+        
+        if (progress) progress.complete();
 
-            appendLog(`Inscribing back-end media onto permanent Irys Datachain...`, "text-blue-400");
-            const tags = [{ name: "Content-Type", value: file.type }];
-            
-            progress = createProgressController(file.size);
-            if (progress) progress.show();
-            
-            const response = await executeIrysUpload(file, tags, true, progress); 
-            const backMediaTxId = response.data ? response.data.id : response.id; 
-            
-            if (progress) progress.complete();
+        appendLog(`Back-end media successfully anchored: ${sanitizeForDOM(backMediaTxId)}`, "text-emerald-400 font-bold");
 
-            appendLog(`Back-end media successfully anchored: ${sanitizeForDOM(backMediaTxId)}`, "text-emerald-400 font-bold");
+        const backUriField = document.getElementById('forgeBackUri');
+        if (backUriField) backUriField.value = backMediaTxId;
 
-            const backUriField = document.getElementById('forgeBackUri');
-            if (backUriField) backUriField.value = backMediaTxId;
+        appendLog(`Initiating THE SOVEREIGN AWAKENING sequence on-chain at ${ethers.formatEther(currentMintPriceWei)} ETH...`, "text-yellow-400");
+        
+        const tokenIdBn = BigInt(targetTokenId);
 
-            appendLog(`Initiating THE SOVEREIGN AWAKENING sequence on-chain at ${ethers.formatEther(currentMintPriceWei)} ETH...`, "text-yellow-400");
-            
-            const tokenIdBn = BigInt(targetTokenId);
+        const receipt = await runTx(
+            e, `SOVEREIGN_REBIRTH_#${targetTokenId}`, "SOVEREIGN_REBIRTH",
+            [tokenIdBn.toString(), existingFrontUri, backMediaTxId], { value: currentMintPriceWei.toString() },
+            { manageLock: false, manageButton: false }
+        );
 
-            const receipt = await runTx(
-                e, `SOVEREIGN_REBIRTH_#${targetTokenId}`, "SOVEREIGN_REBIRTH",
-                [tokenIdBn.toString(), existingFrontUri, backMediaTxId], { value: currentMintPriceWei.toString() },
-                { manageLock: false, manageButton: false }
-            );
-
-            if (receipt) {
-                if (typeof GLOBAL_NODE_CACHE !== 'undefined' && GLOBAL_NODE_CACHE?.clear) GLOBAL_NODE_CACHE.clear();
-                appendLog(`Sovereign REBIRTH executed flawlessly on-chain.`, "text-emerald-400 font-bold");
-                showNotification("THE SOVEREIGN AWAKENING complete. Dual-identity anchored.", "success");
-            }
-        } catch (err) {
-            const errorMsg = typeof decodeContractError === 'function' ? decodeContractError(err) : (err.message || "Unknown Error");
-            const sanitizedMsg = sanitizeForDOM(errorMsg);
-
-            if (err.code === 4001 || sanitizedMsg === "USER_CANCELLED_TX" || err.message?.toLowerCase().includes("user rejected") || err.message?.toLowerCase().includes("declined")) {
-                appendLog("Forge execution cancelled by operator signature denial.", "text-yellow-500");
-                showNotification("Transaction cancelled by user.", "warning");
-            } else if (err.code === "UNPREDICTABLE_GAS_LIMIT" || err.message?.toLowerCase().includes("cannot estimate gas")) {
-                appendLog("Network rejected estimateGas: Execution will likely fail on-chain.", "text-red-500 font-bold");
-                showNotification("Gas estimation failed (Contract Revert Risk).", "error");
-            } else {
-                appendLog(`Execution aborted: ${sanitizedMsg}`, "text-red-500");
-                showNotification("Transaction failed. Check console/logs for details.", "error");
-            }
-        } finally {
-            if (progress) progress.hide();
-            if (btn) toggleButtonLoading(btn, false);
-            unlockSystem();
+        if (receipt) {
+            if (typeof GLOBAL_NODE_CACHE !== 'undefined' && GLOBAL_NODE_CACHE?.clear) GLOBAL_NODE_CACHE.clear();
+            appendLog(`Sovereign REBIRTH executed flawlessly on-chain.`, "text-emerald-400 font-bold");
+            showNotification("THE SOVEREIGN AWAKENING complete. Dual-identity anchored.", "success");
         }
-    } catch (criticalErr) {
-        appendLog(`Critical Error in triggerForge: ${criticalErr?.message || criticalErr}`, "text-red-500");
+    } catch (err) {
+        const errorMsg = typeof decodeContractError === 'function' ? decodeContractError(err) : (err.message || "Unknown Error");
+        const sanitizedMsg = sanitizeForDOM(errorMsg);
+
+        if (err.code === 4001 || sanitizedMsg === "USER_CANCELLED_TX" || err.message?.toLowerCase().includes("user rejected") || err.message?.toLowerCase().includes("declined")) {
+            appendLog("Forge execution cancelled by operator signature denial.", "text-yellow-500");
+            showNotification("Transaction cancelled by user.", "warning");
+        } else if (err.code === "UNPREDICTABLE_GAS_LIMIT" || err.message?.toLowerCase().includes("cannot estimate gas")) {
+            appendLog("Network rejected estimateGas: Execution will likely fail on-chain.", "text-red-500 font-bold");
+            showNotification("Gas estimation failed (Contract Revert Risk).", "error");
+        } else {
+            appendLog(`Execution aborted: ${sanitizedMsg}`, "text-red-500");
+            showNotification("Transaction failed. Check console/logs for details.", "error");
+        }
+    } finally {
+        if (previewObjectUrl) URL.revokeObjectURL(previewObjectUrl);
+        if (progress) progress.hide();
+        if (btn) toggleButtonLoading(btn, false);
+        unlockSystem();
     }
 }
 
 async function executeArchitectMint(e) {
-    if (!secureContract || !signer) { showNotification("Action suspended: Authenticate wallet signature first.", "error"); return; }
-
+    if (!lockSystem()) return;
+    const btn = toggleButtonLoading(e, true);
+    let previewObjectUrl = null;
+    
     try {
-        const userAddress = await signer.getAddress();
-        let onChainArchitect = ethers.ZeroAddress;
-        let onChainOwner = ethers.ZeroAddress;
-        try {
-            onChainArchitect = await secureContract.architect();
-            onChainOwner = await secureContract.owner();
-        } catch (err) {}
-
-        if (userAddress.toLowerCase() !== onChainArchitect.toLowerCase() && userAddress.toLowerCase() !== onChainOwner.toLowerCase()) {
-            showNotification("SECURITY ENFORCEMENT: Architect privileges required.", "error");
-            return;
-        }
+        if (!secureContract || !signer) { showNotification("Action suspended: Authenticate wallet signature first.", "error"); return; }
 
         const isSurge = await checkGasSurge();
-        if (isSurge) { return; }
+        if (isSurge) return;
 
         const targetTokenId = globalSelectedTokenId;
         const rawId = document.getElementById('novaTokenId')?.value.trim() || targetTokenId;
@@ -4399,99 +4310,97 @@ async function executeArchitectMint(e) {
             return;
         }
 
+        if (typeof isMaliciousURI === 'function' && isMaliciousURI(existingFrontUri)) {
+            showNotification("SECURITY ENFORCEMENT: Malicious URI detected in Manifest.", "error");
+            return;
+        }
+
         const file = await promptUserForFile('image/*,video/*');
         if (!file) {
             appendLog("[SYSTEM] File selection cancelled. Architect system unlocked.", "text-yellow-500");
             return;
         }
 
-        const previewObjectUrl = URL.createObjectURL(file);
+        const env = detectUploadEnvironment();
+        const isVideo = file.type.startsWith('video/');
+
+        const guard = evaluateIosSafeguard(env, file, isVideo);
+        if (!guard.ok) {
+            appendLog(`Payload blocked by iOS safe-guard: ${sanitizeForDOM(guard.message)}`, "text-red-500 font-bold");
+            showNotification(sanitizeForDOM(guard.message), "error");
+            return;
+        }
+
+        previewObjectUrl = URL.createObjectURL(file);
         const dnaField = "ARCHITECT MINT OVERRIDE";
         let isConfirmed = false;
         
-        try {
-            if (typeof requestMediaConfirmation === "function") {
-                isConfirmed = await requestMediaConfirmation(previewObjectUrl, dnaField, file.type);
-            } else { isConfirmed = true; }
-        } finally {
-            URL.revokeObjectURL(previewObjectUrl);
+        if (typeof requestMediaConfirmation === "function") {
+            isConfirmed = await requestMediaConfirmation(previewObjectUrl, dnaField, file.type);
+        } else { 
+            isConfirmed = true; 
         }
         
-        if (!isConfirmed) { return; }
+        if (!isConfirmed) return;
 
-        if (!lockSystem()) return;
-        const btn = toggleButtonLoading(e, true);
+        if (!irys) throw new Error("Irys SDK Bridge is offline.");
+
+        appendLog(`Inscribing Architect's back-end media onto permanent Irys Datachain...`, "text-blue-400");
+        const tags = [{ name: "Content-Type", value: file.type }];
+        const response = await executeIrysUpload(file, tags, true); 
+        const backMediaTxId = response.data ? response.data.id : response.id; 
+
+        appendLog(`Back-end media successfully anchored: ${sanitizeForDOM(backMediaTxId)}`, "text-emerald-400 font-bold");
         
-        try {
-            if (!irys) throw new Error("Irys SDK Bridge is offline.");
+        const backUriField = document.getElementById('forgeBackUri');
+        if (backUriField) backUriField.value = backMediaTxId;
 
-            appendLog(`Inscribing Architect's back-end media onto permanent Irys Datachain...`, "text-blue-400");
-            const tags = [{ name: "Content-Type", value: file.type }];
-            const response = await executeIrysUpload(file, tags, true); 
-            const backMediaTxId = response.data ? response.data.id : response.id; 
+        appendLog(`Initiating ARCHITECT_MINT for Node #${tokenId} to ${targetAddress.slice(0,6)}...`, "text-yellow-400");
+        const tokenIdBn = BigInt(tokenId);
 
-            appendLog(`Back-end media successfully anchored: ${sanitizeForDOM(backMediaTxId)}`, "text-emerald-400 font-bold");
-            
-            const backUriField = document.getElementById('forgeBackUri');
-            if (backUriField) backUriField.value = backMediaTxId;
+        const receipt = await runTx(
+            e, `ARCHITECT_MINT_#${tokenId}`, "ARCHITECT_MINT",
+            [tokenIdBn.toString(), targetAddress, existingFrontUri, backMediaTxId], {},
+            { manageLock: false, manageButton: false }
+        );
 
-            appendLog(`Initiating ARCHITECT_MINT for Node #${tokenId} to ${targetAddress.slice(0,6)}...`, "text-yellow-400");
-            const tokenIdBn = BigInt(tokenId);
-
-            const receipt = await runTx(
-                e, `ARCHITECT_MINT_#${tokenId}`, "ARCHITECT_MINT",
-                [tokenIdBn.toString(), targetAddress, existingFrontUri, backMediaTxId], {},
-                { manageLock: false, manageButton: false }
-            );
-
-            if (receipt) {
-                if (typeof GLOBAL_NODE_CACHE !== 'undefined' && GLOBAL_NODE_CACHE?.clear) GLOBAL_NODE_CACHE.clear();
-                if (typeof auditTokenFromLedger === 'function') await auditTokenFromLedger(tokenId);
-                appendLog(`ARCHITECT MINT EXECUTED FLAWLESSLY ON-CHAIN.`, "text-emerald-400 font-bold");
-                showNotification(`Architect Mint complete. Rights transferred to ${targetAddress.slice(0,6)} successfully!`, "success");
-            }
-        } catch (err) {
-            const errorMsg = typeof decodeContractError === 'function' ? decodeContractError(err) : (err.message || "Unknown Error");
-            const sanitizedMsg = sanitizeForDOM(errorMsg);
-
-            if (err.code === 4001 || sanitizedMsg === "USER_CANCELLED_TX" || err.message?.toLowerCase().includes("user rejected") || err.message?.toLowerCase().includes("declined")) {
-                appendLog("Architect mint sequence aborted due to signature denial.", "text-yellow-500");
-                showNotification("Transaction cancelled by user.", "warning");
-            } else if (err.code === "UNPREDICTABLE_GAS_LIMIT" || err.message?.toLowerCase().includes("cannot estimate gas")) {
-                appendLog("Network rejected estimateGas: Execution will likely fail on-chain.", "text-red-500 font-bold");
-                showNotification("Gas estimation failed (Contract Revert Risk).", "error");
-            } else {
-                appendLog(`Execution aborted: ${sanitizedMsg}`, "text-red-500");
-                showNotification(`Transaction failed: ${sanitizedMsg}`, "error");
-            }
-        } finally {
-            if (btn) toggleButtonLoading(btn, false);
-            unlockSystem();
+        if (receipt) {
+            if (typeof GLOBAL_NODE_CACHE !== 'undefined' && GLOBAL_NODE_CACHE?.clear) GLOBAL_NODE_CACHE.clear();
+            if (typeof auditTokenFromLedger === 'function') await auditTokenFromLedger(tokenId);
+            appendLog(`ARCHITECT MINT EXECUTED FLAWLESSLY ON-CHAIN.`, "text-emerald-400 font-bold");
+            showNotification(`Architect Mint complete. Rights transferred to ${targetAddress.slice(0,6)} successfully!`, "success");
         }
-    } catch (criticalErr) {
-        appendLog(`Critical Error: ${criticalErr?.message || criticalErr}`, "text-red-500");
+    } catch (err) {
+        const errorMsg = typeof decodeContractError === 'function' ? decodeContractError(err) : (err.message || "Unknown Error");
+        const sanitizedMsg = sanitizeForDOM(errorMsg);
+
+        if (err.code === 4001 || sanitizedMsg === "USER_CANCELLED_TX" || err.message?.toLowerCase().includes("user rejected") || err.message?.toLowerCase().includes("declined")) {
+            appendLog("Architect mint sequence aborted due to signature denial.", "text-yellow-500");
+            showNotification("Transaction cancelled by user.", "warning");
+        } else if (err.code === "UNPREDICTABLE_GAS_LIMIT" || err.message?.toLowerCase().includes("cannot estimate gas")) {
+            appendLog("Network rejected estimateGas: Execution will likely fail on-chain.", "text-red-500 font-bold");
+            showNotification("Gas estimation failed (Contract Revert Risk).", "error");
+        } else {
+            appendLog(`Execution aborted: ${sanitizedMsg}`, "text-red-500");
+            showNotification(`Transaction failed: ${sanitizedMsg}`, "error");
+        }
+    } finally {
+        if (previewObjectUrl) URL.revokeObjectURL(previewObjectUrl);
+        if (btn) toggleButtonLoading(btn, false);
+        unlockSystem();
     }
 }
 
 async function executeArchitectRemint(e) {
-    if (!secureContract || !signer) { showNotification("Action suspended: Authenticate wallet signature first.", "error"); return; }
-
+    if (!lockSystem()) return;
+    const btn = toggleButtonLoading(e, true);
+    let previewObjectUrl = null;
+    
     try {
-        const userAddress = await signer.getAddress();
-        let onChainArchitect = ethers.ZeroAddress;
-        let onChainOwner = ethers.ZeroAddress;
-        try {
-            onChainArchitect = await secureContract.architect();
-            onChainOwner = await secureContract.owner();
-        } catch (err) {}
-
-        if (userAddress.toLowerCase() !== onChainArchitect.toLowerCase() && userAddress.toLowerCase() !== onChainOwner.toLowerCase()) {
-            showNotification("SECURITY ENFORCEMENT: Architect privileges required.", "error");
-            return;
-        }
+        if (!secureContract || !signer) { showNotification("Action suspended: Authenticate wallet signature first.", "error"); return; }
 
         const isSurge = await checkGasSurge();
-        if (isSurge) { return; }
+        if (isSurge) return;
         
         const targetTokenId = globalSelectedTokenId;
         const rawId = document.getElementById('novaTokenId')?.value.trim() || targetTokenId;
@@ -4517,6 +4426,11 @@ async function executeArchitectRemint(e) {
             return;
         }
 
+        if (typeof isMaliciousURI === 'function' && isMaliciousURI(existingFrontUri)) {
+            showNotification("SECURITY ENFORCEMENT: Malicious URI detected in Manifest.", "error");
+            return;
+        }
+
         const currentMintPriceWei = await secureContract.mintPrice();
 
         const file = await promptUserForFile('image/*,video/*');
@@ -4524,239 +4438,105 @@ async function executeArchitectRemint(e) {
             return;
         }
 
-        const previewObjectUrl = URL.createObjectURL(file);
+        const env = detectUploadEnvironment();
+        const isVideo = file.type.startsWith('video/');
+
+        const guard = evaluateIosSafeguard(env, file, isVideo);
+        if (!guard.ok) {
+            appendLog(`Payload blocked by iOS safe-guard: ${sanitizeForDOM(guard.message)}`, "text-red-500 font-bold");
+            showNotification(sanitizeForDOM(guard.message), "error");
+            return;
+        }
+
+        previewObjectUrl = URL.createObjectURL(file);
         let isConfirmed = false;
         
-        try {
-            if (typeof requestMediaConfirmation === "function") {
-                isConfirmed = await requestMediaConfirmation(previewObjectUrl, "SOVEREIGN REMINT OVERRIDE", file.type);
-            } else { isConfirmed = true; }
-        } finally {
-            URL.revokeObjectURL(previewObjectUrl);
+        if (typeof requestMediaConfirmation === "function") {
+            isConfirmed = await requestMediaConfirmation(previewObjectUrl, "SOVEREIGN REMINT OVERRIDE", file.type);
+        } else { 
+            isConfirmed = true; 
         }
         
-        if (!isConfirmed) { return; }
+        if (!isConfirmed) return;
 
-        if (!lockSystem()) return;
-        const btn = toggleButtonLoading(e, true);
+        if (!irys) throw new Error("Irys SDK Bridge is offline.");
+
+        appendLog(`Inscribing back-end media onto permanent Irys Datachain...`, "text-blue-400");
+        const tags = [{ name: "Content-Type", value: file.type }];
+        const response = await executeIrysUpload(file, tags, true); 
+        const backMediaTxId = response.data ? response.data.id : response.id; 
+
+        const backUriField = document.getElementById('forgeBackUri');
+        if (backUriField) backUriField.value = backMediaTxId;
+
+        appendLog(`Initiating SOVEREIGN_REMINT on Smart Contract at ${ethers.formatEther(currentMintPriceWei)} ETH...`, "text-yellow-400");
         
-        try {
-            if (!irys) throw new Error("Irys SDK Bridge is offline.");
+        const tokenIdBn = BigInt(tokenId);
 
-            appendLog(`Inscribing back-end media onto permanent Irys Datachain...`, "text-blue-400");
-            const tags = [{ name: "Content-Type", value: file.type }];
-            const response = await executeIrysUpload(file, tags, true); 
-            const backMediaTxId = response.data ? response.data.id : response.id; 
+        const receipt = await runTx(
+            e, `SOVEREIGN_REMINT_#${tokenId}`, "SOVEREIGN_REMINT",
+            [tokenIdBn.toString(), existingFrontUri, backMediaTxId], { value: currentMintPriceWei.toString() },
+            { manageLock: false, manageButton: false }
+        );
 
-            const backUriField = document.getElementById('forgeBackUri');
-            if (backUriField) backUriField.value = backMediaTxId;
-
-            appendLog(`Initiating SOVEREIGN_REMINT on Smart Contract at ${ethers.formatEther(currentMintPriceWei)} ETH...`, "text-yellow-400");
-            
-            const tokenIdBn = BigInt(tokenId);
-
-            const receipt = await runTx(
-                e, `SOVEREIGN_REMINT_#${tokenId}`, "SOVEREIGN_REMINT",
-                [tokenIdBn.toString(), existingFrontUri, backMediaTxId], { value: currentMintPriceWei.toString() },
-                { manageLock: false, manageButton: false }
-            );
-
-            if (receipt) {
-                if (typeof GLOBAL_NODE_CACHE !== 'undefined' && GLOBAL_NODE_CACHE?.clear) GLOBAL_NODE_CACHE.clear();
-                if (typeof auditTokenFromLedger === 'function') await auditTokenFromLedger(tokenId);
-                await syncActiveMatrixNodes(); 
-                appendLog(`Sovereign REMINT executed flawlessly on-chain.`, "text-emerald-400 font-bold");
-                showNotification("Reminting complete. Deed reconstructed and pulled back into the system!", "success");
-            }
-        } catch (err) {
-            const errorMsg = typeof decodeContractError === 'function' ? decodeContractError(err) : (err.message || "Unknown Error");
-            const sanitizedMsg = sanitizeForDOM(errorMsg);
-
-            if (err.code === 4001 || sanitizedMsg === "USER_CANCELLED_TX" || err.message?.toLowerCase().includes("user rejected") || err.message?.toLowerCase().includes("declined")) {
-                appendLog("Architect Remint aborted by signature denial.", "text-yellow-500");
-                showNotification("Transaction cancelled by user.", "warning");
-            } else if (err.code === "UNPREDICTABLE_GAS_LIMIT" || err.message?.toLowerCase().includes("cannot estimate gas")) {
-                appendLog("Network rejected estimateGas: Execution will likely fail on-chain.", "text-red-500 font-bold");
-                showNotification("Gas estimation failed (Contract Revert Risk).", "error");
-            } else {
-                appendLog(`Execution aborted: ${sanitizedMsg}`, "text-red-500");
-                showNotification(`Transaction failed: ${sanitizedMsg}`, "error");
-            }
-        } finally {
-            if (btn) toggleButtonLoading(btn, false);
-            unlockSystem();
+        if (receipt) {
+            if (typeof GLOBAL_NODE_CACHE !== 'undefined' && GLOBAL_NODE_CACHE?.clear) GLOBAL_NODE_CACHE.clear();
+            if (typeof auditTokenFromLedger === 'function') await auditTokenFromLedger(tokenId);
+            await syncActiveMatrixNodes(); 
+            appendLog(`Sovereign REMINT executed flawlessly on-chain.`, "text-emerald-400 font-bold");
+            showNotification("Reminting complete. Deed reconstructed and pulled back into the system!", "success");
         }
-    } catch (criticalErr) {
-        appendLog(`Critical Error: ${criticalErr?.message || criticalErr}`, "text-red-500");
-    }
-}
+    } catch (err) {
+        const errorMsg = typeof decodeContractError === 'function' ? decodeContractError(err) : (err.message || "Unknown Error");
+        const sanitizedMsg = sanitizeForDOM(errorMsg);
 
-function closeNovaWarn(isConfirmed) {
-    const modal = document.getElementById('novaWarnModal');
-    if (modal) modal.classList.add('hidden');
-
-    if (isConfirmed) {
-        const ackCheckbox = document.getElementById('novaAck');
-        if (ackCheckbox && !ackCheckbox.checked) {
-            showNotification("EXCEPTION: You must acknowledge the risk conditions before proceeding.", "error");
-            if (modal) modal.classList.remove('hidden');
-            return;
+        if (err.code === 4001 || sanitizedMsg === "USER_CANCELLED_TX" || err.message?.toLowerCase().includes("user rejected") || err.message?.toLowerCase().includes("declined")) {
+            appendLog("Architect Remint aborted by signature denial.", "text-yellow-500");
+            showNotification("Transaction cancelled by user.", "warning");
+        } else if (err.code === "UNPREDICTABLE_GAS_LIMIT" || err.message?.toLowerCase().includes("cannot estimate gas")) {
+            appendLog("Network rejected estimateGas: Execution will likely fail on-chain.", "text-red-500 font-bold");
+            showNotification("Gas estimation failed (Contract Revert Risk).", "error");
+        } else {
+            appendLog(`Execution aborted: ${sanitizedMsg}`, "text-red-500");
+            showNotification(`Transaction failed: ${sanitizedMsg}`, "error");
         }
-        const fakeEvent = { currentTarget: document.getElementById('novaConfirmBtn') };
-        triggerIdentityNova(fakeEvent);
-    } else {
-        localStorage.removeItem('pending_nova_txid');
-        localStorage.removeItem('pending_nova_token');
-        appendLog("Pending Nova state cleared by user abort.", "text-yellow-500");
-    }
-}
-
-async function triggerIdentityNova(e) {
-    if (!secureContract || !signer) { 
-        showNotification("Action suspended: Authenticate wallet signature first to invoke the NOVA process.", "error"); 
-        return; 
-    }
-
-    let id, dna, video, hidden, tokenId, fee;
-    try {
-        const userAddress = await signer.getAddress();
-        const rawId = document.getElementById('novaTokenId')?.value.trim();
-        tokenId = validateTokenRange(rawId);
-        if(!tokenId) return;
-        id = BigInt(tokenId);
-
-        try {
-            const activeOwner = await secureContract.ownerOf(id.toString());
-            if (activeOwner.toLowerCase() !== userAddress.toLowerCase()) {
-                showNotification("SECURITY ENFORCEMENT: You do not own this specific deed node. Only the owner can execute NOVA.", "error");
-                return;
-            }
-        } catch (err) {
-            showNotification("SECURITY ENFORCEMENT: Node does not exist or ownership verification failed.", "error");
-            return;
-        }
-
-        dna = document.getElementById('novaDnaInput')?.value.trim() || "";
-        video = document.getElementById('novaVideoUri')?.value.trim() || "";
-        hidden = document.getElementById('novaHiddenInput')?.value.trim() || "";
-        
-        const isDnaValid = typeof isValidSovereignInput === 'function' ? isValidSovereignInput(dna) : true;
-        
-        if (!isDnaValid || (typeof isMaliciousURI === 'function' && (isMaliciousURI(video) || isMaliciousURI(hidden)))) {
-            appendLog("SECURITY ALERT: Contaminated identity structure or malicious URI detected. NOVA ritual suspended.", "text-red-500 font-bold");
-            showNotification("ACCESS DENIED: Contaminated identity structure. Code injection blocked.", "error");
-            return;
-        }
-
-        fee = await secureContract.novaFee();
-    } catch(globalErr) {
-        console.error(globalErr);
-        showNotification("System Warning: Failed to prepare NOVA ritual.", "error");
-        return;
-    }
-
-    const receipt = await runTx(e, `SOVEREIGN_NOVA_#${tokenId}`, "THE_SOVEREIGN_NOVA", [id.toString(), dna, video, hidden], { value: fee.toString() });
-    if (receipt) {
-        localStorage.removeItem('pending_nova_txid');
-        localStorage.removeItem('pending_nova_token');
-        
-        GLOBAL_NODE_CACHE.delete(id.toString());
-        if ('caches' in window) {
-            try { await caches.delete('eter-v6-asset-vault'); } catch(e) {}
-        }
-        if (typeof auditTokenFromLedger === 'function') await auditTokenFromLedger(tokenId, true); 
-        appendLog(`THE SOVEREIGN NOVA: High ascension ritual over node element #${tokenId} integrated permanently into on-chain forensics!`, "text-blue-400 font-bold");
-    }
-}
-
-async function executeUpdateIdentity(e) {
-    if (!secureContract || !signer) { 
-        showNotification("Action suspended: Authenticate wallet signature first.", "error"); 
-        return; 
-    }
-
-    let tokenId, frontUri, backUri, videoUri;
-    try {
-        const userAddress = await signer.getAddress();
-        const rawId = document.getElementById('novaTokenId')?.value.trim();
-        tokenId = validateTokenRange(rawId);
-        if(!tokenId) return;
-
-        try {
-            const isSanctified = await secureContract.isSanctified(tokenId.toString());
-            if (!isSanctified) {
-                showNotification("SECURITY ENFORCEMENT: Node has not achieved NOVA ascension. Sanctify first.", "error");
-                return;
-            }
-            const activeOwner = await secureContract.ownerOf(tokenId.toString());
-            if (activeOwner.toLowerCase() !== userAddress.toLowerCase()) {
-                showNotification("SECURITY ENFORCEMENT: You do not own this specific deed node.", "error");
-                return;
-            }
-        } catch (err) {
-            showNotification("SECURITY ENFORCEMENT: Node does not exist or ownership verification failed.", "error");
-            return;
-        }
-
-        frontUri = document.getElementById('forgeFrontUri')?.value.trim() || currentLoadedMediaData.front || "";
-        backUri = document.getElementById('forgeBackUri')?.value.trim() || currentLoadedMediaData.back || "";
-        videoUri = document.getElementById('novaVideoUri')?.value.trim() || currentLoadedMediaData.video || "";
-
-        if (typeof isMaliciousURI === 'function' && (isMaliciousURI(frontUri) || isMaliciousURI(backUri) || isMaliciousURI(videoUri))) {
-            appendLog("SECURITY ALERT: Unsafe URI payload detected and neutralized.", "text-red-500 font-bold");
-            showNotification("ACCESS DENIED: Malicious URI detected. Identity update suspended.", "error");
-            return;
-        }
-    } catch(globalErr) {
-        console.error(globalErr);
-        showNotification("System Warning: Failed to prepare identity update.", "error");
-        return;
-    }
-
-    const receipt = await runTx(e, `UPDATE_IDENTITY_#${tokenId}`, "updateIdentity", [tokenId.toString(), frontUri, backUri, videoUri]);
-    if (receipt) {
-        GLOBAL_NODE_CACHE.delete(tokenId.toString());
-        if ('caches' in window) {
-            try { await caches.delete('eter-v6-asset-vault'); } catch(e) {}
-        }
-        if (typeof auditTokenFromLedger === 'function') await auditTokenFromLedger(tokenId, true);
-        appendLog(`Exempt payload reference alterations applied successfully over node element #${tokenId}.`, "text-emerald-400");
+    } finally {
+        if (previewObjectUrl) URL.revokeObjectURL(previewObjectUrl);
+        if (btn) toggleButtonLoading(btn, false);
+        unlockSystem();
     }
 }
 
 async function executeSovereignSupport(e) {
-    if (!secureContract || !signer) { showNotification("Action suspended: Authenticate wallet signature first.", "error"); return; }
+    if (!lockSystem()) return;
+    const btn = toggleButtonLoading(e, true);
     
-    const rawId = document.getElementById('settleTokenId')?.value.trim();
-    const tokenId = validateTokenRange(rawId);
-    if(!tokenId) return;
-
     try {
-        const userAddress = await signer.getAddress();
-        const activeOwner = await secureContract.ownerOf(BigInt(tokenId).toString());
-        if (activeOwner.toLowerCase() !== userAddress.toLowerCase()) {
-            showNotification("SECURITY ENFORCEMENT: You do not own this specific deed node.", "error");
-            return;
+        if (!secureContract || !signer) { showNotification("Action suspended: Authenticate wallet signature first.", "error"); return; }
+        
+        const rawId = document.getElementById('settleTokenId')?.value.trim();
+        const tokenId = validateTokenRange(rawId);
+        if(!tokenId) return;
+
+        let confirmBurn = true;
+        if (typeof requestActionConfirmation === "function") {
+            confirmBurn = await requestActionConfirmation(
+                "☠ CONFIRM IMMOLATION",
+                `ยืนยันการเผาทำลาย Node #${tokenId} ใช่หรือไม่? (ไม่สามารถย้อนกลับได้)`
+            );
         }
-    } catch (err) {
-        showNotification("System Warning: Failed to verify deed ownership.", "error");
-        return;
-    }
+        if(!confirmBurn) return;
 
-    let confirmBurn = true;
-    if (typeof requestActionConfirmation === "function") {
-        confirmBurn = await requestActionConfirmation(
-            "☠ CONFIRM IMMOLATION",
-            `ยืนยันการเผาทำลาย Node #${tokenId} ใช่หรือไม่? (ไม่สามารถย้อนกลับได้)`
-        );
-    }
-    if(!confirmBurn) return;
-
-    const receipt = await runTx(e, `SOVEREIGN_SUPPORT_#${tokenId}`, "sovereignSupport", [tokenId.toString()]);
-    if (receipt) {
-        await syncActiveMatrixNodes(); 
-        appendLog(`Node element #${tokenId} completely incinerated.`, "text-red-400 font-bold");
-        showNotification("Immolation successful.", "success");
+        const receipt = await runTx(e, `SOVEREIGN_SUPPORT_#${tokenId}`, "sovereignSupport", [tokenId.toString()], {}, { manageLock: false, manageButton: false });
+        if (receipt) {
+            GLOBAL_NODE_CACHE.delete(tokenId.toString());
+            await syncActiveMatrixNodes(); 
+            appendLog(`Node element #${tokenId} completely incinerated.`, "text-red-400 font-bold");
+            showNotification("Immolation successful.", "success");
+        }
+    } finally {
+        if (btn) toggleButtonLoading(btn, false);
+        unlockSystem();
     }
 }
 
@@ -4789,7 +4569,7 @@ async function resolveMediaUrl(urlList, signal, mimeType) {
         for (const url of urlList) {
             if (signal.aborted) throw new Error('Aborted');
             try {
-                const testResponse = await fetch(url, { method: 'HEAD', signal });
+                const testResponse = await fetch(url, { method: 'GET', signal, headers: { Range: "bytes=0-0" } });
                 
                 if (!testResponse.ok && testResponse.status !== 206) {
                     throw new Error('HTTP ' + testResponse.status);
@@ -4865,7 +4645,6 @@ async function resolveMediaUrl(urlList, signal, mimeType) {
     
     throw new Error('ALL GATEWAYS SEVERED');
 }
-
 
 async function renderToViewport(containerId, path, defaultText, explicitMediaType = null) {
     const container = document.getElementById(containerId);
@@ -5113,10 +4892,14 @@ function handleSlotClick(slotNum) {
 function applySlotToNova(slotNum) { 
     const uriInput = document.getElementById(`vSlotUri${slotNum}`); 
     if (uriInput && uriInput.value) {
+        const rawUri = uriInput.value.trim();
+        if (typeof isMaliciousURI === 'function' && isMaliciousURI(rawUri)) {
+            if (typeof showNotification === 'function') showNotification("EXCEPTION: Malicious URI Scheme Detected.", "error");
+            return;
+        }
         const novaVideoUri = document.getElementById('novaVideoUri'); 
         if (novaVideoUri) {
-            const sanitizedVal = typeof sanitizeForDOM === 'function' ? sanitizeForDOM(uriInput.value) : uriInput.value;
-            novaVideoUri.value = sanitizedVal; 
+            novaVideoUri.value = typeof sanitizeForDOM === 'function' ? sanitizeForDOM(rawUri) : rawUri; 
             if (typeof showNotification === 'function') showNotification(`Template Framework 0${slotNum} Applied: Video URI successfully transferred to NOVA ASCENSION.`, "success"); 
             if (typeof appendLog === 'function') appendLog(`Matrix Framework 0${slotNum} applied to NOVA upgrade pipeline.`, "text-blue-400 font-bold"); 
         } 
@@ -5157,7 +4940,7 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
     const mySession = ++window.currentAuditSession;
 
     try {
-        globalSelectedTokenId = tokenId;
+        window.globalSelectedTokenId = tokenId;
         autoMapMetadata(tokenId);
         if (typeof updateVideoSlotsUI === 'function') updateVideoSlotsUI();
         
@@ -5230,6 +5013,18 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
             if (btnTransfer) btnTransfer.disabled = false;
         }
 
+        const claimBtn = document.getElementById('executeClaimRewardBtn');
+        const warningTxt = document.getElementById('rewardExclusionWarning');
+        const numericTokenId = Number(tokenId);
+        
+        if (numericTokenId === 50 || numericTokenId === 100) {
+            if (claimBtn) claimBtn.classList.add('hidden');
+            if (warningTxt) warningTxt.classList.remove('hidden');
+        } else {
+            if (claimBtn) claimBtn.classList.remove('hidden');
+            if (warningTxt) warningTxt.classList.add('hidden');
+        }
+
         try {
             const onChainTBA = await activeContract.getTBA(BigInt(tokenId).toString());
             if (mySession !== window.currentAuditSession) return; 
@@ -5291,29 +5086,6 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
             sanctifiedSpan.textContent = mappedNode.isSanctified ? 'AFFIRMED' : 'DORMANT';
 
             displayData.append(line1, rankSpan, br, line2, sanctifiedSpan);
-
-            try {
-                const isDivEligible = await activeContract.isDividendEligible(tokenId.toString());
-                if (isDivEligible) {
-                    const accReward = await activeContract.accCouncilRewardPerNode();
-                    const reg = await activeContract.registry(tokenId.toString());
-                    const rewardDebt = reg.rewardDebt !== undefined ? reg.rewardDebt : reg[7];
-                    const credit = await activeContract.rewardCredit(tokenId.toString());
-                    
-                    const accumulated = BigInt(accReward) - BigInt(rewardDebt);
-                    const pending = BigInt(credit) + accumulated;
-                    const payoutWei = pending / 1000000000000000000n;
-                    
-                    if (payoutWei > 0n) {
-                        const claimBtn = document.createElement('button');
-                        claimBtn.className = "mt-3 px-4 py-2 bg-emerald-950 border border-emerald-500 text-emerald-400 rounded text-[10px] font-bold uppercase hover:bg-emerald-900 transition-colors shadow-[0_0_10px_rgba(16,185,129,0.2)] w-full";
-                        claimBtn.textContent = `CLAIM DIVIDEND: ${ethers.formatEther(payoutWei.toString())} ETH`;
-                        claimBtn.onclick = (e) => executeClaimReward(tokenId, e);
-                        displayData.appendChild(document.createElement('br'));
-                        displayData.appendChild(claimBtn);
-                    }
-                }
-            } catch (e) { console.warn("Dividend check failed", e); }
         }
 
         const settleTokenInput = document.getElementById('settleTokenId');
@@ -5363,7 +5135,6 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
         if (typeof unlockSystem === 'function') unlockSystem();
     }
 }
-
 
 function setTbaBalanceDisplay(eth, weth) { 
     const ethElem = document.getElementById('tbaEthBalance'); 
@@ -5561,9 +5332,24 @@ const initializeSystem = async () => {
     
     setupMatrixGrid();
     
+    const enforceDOMInputLimits = () => {
+        const dnaInput = document.getElementById('novaDnaInput');
+        if (dnaInput) dnaInput.setAttribute('maxlength', '1024');
+        
+        const propNameInput = document.getElementById('propName');
+        if (propNameInput) propNameInput.setAttribute('maxlength', '128');
+        
+        const targetInput = document.getElementById('propTargetInput');
+        if (targetInput) targetInput.setAttribute('maxlength', '128');
+        
+        const hiddenInput = document.getElementById('novaHiddenInput');
+        if (hiddenInput) hiddenInput.setAttribute('maxlength', '1024');
+    };
+    enforceDOMInputLimits();
+    
     const grid = document.getElementById('matrixGridContainer'); 
     if (grid && !grid.dataset.clickAttached) {
-        const eventType = 'click';
+        const eventType = IS_TOUCH_DEVICE ? 'pointerup' : 'click';
         
         grid.addEventListener(eventType, async (e) => { 
             const targetNode = e.target.closest('.matrix-node'); 
@@ -5599,15 +5385,19 @@ const initializeSystem = async () => {
     }
 };
 
-
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-        revealApp();
-        initializeSystem();
-    }, { once: true }); 
-} else { 
-    revealApp(); 
-    initializeSystem();
+if (typeof document !== "undefined") {
+    const unlockUI = () => {
+        if (document.body) {
+            document.body.classList.add('app-ready');
+            console.log("✅ UI Unlocked: app-ready class enforced by Irys Bundle.");
+        }
+    };
+    
+    if (document.readyState === 'loading') {
+        document.addEventListener("DOMContentLoaded", unlockUI);
+    } else {
+        unlockUI();
+    }
 }
 
 window.addEventListener('load', async () => { 
