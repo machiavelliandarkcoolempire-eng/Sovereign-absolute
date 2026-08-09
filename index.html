@@ -5,25 +5,52 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <meta name="theme-color" content="#0a1128" />
     <meta http-equiv="X-Frame-Options" content="DENY" />
-    <meta name="referrer" content="strict-origin-when-cross-origin" />
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; media-src 'self' blob: https:; connect-src 'self' https://mainnet.base.org https://base.llamarpc.com https://base-rpc.publicnode.com https://base-mainnet.g.alchemy.com wss://base-mainnet.g.alchemy.com https://*.irys.xyz https://arweave.net https://ar-io.net wss://relay.walletconnect.com wss://relay.walletconnect.org https://rpc.walletconnect.com https://api.web3modal.com https://api.reown.com wss:; frame-ancestors 'none'; base-uri 'none'; object-src 'none'; form-action 'self';">
-    
+    <meta name="referrer" content="no-referrer" />
     <title>THE IMPERIAL SOVEREIGN DEED ♠️</title>
-    
     <script>
         if (window.top !== window.self) {
             document.documentElement.replaceChildren();
-            try { window.top.location = window.self.location; } catch (_) { }
+            try { window.top.location = window.self.location; } catch (_) { /* CSP frame-ancestors remains authoritative. */ }
         }
     </script>
     
+    <!-- index.html : PHASE 4 : FIX 8 (CSP & Referrer Meta Tags) -->
+<meta name="referrer" content="strict-origin-when-cross-origin" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; media-src 'self' blob: https:; connect-src 'self' https://mainnet.base.org https://base.llamarpc.com https://base-rpc.publicnode.com https://base-mainnet.g.alchemy.com wss://base-mainnet.g.alchemy.com https://*.irys.xyz https://arweave.net https://ar-io.net wss://relay.walletconnect.com wss://relay.walletconnect.org https://rpc.walletconnect.com https://api.web3modal.com https://api.reown.com wss:; frame-ancestors 'none'; base-uri 'none'; object-src 'none'; form-action 'self';">
+    
+    
+    <!-- 🌟 1. โหลด CSS ที่ Vercel บิ้วให้ -->
     <link rel="stylesheet" href="./dist.css" />
 
+    <style>
+        html, body { background-color: #000000 !important; }
+        body { visibility: hidden; }
+        body.app-ready { visibility: visible; }
+        
+        /* SEC Compliance Override via CSS (Zero JS Modification) */
+        #displayCouncilPool span {
+            font-size: 0 !important;
+        }
+        #displayCouncilPool span::after {
+            content: "ETH (Ecosystem Vault Allocation)";
+            font-size: 0.75rem; /* text-xs */
+            letter-spacing: normal;
+        }
+    </style>
+    
+    <!-- 📦 ETHERS V6 & WALLETCONNECT & HLS -->
+    <!-- 🛠 FIX: เอา defer ออก เพื่อบังคับให้โหลดและรันให้เสร็จก่อนไฟล์ถัดไป -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://unpkg.com/@walletconnect/ethereum-provider@2.11.1/dist/index.umd.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+
+    <!-- 🌟 2. โหลด Polyfill (รันต่อจาก ethers ทันที) -->
     <script src="./web3-polyfill.js"></script>
+
+    <!-- 🌟 3. โหลด Irys SDK (รันต่อจาก Polyfill ทันที) -->
     <script src="./irys-bundle.js"></script>
+
+</head>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=JetBrains+Mono:wght@400;700;800&display=swap');
@@ -42,19 +69,9 @@
             --hairline: rgba(251, 191, 36, 0.14);
         }
 
-        html, body { background-color: #000000 !important; }
-        body { visibility: hidden; }
-        body.app-ready { visibility: visible; }
-        
-        #displayCouncilPool span { font-size: 0 !important; }
-        #displayCouncilPool span::after {
-            content: "ETH (Ecosystem Vault Allocation)";
-            font-size: 0.75rem;
-            letter-spacing: normal;
-        }
-
         body {
             font-family: 'JetBrains Mono', monospace;
+            background-color: #000000;
             background-image:
                 radial-gradient(circle at 12% 8%, rgba(217, 119, 6, 0.14) 0%, transparent 42%),
                 radial-gradient(circle at 88% 6%, rgba(190, 18, 60, 0.12) 0%, transparent 40%),
@@ -72,10 +89,10 @@
             inset: 0;
             pointer-events: none;
             z-index: 0;
-            background: radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.85) 100%);
+            background:
+                radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.85) 100%);
             mix-blend-mode: multiply;
         }
-
         body::after {
             content: '';
             position: fixed;
@@ -91,14 +108,17 @@
 
         .chiaroscuro-bg {
             position: relative;
-            background: linear-gradient(150deg, rgba(15, 23, 42, 0.82) 0%, rgba(10, 17, 40, 0.9) 45%, rgba(2, 4, 12, 0.96) 100%);
+            background:
+                linear-gradient(150deg, rgba(15, 23, 42, 0.82) 0%, rgba(10, 17, 40, 0.9) 45%, rgba(2, 4, 12, 0.96) 100%);
             border: 1px solid var(--hairline);
             border-radius: 1rem;
             backdrop-filter: blur(18px) saturate(120%);
             -webkit-backdrop-filter: blur(18px) saturate(120%);
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.045), inset 0 0 40px rgba(0, 0, 0, 0.55), 0 30px 70px rgba(0, 0, 0, 0.85);
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.045),
+                inset 0 0 40px rgba(0, 0, 0, 0.55),
+                0 30px 70px rgba(0, 0, 0, 0.85);
         }
-
         .chiaroscuro-bg::before {
             content: '';
             position: absolute;
@@ -120,7 +140,10 @@
 
         .crimson-text { color: #fda4af; text-shadow: 0 0 18px rgba(190, 18, 60, 0.7), 0 0 6px rgba(190, 18, 60, 0.5); }
         .red-vivid { color: #f87171; text-shadow: 0 0 18px rgba(239, 68, 68, 0.5); }
-        .gold-vivid { color: #fcd34d; text-shadow: 0 0 30px rgba(251, 191, 36, 0.9), 0 0 14px rgba(251, 191, 36, 0.55), 0 2px 4px rgba(0, 0, 0, 0.8); }
+        .gold-vivid {
+            color: #fcd34d;
+            text-shadow: 0 0 30px rgba(251, 191, 36, 0.9), 0 0 14px rgba(251, 191, 36, 0.55), 0 2px 4px rgba(0, 0, 0, 0.8);
+        }
 
         .btn-gold-master, .btn-rebirth-bright, .btn-remint-bright { position: relative; overflow: hidden; isolation: isolate; }
         .btn-gold-master::after, .btn-rebirth-bright::after, .btn-remint-bright::after {
@@ -133,7 +156,9 @@
             transition: left 0.6s cubic-bezier(0.4, 0, 0.2, 1);
             pointer-events: none;
         }
-        .btn-gold-master:hover:not(:disabled)::after, .btn-rebirth-bright:hover::after, .btn-remint-bright:hover::after { left: 130%; }
+        .btn-gold-master:hover:not(:disabled)::after,
+        .btn-rebirth-bright:hover::after,
+        .btn-remint-bright:hover::after { left: 130%; }
 
         .btn-gold-master {
             background: linear-gradient(120deg, #78350f 0%, #b45309 30%, #fbbf24 50%, #b45309 70%, #78350f 100%);
@@ -223,8 +248,11 @@
             position: relative; overflow: hidden;
             border: 1px solid rgba(251, 191, 36, 0.3);
             border-radius: 1rem;
-            background: linear-gradient(135deg, rgba(20, 12, 4, 0.96) 0%, rgba(6, 4, 2, 0.98) 55%, rgba(18, 4, 10, 0.96) 100%);
-            box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.9), 0 0 30px rgba(217, 119, 6, 0.12);
+            background:
+                linear-gradient(135deg, rgba(20, 12, 4, 0.96) 0%, rgba(6, 4, 2, 0.98) 55%, rgba(18, 4, 10, 0.96) 100%);
+            box-shadow:
+                inset 0 0 40px rgba(0, 0, 0, 0.9),
+                0 0 30px rgba(217, 119, 6, 0.12);
             transition: box-shadow 0.4s ease, border-color 0.4s ease;
         }
         .scanline-bar:hover {
@@ -325,17 +353,24 @@
         .tab-btn:active { transform: translateY(1px); }
 
         :focus { outline: none; }
-        a:focus-visible, button:focus-visible, input:focus-visible, [tabindex]:focus-visible {
+        a:focus-visible,
+        button:focus-visible,
+        input:focus-visible,
+        [tabindex]:focus-visible {
             outline: 2px solid #fbbf24;
             outline-offset: 2px;
             border-radius: 0.4rem;
         }
 
-        .btn-gold-master:active:not(:disabled), .btn-rebirth-bright:active, .btn-remint-bright:active {
+        .btn-gold-master:active:not(:disabled),
+        .btn-rebirth-bright:active,
+        .btn-remint-bright:active {
             transform: translateY(1px) scale(0.99);
             filter: brightness(0.95);
         }
-        .btn-gold-master:focus-visible, .btn-rebirth-bright:focus-visible, .btn-remint-bright:focus-visible {
+        .btn-gold-master:focus-visible,
+        .btn-rebirth-bright:focus-visible,
+        .btn-remint-bright:focus-visible {
             outline: 2px solid #fde68a;
             outline-offset: 3px;
         }
@@ -362,7 +397,7 @@
     <div id="securityHardLockOverlay" class="fixed inset-0 bg-red-950/95 z-[99999] flex flex-col items-center justify-center p-6 hidden text-center font-mono border-4 border-red-600 m-4 rounded shadow-[0_0_50px_rgba(239,68,68,0.5)]">
         <span class="text-6xl mb-4 animate-bounce">🛡️</span>
         <h1 class="text-2xl font-black text-red-100 tracking-widest mb-2">NETWORK CHAIN VIOLATION DETECTED</h1>
-        <p class="text-sm text-red-300 max-w-md mb-6 font-bold">FRONTEND SYSTEM COMPLETELY LOCKED. WALLET NOT CONNECTED TO BASE MAINNET. SWITCH NETWORK TO UNLOCK.</p>
+        <p class="text-sm text-red-300 max-w-md mb-6 font-bold">ระบบหน้าบ้านถูกล็อกอย่างสมบูรณ์เนื่องจากกระเป๋าของคุณไม่ได้เชื่อมต่อกับ Base Mainnet กรุณาสลับเครือข่ายกลับมาเพื่อปลดล็อก</p>
         <button onclick="window.location.reload();" class="px-6 py-2 bg-red-800 hover:bg-red-700 border border-red-400 text-white font-bold rounded text-xs tracking-wider transition-all">RE-INITIALIZE TELEMETRY</button>
     </div>
 
@@ -462,8 +497,9 @@
         <div class="flex gap-2 flex-shrink-0">
             <button onclick="closeIdentityAuthModal()" class="w-1/2 bg-stone-950 text-stone-400 font-mono text-[11px] py-3 rounded-lg uppercase border border-stone-800 cursor-pointer hover:bg-stone-900 transition-colors">ABORT SCAN</button>
             <button onclick="executeGatewayUnlock(event)" class="w-1/2 bg-rose-950/60 text-rose-300 border border-rose-700 font-mono font-bold text-[11px] py-3 rounded-lg uppercase hover:bg-rose-900 cursor-pointer transition-colors shadow-[0_0_15px_rgba(153,27,27,0.4)]">AGREE & EXECUTE SCAN 🧬</button>
+
+            </div>
         </div>
-    </div>
     </div>
 
     <div id="novaWarnModal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[80] hidden items-center justify-center p-4">
@@ -534,88 +570,98 @@
     </section>
     
     <div id="memberDnaStudio" class="hidden mb-6 relative z-10">
-        <div class="chiaroscuro-bg p-6 rounded-2xl border border-rose-950">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-stone-900 pb-3 mb-5 gap-2">
-                <div>
-                    <h2 class="text-lg font-black font-cinzel text-rose-400 uppercase tracking-tight">SOVEREIGN NOVA: ON-CHAIN FORENSIC TRUTH</h2>
-                    <p class="text-[9px] font-mono text-stone-500 uppercase tracking-wide mt-1">RESTRICTED SYSTEM — HOLDER IDENTITY ACCREDITED BY CRYPTOGRAPHY</p>
-                </div>
-                <span id="labAccessBadge" class="bg-rose-950/40 text-rose-400 border border-rose-800 text-[10px] font-black px-2.5 py-1.5 tracking-widest uppercase rounded">HOLDER VERIFIED</span>
+    <div class="chiaroscuro-bg p-6 rounded-2xl border border-rose-950">
+        <!-- Header Section -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-stone-900 pb-3 mb-5 gap-2">
+            <div>
+                <h2 class="text-lg font-black font-cinzel text-rose-400 uppercase tracking-tight">SOVEREIGN NOVA: ON-CHAIN FORENSIC TRUTH</h2>
+                <p class="text-[9px] font-mono text-stone-500 uppercase tracking-wide mt-1">RESTRICTED SYSTEM — HOLDER IDENTITY ACCREDITED BY CRYPTOGRAPHY</p>
+            </div>
+            <span id="labAccessBadge" class="bg-rose-950/40 text-rose-400 border border-rose-800 text-[10px] font-black px-2.5 py-1.5 tracking-widest uppercase rounded">HOLDER VERIFIED</span>
+        </div>
+
+        <div class="space-y-4 font-mono">
+            <!-- 1. TOKEN ID -->
+            <div class="p-3 bg-stone-950 border border-stone-900 rounded-lg">
+                <label class="text-[10px] text-amber-500 font-bold block mb-1 uppercase">1. TOKEN ID</label>
+                <input type="number" id="dnaVerifyTokenId" min="1" max="333" placeholder="TOKEN ID (1-333)" class="w-full bg-black border border-rose-950 p-2.5 text-sm text-amber-500 rounded outline-none focus:border-amber-600 transition-all" />
             </div>
 
-            <div class="space-y-4 font-mono">
-                <div class="p-3 bg-stone-950 border border-stone-900 rounded-lg">
-                    <label class="text-[10px] text-amber-500 font-bold block mb-1 uppercase">1. TOKEN ID</label>
-                    <input type="number" id="dnaVerifyTokenId" min="1" max="333" placeholder="TOKEN ID (1-333)" class="w-full bg-black border border-rose-950 p-2.5 text-sm text-amber-500 rounded outline-none focus:border-amber-600 transition-all" />
+            <!-- 2. DNA -->
+            <div class="p-3 bg-stone-950 border border-stone-900 rounded-lg">
+                <label class="text-[10px] text-amber-500 font-bold block mb-1 uppercase">2. DNA = IDENTITY DNA : YOUR NAME</label>
+                <div class="p-2.5 bg-black/80 rounded border border-rose-950/50">
+                    <span id="metaRawDna" class="text-stone-300 text-xs break-all select-all">IDENTITY DNA : YOUR NAME [3% OPACITY]</span>
                 </div>
+            </div>
 
-                <div class="p-3 bg-stone-950 border border-stone-900 rounded-lg">
-                    <label class="text-[10px] text-amber-500 font-bold block mb-1 uppercase">2. DNA = IDENTITY DNA : YOUR NAME</label>
-                    <div class="p-2.5 bg-black/80 rounded border border-rose-950/50">
-                        <span id="metaRawDna" class="text-stone-300 text-xs break-all select-all">IDENTITY DNA : YOUR NAME [3% OPACITY]</span>
+            <!-- 3. VIDEO -->
+            <div class="p-3 bg-stone-950 border border-stone-900 rounded-lg">
+                <label class="text-[10px] text-amber-500 font-bold block mb-1 uppercase">3. VIDEO : LINK , ID IRYS-XYZ</label>
+                <div class="p-2.5 bg-black/80 rounded border border-stone-900 text-[10px] flex justify-between items-center gap-2">
+                    <span id="irysLinkDisplay" class="text-stone-300 break-all">LINK: https://gateway.irys.xyz/IRYS-XYZ | ID: IRYS-XYZ</span>
+                    <span class="text-rose-400 font-bold px-2 py-0.5 border border-rose-900 rounded bg-rose-950/30 shrink-0">PAUSE 9S (ZOOM 5X)</span>
+                </div>
+            </div>
+
+            <!-- 4. HIDDEN -->
+            <div class="p-3 bg-stone-950 border border-stone-900 rounded-lg space-y-2.5">
+                <label class="text-[10px] text-amber-500 font-bold block uppercase">4. HIDDEN</label>
+                
+                <!-- Timestamps & Pixel Anchor -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-[9px]">
+                    <div class="p-2 bg-black/80 rounded border border-stone-900">
+                        <span class="text-stone-500 block uppercase font-bold">SANCTIFIED TIMESTAMPS</span>
+                        <span class="text-rose-400 font-bold">SANCTIFIED AT 9S FR 1-5 | SANCTIFIED AT 12S FR 11-15</span>
+                    </div>
+                    <div class="p-2 bg-black/80 rounded border border-stone-900 flex flex-col">
+                        <span class="text-stone-500 block uppercase font-bold">PIXEL ANCHOR (ZOOM 7X)</span>
+                        <span id="propDisplay1" class="text-amber-500 font-bold mb-1">X : 1014 Y : 1754</span>
+                        <span id="metaHiddenProperty" class="text-amber-500 font-bold">AWAITING EXTRACTION...</span>
                     </div>
                 </div>
 
-                <div class="p-3 bg-stone-950 border border-stone-900 rounded-lg">
-                    <label class="text-[10px] text-amber-500 font-bold block mb-1 uppercase">3. VIDEO : LINK , ID IRYS-XYZ</label>
-                    <div class="p-2.5 bg-black/80 rounded border border-stone-900 text-[10px] flex justify-between items-center gap-2">
-                        <span id="irysLinkDisplay" class="text-stone-300 break-all">LINK: https://gateway.irys.xyz/IRYS-XYZ | ID: IRYS-XYZ</span>
-                        <span class="text-rose-400 font-bold px-2 py-0.5 border border-rose-900 rounded bg-rose-950/30 shrink-0">PAUSE 9S (ZOOM 5X)</span>
-                    </div>
+                <!-- Filter Enhancements -->
+                <div class="p-2 bg-black/90 rounded border border-stone-900/80 text-[8px] text-stone-400 flex flex-wrap justify-between gap-1">
+                    <span>ปรับแสง: <strong class="text-amber-400">+50</strong></span>
+                    <span>คอนทราสต์: <strong class="text-amber-400">+20</strong></span>
+                    <span>สีเข้ม: <strong class="text-amber-400">+35</strong></span>
+                    <span>คมชัด: <strong class="text-amber-400">+80</strong></span>
+                    <span>รายละเอียด: <strong class="text-amber-400">+50</strong></span>
                 </div>
 
-                <div class="p-3 bg-stone-950 border border-stone-900 rounded-lg space-y-2.5">
-                    <label class="text-[10px] text-amber-500 font-bold block uppercase">4. HIDDEN</label>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-[9px]">
-                        <div class="p-2 bg-black/80 rounded border border-stone-900">
-                            <span class="text-stone-500 block uppercase font-bold">SANCTIFIED TIMESTAMPS</span>
-                            <span class="text-rose-400 font-bold">SANCTIFIED AT 9S FR 1-5 | SANCTIFIED AT 12S FR 11-15</span>
-                        </div>
-                        <div class="p-2 bg-black/80 rounded border border-stone-900 flex flex-col">
-                            <span class="text-stone-500 block uppercase font-bold">PIXEL ANCHOR (ZOOM 7X)</span>
-                            <span id="propDisplay1" class="text-amber-500 font-bold mb-1">X : 1014 Y : 1754</span>
-                            <span id="metaHiddenProperty" class="text-amber-500 font-bold">AWAITING EXTRACTION...</span>
-                        </div>
+                <!-- Forensic Deepfake & Image Analysis -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-[9px]">
+                    <div class="p-2 bg-black/80 rounded border border-stone-900">
+                        <span class="text-rose-400 block uppercase font-bold">AI DEEP FAKE NEWS (VIDEO)</span>
+                        <span class="text-stone-300">VIDEO : 0.01 FR 4-8 = สร้าง Pixel ใหม่ 0.01 วินาทีไม่มี</span>
                     </div>
-
-                    <div class="p-2 bg-black/90 rounded border border-stone-900/80 text-[8px] text-stone-400 flex flex-wrap justify-between gap-1">
-                        <span>BRIGHTNESS: <strong class="text-amber-400">+50</strong></span>
-                        <span>CONTRAST: <strong class="text-amber-400">+20</strong></span>
-                        <span>SHADOWS: <strong class="text-amber-400">+35</strong></span>
-                        <span>SHARPNESS: <strong class="text-amber-400">+80</strong></span>
-                        <span>DETAILS: <strong class="text-amber-400">+50</strong></span>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-[9px]">
-                        <div class="p-2 bg-black/80 rounded border border-stone-900">
-                            <span class="text-rose-400 block uppercase font-bold">AI DEEP FAKE NEWS (VIDEO)</span>
-                            <span class="text-stone-300">VIDEO: 0.01 FR 4-8 = NO NEW PIXEL GENERATION AT 0.01S</span>
-                        </div>
-                        <div class="p-2 bg-black/80 rounded border border-stone-900">
-                            <span class="text-rose-400 block uppercase font-bold">SOCIAL COPY CHECK (IMAGE)</span>
-                            <span class="text-stone-300">IMAGE: X:1344, Y:168 (OPACITY 3%) SOCIAL MEDIA COMPRESSION (FB/IG) DESTROYS 3% OPACITY PIXEL DATA</span>
-                        </div>
+                    <div class="p-2 bg-black/80 rounded border border-stone-900">
+                        <span class="text-rose-400 block uppercase font-bold">SOCIAL COPY CHECK (IMAGE)</span>
+                        <span class="text-stone-300">IMAGE : X :1344 , Y : 168 (OPACITY 3%) ก๊อปรูปภาพ Social (FB/IG) เท่ากับ opacity 3% หายไปขยะ Pixel</span>
                     </div>
                 </div>
+            </div>
 
-                <button onclick="processIdentityDnaInspectionOnChain()" class="w-full bg-rose-950/40 text-rose-300 border border-rose-700 text-[11px] font-black py-3.5 rounded-lg uppercase hover:bg-rose-900/60 transition-all tracking-widest shadow-[0_0_15px_rgba(153,27,27,0.2)] cursor-pointer mt-2">
-                    EXTRACT ON-CHAIN STRUCTURAL TRACE — autoMap() 🧬
-                </button>
+            <!-- Action Button -->
+            <button onclick="processIdentityDnaInspectionOnChain()" class="w-full bg-rose-950/40 text-rose-300 border border-rose-700 text-[11px] font-black py-3.5 rounded-lg uppercase hover:bg-rose-900/60 transition-all tracking-widest shadow-[0_0_15px_rgba(153,27,27,0.2)] cursor-pointer mt-2">
+                EXTRACT ON-CHAIN STRUCTURAL TRACE — autoMap() 🧬
+            </button>
 
-                <div id="dnaAnalysisTerminalOut" class="p-2 bg-stone-950 border border-stone-800 rounded text-center mt-2 text-[9px] text-stone-500 font-mono uppercase tracking-widest">
-                    AWAITING FORENSIC EXTRACTION...
-                </div>
+            <!-- Status Banner (เชื่อมกับ JS แล้ว) -->
+            <div id="dnaAnalysisTerminalOut" class="p-2 bg-stone-950 border border-stone-800 rounded text-center mt-2 text-[9px] text-stone-500 font-mono uppercase tracking-widest">
+                AWAITING FORENSIC EXTRACTION...
+            </div>
 
-                <div id="dnaLabDisplay" class="hidden p-2 bg-emerald-950/20 border border-emerald-900/40 rounded text-center mt-2">
-                    <span class="text-[9px] text-emerald-400 block tracking-widest uppercase font-bold">SANCTIFIED PROOF: EXECUTION SUCCESSFUL</span>
-                    <span id="dnaTargetText" class="text-[8px] text-emerald-500/70 block mt-1 break-all"></span>
-                </div>
+            <div id="dnaLabDisplay" class="hidden p-2 bg-emerald-950/20 border border-emerald-900/40 rounded text-center mt-2">
+                <span class="text-[9px] text-emerald-400 block tracking-widest uppercase font-bold">SANCTIFIED PROOF: EXECUTION SUCCESSFUL</span>
+                <span id="dnaTargetText" class="text-[8px] text-emerald-500/70 block mt-1 break-all"></span>
             </div>
         </div>
     </div>
+</div>
 
-    <section class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6 relative z-10">
+ <section class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6 relative z-10">
         <div class="chiaroscuro-bg p-4 rounded-xl border-l-2 border-amber-500">
             <span class="text-[9px] font-mono uppercase text-stone-500 flex justify-between items-center mb-1">
                 THE IMPERIAL MACRO ART
@@ -656,8 +702,8 @@
                 <input type="number" id="gridSearchInput" min="1" max="333" placeholder="ISOLATE NODE (1-333)" class="bg-black border border-stone-900 px-3 py-2 text-sm font-mono text-amber-500 rounded outline-none focus:border-amber-600 w-full sm:w-48" />
                 <span class="text-[10px] font-mono text-stone-500 uppercase whitespace-nowrap">ACTIVE: <span id="matrixActiveCount" class="text-amber-500 font-bold">0</span>/333</span>
             </div>
-        </div>
-        <div id="matrixGridContainer" class="grid grid-cols-6 sm:grid-cols-10 md:grid-cols-12 lg:grid-cols-16 gap-2 max-h-[400px] overflow-y-auto scroll-dark pr-3 p-2 bg-black/30 rounded-xl border border-stone-900/50 shadow-inner">
+        </div><div id="matrixGridContainer" class="grid grid-cols-6 sm:grid-cols-10 md:grid-cols-12 lg:grid-cols-16 gap-2 max-h-[400px] overflow-y-auto scroll-dark pr-3 p-2 bg-black/30 rounded-xl border border-stone-900/50 shadow-inner">
+            <!-- Skeletons will be replaced by JS -->
         </div>
         
         <div class="flex flex-wrap gap-5 mt-6 text-tiny font-mono uppercase text-stone-400 bg-black/40 p-4 rounded-xl border border-stone-800">
@@ -666,7 +712,7 @@
             <span class="flex items-center gap-2"><span class="w-4 h-4 rounded border rank-gold"></span> GOLD (11-99)</span>
             <span class="flex items-center gap-2"><span class="w-4 h-4 rounded border rank-silver"></span> SILVER (101-200)</span>
             <span class="flex items-center gap-2"><span class="w-4 h-4 rounded border rank-red"></span> RED (201-332)</span>
-            <span class="flex items-center gap-2"><span class="w-4 h-4 rounded border rank-imperial"></span> SOVEREIGN IMMORTAL 333</span>
+            <span class="flex items-center gap-2"><span class="w-4 h-4 rounded border rank-imperial"></span> SOVEREIGN IMMOTAL 333</span>
         </div>
     </section>
 
@@ -809,6 +855,7 @@
                     ⚡ ENGAGE IRYS BRIDGE
                 </button>
                 
+                <!-- จัดระเบียบปุ่ม TOP-UP ใหม่: ใส่ w-full md:w-auto ปรับสี และใช้ฟอนต์ Mono -->
                 <button onclick="executeIrysTopUp('0.001')" type="button" class="w-full md:w-auto px-4 py-2 bg-blue-950 border border-blue-900 text-blue-300 hover:bg-blue-900 text-[10px] font-mono font-bold uppercase rounded shadow-[0_0_10px_rgba(30,58,138,0.2)] transition-colors">
                     TOP-UP IRYS (0.001 ETH)
                 </button>
@@ -844,6 +891,7 @@
         </div>
     </section>
 
+
     <section class="chiaroscuro-bg p-6 rounded-2xl mb-6 relative z-10 border border-rose-950">
         <div class="border-b border-stone-900 pb-3 mb-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
             <div>
@@ -858,7 +906,7 @@
                 <input type="number" id="novaTokenId" min="1" max="333" placeholder="1 - 333 Execution coordinate" class="w-full bg-stone-950 border border-stone-900 p-3 text-sm font-mono text-amber-500 rounded outline-none focus:border-amber-600 transition-all" />
             </div>
             <div>
-                <label class="text-[9px] text-stone-400 font-mono block mb-1 uppercase">② Identity DNA : (YOUR NAME)</label>
+                <label class="text-[9px] text-stone-400 font-mono block mb-1 uppercase">② Identity DNA : (YOUNAME)</label>
                 <input type="text" id="novaDnaInput" placeholder='e.g. Anchor identifier sequence mapping coordinates' class="w-full bg-stone-950 border border-stone-900 p-3 text-sm font-mono text-rose-300 rounded outline-none focus:border-rose-600 transition-all" />
             </div>
             <div>
@@ -938,46 +986,49 @@
                     <input type="number" id="timelockActionProposalId" placeholder="TARGET MANDATE DIRECTIVE ID" class="w-full bg-stone-950 border border-stone-900 p-2.5 text-[11px] font-mono text-stone-200 rounded outline-none mb-2" />
                 </div>
                 <div class="grid grid-cols-2 gap-2">
-                    <button onclick="executeQueueProposal(document.getElementById('timelockActionProposalId').value, this)" class="bg-stone-950 border border-rose-800 text-rose-400 font-bold font-mono text-[10px] py-3.5 rounded-lg uppercase hover:bg-stone-900 transition-all">QUEUE TIMELOCK</button>                    
-                    <button onclick="triggerExecuteProposal(document.getElementById('timelockActionProposalId').value, this)" class="bg-rose-900 text-white font-black font-mono text-[10px] py-3.5 rounded-lg uppercase hover:bg-rose-800 transition-all shadow-[0_0_15px_rgba(136,19,55,0.4)] border border-rose-600">EXECUTE PROPOSAL DISPATCH</button>
+                    <button onclick="executeQueueProposal(document.getElementById('timelockActionProposalId').value, this)" class="bg-stone-950 border border-rose-800 text-rose-400 font-bold font-mono text-[10px] py-3.5 rounded-lg uppercase hover:bg-stone-900 transition-all">QUEUE TIMELOCK</button>                    <button onclick="triggerExecuteProposal(document.getElementById('timelockActionProposalId').value, this)" class="bg-rose-900 text-white font-black font-mono text-[10px] py-3.5 rounded-lg uppercase hover:bg-rose-800 transition-all shadow-[0_0_15px_rgba(136,19,55,0.4)] border border-rose-600">EXECUTE PROPOSAL DISPATCH</button>
                 </div>
             </div>
         </div>
     </section>
     
     <section class="chiaroscuro-bg p-6 rounded-2xl mb-6 relative z-10 border border-rose-950">
-        <div class="border-b border-stone-900 pb-3 mb-5">
-            <h2 class="text-lg font-black font-cinzel text-stone-100 uppercase tracking-tight">👑 Protocol Architecture Deployment</h2>
-            <p class="text-[9px] font-mono text-stone-500 uppercase tracking-wide">AUTONOMOUS INFRASTRUCTURE DEPLOYMENT & STATE RELINQUISHMENT PROTOCOL</p>
-        </div>
-        
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            <div class="lg:col-span-4 flex flex-col justify-center">
-                <div class="bg-stone-950 p-4 rounded-xl border border-stone-900 shadow-[inset_0_0_20px_rgba(0,0,0,0.9)]">
-                    <label class="text-[10px] text-stone-400 font-mono font-bold block mb-2 uppercase tracking-widest text-center border-b border-stone-900 pb-2">TARGET CELL POSITION IDENTIFIER</label>
-                    <input type="number" id="settleTokenId" min="1" max="333" placeholder="Token ID (1-333) coordinate input" class="w-full bg-black border border-stone-800 p-3 text-sm font-mono text-center text-white rounded outline-none focus:border-amber-500 transition-all mb-4" />
-                    
-                    <div class="bg-black/80 border border-stone-900 rounded-lg p-3 text-[10px] font-mono space-y-2">
-                        <div class="flex justify-between items-center"><span class="text-stone-500">CENTRAL PROTOCOL ALLOCATION:</span><span class="text-stone-200" id="exitResPerNft">0.0000 ETH</span></div>
-                        <div class="flex justify-between items-center border-t border-stone-900 pt-2"><span class="text-stone-500">AUTONOMOUS MATHEMATICAL REPATRIATION:</span><span class="text-rose-400 font-bold" id="exitRefund">0.0000 ETH</span></div>
-                    </div>
-                </div>
-            </div>
-            <div class="lg:col-span-8 bg-stone-950 border border-red-950 p-5 rounded-xl flex flex-col justify-between shadow-[0_0_20px_rgba(220,38,38,0.05)] hover:border-red-700/50 transition-colors">
-                <div>
-                    <h3 class="text-red-500 font-black font-mono text-sm mb-2 uppercase tracking-wider flex items-center gap-2"><span>🩸</span> THE SOVEREIGN IMMOLATION RITUAL</h3>
-                    <p class="text-[10px] text-stone-400 font-mono mb-4 leading-relaxed">
-                        Exit Council • Permanent Pass Relinquishment via On-Chain Contract
-                    </p>
-                </div>
-                <div>
-                    <button id="btnBurnToken" onclick="executeSovereignSupport(this)" class="w-full bg-red-800 hover:bg-red-700 text-white font-black text-xs py-3.5 rounded-lg uppercase tracking-widest transition-all shadow-[0_0_20px_rgba(220,38,38,0.4)] border border-red-500">[ 🔥 SOVEREIGN IMMOLATION ]</button>
+    <!-- Section Header -->
+    <div class="border-b border-stone-900 pb-3 mb-5">
+        <h2 class="text-lg font-black font-cinzel text-stone-100 uppercase tracking-tight">👑 Protocol Architecture Deployment</h2>
+        <p class="text-[9px] font-mono text-stone-500 uppercase tracking-wide">AUTONOMOUS INFRASTRUCTURE DEPLOYMENT & STATE RELINQUISHMENT PROTOCOL</p>
+    </div>
+    
+    <!-- Grid System Container (12 Columns) -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- ฝั่งซ้าย: Target Cell & Protocol Allocation (4 Columns) -->
+        <div class="lg:col-span-4 flex flex-col justify-center">
+            <div class="bg-stone-950 p-4 rounded-xl border border-stone-900 shadow-[inset_0_0_20px_rgba(0,0,0,0.9)]">
+                <label class="text-[10px] text-stone-400 font-mono font-bold block mb-2 uppercase tracking-widest text-center border-b border-stone-900 pb-2">TARGET CELL POSITION IDENTIFIER</label>
+                <input type="number" id="settleTokenId" min="1" max="333" placeholder="Token ID (1-333) coordinate input" class="w-full bg-black border border-stone-800 p-3 text-sm font-mono text-center text-white rounded outline-none focus:border-amber-500 transition-all mb-4" />
+                
+                <div class="bg-black/80 border border-stone-900 rounded-lg p-3 text-[10px] font-mono space-y-2">
+                    <div class="flex justify-between items-center"><span class="text-stone-500">CENTRAL PROTOCOL ALLOCATION:</span><span class="text-stone-200" id="exitResPerNft">0.0000 ETH</span></div>
+                    <div class="flex justify-between items-center border-t border-stone-900 pt-2"><span class="text-stone-500">AUTONOMOUS MATHEMATICAL REPATRIATION:</span><span class="text-rose-400 font-bold" id="exitRefund">0.0000 ETH</span></div>
                 </div>
             </div>
         </div>
-    </section>
+<!-- ฝั่งขวา: The Sovereign Immolation Ritual (8 Columns) -->
+        <div class="lg:col-span-8 bg-stone-950 border border-red-950 p-5 rounded-xl flex flex-col justify-between shadow-[0_0_20px_rgba(220,38,38,0.05)] hover:border-red-700/50 transition-colors">
+            <div>
+                <h3 class="text-red-500 font-black font-mono text-sm mb-2 uppercase tracking-wider flex items-center gap-2"><span>🩸</span> THE SOVEREIGN IMMOLATION RITUAL</h3>
+                <p class="text-[10px] text-stone-400 font-mono mb-4 leading-relaxed">
+                    Exit Council • Permanent Pass Relinquishment via On-Chain Contract
+                </p>
+            </div>
+            <div>
+                <button id="btnBurnToken" onclick="executeSovereignSupport(this)" class="w-full bg-red-800 hover:bg-red-700 text-white font-black text-xs py-3.5 rounded-lg uppercase tracking-widest transition-all shadow-[0_0_20px_rgba(220,38,38,0.4)] border border-red-500">[ 🔥 SOVEREIGN IMMOLATION ]</button>
+            </div>
+        </div>
+     </div>
+</section>
 
-    <section id="adminSector" class="admin-locked chiaroscuro-bg p-6 rounded-2xl mb-6 relative z-10 border border-rose-950 shadow-[0_0_35px_rgba(0,0,0,0.9)] hidden">
+<section id="adminSector" class="admin-locked chiaroscuro-bg p-6 rounded-2xl mb-6 relative z-10 border border-rose-950 shadow-[0_0_35px_rgba(0,0,0,0.9)] hidden">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-stone-900 pb-3 mb-5 gap-2">
             <div>
                 <h2 class="text-lg font-black font-cinzel text-rose-500 uppercase tracking-tight">♠️ Imperial Override Console (ARCHITECT)</h2>
@@ -996,7 +1047,7 @@
                 <div class="space-y-2 max-h-64 overflow-y-auto scroll-dark pr-1">
                     <div class="bg-stone-950 p-2.5 rounded border border-stone-900">
                         <input type="text" id="propKey1" value="RANK" class="w-full bg-black border border-stone-900 p-2 text-[9px] font-mono mb-1 text-stone-400 rounded" />
-                        <input type="text" id="prop1" value="" placeholder="AUTO-EXTRACTED FROM RANK DETAILED" class="w-full bg-black border border-stone-900 p-2 text-[10px] font-mono text-stone-200 rounded" />
+                        <input type="text" id="prop1" value="" placeholder="จะถูกดึงอัตโนมัติจาก getImperialRankDetailed" class="w-full bg-black border border-stone-900 p-2 text-[10px] font-mono text-stone-200 rounded" />
                     </div>
                     <div class="bg-stone-950 p-2.5 rounded border border-stone-900">
                         <input type="text" id="propKey2" value="TRANSFER" class="w-full bg-black border border-stone-900 p-2 text-[9px] font-mono mb-1 text-stone-400 rounded" />
@@ -1063,8 +1114,8 @@
                 <span class="text-[10px] font-mono text-emerald-600 font-bold uppercase tracking-wider block border-b border-stone-900 pb-1">// ⚜ ARCHITECT FORGE (MINT & REMINT)</span>
                 
                 <div>
-                    <label class="text-[9px] text-stone-500 font-mono block mb-1 uppercase">TARGET ADDRESS (FOR FREE MINT)</label>
-                    <input type="text" id="adminTargetAddress" placeholder="0x... DESTINATION EVM ADDRESS" class="w-full bg-stone-950 border border-stone-900 p-2.5 text-xs font-mono text-emerald-400 rounded outline-none focus:border-emerald-600 transition-all" />
+                    <label class="text-[9px] text-stone-500 font-mono block mb-1 uppercase">Target Address (สำหรับ Free Mint)</label>
+                    <input type="text" id="adminTargetAddress" placeholder="0x... EVM Address ปลายทาง" class="w-full bg-stone-950 border border-stone-900 p-2.5 text-xs font-mono text-emerald-400 rounded outline-none focus:border-emerald-600 transition-all" />
                 </div>
 
                 <div class="grid grid-cols-1 gap-2 pt-1">
@@ -1075,7 +1126,7 @@
                         ♺ EXECUTE ARCHITECT REMINT ♠️
                     </button>
                 </div>
-                <p class="text-[8px] text-stone-600 mt-2 uppercase leading-tight font-bold">* STRICT RULE: SYSTEM EXTRACTS TOKEN ID FROM SELECTED MATRIX CELL. FRONT URI MUST BE PRE-INITIALIZED.</p>
+                <p class="text-[8px] text-stone-600 mt-2 uppercase leading-tight font-bold">* กฎเหล็ก: ระบบจะดึง Token ID จาก Matrix Cell ที่ท่านคลิกเลือก และจำเป็นต้องมี FRONT URI เตรียมไว้ก่อนเสมอ</p>
             </div>
         </div>
     </section>
@@ -1091,6 +1142,7 @@
         <button onclick="saveArchitectGateways(this)" class="px-5 py-2.5 bg-amber-700 text-black font-black text-[10px] rounded uppercase hover:bg-amber-600 transition-colors w-full md:w-auto mt-2">RE-ALIGN VECTORS</button>
     </div>
 
+    <!-- SYSTEM LOG SECTION -->
     <section class="chiaroscuro-bg mt-6 p-4 rounded-xl border border-slate-900">
         <span class="text-[10px] font-mono text-slate-500 uppercase block border-b border-slate-900 pb-2">// SYSTEM EVENT REAL-TIME TELEMETRY STREAM LOG</span>
         <div id="systemLogBox" class="mt-3 text-[10px] font-mono h-28 overflow-y-auto scroll-dark text-slate-500 space-y-1 select-text">
@@ -1098,6 +1150,7 @@
         </div>
     </section>
 
+    <!-- DOCTRINE SECTION -->
     <section class="chiaroscuro-bg p-4 rounded-xl my-6 border border-slate-900 bg-black/50 text-center relative z-10">
         <h4 class="text-[10px] font-black font-cinzel text-slate-500 uppercase tracking-widest mb-2">
             ⚖ THE ARCHITECT ABDICATION & FORENSIC INTEGRITY DOCTRINE 🔱
@@ -1111,17 +1164,19 @@
         </p>
     </section>
 
+    <!-- FOOTER SECTION -->
     <footer class="mt-4 chiaroscuro-bg p-4 rounded-xl font-mono text-[10px] text-slate-500 relative z-10">
         <div id="systemFooterLog" class="h-12 overflow-y-auto leading-relaxed scroll-dark">> [SYSTEM]: Integrity scan complete. Global nodes aligned. No external backend infrastructure recognized pursuant to the autarchic provisions of the Machiavellian Protocol. THE SOVEREIGN ABSOLUTE 🔱.</div>
         <div class="mt-4 pt-4 border-t border-slate-800/50 text-center text-slate-500 uppercase tracking-widest leading-relaxed">
             This protocol operates an exclusive, private digital identity infrastructure accessible solely via direct curation. All proceeds represent lawful studio service fees. Reserve allocations fund software R&D and Ecosystem Infrastructure Support Grants. Minting and on-chain operations are executed 100% self-sovereignly by curated pass holders. This protocol does not offer public sales, securities, or financial returns.
         </div>
     </footer>
-    
+
 
 
 
 <script>
+
 "use strict";
 
 let isTransactionPending = false;
@@ -1146,7 +1201,7 @@ async function fetchImperialManifest() {
 
 function lockSystem() {
     if (isTransactionPending) {
-        showNotification("⚠️ SYSTEM ENFORCEMENT: Transaction in progress. Do not resubmit.", "error");
+        showNotification("⚠️ SYSTEM ENFORCEMENT: ธุรกรรมกำลังประมวลผล ห้ามกดย้ำ", "error");
         return false;
     }
     isTransactionPending = true;
@@ -1167,7 +1222,7 @@ function lockSystem() {
         
         const btn = document.createElement('button');
         btn.className = 'mt-8 px-4 py-2 border border-red-500 text-red-500 text-[10px] hover:bg-red-950 rounded cursor-pointer pointer-events-auto';
-        btn.textContent = 'FORCE UNLOCK (If stalled > 1 min)';
+        btn.textContent = 'FORCE UNLOCK (กดเมื่อค้างนานเกิน 1 นาที)';
         btn.onclick = () => unlockSystem(true);
 
         overlay.append(spinner, title, btn);
@@ -1186,7 +1241,7 @@ function unlockSystem(force = false) {
     localStorage.removeItem('tx_pending');
     localStorage.removeItem('tx_pending_ts');
     
-    if (force) showNotification("Emergency system unlocked.", "warning");
+    if (force) showNotification("ปลดล็อกระบบฉุกเฉินแล้ว", "warning");
 }
 
 window.addEventListener('DOMContentLoaded', () => unlockSystem(false));
@@ -1449,7 +1504,7 @@ function checkPendingNova() {
         if (hiddenInput) hiddenInput.value = pendingTxId;
         if (tokenInput && pendingToken) tokenInput.value = pendingToken;
         
-        showNotification("RESUMING NOVA: Pending metadata found. Please confirm the on-chain transaction.", "warning");
+        showNotification("RESUMING NOVA: พบข้อมูล Metadata ค้างอยู่ในระบบ กรุณายืนยันธุรกรรม On-chain ให้เสร็จสิ้น", "warning");
         const modal = document.getElementById('novaWarnModal');
         if (modal) modal.classList.remove('hidden');
     }
@@ -2867,6 +2922,8 @@ async function loadDeedMetadata(tokenId) {
 let irysProvider = null;
 let irysContract = null;
 
+// 🚨 ลบ let readOnlyContract = null; ที่เคยอยู่ตรงนี้ทิ้งไปแล้ว เพราะมันไปซ้ำกับบรรทัด 1040
+
 const BASE_CHAIN_ID = 8453;
 
 const GENERAL_ENDPOINTS = [
@@ -2884,76 +2941,54 @@ const IRYS_ENDPOINTS = [
 ];
 
 function createFallbackProvider(endpoints) {
+    // FIX: บังคับใช้ Network 8453 (Base Mainnet) อย่างเด็ดขาดเพื่อทำลาย Error network changed 1 => 8453
     const network = ethers.Network.from(BASE_CHAIN_ID);
     const configs = endpoints.map((url, index) => {
-        const fetchReq = new ethers.FetchRequest(url);
-        fetchReq.timeout = 5000; 
-        
-        const p = new ethers.JsonRpcProvider(fetchReq, network, { staticNetwork: true });
-        return { 
-            provider: p, 
-            priority: index + 1, 
-            weight: 1,
-            stallTimeout: 1500 
-        };
+        const p = new ethers.JsonRpcProvider(url, network, { staticNetwork: true });
+        return { provider: p, priority: index + 1, weight: 1 };
     });
     return new ethers.FallbackProvider(configs, network);
 }
 
-const withTimeout = (promise, ms, errorMsg) => {
-    return Promise.race([
-        promise,
-        new Promise((_, reject) => setTimeout(() => reject(new Error(errorMsg)), ms))
-    ]);
-};
-
 async function initReadOnlyRPC() {
     try {
         readOnlyProvider = createFallbackProvider(GENERAL_ENDPOINTS);
+        await readOnlyProvider.getNetwork();
         
-        await withTimeout(readOnlyProvider.getNetwork(), 5000, "General RPC Network Timeout");
+        readOnlyContract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, readOnlyProvider);
         
-        if (typeof CONTRACT_ADDRESS !== 'undefined' && typeof CONTRACT_ABI !== 'undefined') {
-            readOnlyContract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, readOnlyProvider);
-        }
+        appendLog('General Multi-RPC Online (Alchemy Key 1 Prioritized).', 'text-emerald-400');
         
-        if (typeof appendLog === 'function') appendLog('General Multi-RPC Online (Alchemy Key 1 Prioritized).', 'text-emerald-400');
-        
-        if (typeof syncContractStates === 'function') {
-            syncContractStates().catch(err => {
-                if (typeof appendLog === 'function') appendLog(`Warning: Contract State Sync Delayed - ${err.message}`, 'text-yellow-500');
-            });
-        }
+        // FIX: ปลดการบล็อกของ await ออก ป้องกัน RPC ล่มจากการที่ State Sync ช้าหรือ Timeout
+        syncContractStates().catch(err => {
+            appendLog(`Warning: Contract State Sync Delayed - ${err.message}`, 'text-yellow-500');
+        });
     } catch (err) {
         readOnlyProvider = null;
         readOnlyContract = null;
-        if (typeof appendLog === 'function') appendLog(`CRITICAL: General RPC Route Failed: ${err.message}`, 'text-red-500');
-        if (typeof showNotification === 'function') showNotification('Unable to connect General Contract to Base Mainnet.', 'error');
+        appendLog(`CRITICAL: General RPC Route Failed: ${err.message}`, 'text-red-500');
+        showNotification('Unable to connect General Contract to Base Mainnet.', 'error');
     }
 }
 
 async function initIrysRPC(irysAddress, irysAbi) {
     try {
         irysProvider = createFallbackProvider(IRYS_ENDPOINTS);
+        await irysProvider.getNetwork();
         
-        await withTimeout(irysProvider.getNetwork(), 5000, "Irys RPC Network Timeout");
+        irysContract = new ethers.Contract(irysAddress, irysAbi, irysProvider);
         
-        if (irysAddress && irysAbi) {
-            irysContract = new ethers.Contract(irysAddress, irysAbi, irysProvider);
-        }
-        
-        if (typeof appendLog === 'function') appendLog('Dedicated Irys RPC Online (Alchemy Key 2 Isolated).', 'text-cyan-400');
+        appendLog('Dedicated Irys RPC Online (Alchemy Key 2 Isolated).', 'text-cyan-400');
     } catch (err) {
         irysProvider = null;
         irysContract = null;
-        if (typeof appendLog === 'function') appendLog(`CRITICAL: Irys Dedicated RPC Failed: ${err.message}`, 'text-red-500');
-        if (typeof showNotification === 'function') showNotification('Unable to connect Irys Pipeline to Base Mainnet.', 'error');
+        appendLog(`CRITICAL: Irys Dedicated RPC Failed: ${err.message}`, 'text-red-500');
+        showNotification('Unable to connect Irys Pipeline to Base Mainnet.', 'error');
     }
 }
 
 async function bootSystemRPCs(irysAddress, irysAbi) {
-    if (typeof appendLog === 'function') appendLog('Booting Multi-Tunnel RPC Infrastructure...', 'text-slate-400');
-    
+    appendLog('Booting Multi-Tunnel RPC Infrastructure...', 'text-slate-400');
     await Promise.allSettled([
         initReadOnlyRPC(),
         initIrysRPC(irysAddress, irysAbi)
@@ -3069,8 +3104,9 @@ async function handleAccountsChangedEvent(accounts) {
         document.getElementById('adminSector')?.classList.add('hidden');
         document.getElementById('robotPanel')?.classList.add('hidden');
         
-        if (typeof pollingInterval !== 'undefined' && pollingInterval) {
+        if (pollingInterval) {
             clearInterval(pollingInterval);
+            pollingInterval = null;
         }
         clearAllTimers();
         
@@ -3693,8 +3729,8 @@ async function processDeedUploadAssignment(event) {
 
     const isActuallyVideo = file.type.startsWith('video/');
     if ((userIntentType === 'video' && !isActuallyVideo) || (userIntentType === 'image' && isActuallyVideo)) {
-        appendLog("SECURITY ALERT: Selected mode (IMG/VID) conflicts with the uploaded file type.", "text-red-500 font-bold");
-        showNotification("EXCEPTION: Please upload a file matching the selected mode.", "error");
+        appendLog("SECURITY ALERT: โหมดที่เลือก (IMG/VID) ขัดแย้งกับประเภทไฟล์ที่อัปโหลด", "text-red-500 font-bold");
+        showNotification("EXCEPTION: กรุณาอัปโหลดไฟล์ให้ตรงกับโหมดตัวเลือกบนแท่นอัปโหลด", "error");
         event.target.value = "";
         unlockSystem();
         return;
@@ -3746,14 +3782,14 @@ async function processDeedUploadAssignment(event) {
         }
         
         progress.complete();
-        showNotification(`Upload Success: File successfully anchored to Irys Datachain.`, "success");
+        showNotification(`Upload Success: ไฟล์ถูกบันทึกลง Irys Datachain สำเร็จ`, "success");
     } catch (err) {
         const errorMsg = typeof decodeContractError === 'function' ? decodeContractError(err) : (err.message || "Unknown Error");
         const sanitizedMsg = sanitizeForDOM(errorMsg);
 
         if (sanitizedMsg === "USER_CANCELLED_TX" || err.message?.toLowerCase().includes("user declined")) {
             appendLog("Irys upload or wallet execution was aborted by the user.", "text-yellow-500");
-            showNotification("Upload or funding cancelled by user.", "warning");
+            showNotification("การอัปโหลดหรือเติมเงินถูกยกเลิกโดยผู้ใช้", "warning");
         } else {
             appendLog(`Irys permanent transmission process faulted or canceled: ${sanitizedMsg}`, "text-red-500");
             updateBridgeStatus(`NODE #${targetSlotAtInit}: STREAM BROKEN`, "error");
@@ -3795,7 +3831,7 @@ async function buildAndUploadMetadata(e) {
         return;
     }
 
-    const targetTokenId = globalSelectedTokenId;
+    const targetTokenId = (document.getElementById('novaTokenId')?.value || "").trim() || globalSelectedTokenId;
     if (!targetTokenId) {
         showNotification("STRUCTURAL EXCEPTION: Please select a Token ID coordinate on the Matrix first.", "error");
         return;
@@ -3878,7 +3914,7 @@ async function buildAndUploadMetadata(e) {
         const irysTxId = receipt.id;
         
         localStorage.setItem('pending_nova_txid', irysTxId);
-        localStorage.setItem('pending_nova_token', targetTokenId.toString());
+        localStorage.setItem('pending_nova_token', (document.getElementById('novaTokenId')?.value || "").trim() || globalSelectedTokenId || "");
         
         appendLog(`Metadata completely sealed. Mapping pathway straight to NOVA protocol input (Irys ID: ${sanitizeForDOM(irysTxId)})`, "text-emerald-400 font-bold");
         updateBridgeStatus(`METADATA SCHEMATIC ONLINE`, "success");
@@ -3895,7 +3931,7 @@ async function buildAndUploadMetadata(e) {
 
         if (err.code === 4001 || sanitizedMsg === "USER_CANCELLED_TX" || err.message?.toLowerCase().includes("user rejected") || err.message?.toLowerCase().includes("denied transaction") || err.message?.toLowerCase().includes("declined")) {
             appendLog("Metadata registration funding sequence aborted by user.", "text-yellow-500");
-            showNotification("Manifest upload funding cancelled.", "warning");
+            showNotification("การเติมเงินอัปโหลดเจตจำนงถูกยกเลิก", "warning");
         } else {
             appendLog(`Metadata compilation aborted: ${sanitizedMsg}`, "text-red-500");
             showNotification(sanitizedMsg, "error");
@@ -3936,7 +3972,7 @@ async function executeSetParams(e) {
         m = ethers.parseEther(mint);
         n = ethers.parseEther(nova);
     } catch (err) {
-        showNotification("Input Error: Invalid numeric format.", "error");
+        showNotification("Input Error: กรุณากรอกตัวเลขให้ถูกต้อง (ห้ามมีตัวอักษร)", "error");
         return;
     }
 
@@ -4005,7 +4041,7 @@ async function executeExtractWETHRoyalty(e) {
     const receipt = await runTx(e, "EXTRACT_WETH_ROYALTY", "extractWETHRoyalty", []);
     if (receipt) {
         appendLog("WETH Royalty successfully extracted from the structural vault.", "text-emerald-400 font-bold");
-        showNotification("Council fee successfully extracted.", "success");
+        showNotification("สกัดค่าธรรมเนียมสภาสูงสำเร็จแล้ว", "success");
     }
 }
 
@@ -4201,7 +4237,7 @@ async function triggerForge(type, e) {
         const existingFrontUri = (document.getElementById('forgeFrontUri')?.value || "").trim() || preMintFrontUri || currentLoadedMediaData.front || "";
         
         if (!existingFrontUri) {
-            appendLog("MINT REJECTED: Front URI missing. Operation aborted.", "text-red-500 font-bold");
+            appendLog("MINT REJECTED: ไม่พบรูปหน้า (Front URI) ในระบบ ไม่อนุญาตให้ดำเนินการต่อ", "text-red-500 font-bold");
             showNotification("METADATA EXCEPTION: Node not ready for minting (Architect has not assigned Obverse URI).", "error");
             return;
         }
@@ -4331,12 +4367,12 @@ async function executeArchitectMint(e) {
         if (isSurge) { return; }
 
         const targetTokenId = globalSelectedTokenId;
-        if (!targetTokenId) {
+        const rawId = (document.getElementById('novaTokenId')?.value || "").trim() || targetTokenId;
+        const tokenId = validateTokenRange(rawId);
+        if (!tokenId) {
             showNotification("STRUCTURAL EXCEPTION: Please select a Token ID coordinate on the Matrix first.", "error");
             return;
         }
-        const tokenId = validateTokenRange(targetTokenId);
-        if (!tokenId) return;
 
         const mappedNode = await autoMap(tokenId);
         if (!mappedNode) {
@@ -4455,12 +4491,12 @@ async function executeArchitectRemint(e) {
         if (isSurge) { return; }
         
         const targetTokenId = globalSelectedTokenId;
-        if (!targetTokenId) {
+        const rawId = (document.getElementById('novaTokenId')?.value || "").trim() || targetTokenId;
+        const tokenId = validateTokenRange(rawId);
+        if (!tokenId) {
             showNotification("STRUCTURAL EXCEPTION: Please select a Token ID coordinate on the Matrix first.", "error");
             return;
         }
-        const tokenId = validateTokenRange(targetTokenId);
-        if (!tokenId) return;
 
         const mappedNode = await autoMap(tokenId);
         if (!mappedNode) {
@@ -4555,18 +4591,21 @@ async function executeArchitectRemint(e) {
 async function closeNovaWarn(isConfirmed) {
     const modal = document.getElementById('novaWarnModal');
     
+    // 1. ถ้าผู้ใช้กด Cancel ให้ปิด Modal และจบการทำงาน
     if (!isConfirmed) {
         if (modal) modal.classList.add('hidden');
         showNotification("Nova Consecration aborted by user.", "warning");
         return;
     }
 
+    // 2. ถ้ายังไม่ติ๊ก Checkbox ยอมรับ ให้แจ้งเตือนแต่ "ห้ามปิด Modal"
     const ackCheckbox = document.getElementById('novaAck');
     if (ackCheckbox && !ackCheckbox.checked) {
         showNotification("You must acknowledge the irreversible nature of this action.", "error");
         return;
     }
 
+    // 3. เมื่อผ่านการตรวจสอบแล้ว ค่อยปิด Modal
     if (modal) modal.classList.add('hidden');
 
     if (!secureContract || !signer) {
@@ -4574,6 +4613,7 @@ async function closeNovaWarn(isConfirmed) {
         return;
     }
 
+    // ดึงค่าอย่างปลอดภัยเพื่อป้องกัน Error กรณีหา Element ไม่เจอ
     const tokenId = (document.getElementById('novaTokenId')?.value || "").trim();
     const dna = (document.getElementById('novaDnaInput')?.value || "").trim();
     const videoUri = (document.getElementById('novaVideoUri')?.value || "").trim();
@@ -4715,7 +4755,7 @@ async function executeSovereignSupport(e) {
     if (typeof requestActionConfirmation === "function") {
         confirmBurn = await requestActionConfirmation(
             "☠ CONFIRM IMMOLATION",
-            `Confirm immolation of Node #${tokenId}? (Irreversible)`
+            `ยืนยันการเผาทำลาย Node #${tokenId} ใช่หรือไม่? (ไม่สามารถย้อนกลับได้)`
         );
     }
     if(!confirmBurn) return;
@@ -5003,6 +5043,8 @@ if (typeof window.currentAuditSession === 'undefined') window.currentAuditSessio
 if (typeof window.currentLoadedMediaData === 'undefined') {
     window.currentLoadedMediaData = { front: "", back: "", video: "" };
 }
+
+const IS_TOUCH_DEVICE = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
 
 function handleSlotClick(slotNum) {
     if (typeof globalSelectedTokenId === 'undefined' || globalSelectedTokenId === null) {
@@ -5365,15 +5407,13 @@ function filterSovereignGrid() {
         const query = (inputEl.value || "").trim(); 
         const targetParsedInt = query !== "" ? parseInt(query, 10) : null;
 
-        if (window.matrixDOMCache instanceof Map) {
-            window.matrixDOMCache.forEach((node, id) => {
-                if (query === "" || id.toString() === query || (targetParsedInt !== null && id === targetParsedInt)) { 
-                    node.style.display = 'flex'; 
-                } else { 
-                    node.style.display = 'none'; 
-                }
-            });
-        }
+        window.matrixDOMCache.forEach((node, id) => {
+            if (query === "" || id.toString() === query || (targetParsedInt !== null && id === targetParsedInt)) { 
+                node.style.display = 'flex'; 
+            } else { 
+                node.style.display = 'none'; 
+            }
+        });
     }, 250);
 }
 
@@ -5390,7 +5430,7 @@ async function syncActiveMatrixNodes() {
                     if (!activeSet.has(i)) { 
                         node.classList.add('opacity-30', 'grayscale', 'cursor-not-allowed'); 
                         node.classList.remove('bg-slate-950'); 
-                        node.classList.remove('hover:bg-slate-800');
+                        if (!IS_TOUCH_DEVICE) node.classList.remove('hover:bg-slate-800');
                         node.classList.add('bg-red-950/20'); 
                         node.title = `NODE #${i} [BURNED / VOID]`; 
                     } else { 
@@ -5437,7 +5477,8 @@ function setupMatrixGrid() {
         node.id = `node-${i}`;
         node.setAttribute('data-token-id', i.toString());
         
-        node.className = `matrix-node aspect-square w-full bg-slate-950 border rounded flex flex-col items-center justify-center font-mono text-[8px] sm:text-[10px] md:text-xs text-slate-500 cursor-pointer p-1 sm:p-2 transition-colors hover:bg-slate-800 active:bg-slate-800 ${rankClass}`;
+        const hoverClass = IS_TOUCH_DEVICE ? "active:bg-slate-800" : "hover:bg-slate-800";
+        node.className = `matrix-node aspect-square w-full bg-slate-950 border rounded flex flex-col items-center justify-center font-mono text-[8px] sm:text-[10px] md:text-xs text-slate-500 cursor-pointer p-1 sm:p-2 transition-colors ${hoverClass} ${rankClass}`;
         
         node.style.contentVisibility = 'auto';
         node.style.contain = 'strict';
@@ -5509,110 +5550,86 @@ function onTypeToggle(station) {
     }
 }
 
-function revealApp() { 
-    document.body.classList.add('app-ready'); 
-}
+function revealApp() { document.body.classList.add('app-ready'); }
 
 const initializeSystem = async () => {
-    try {
-        await fetchImperialManifest();
-    } catch (err) {
-        console.error("[SYSTEM EXCEPTION] fetchImperialManifest failed:", err);
-    }
+    await fetchImperialManifest();
     
     setupMatrixGrid();
     
     const enforceDOMInputLimits = () => {
-        const inputLimits = {
-            'novaDnaInput': '1024',
-            'propName': '128',
-            'propTargetInput': '128',
-            'novaHiddenInput': '1024'
-        };
+        const dnaInput = document.getElementById('novaDnaInput');
+        if (dnaInput) dnaInput.setAttribute('maxlength', '1024');
         
-        Object.entries(inputLimits).forEach(([id, limit]) => {
-            const el = document.getElementById(id);
-            if (el) el.setAttribute('maxlength', limit);
-        });
+        const propNameInput = document.getElementById('propName');
+        if (propNameInput) propNameInput.setAttribute('maxlength', '128');
+        
+        const targetInput = document.getElementById('propTargetInput');
+        if (targetInput) targetInput.setAttribute('maxlength', '128');
+        
+        const hiddenInput = document.getElementById('novaHiddenInput');
+        if (hiddenInput) hiddenInput.setAttribute('maxlength', '1024');
     };
     enforceDOMInputLimits();
     
     const grid = document.getElementById('matrixGridContainer'); 
     if (grid && !grid.dataset.clickAttached) {
         
-        grid.addEventListener('click', async (e) => { 
+        // 🛡️ WAR MACHINE FIX: คืนค่า pointerup สำหรับ Mobile Touch ให้กดได้ลื่นไหลเหมือนเดิม!
+        const eventType = IS_TOUCH_DEVICE ? 'pointerup' : 'click';
+        
+        grid.addEventListener(eventType, async (e) => { 
             const targetNode = e.target.closest('.matrix-node'); 
             if (!targetNode) return;
 
-            const tokenId = targetNode.dataset.tokenId;
+            const tokenId = targetNode.getAttribute('data-token-id');
             if (!tokenId) return;
 
             if (typeof isTransactionPending !== 'undefined' && isTransactionPending) {
-                if (typeof showNotification === 'function') {
-                    showNotification("SYSTEM ENFORCEMENT: Transaction processing. Cannot switch cells.", "error");
-                }
+                if (typeof showNotification === 'function') showNotification("SYSTEM ENFORCEMENT: Transaction processing. Cannot switch cells.", "error");
                 return;
             }
 
             try {
-                if (window.matrixDOMCache instanceof Map) {
-                    window.matrixDOMCache.forEach(n => n.classList.remove('bg-slate-800', 'border-yellow-500'));
-                }
+                window.matrixDOMCache.forEach(n => n.classList.remove('bg-slate-800', 'border-yellow-500'));
                 targetNode.classList.add('bg-slate-800', 'border-yellow-500');
 
                 await auditTokenFromLedger(tokenId);
             } catch (err) {
                 console.error(`[MATRIX GRID EXCEPTION] Failed to inspect node #${tokenId}:`, err);
-                if (typeof showNotification === 'function') {
-                    showNotification("Failed to retrieve selected cell coordinate data.", "error");
-                }
+                if (typeof showNotification === 'function') showNotification("Failed to retrieve selected cell coordinate data.", "error");
             }
         });
         grid.dataset.clickAttached = "true";
     }
 
     if (window.visualViewport) {
-        const originalHeight = document.body.style.height;
         window.visualViewport.addEventListener("resize", () => {
-            const activeTag = document.activeElement?.tagName;
-            if (activeTag === 'INPUT' || activeTag === 'TEXTAREA') {
+            if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') {
                 document.body.style.height = `${window.visualViewport.height}px`;
-            } else {
-                document.body.style.height = originalHeight || ''; 
             }
         });
     }
 };
 
-const bootProtocol = () => {
-    revealApp();
-    initializeSystem().catch(err => console.error("[BOOT PROTOCOL EXCEPTION]:", err));
-};
-
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', bootProtocol, { once: true }); 
+    document.addEventListener('DOMContentLoaded', () => {
+        revealApp();
+        initializeSystem();
+    }, { once: true }); 
 } else { 
-    bootProtocol(); 
+    revealApp(); 
+    initializeSystem();
 }
 
 window.addEventListener('load', async () => { 
-    if (typeof loadArchitectGateways === 'function') { 
-        try { 
-            loadArchitectGateways(); 
-        } catch (err) {
-            console.error("[ARCHITECT GATEWAY ERROR] Failed to load:", err); 
-        } 
-    } 
-    
+    revealApp(); 
+    if (typeof loadArchitectGateways === 'function') { try { loadArchitectGateways(); } catch (e) {} } 
     if (typeof bootSystemRPCs === 'function' && typeof CONTRACT_ADDRESS !== 'undefined' && typeof CONTRACT_ABI !== 'undefined') { 
         try { 
             await bootSystemRPCs(CONTRACT_ADDRESS, CONTRACT_ABI); 
-            if (typeof syncActiveMatrixNodes === 'function') {
-                syncActiveMatrixNodes(); 
-            }
-        } catch (err) {
-            console.error("[SYSTEM RPC ERROR] Boot failure:", err); 
-        } 
+            syncActiveMatrixNodes(); 
+        } catch (e) {} 
     }
 });
 
