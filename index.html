@@ -569,7 +569,7 @@
         </div>
     </section>
     
-    <div id="memberDnaVault" class="hidden mb-6 relative z-10">
+    <div id="memberDnaStudio" class="hidden mb-6 relative z-10">
     <div class="chiaroscuro-bg p-6 rounded-2xl border border-rose-950">
         <!-- Header Section -->
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-stone-900 pb-3 mb-5 gap-2">
@@ -2951,9 +2951,36 @@ async function loadDeedMetadata(tokenId) {
     }
 }
 
+let irisProvider = null;
+let irisContract = null;
+
+const BASE_CHAIN_ID = 8453;
+
+const GENERAL_ENDPOINTS = [
+    'https://base-mainnet.g.alchemy.com/v2/QTZrknzCeDDEXAFCEBCMM',
+    'https://mainnet.base.org',                                   
+    'https://base.llamarpc.com',                                  
+    'https://base-rpc.publicnode.com'
+];
+
+const IRIS_ENDPOINTS = [
+    'https://base-mainnet.g.alchemy.com/v2/wR5UgtUrkfPjKnqfMhm8k',
+    'https://mainnet.base.org',                                   
+    'https://base.llamarpc.com',                                  
+    'https://base-rpc.publicnode.com'
+];
+
+function createFallbackProvider(endpoints) {
+    const configs = endpoints.map((url, index) => {
+        const p = new ethers.JsonRpcProvider(url, BASE_CHAIN_ID, { staticNetwork: true });
+        return { provider: p, priority: index + 1, weight: 1 };
+    });
+    return new ethers.FallbackProvider(configs, 1);
+}
+
 async function initReadOnlyRPC() {
     try {
-        readOnlyProvider = new ethers.JsonRpcProvider('https://mainnet.base.org');
+        readOnlyProvider = createFallbackProvider(GENERAL_ENDPOINTS);
         await readOnlyProvider.getNetwork();
         
         readOnlyContract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, readOnlyProvider);
@@ -2966,6 +2993,29 @@ async function initReadOnlyRPC() {
         appendLog(`CRITICAL: General RPC Route Failed: ${err.message}`, 'text-red-500');
         showNotification('Unable to connect General Contract to Base Mainnet.', 'error');
     }
+}
+
+async function initIrisRPC(irisAddress, irisAbi) {
+    try {
+        irisProvider = createFallbackProvider(IRIS_ENDPOINTS);
+        await irisProvider.getNetwork();
+        
+        irisContract = new ethers.Contract(irisAddress, irisAbi, irisProvider);
+        
+        appendLog('Dedicated Iris RPC Online (Alchemy Key 2 Isolated).', 'text-cyan-400');
+    } catch (err) {
+        irisProvider = null;
+        irisContract = null;
+        appendLog(`CRITICAL: Iris Dedicated RPC Failed: ${err.message}`, 'text-red-500');
+    }
+}
+
+async function bootSystemRPCs(irisAddress, irisAbi) {
+    appendLog('Booting Multi-Tunnel RPC Infrastructure...', 'text-slate-400');
+    await Promise.allSettled([
+        initReadOnlyRPC(),
+        initIrisRPC(irisAddress, irisAbi)
+    ]);
 }
 
 async function bootSystemRPCs() {
