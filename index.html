@@ -1918,61 +1918,24 @@ async function autoMap(tokenId) {
                 try {
                     const controller = new AbortController();
                     const timeoutId = setTimeout(() => controller.abort(), 5000); 
+                    const metaResponse = await fetch(targetUrl, { signal: walletSessionController.signal });
+                    clearTimeout(timeoutId); 
                     
-                    // Link wallet session abort to this controller to maintain dual-abort capability
-                    const onWalletAbort = () => controller.abort();
-                    if (walletSessionController && walletSessionController.signal) {
-                        walletSessionController.signal.addEventListener('abort', onWalletAbort);
-                    }
-
-                    try {
-                        const metaResponse = await fetch(targetUrl, { signal: controller.signal });
-                        
-                        if (metaResponse.ok) {
-                            const contentLength = metaResponse.headers.get('content-length');
-                            if (contentLength && parseInt(contentLength) > 51200) {
+                    if (metaResponse.ok) {
+                        const contentLength = metaResponse.headers.get('content-length');
+                        if (contentLength && parseInt(contentLength) > 51200) {
+                            console.warn(`[autoMap] Payload exceeds 50KB limit. Rejected to protect UI thread.`);
+                        } else {
+                            const text = await metaResponse.text();
+                            if (text.length > 51200) { 
                                 console.warn(`[autoMap] Payload exceeds 50KB limit. Rejected to protect UI thread.`);
                             } else {
-                                const reader = metaResponse.body.getReader();
-                                let receivedLength = 0;
-                                let chunks = [];
-                                let isOversized = false;
-
-                                while(true) {
-                                    const {done, value} = await reader.read();
-                                    if (done) break;
-                                    chunks.push(value);
-                                    receivedLength += value.length;
-                                    if (receivedLength > 51200) {
-                                        isOversized = true;
-                                        reader.cancel();
-                                        break;
-                                    }
-                                }
-
-                                if (isOversized) {
-                                    console.warn(`[autoMap] Payload exceeds 50KB limit. Rejected to protect UI thread.`);
-                                } else {
-                                    const text = new TextDecoder("utf-8").decode(
-                                        chunks.reduce((acc, val) => {
-                                            const c = new Uint8Array(acc.length + val.length);
-                                            c.set(acc, 0);
-                                            c.set(val, acc.length);
-                                            return c;
-                                        }, new Uint8Array(0))
-                                    );
-                                    try {
-                                        metadata = JSON.parse(text);
-                                    } catch (parseErr) {
-                                        console.warn(`[autoMap] Invalid JSON payload at ${targetUrl}`);
-                                    }
+                                try {
+                                    metadata = JSON.parse(text);
+                                } catch (parseErr) {
+                                    console.warn(`[autoMap] Invalid JSON payload at ${targetUrl}`);
                                 }
                             }
-                        }
-                    } finally {
-                        clearTimeout(timeoutId); 
-                        if (walletSessionController && walletSessionController.signal) {
-                            walletSessionController.signal.removeEventListener('abort', onWalletAbort);
                         }
                     }
                 } catch (e) {
