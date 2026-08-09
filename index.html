@@ -1118,12 +1118,10 @@
         </div>
     </footer>
     
-    
-    
-    
+
+
 
 <script>
-
 "use strict";
 
 let isTransactionPending = false;
@@ -1148,7 +1146,7 @@ async function fetchImperialManifest() {
 
 function lockSystem() {
     if (isTransactionPending) {
-        showNotification("⚠️ SYSTEM ENFORCEMENT: ธุรกรรมกำลังประมวลผล ห้ามกดย้ำ", "error");
+        showNotification("⚠️ SYSTEM ENFORCEMENT: Transaction in progress. Do not resubmit.", "error");
         return false;
     }
     isTransactionPending = true;
@@ -1169,7 +1167,7 @@ function lockSystem() {
         
         const btn = document.createElement('button');
         btn.className = 'mt-8 px-4 py-2 border border-red-500 text-red-500 text-[10px] hover:bg-red-950 rounded cursor-pointer pointer-events-auto';
-        btn.textContent = 'FORCE UNLOCK (กดเมื่อค้างนานเกิน 1 นาที)';
+        btn.textContent = 'FORCE UNLOCK (If stalled > 1 min)';
         btn.onclick = () => unlockSystem(true);
 
         overlay.append(spinner, title, btn);
@@ -1188,7 +1186,7 @@ function unlockSystem(force = false) {
     localStorage.removeItem('tx_pending');
     localStorage.removeItem('tx_pending_ts');
     
-    if (force) showNotification("ปลดล็อกระบบฉุกเฉินแล้ว", "warning");
+    if (force) showNotification("Emergency system unlocked.", "warning");
 }
 
 window.addEventListener('DOMContentLoaded', () => unlockSystem(false));
@@ -1451,7 +1449,7 @@ function checkPendingNova() {
         if (hiddenInput) hiddenInput.value = pendingTxId;
         if (tokenInput && pendingToken) tokenInput.value = pendingToken;
         
-        showNotification("RESUMING NOVA: พบข้อมูล Metadata ค้างอยู่ในระบบ กรุณายืนยันธุรกรรม On-chain ให้เสร็จสิ้น", "warning");
+        showNotification("RESUMING NOVA: Pending metadata found. Please confirm the on-chain transaction.", "warning");
         const modal = document.getElementById('novaWarnModal');
         if (modal) modal.classList.remove('hidden');
     }
@@ -1920,24 +1918,61 @@ async function autoMap(tokenId) {
                 try {
                     const controller = new AbortController();
                     const timeoutId = setTimeout(() => controller.abort(), 5000); 
-                    const metaResponse = await fetch(targetUrl, { signal: walletSessionController.signal });
-                    clearTimeout(timeoutId); 
                     
-                    if (metaResponse.ok) {
-                        const contentLength = metaResponse.headers.get('content-length');
-                        if (contentLength && parseInt(contentLength) > 51200) {
-                            console.warn(`[autoMap] Payload exceeds 50KB limit. Rejected to protect UI thread.`);
-                        } else {
-                            const text = await metaResponse.text();
-                            if (text.length > 51200) { 
+                    // Link wallet session abort to this controller to maintain dual-abort capability
+                    const onWalletAbort = () => controller.abort();
+                    if (walletSessionController && walletSessionController.signal) {
+                        walletSessionController.signal.addEventListener('abort', onWalletAbort);
+                    }
+
+                    try {
+                        const metaResponse = await fetch(targetUrl, { signal: controller.signal });
+                        
+                        if (metaResponse.ok) {
+                            const contentLength = metaResponse.headers.get('content-length');
+                            if (contentLength && parseInt(contentLength) > 51200) {
                                 console.warn(`[autoMap] Payload exceeds 50KB limit. Rejected to protect UI thread.`);
                             } else {
-                                try {
-                                    metadata = JSON.parse(text);
-                                } catch (parseErr) {
-                                    console.warn(`[autoMap] Invalid JSON payload at ${targetUrl}`);
+                                const reader = metaResponse.body.getReader();
+                                let receivedLength = 0;
+                                let chunks = [];
+                                let isOversized = false;
+
+                                while(true) {
+                                    const {done, value} = await reader.read();
+                                    if (done) break;
+                                    chunks.push(value);
+                                    receivedLength += value.length;
+                                    if (receivedLength > 51200) {
+                                        isOversized = true;
+                                        reader.cancel();
+                                        break;
+                                    }
+                                }
+
+                                if (isOversized) {
+                                    console.warn(`[autoMap] Payload exceeds 50KB limit. Rejected to protect UI thread.`);
+                                } else {
+                                    const text = new TextDecoder("utf-8").decode(
+                                        chunks.reduce((acc, val) => {
+                                            const c = new Uint8Array(acc.length + val.length);
+                                            c.set(acc, 0);
+                                            c.set(val, acc.length);
+                                            return c;
+                                        }, new Uint8Array(0))
+                                    );
+                                    try {
+                                        metadata = JSON.parse(text);
+                                    } catch (parseErr) {
+                                        console.warn(`[autoMap] Invalid JSON payload at ${targetUrl}`);
+                                    }
                                 }
                             }
+                        }
+                    } finally {
+                        clearTimeout(timeoutId); 
+                        if (walletSessionController && walletSessionController.signal) {
+                            walletSessionController.signal.removeEventListener('abort', onWalletAbort);
                         }
                     }
                 } catch (e) {
@@ -2869,8 +2904,6 @@ async function loadDeedMetadata(tokenId) {
 let irysProvider = null;
 let irysContract = null;
 
-// 🚨 ลบ let readOnlyContract = null; ที่เคยอยู่ตรงนี้ทิ้งไปแล้ว เพราะมันไปซ้ำกับบรรทัด 1040
-
 const BASE_CHAIN_ID = 8453;
 
 const GENERAL_ENDPOINTS = [
@@ -2888,54 +2921,76 @@ const IRYS_ENDPOINTS = [
 ];
 
 function createFallbackProvider(endpoints) {
-    // FIX: บังคับใช้ Network 8453 (Base Mainnet) อย่างเด็ดขาดเพื่อทำลาย Error network changed 1 => 8453
     const network = ethers.Network.from(BASE_CHAIN_ID);
     const configs = endpoints.map((url, index) => {
-        const p = new ethers.JsonRpcProvider(url, network, { staticNetwork: true });
-        return { provider: p, priority: index + 1, weight: 1 };
+        const fetchReq = new ethers.FetchRequest(url);
+        fetchReq.timeout = 5000; 
+        
+        const p = new ethers.JsonRpcProvider(fetchReq, network, { staticNetwork: true });
+        return { 
+            provider: p, 
+            priority: index + 1, 
+            weight: 1,
+            stallTimeout: 1500 
+        };
     });
     return new ethers.FallbackProvider(configs, network);
 }
 
+const withTimeout = (promise, ms, errorMsg) => {
+    return Promise.race([
+        promise,
+        new Promise((_, reject) => setTimeout(() => reject(new Error(errorMsg)), ms))
+    ]);
+};
+
 async function initReadOnlyRPC() {
     try {
         readOnlyProvider = createFallbackProvider(GENERAL_ENDPOINTS);
-        await readOnlyProvider.getNetwork();
         
-        readOnlyContract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, readOnlyProvider);
+        await withTimeout(readOnlyProvider.getNetwork(), 5000, "General RPC Network Timeout");
         
-        appendLog('General Multi-RPC Online (Alchemy Key 1 Prioritized).', 'text-emerald-400');
+        if (typeof CONTRACT_ADDRESS !== 'undefined' && typeof CONTRACT_ABI !== 'undefined') {
+            readOnlyContract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, readOnlyProvider);
+        }
         
-        // FIX: ปลดการบล็อกของ await ออก ป้องกัน RPC ล่มจากการที่ State Sync ช้าหรือ Timeout
-        syncContractStates().catch(err => {
-            appendLog(`Warning: Contract State Sync Delayed - ${err.message}`, 'text-yellow-500');
-        });
+        if (typeof appendLog === 'function') appendLog('General Multi-RPC Online (Alchemy Key 1 Prioritized).', 'text-emerald-400');
+        
+        if (typeof syncContractStates === 'function') {
+            syncContractStates().catch(err => {
+                if (typeof appendLog === 'function') appendLog(`Warning: Contract State Sync Delayed - ${err.message}`, 'text-yellow-500');
+            });
+        }
     } catch (err) {
         readOnlyProvider = null;
         readOnlyContract = null;
-        appendLog(`CRITICAL: General RPC Route Failed: ${err.message}`, 'text-red-500');
-        showNotification('Unable to connect General Contract to Base Mainnet.', 'error');
+        if (typeof appendLog === 'function') appendLog(`CRITICAL: General RPC Route Failed: ${err.message}`, 'text-red-500');
+        if (typeof showNotification === 'function') showNotification('Unable to connect General Contract to Base Mainnet.', 'error');
     }
 }
 
 async function initIrysRPC(irysAddress, irysAbi) {
     try {
         irysProvider = createFallbackProvider(IRYS_ENDPOINTS);
-        await irysProvider.getNetwork();
         
-        irysContract = new ethers.Contract(irysAddress, irysAbi, irysProvider);
+        await withTimeout(irysProvider.getNetwork(), 5000, "Irys RPC Network Timeout");
         
-        appendLog('Dedicated Irys RPC Online (Alchemy Key 2 Isolated).', 'text-cyan-400');
+        if (irysAddress && irysAbi) {
+            irysContract = new ethers.Contract(irysAddress, irysAbi, irysProvider);
+        }
+        
+        if (typeof appendLog === 'function') appendLog('Dedicated Irys RPC Online (Alchemy Key 2 Isolated).', 'text-cyan-400');
     } catch (err) {
         irysProvider = null;
         irysContract = null;
-        appendLog(`CRITICAL: Irys Dedicated RPC Failed: ${err.message}`, 'text-red-500');
-        showNotification('Unable to connect Irys Pipeline to Base Mainnet.', 'error');
+        if (typeof appendLog === 'function') appendLog(`CRITICAL: Irys Dedicated RPC Failed: ${err.message}`, 'text-red-500');
+        if (typeof showNotification === 'function') showNotification('Unable to connect Irys Pipeline to Base Mainnet.', 'error');
     }
 }
 
 async function bootSystemRPCs(irysAddress, irysAbi) {
-    appendLog('Booting Multi-Tunnel RPC Infrastructure...', 'text-slate-400');
+    if (typeof appendLog === 'function') appendLog('Booting Multi-Tunnel RPC Infrastructure...', 'text-slate-400');
+    
     await Promise.allSettled([
         initReadOnlyRPC(),
         initIrysRPC(irysAddress, irysAbi)
@@ -3051,9 +3106,8 @@ async function handleAccountsChangedEvent(accounts) {
         document.getElementById('adminSector')?.classList.add('hidden');
         document.getElementById('robotPanel')?.classList.add('hidden');
         
-        if (pollingInterval) {
+        if (typeof pollingInterval !== 'undefined' && pollingInterval) {
             clearInterval(pollingInterval);
-            pollingInterval = null;
         }
         clearAllTimers();
         
@@ -3676,8 +3730,8 @@ async function processDeedUploadAssignment(event) {
 
     const isActuallyVideo = file.type.startsWith('video/');
     if ((userIntentType === 'video' && !isActuallyVideo) || (userIntentType === 'image' && isActuallyVideo)) {
-        appendLog("SECURITY ALERT: โหมดที่เลือก (IMG/VID) ขัดแย้งกับประเภทไฟล์ที่อัปโหลด", "text-red-500 font-bold");
-        showNotification("EXCEPTION: กรุณาอัปโหลดไฟล์ให้ตรงกับโหมดตัวเลือกบนแท่นอัปโหลด", "error");
+        appendLog("SECURITY ALERT: Selected mode (IMG/VID) conflicts with the uploaded file type.", "text-red-500 font-bold");
+        showNotification("EXCEPTION: Please upload a file matching the selected mode.", "error");
         event.target.value = "";
         unlockSystem();
         return;
@@ -3729,14 +3783,14 @@ async function processDeedUploadAssignment(event) {
         }
         
         progress.complete();
-        showNotification(`Upload Success: ไฟล์ถูกบันทึกลง Irys Datachain สำเร็จ`, "success");
+        showNotification(`Upload Success: File successfully anchored to Irys Datachain.`, "success");
     } catch (err) {
         const errorMsg = typeof decodeContractError === 'function' ? decodeContractError(err) : (err.message || "Unknown Error");
         const sanitizedMsg = sanitizeForDOM(errorMsg);
 
         if (sanitizedMsg === "USER_CANCELLED_TX" || err.message?.toLowerCase().includes("user declined")) {
             appendLog("Irys upload or wallet execution was aborted by the user.", "text-yellow-500");
-            showNotification("การอัปโหลดหรือเติมเงินถูกยกเลิกโดยผู้ใช้", "warning");
+            showNotification("Upload or funding cancelled by user.", "warning");
         } else {
             appendLog(`Irys permanent transmission process faulted or canceled: ${sanitizedMsg}`, "text-red-500");
             updateBridgeStatus(`NODE #${targetSlotAtInit}: STREAM BROKEN`, "error");
@@ -3778,7 +3832,6 @@ async function buildAndUploadMetadata(e) {
         return;
     }
 
-    // STRICT ENFORCEMENT: Must use Matrix Cell selection only. No cross-contamination from Nova input.
     const targetTokenId = globalSelectedTokenId;
     if (!targetTokenId) {
         showNotification("STRUCTURAL EXCEPTION: Please select a Token ID coordinate on the Matrix first.", "error");
@@ -3879,7 +3932,7 @@ async function buildAndUploadMetadata(e) {
 
         if (err.code === 4001 || sanitizedMsg === "USER_CANCELLED_TX" || err.message?.toLowerCase().includes("user rejected") || err.message?.toLowerCase().includes("denied transaction") || err.message?.toLowerCase().includes("declined")) {
             appendLog("Metadata registration funding sequence aborted by user.", "text-yellow-500");
-            showNotification("การเติมเงินอัปโหลดเจตจำนงถูกยกเลิก", "warning");
+            showNotification("Manifest upload funding cancelled.", "warning");
         } else {
             appendLog(`Metadata compilation aborted: ${sanitizedMsg}`, "text-red-500");
             showNotification(sanitizedMsg, "error");
@@ -3920,7 +3973,7 @@ async function executeSetParams(e) {
         m = ethers.parseEther(mint);
         n = ethers.parseEther(nova);
     } catch (err) {
-        showNotification("Input Error: กรุณากรอกตัวเลขให้ถูกต้อง (ห้ามมีตัวอักษร)", "error");
+        showNotification("Input Error: Invalid numeric format.", "error");
         return;
     }
 
@@ -3989,7 +4042,7 @@ async function executeExtractWETHRoyalty(e) {
     const receipt = await runTx(e, "EXTRACT_WETH_ROYALTY", "extractWETHRoyalty", []);
     if (receipt) {
         appendLog("WETH Royalty successfully extracted from the structural vault.", "text-emerald-400 font-bold");
-        showNotification("สกัดค่าธรรมเนียมสภาสูงสำเร็จแล้ว", "success");
+        showNotification("Council fee successfully extracted.", "success");
     }
 }
 
@@ -4185,7 +4238,7 @@ async function triggerForge(type, e) {
         const existingFrontUri = (document.getElementById('forgeFrontUri')?.value || "").trim() || preMintFrontUri || currentLoadedMediaData.front || "";
         
         if (!existingFrontUri) {
-            appendLog("MINT REJECTED: ไม่พบรูปหน้า (Front URI) ในระบบ ไม่อนุญาตให้ดำเนินการต่อ", "text-red-500 font-bold");
+            appendLog("MINT REJECTED: Front URI missing. Operation aborted.", "text-red-500 font-bold");
             showNotification("METADATA EXCEPTION: Node not ready for minting (Architect has not assigned Obverse URI).", "error");
             return;
         }
@@ -4314,7 +4367,6 @@ async function executeArchitectMint(e) {
         const isSurge = await checkGasSurge();
         if (isSurge) { return; }
 
-        // STRICT ENFORCEMENT: Must use Matrix Cell selection only.
         const targetTokenId = globalSelectedTokenId;
         if (!targetTokenId) {
             showNotification("STRUCTURAL EXCEPTION: Please select a Token ID coordinate on the Matrix first.", "error");
@@ -4439,7 +4491,6 @@ async function executeArchitectRemint(e) {
         const isSurge = await checkGasSurge();
         if (isSurge) { return; }
         
-        // STRICT ENFORCEMENT: Must use Matrix Cell selection only.
         const targetTokenId = globalSelectedTokenId;
         if (!targetTokenId) {
             showNotification("STRUCTURAL EXCEPTION: Please select a Token ID coordinate on the Matrix first.", "error");
@@ -4541,21 +4592,18 @@ async function executeArchitectRemint(e) {
 async function closeNovaWarn(isConfirmed) {
     const modal = document.getElementById('novaWarnModal');
     
-    // 1. ถ้าผู้ใช้กด Cancel ให้ปิด Modal และจบการทำงาน
     if (!isConfirmed) {
         if (modal) modal.classList.add('hidden');
         showNotification("Nova Consecration aborted by user.", "warning");
         return;
     }
 
-    // 2. ถ้ายังไม่ติ๊ก Checkbox ยอมรับ ให้แจ้งเตือนแต่ "ห้ามปิด Modal"
     const ackCheckbox = document.getElementById('novaAck');
     if (ackCheckbox && !ackCheckbox.checked) {
         showNotification("You must acknowledge the irreversible nature of this action.", "error");
         return;
     }
 
-    // 3. เมื่อผ่านการตรวจสอบแล้ว ค่อยปิด Modal
     if (modal) modal.classList.add('hidden');
 
     if (!secureContract || !signer) {
@@ -4563,7 +4611,6 @@ async function closeNovaWarn(isConfirmed) {
         return;
     }
 
-    // ดึงค่าอย่างปลอดภัยเพื่อป้องกัน Error กรณีหา Element ไม่เจอ
     const tokenId = (document.getElementById('novaTokenId')?.value || "").trim();
     const dna = (document.getElementById('novaDnaInput')?.value || "").trim();
     const videoUri = (document.getElementById('novaVideoUri')?.value || "").trim();
@@ -4705,7 +4752,7 @@ async function executeSovereignSupport(e) {
     if (typeof requestActionConfirmation === "function") {
         confirmBurn = await requestActionConfirmation(
             "☠ CONFIRM IMMOLATION",
-            `ยืนยันการเผาทำลาย Node #${tokenId} ใช่หรือไม่? (ไม่สามารถย้อนกลับได้)`
+            `Confirm immolation of Node #${tokenId}? (Irreversible)`
         );
     }
     if(!confirmBurn) return;
@@ -4993,8 +5040,6 @@ if (typeof window.currentAuditSession === 'undefined') window.currentAuditSessio
 if (typeof window.currentLoadedMediaData === 'undefined') {
     window.currentLoadedMediaData = { front: "", back: "", video: "" };
 }
-
-const IS_TOUCH_DEVICE = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
 
 function handleSlotClick(slotNum) {
     if (typeof globalSelectedTokenId === 'undefined' || globalSelectedTokenId === null) {
@@ -5357,13 +5402,15 @@ function filterSovereignGrid() {
         const query = (inputEl.value || "").trim(); 
         const targetParsedInt = query !== "" ? parseInt(query, 10) : null;
 
-        window.matrixDOMCache.forEach((node, id) => {
-            if (query === "" || id.toString() === query || (targetParsedInt !== null && id === targetParsedInt)) { 
-                node.style.display = 'flex'; 
-            } else { 
-                node.style.display = 'none'; 
-            }
-        });
+        if (window.matrixDOMCache instanceof Map) {
+            window.matrixDOMCache.forEach((node, id) => {
+                if (query === "" || id.toString() === query || (targetParsedInt !== null && id === targetParsedInt)) { 
+                    node.style.display = 'flex'; 
+                } else { 
+                    node.style.display = 'none'; 
+                }
+            });
+        }
     }, 250);
 }
 
@@ -5380,7 +5427,7 @@ async function syncActiveMatrixNodes() {
                     if (!activeSet.has(i)) { 
                         node.classList.add('opacity-30', 'grayscale', 'cursor-not-allowed'); 
                         node.classList.remove('bg-slate-950'); 
-                        if (!IS_TOUCH_DEVICE) node.classList.remove('hover:bg-slate-800');
+                        node.classList.remove('hover:bg-slate-800');
                         node.classList.add('bg-red-950/20'); 
                         node.title = `NODE #${i} [BURNED / VOID]`; 
                     } else { 
@@ -5427,8 +5474,7 @@ function setupMatrixGrid() {
         node.id = `node-${i}`;
         node.setAttribute('data-token-id', i.toString());
         
-        const hoverClass = IS_TOUCH_DEVICE ? "active:bg-slate-800" : "hover:bg-slate-800";
-        node.className = `matrix-node aspect-square w-full bg-slate-950 border rounded flex flex-col items-center justify-center font-mono text-[8px] sm:text-[10px] md:text-xs text-slate-500 cursor-pointer p-1 sm:p-2 transition-colors ${hoverClass} ${rankClass}`;
+        node.className = `matrix-node aspect-square w-full bg-slate-950 border rounded flex flex-col items-center justify-center font-mono text-[8px] sm:text-[10px] md:text-xs text-slate-500 cursor-pointer p-1 sm:p-2 transition-colors hover:bg-slate-800 active:bg-slate-800 ${rankClass}`;
         
         node.style.contentVisibility = 'auto';
         node.style.contain = 'strict';
@@ -5505,7 +5551,6 @@ function revealApp() {
 }
 
 const initializeSystem = async () => {
-    // Audit Note: Assume fetchImperialManifest & setupMatrixGrid are globally defined
     try {
         await fetchImperialManifest();
     } catch (err) {
@@ -5514,7 +5559,6 @@ const initializeSystem = async () => {
     
     setupMatrixGrid();
     
-    // 🛡️ WAR MACHINE FIX: Refactored logic (DRY Principle)
     const enforceDOMInputLimits = () => {
         const inputLimits = {
             'novaDnaInput': '1024',
@@ -5533,15 +5577,10 @@ const initializeSystem = async () => {
     const grid = document.getElementById('matrixGridContainer'); 
     if (grid && !grid.dataset.clickAttached) {
         
-        // 🛡️ WAR MACHINE FIX: Safe global check for IS_TOUCH_DEVICE
-        const isTouch = typeof IS_TOUCH_DEVICE !== 'undefined' ? IS_TOUCH_DEVICE : false;
-        const eventType = isTouch ? 'pointerup' : 'click';
-        
-        grid.addEventListener(eventType, async (e) => { 
+        grid.addEventListener('click', async (e) => { 
             const targetNode = e.target.closest('.matrix-node'); 
             if (!targetNode) return;
 
-            // 🛡️ WAR MACHINE FIX: Standardized DOM Dataset API
             const tokenId = targetNode.dataset.tokenId;
             if (!tokenId) return;
 
@@ -5553,8 +5592,7 @@ const initializeSystem = async () => {
             }
 
             try {
-                // 🛡️ WAR MACHINE FIX: Safe iteration over global cache
-                if (Array.isArray(window.matrixDOMCache)) {
+                if (window.matrixDOMCache instanceof Map) {
                     window.matrixDOMCache.forEach(n => n.classList.remove('bg-slate-800', 'border-yellow-500'));
                 }
                 targetNode.classList.add('bg-slate-800', 'border-yellow-500');
@@ -5570,7 +5608,6 @@ const initializeSystem = async () => {
         grid.dataset.clickAttached = "true";
     }
 
-    // 🛡️ WAR MACHINE FIX: Complete viewport management (Reset state handled)
     if (window.visualViewport) {
         const originalHeight = document.body.style.height;
         window.visualViewport.addEventListener("resize", () => {
@@ -5578,13 +5615,12 @@ const initializeSystem = async () => {
             if (activeTag === 'INPUT' || activeTag === 'TEXTAREA') {
                 document.body.style.height = `${window.visualViewport.height}px`;
             } else {
-                document.body.style.height = originalHeight || ''; // Reset layout
+                document.body.style.height = originalHeight || ''; 
             }
         });
     }
 };
 
-// 🛡️ WAR MACHINE FIX: Unified Boot Protocol to prevent redundant executions
 const bootProtocol = () => {
     revealApp();
     initializeSystem().catch(err => console.error("[BOOT PROTOCOL EXCEPTION]:", err));
@@ -5597,13 +5633,11 @@ if (document.readyState === 'loading') {
 }
 
 window.addEventListener('load', async () => { 
-    // removed redundant revealApp() call
-    
     if (typeof loadArchitectGateways === 'function') { 
         try { 
             loadArchitectGateways(); 
         } catch (err) {
-            console.error("[ARCHITECT GATEWAY ERROR] Failed to load:", err); // NO SILENT FAILURES
+            console.error("[ARCHITECT GATEWAY ERROR] Failed to load:", err); 
         } 
     } 
     
@@ -5614,7 +5648,7 @@ window.addEventListener('load', async () => {
                 syncActiveMatrixNodes(); 
             }
         } catch (err) {
-            console.error("[SYSTEM RPC ERROR] Boot failure:", err); // NO SILENT FAILURES
+            console.error("[SYSTEM RPC ERROR] Boot failure:", err); 
         } 
     }
 });
