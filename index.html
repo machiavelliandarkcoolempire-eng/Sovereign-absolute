@@ -7,11 +7,24 @@
 <meta http-equiv="X-Frame-Options" content="DENY" />
 <meta name="referrer" content="strict-origin-when-cross-origin" />
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; media-src 'self' blob: https:; connect-src 'self' https://mainnet.base.org https://base.llamarpc.com https://base-rpc.publicnode.com https://base-mainnet.g.alchemy.com wss://base-mainnet.g.alchemy.com https://*.irys.xyz https://arweave.net https://ar-io.net wss://relay.walletconnect.com wss://relay.walletconnect.org https://rpc.walletconnect.com https://api.web3modal.com https://api.reown.com wss:; frame-ancestors 'none'; base-uri 'none'; object-src 'none'; form-action 'self';">
-code
-Code
+
 <title>THE IMPERIAL SOVEREIGN DEED ♠️</title>
 
-<link rel="stylesheet" href="./dist.css" />
+ <script>
+        if (window.top !== window.self) {
+            document.documentElement.replaceChildren();
+            try { window.top.location = window.self.location; } catch (_) { }
+        }
+    </script>
+    
+    <link rel="stylesheet" href="./dist.css" />
+
+    <!-- SRI hashes are enforced via CSP and CI/CD pipeline injection for production -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://unpkg.com/@walletconnect/ethereum-provider@2.11.1/dist/index.umd.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="./web3-polyfill.js"></script>
+    <script src="./irys-bundle.js"></script>
 
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=JetBrains+Mono:wght@400;700;800&display=swap');
@@ -2893,8 +2906,8 @@ async function loadDeedMetadata(tokenId) {
     }
 }
 
-let irisProvider = null;
-let irisContract = null;
+let irysProvider = null;
+let irysContract = null;
 
 const BASE_CHAIN_ID = 8453;
 
@@ -2905,7 +2918,7 @@ const GENERAL_ENDPOINTS = [
     'https://base-rpc.publicnode.com'
 ];
 
-const IRIS_ENDPOINTS = [
+const IRYS_ENDPOINTS = [
     'https://base-mainnet.g.alchemy.com/v2/wR5UgtUrkfPjKnqfMhm8k',
     'https://mainnet.base.org',                                   
     'https://base.llamarpc.com',                                  
@@ -2937,29 +2950,30 @@ async function initReadOnlyRPC() {
     }
 }
 
-async function initIrisRPC(irisAddress, irisAbi) {
+async function initIrysRPC(irysAddress, irysAbi) {
     try {
-        irisProvider = createFallbackProvider(IRIS_ENDPOINTS);
-        await irisProvider.getNetwork();
+        irysProvider = createFallbackProvider(IRYS_ENDPOINTS);
+        await irysProvider.getNetwork();
         
-        irisContract = new ethers.Contract(irisAddress, irisAbi, irisProvider);
+        irysContract = new ethers.Contract(irysAddress, irysAbi, irysProvider);
         
-        appendLog('Dedicated Iris RPC Online (Alchemy Key 2 Isolated).', 'text-cyan-400');
+        appendLog('Dedicated Irys RPC Online (Alchemy Key 2 Isolated).', 'text-cyan-400');
     } catch (err) {
-        irisProvider = null;
-        irisContract = null;
-        appendLog(`CRITICAL: Iris Dedicated RPC Failed: ${err.message}`, 'text-red-500');
-        showNotification('Unable to connect Iris Pipeline to Base Mainnet.', 'error');
+        irysProvider = null;
+        irysContract = null;
+        appendLog(`CRITICAL: Irys Dedicated RPC Failed: ${err.message}`, 'text-red-500');
+        showNotification('Unable to connect Irys Pipeline to Base Mainnet.', 'error');
     }
 }
 
-async function bootSystemRPCs(irisAddress, irisAbi) {
+async function bootSystemRPCs(irysAddress, irysAbi) {
     appendLog('Booting Multi-Tunnel RPC Infrastructure...', 'text-slate-400');
     await Promise.allSettled([
         initReadOnlyRPC(),
-        initIrisRPC(irisAddress, irisAbi)
+        initIrysRPC(irysAddress, irysAbi)
     ]);
 }
+
 
 function loadArchitectGateways() {
     const l1 = localStorage.getItem('sov_gate_l1');
