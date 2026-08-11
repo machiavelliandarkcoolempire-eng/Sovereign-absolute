@@ -2999,18 +2999,20 @@ async function loadDeedMetadata(tokenId) {
     }
 }
 
-let irisProvider = null;
-let irisContract = null;
+let irysProvider = null;
+let irysContract = null;
 
 const BASE_CHAIN_ID = 8453;
 
 const GENERAL_ENDPOINTS = [
+    'https://base-mainnet.g.alchemy.com/v2/QTZrknzCeDDEXAFCEBCMM',
     'https://mainnet.base.org',                                   
     'https://base.llamarpc.com',                                  
     'https://base-rpc.publicnode.com'
 ];
 
-const IRIS_ENDPOINTS = [
+const IRYS_ENDPOINTS = [
+    'https://base-mainnet.g.alchemy.com/v2/wR5UgtUrkfPjKnqfMhm8k',
     'https://mainnet.base.org',                                   
     'https://base.llamarpc.com',                                  
     'https://base-rpc.publicnode.com'
@@ -3041,29 +3043,30 @@ async function initReadOnlyRPC() {
     }
 }
 
-async function initIrisRPC(irisAddress, irisAbi) {
+async function initIrysRPC(irysAddress, irysAbi) {
     try {
-        irisProvider = createFallbackProvider(IRIS_ENDPOINTS);
-        await irisProvider.getNetwork();
+        irysProvider = createFallbackProvider(IRYS_ENDPOINTS);
+        await irysProvider.getNetwork();
         
-        irisContract = new ethers.Contract(irisAddress, irisAbi, irisProvider);
+        irysContract = new ethers.Contract(irysAddress, irysAbi, irysProvider);
         
-        appendLog('Dedicated Iris RPC Online.', 'text-cyan-400');
+        appendLog('Dedicated Irys RPC Online.', 'text-cyan-400');
     } catch (err) {
-        irisProvider = null;
-        irisContract = null;
-        appendLog(`CRITICAL: Iris Dedicated RPC Failed: ${err.message}`, 'text-red-500');
-        showNotification('Unable to connect Iris Pipeline to Base Mainnet.', 'error');
+        irysProvider = null;
+        irysContract = null;
+        appendLog(`CRITICAL: Irys Dedicated RPC Failed: ${err.message}`, 'text-red-500');
+        showNotification('Unable to connect Irys Pipeline to Base Mainnet.', 'error');
     }
 }
 
-async function bootSystemRPCs(irisAddress, irisAbi) {
+async function bootSystemRPCs(irysAddress, irysAbi) {
     appendLog('Booting Multi-Tunnel RPC Infrastructure...', 'text-slate-400');
     await Promise.allSettled([
         initReadOnlyRPC(),
-        initIrisRPC(irisAddress, irisAbi)
+        initIrysRPC(irysAddress, irysAbi)
     ]);
 }
+
 
 function loadArchitectGateways() {
     const l1 = localStorage.getItem('sov_gate_l1');
