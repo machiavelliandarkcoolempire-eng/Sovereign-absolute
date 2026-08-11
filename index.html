@@ -2999,73 +2999,98 @@ async function loadDeedMetadata(tokenId) {
     }
 }
 
-let irisProvider = null;
-let irisContract = null;
+// ==========================================
+// RPC INFRASTRUCTURE & GLOBAL STATE
+// ==========================================
 
-const BASE_CHAIN_ID = 8453;
+let irysProvider = null;
+let irysContract = null;
+
+const BASE_CHAIN_ID = 8453; // Base Mainnet
 
 const GENERAL_ENDPOINTS = [
-    'https://base-mainnet.g.alchemy.com/v2/YOUR_ALCHEMY_KEY',
+    'https://base-mainnet.g.alchemy.com/v2/QTZrknzCeDDEXAFCEBCMM',
     'https://mainnet.base.org',                                   
     'https://base.llamarpc.com',                                  
     'https://base-rpc.publicnode.com'
 ];
 
 const IRYS_ENDPOINTS = [
-    'https://base-mainnet.g.alchemy.com/v2/YOUR_ALCHEMY_KEY_2',
+    'https://base-mainnet.g.alchemy.com/v2/wR5UgtUrkfPjKnqfMhm8k',
     'https://mainnet.base.org',                                   
     'https://base.llamarpc.com',                                  
     'https://base-rpc.publicnode.com'
 ];
 
+// ==========================================
+// CORE FUNCTIONS
+// ==========================================
+
+/**
+ * สร้าง Fallback Provider ที่สลับ Node อัตโนมัติเมื่อ RPC ตาย
+ * สถาปัตยกรรม: Ethers v6, Static Network (ลด Latency), Weight=1 (ป้องกัน Deadlock)
+ */
 function createFallbackProvider(endpoints) {
     const configs = endpoints.map((url, index) => {
+        // ใช้ staticNetwork: true เสมอสำหรับ Chain ที่ไม่มีวันเปลี่ยน ID เพื่อลดภาระ Network Request
         const p = new ethers.JsonRpcProvider(url, BASE_CHAIN_ID, { staticNetwork: true });
         return { provider: p, priority: index + 1, weight: 1 };
     });
-    return new ethers.FallbackProvider(configs, 1);
+    // พารามิเตอร์ที่ 2 คือ Network (Chain ID) ไม่ใช่ Quorum
+    return new ethers.FallbackProvider(configs, BASE_CHAIN_ID);
 }
 
 async function initReadOnlyRPC() {
     try {
         readOnlyProvider = createFallbackProvider(GENERAL_ENDPOINTS);
-        await readOnlyProvider.getNetwork();
+        // บังคับยิง Request 1 ครั้งเพื่อเช็คว่า RPC ใช้งานได้จริงและ Chain ตรงกัน
+        await readOnlyProvider.getNetwork(); 
         
         readOnlyContract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, readOnlyProvider);
         
         appendLog('General Multi-RPC Online.', 'text-emerald-400');
-        await syncContractStates();
+        
+        // ตรวจสอบว่ามีฟังก์ชันนี้อยู่ในระบบหรือไม่ก่อนเรียกใช้ เพื่อป้องกัน Runtime Error
+        if (typeof syncContractStates === 'function') {
+            await syncContractStates();
+        }
     } catch (err) {
         readOnlyProvider = null;
         readOnlyContract = null;
         appendLog(`CRITICAL: General RPC Route Failed: ${err.message}`, 'text-red-500');
-        showNotification('Unable to connect General Contract to Base Mainnet.', 'error');
+        if (typeof showNotification === 'function') {
+            showNotification('Unable to connect General Contract to Base Mainnet.', 'error');
+        }
     }
 }
 
-async function initIrisRPC(irisAddress, irisAbi) {
+async function initIrysRPC(irysAddress, irysAbi) {
     try {
-        irisProvider = createFallbackProvider(IRIS_ENDPOINTS);
-        await irisProvider.getNetwork();
+        irysProvider = createFallbackProvider(IRYS_ENDPOINTS);
+        await irysProvider.getNetwork();
         
-        irisContract = new ethers.Contract(irisAddress, irisAbi, irisProvider);
+        irysContract = new ethers.Contract(irysAddress, irysAbi, irysProvider);
         
-        appendLog('Dedicated Iris RPC Online.', 'text-cyan-400');
+        appendLog('Dedicated Irys RPC Online.', 'text-cyan-400');
     } catch (err) {
-        irisProvider = null;
-        irisContract = null;
-        appendLog(`CRITICAL: Iris Dedicated RPC Failed: ${err.message}`, 'text-red-500');
-        showNotification('Unable to connect Iris Pipeline to Base Mainnet.', 'error');
+        irysProvider = null;
+        irysContract = null;
+        appendLog(`CRITICAL: Irys Dedicated RPC Failed: ${err.message}`, 'text-red-500');
+        if (typeof showNotification === 'function') {
+            showNotification('Unable to connect Irys Pipeline to Base Mainnet.', 'error');
+        }
     }
 }
 
-async function bootSystemRPCs(irisAddress, irisAbi) {
+async function bootSystemRPCs(irysAddress, irysAbi) {
     appendLog('Booting Multi-Tunnel RPC Infrastructure...', 'text-slate-400');
+    // ใช้ Promise.allSettled เพื่อให้ระบบรันต่อได้ แม้มี RPC เส้นใดเส้นหนึ่งพัง
     await Promise.allSettled([
         initReadOnlyRPC(),
-        initIrisRPC(irisAddress, irisAbi)
+        initIrysRPC(irysAddress, irysAbi)
     ]);
 }
+
 
 function loadArchitectGateways() {
     const l1 = localStorage.getItem('sov_gate_l1');
