@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "build": "tailwindcss -i ./global.css -o ./dist.css --minify && esbuild ./index.js --bundle --outfile=./irys-bundle.js --minify --format=iife --alias:stream=stream-browserify --alias:crypto=crypto-browserify --alias:events=events --alias:buffer=buffer --define:global=window --define:process.env.NODE_ENV=\"production\" --external:ethers"
+    "build": "tailwindcss -i ./global.css -o ./dist.css --minify && esbuild ./index.js --bundle --outfile=./irys-bundle.js --minify --format=iife --inject:./web3-polyfill.js --alias:stream=stream-browserify --alias:crypto=crypto-browserify --alias:events=events --alias:buffer=buffer --define:global=window --define:process.env.NODE_ENV=\"production\""
   },
   "dependencies": {
     "@irys/web-upload": "^0.0.4",
