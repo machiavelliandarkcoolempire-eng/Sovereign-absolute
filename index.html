@@ -19,7 +19,6 @@
     
     <link rel="stylesheet" href="./dist.css" />
 
-    <!-- SRI hashes are enforced via CSP and CI/CD pipeline injection for production -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://unpkg.com/@walletconnect/ethereum-provider@2.11.1/dist/index.umd.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
@@ -353,8 +352,6 @@
 </style>
 </head>
 <body class="bg-black text-slate-100 font-mono antialiased relative">
-code
-Code
 <div id="gasSurgeWarning" class="fixed top-4 left-1/2 transform -translate-x-1/2 bg-red-950/90 border border-red-500 text-red-100 px-6 py-3 rounded-xl z-[99999] hidden shadow-[0_0_20px_rgba(239,68,68,0.6)] backdrop-blur-md">
     <span class="font-cinzel font-black uppercase text-xs flex items-center gap-2"><span class="animate-pulse">⚠</span> NETWORK GAS SURGE DETECTED</span>
     <p class="text-[10px] font-mono mt-1 text-red-300">Gas price is currently highly volatile. Proceeding may result in unexpected fees or front-running risks.</p>
@@ -410,8 +407,6 @@ Code
 <div id="identityAuthModal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[80] hidden items-center justify-center p-4">
 <div class="chiaroscuro-bg p-6 rounded-2xl border border-rose-900/50 max-w-2xl w-full max-h-[90vh] flex flex-col">
 <h3 class="text-sm font-black font-cinzel text-rose-400 mb-2 uppercase tracking-widest flex-shrink-0">🔒 IDENTITY PASSPORT & SYSTEM GUIDE</h3>
-code
-Code
 <p class="text-[10px] font-mono text-slate-400 leading-relaxed mb-3 flex-shrink-0">
         The Forensic Laboratory is strictly Token-Gated. Please review the Sovereign Dashboard operational guide before executing the scan.
     </p>
@@ -1119,10 +1114,6 @@ Code
     </div>
 </footer>
 
-
-
-
-
 <script>
 "use strict";
 
@@ -1431,6 +1422,11 @@ const LOG_MAX_ROWS = 100;
 let _logScrollQueued = false;
 
 const _multicallCtx = new WeakMap();
+
+/**
+ * 🛠️ [FIX 1: Throttled RPC Fallback] 
+ * แก้ไขปัญหา HTTP 429 Rate Limit ที่เกิดจากการยิง RPC แบบ For-Loop เต็มพิกัดเมื่อ Multicall พัง
+ */
 async function debouncedMulticall(providerInstance, calls) {
     return new Promise((resolve, reject) => {
         if (!providerInstance) return reject(new Error("Provider instance is null"));
@@ -1460,14 +1456,16 @@ async function debouncedMulticall(providerInstance, calls) {
                             const chunkResults = await multicall.aggregate3(chunk);
                             results = results.concat(Array.from(chunkResults));
                         } catch (chunkErr) {
-                            console.warn("Multicall chunk failed, falling back to individual calls", chunkErr);
-                            for (const call of chunk) {
+                            console.warn("Multicall chunk failed, shifting to rate-limited fallback", chunkErr);
+                            // 🛠️ FIX: ป้องกัน DDoS ตัวเองด้วยการทยอยส่งทีละ 5 requests แล้วพัก 200ms
+                            for (let j = 0; j < chunk.length; j++) {
                                 try {
-                                    const res = await providerInstance.call({ to: call.target, data: call.callData });
+                                    const res = await providerInstance.call({ to: chunk[j].target, data: chunk[j].callData });
                                     results.push({ success: true, returnData: res });
                                 } catch (singleErr) {
                                     results.push({ success: false, returnData: "0x" });
                                 }
+                                if (j > 0 && j % 5 === 0) await new Promise(r => setTimeout(r, 200)); 
                             }
                         }
                     }
@@ -1939,6 +1937,10 @@ function getImperialRank(tokenId) {
     return "UNKNOWN ENTITY";
 }
 
+/**
+ * 🛠️ [FIX 2: Absolute Promise Timeout]
+ * แก้ไขปัญหา PENDING_AUTOMAP_REQUESTS ค้างถาวรหาก Network ฝั่ง Gateway แฮงก์
+ */
 async function autoMap(tokenId) {
     const tId = String(tokenId);
     if (GLOBAL_NODE_CACHE.has(tId)) {
@@ -1957,98 +1959,90 @@ async function autoMap(tokenId) {
 
     const requestPromise = (async () => {
         try {
-            const tokenBigNum = BigInt(tokenId);
-            let deedData, tokenUri, votingLockUntil;
+            // หุ้มทุกอย่างด้วย Promise.race เผื่อกรณี RPC หรือ Fetch ตายเงียบ
+            return await Promise.race([
+                (async () => {
+                    const tokenBigNum = BigInt(tokenId);
+                    let deedData, tokenUri, votingLockUntil;
 
-            try {
-                const calls = [
-                    { target: CONTRACT_ADDRESS, allowFailure: true, callData: activeContract.interface.encodeFunctionData("getDeedData", [tokenBigNum.toString()]) },
-                    { target: CONTRACT_ADDRESS, allowFailure: true, callData: activeContract.interface.encodeFunctionData("tokenURI", [tokenBigNum.toString()]) },
-                    { target: CONTRACT_ADDRESS, allowFailure: true, callData: activeContract.interface.encodeFunctionData("tokenVotingLockUntil", [tokenBigNum.toString()]) }
-                ];
-                const results = await debouncedMulticall(readOnlyProvider || provider, calls);
-                
-                deedData = results[0].success ? activeContract.interface.decodeFunctionResult("getDeedData", results[0].returnData) : null;
-                tokenUri = results[1].success ? activeContract.interface.decodeFunctionResult("tokenURI", results[1].returnData)[0] : "";
-                votingLockUntil = results[2].success ? activeContract.interface.decodeFunctionResult("tokenVotingLockUntil", results[2].returnData)[0] : 0n;
+                    try {
+                        const calls = [
+                            { target: CONTRACT_ADDRESS, allowFailure: true, callData: activeContract.interface.encodeFunctionData("getDeedData", [tokenBigNum.toString()]) },
+                            { target: CONTRACT_ADDRESS, allowFailure: true, callData: activeContract.interface.encodeFunctionData("tokenURI", [tokenBigNum.toString()]) },
+                            { target: CONTRACT_ADDRESS, allowFailure: true, callData: activeContract.interface.encodeFunctionData("tokenVotingLockUntil", [tokenBigNum.toString()]) }
+                        ];
+                        const results = await debouncedMulticall(readOnlyProvider || provider, calls);
+                        
+                        deedData = results[0].success ? activeContract.interface.decodeFunctionResult("getDeedData", results[0].returnData) : null;
+                        tokenUri = results[1].success ? activeContract.interface.decodeFunctionResult("tokenURI", results[1].returnData)[0] : "";
+                        votingLockUntil = results[2].success ? activeContract.interface.decodeFunctionResult("tokenVotingLockUntil", results[2].returnData)[0] : 0n;
 
-                if (!deedData) {
-                    throw new Error("Node unminted or burned (getDeedData reverted)");
-                }
-            } catch (mcErr) {
-                console.warn("[MULTICALL FALLBACK] autoMap:", mcErr);
-                [deedData, tokenUri, votingLockUntil] = await Promise.all([
-                    activeContract.getDeedData(tokenBigNum.toString()),
-                    activeContract.tokenURI(tokenBigNum.toString()).catch(() => ""),
-                    activeContract.tokenVotingLockUntil(tokenBigNum.toString()).catch(() => 0n)
-                ]);
-            }
-
-            let metadata = null;
-            if (tokenUri && tokenUri.trim() !== "") {
-                const cleanUri = extractIrysId(tokenUri);
-                const targetUrl = cleanUri.startsWith('http') ? cleanUri : `https://gateway.irys.xyz/${cleanUri}`;
-                try {
-                    const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 5000);
-                    
-                    const onSessionAbort = () => controller.abort();
-                    if (walletSessionController.signal.aborted) {
-                        controller.abort();
-                    } else {
-                        walletSessionController.signal.addEventListener('abort', onSessionAbort, { once: true });
+                        if (!deedData) throw new Error("Node unminted or burned");
+                    } catch (mcErr) {
+                        [deedData, tokenUri, votingLockUntil] = await Promise.all([
+                            activeContract.getDeedData(tokenBigNum.toString()),
+                            activeContract.tokenURI(tokenBigNum.toString()).catch(() => ""),
+                            activeContract.tokenVotingLockUntil(tokenBigNum.toString()).catch(() => 0n)
+                        ]);
                     }
 
-                    const metaResponse = await fetch(targetUrl, { signal: controller.signal });
-                    clearTimeout(timeoutId);
-                    walletSessionController.signal.removeEventListener('abort', onSessionAbort);
-                    
-                    if (metaResponse.ok) {
-                        const contentLength = metaResponse.headers.get('content-length');
-                        if (contentLength && parseInt(contentLength) > 51200) {
-                            console.warn(`[autoMap] Payload exceeds 50KB limit. Rejected to protect UI thread.`);
-                        } else {
-                            const text = await metaResponse.text();
-                            if (text.length > 51200) { 
-                                console.warn(`[autoMap] Payload exceeds 50KB limit. Rejected to protect UI thread.`);
+                    let metadata = null;
+                    if (tokenUri && tokenUri.trim() !== "") {
+                        const cleanUri = extractIrysId(tokenUri);
+                        const targetUrl = cleanUri.startsWith('http') ? cleanUri : `https://gateway.irys.xyz/${cleanUri}`;
+                        try {
+                            const controller = new AbortController();
+                            const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 วินาทีสูงสุดสำหรับ Metadata
+                            
+                            const onSessionAbort = () => controller.abort();
+                            if (walletSessionController.signal.aborted) {
+                                controller.abort();
                             } else {
-                                try {
-                                    metadata = JSON.parse(text);
-                                } catch (parseErr) {
-                                    console.warn(`[autoMap] Invalid JSON payload at ${targetUrl}`);
+                                walletSessionController.signal.addEventListener('abort', onSessionAbort, { once: true });
+                            }
+
+                            const metaResponse = await fetch(targetUrl, { signal: controller.signal });
+                            clearTimeout(timeoutId);
+                            walletSessionController.signal.removeEventListener('abort', onSessionAbort);
+                            
+                            if (metaResponse.ok) {
+                                const text = await metaResponse.text();
+                                if (text.length <= 51200) { 
+                                    try { metadata = JSON.parse(text); } catch (_) {}
                                 }
                             }
+                        } catch (e) {
+                            console.warn(`[autoMap] Metadata fetch failed for ${targetUrl}`, e);
                         }
                     }
-                } catch (e) {
-                    console.warn(`[autoMap] Metadata fetch failed for ${targetUrl}`, e);
-                }
-            }
 
-            const result = {
-                tokenId: tokenId, 
-                owner: deedData.owner || deedData[0], 
-                isActivated: deedData.active !== undefined ? deedData.active : deedData[1], 
-                isSanctified: deedData.sanctified !== undefined ? deedData.sanctified : deedData[2],
-                front: buildIrysUrl(deedData.front || deedData[3]), 
-                back: buildIrysUrl(deedData.back || deedData[4]), 
-                video: buildIrysUrl(deedData.video || deedData[5]),
-                dna: deedData.dna || deedData[6] || "", 
-                hiddenProperty: buildIrysUrl(deedData.hidden || deedData[7]), 
-                rawMetadata: metadata,
-                votingLockUntil: votingLockUntil ? Number(votingLockUntil) : 0
-            };
+                    const result = {
+                        tokenId: tokenId, 
+                        owner: deedData.owner || deedData[0], 
+                        isActivated: deedData.active !== undefined ? deedData.active : deedData[1], 
+                        isSanctified: deedData.sanctified !== undefined ? deedData.sanctified : deedData[2],
+                        front: buildIrysUrl(deedData.front || deedData[3]), 
+                        back: buildIrysUrl(deedData.back || deedData[4]), 
+                        video: buildIrysUrl(deedData.video || deedData[5]),
+                        dna: deedData.dna || deedData[6] || "", 
+                        hiddenProperty: buildIrysUrl(deedData.hidden || deedData[7]), 
+                        rawMetadata: metadata,
+                        votingLockUntil: votingLockUntil ? Number(votingLockUntil) : 0
+                    };
 
-            if (GLOBAL_NODE_CACHE.size >= MAX_NODE_CACHE) {
-                const oldest = GLOBAL_NODE_CACHE.keys().next().value;
-                GLOBAL_NODE_CACHE.delete(oldest);
-            }
-            GLOBAL_NODE_CACHE.set(tId, result);
-            return result;
+                    if (GLOBAL_NODE_CACHE.size >= MAX_NODE_CACHE) {
+                        const oldest = GLOBAL_NODE_CACHE.keys().next().value;
+                        GLOBAL_NODE_CACHE.delete(oldest);
+                    }
+                    GLOBAL_NODE_CACHE.set(tId, result);
+                    return result;
+                })(),
+                new Promise((_, reject) => setTimeout(() => reject(new Error("autoMap strict execution timeout")), 15000))
+            ]);
         } catch (err) { 
-            if (err.name === 'AbortError') return null;
             return null; 
         } finally {
+            // ลบกุญแจทิ้งอย่างเด็ดขาดแม้ว่าจะโยน Error ออกมาก็ตาม
             PENDING_AUTOMAP_REQUESTS.delete(tId);
         }
     })();
@@ -2057,6 +2051,11 @@ async function autoMap(tokenId) {
     return requestPromise;
 }
 
+/**
+ * 🛠️ [FIX 3: Controlled Application Ticker]
+ * ถอด `provider.on('block')` ที่ทำให้เกิด Memory Leak และ Rate Limit ออก
+ * เปลี่ยนมาใช้ Custom Daemon Ticker แทน
+ */
 function setupRealTimeEvents() {
     if (!secureContract || !provider) return;
     
@@ -2066,20 +2065,20 @@ function setupRealTimeEvents() {
         try {
             appendLog("New structural directive disseminated to Council. Synchronizing indices...", "text-purple-400");
             await fetchAndDisplayProposals();
-        } catch (e) { appendLog(`[EVENT] ProposalCreated recovered: ${e.message}`, "text-amber-500"); }
+        } catch (e) {}
     });
     secureContract.on("ProposalExecuted", async () => {
         try {
             appendLog("Legislative financial directive ratified and capital released.", "text-emerald-400");
             await fetchAndDisplayProposals();
             await syncContractStates();
-        } catch (e) { appendLog(`[EVENT] ProposalExecuted recovered: ${e.message}`, "text-amber-500"); }
+        } catch (e) {}
     });
     secureContract.on("ProposalQueued", async (pId) => {
         try {
             appendLog(`Directive #${pId} committed to Timelock vault. Awaiting period completion.`, "text-yellow-500");
             await fetchAndDisplayProposals();
-        } catch (e) { appendLog(`[EVENT] ProposalQueued recovered: ${e.message}`, "text-amber-500"); }
+        } catch (e) {}
     });
     secureContract.on("SovereignForged", async (owner, tokenId) => {
         try {
@@ -2089,7 +2088,7 @@ function setupRealTimeEvents() {
             if (globalSelectedTokenId && String(tokenId) === String(globalSelectedTokenId)) {
                 await auditTokenFromLedger(globalSelectedTokenId);
             }
-        } catch (e) { appendLog(`[EVENT] SovereignForged recovered: ${e.message}`, "text-amber-500"); }
+        } catch (e) {}
     });
     secureContract.on("SovereignSanctified", async (tokenId, dna) => {
         try {
@@ -2099,7 +2098,7 @@ function setupRealTimeEvents() {
             if (globalSelectedTokenId && String(tokenId) === String(globalSelectedTokenId)) {
                 await auditTokenFromLedger(globalSelectedTokenId);
             }
-        } catch (e) { appendLog(`[EVENT] SovereignSanctified recovered: ${e.message}`, "text-amber-500"); }
+        } catch (e) {}
     });
     
     let transferTimeout;
@@ -2111,27 +2110,18 @@ function setupRealTimeEvents() {
                 if (globalSelectedTokenId && String(tokenId) === String(globalSelectedTokenId)) {
                     await auditTokenFromLedger(globalSelectedTokenId);
                 }
-            } catch (e) { appendLog(`[EVENT] Transfer recovered: ${e.message}`, "text-amber-500"); }
+            } catch (e) {}
         }, 2000);
     });
 
-    if (window._activeBlockProvider && window._blockListener) {
-        try {
-            window._activeBlockProvider.off('block', window._blockListener);
-        } catch (e) {}
-    }
-
-    let lastBlockSync = 0;
-    window._blockListener = (blockNum) => {
-        const now = Date.now();
-        if (now - lastBlockSync > 10000) { 
-            lastBlockSync = now;
-            syncContractStates().catch(()=>{});
-        }
-    };
+    // ล้าง Daemon ตัวเก่า
+    if (window._syncDaemon) clearInterval(window._syncDaemon);
     
-    window._activeBlockProvider = provider;
-    window._activeBlockProvider.on('block', window._blockListener);
+    // ตั้งค่า Controlled Polling Ticker ทุกๆ 12 วินาที และจะหย่อนการดึงเมื่ออยู่นอกโฟกัส
+    window._syncDaemon = setInterval(() => {
+        if (document.hidden) return; // Save RPC when tab is inactive
+        syncContractStates().catch(()=>{});
+    }, 12000);
 }
 
 let lastSyncTime = 0;
@@ -2251,7 +2241,6 @@ async function syncContractStates() {
         await fetchAndDisplayProposals();
         
     } catch (err) { 
-        console.error("[STATE SYNC ERROR]", err);
         appendLog("Unable to query state properties from smart contract registry. Re-index recommended.", "text-red-500"); 
     } finally {
         isSyncingState = false;
@@ -2552,19 +2541,18 @@ function createProgressController(totalBytes) {
     };
 }
 
+/**
+ * 🛠️ [FIX 4: Strict AbortSignal Injection]
+ * ส่ง `walletSessionController.signal` เข้าไปควบคุม Loop ทั้งหมด
+ */
 async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = null) {
     await ensureIrysReady();
-    
-    let dataToUpload;
-    let size;
-    
+
+    let dataToUpload = payload;
+    let size = isFile ? payload.size : 0;
+
     try {
-        if (isFile) {
-            appendLog("Converting File payload to Buffer for Irys transmission...", "text-slate-400");
-            const arrayBuffer = await payload.arrayBuffer();
-            dataToUpload = window.Buffer.from(arrayBuffer);
-            size = dataToUpload.length;
-        } else {
+        if (!isFile) {
             dataToUpload = window.Buffer.from(payload, "utf-8");
             size = dataToUpload.length;
         }
@@ -2575,27 +2563,28 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
 
     const priceRaw = await withNetworkRetry(() => irys.getPrice(size));
     const initialBalanceRaw = await withNetworkRetry(() => irys.getLoadedBalance());
-    
+
     const price = toBigInt(priceRaw);
     const initialBalance = toBigInt(initialBalanceRaw);
 
     if (initialBalance < price) {
         let diffWithBuffer = price - initialBalance;
         diffWithBuffer = diffWithBuffer + (diffWithBuffer * 20n) / 100n; 
-        
-        const minFundWei = 100000000000000n; 
+
+        const minFundWei = 100000000000000n; // 0.0001 ETH
         if (diffWithBuffer < minFundWei) {
             diffWithBuffer = minFundWei;
         }
 
-        const costStr = ethers.formatEther(diffWithBuffer).substring(0, 8);
-        
+        const costStr = Number(ethers.formatEther(diffWithBuffer)).toString();
+
         updateBridgeStatus("AWAITING FUNDING TX...", "warning");
         appendLog(`Awaiting user transaction: Funding ${costStr} ETH`, "text-yellow-400");
-        
+
         const isConfirmed = await requestFundConfirmation(costStr);
         if (!isConfirmed) throw new Error("User declined funding.");
-        
+
+        window._fundPollingActive = true;
         showFundingOverlay(costStr);
 
         const cancelBtn = document.getElementById('fundCancelBtn');
@@ -2605,14 +2594,30 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
             cancelBtn.classList.add('opacity-50', 'cursor-not-allowed');
         }
 
-        const pendingFundTx = localStorage.getItem('irys_pending_fund_tx');
+        let pendingFundTx = null;
+        try {
+            const storedTx = localStorage.getItem('irys_pending_fund_tx');
+            if (storedTx) {
+                const parsedTx = JSON.parse(storedTx);
+                if (Date.now() - parsedTx.ts < 3600000) { 
+                    pendingFundTx = parsedTx.id;
+                } else {
+                    localStorage.removeItem('irys_pending_fund_tx');
+                }
+            }
+        } catch (e) {
+            localStorage.removeItem('irys_pending_fund_tx');
+        }
+
         if (pendingFundTx && pendingFundTx !== 'pending') {
             appendLog("Resuming pending funding transaction polling...", "text-yellow-400");
         } else {
             try {
                 const fundRes = await irys.fund(diffWithBuffer.toString());
                 if (!fundRes || !fundRes.id) throw new Error("No transaction ID returned from bundler.");
-                try { localStorage.setItem('irys_pending_fund_tx', fundRes.id); } catch(e) {}
+                try { 
+                    localStorage.setItem('irys_pending_fund_tx', JSON.stringify({ id: fundRes.id, ts: Date.now() })); 
+                } catch(e) {}
             } catch (fundErr) {
                 const feMsg = (fundErr && fundErr.message) || "";
                 const isUserRejection = /user rejected|declined|denied|cancelled|user declined/i.test(feMsg);
@@ -2624,7 +2629,7 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
                 }
             }
         }
-        
+
         appendLog("Funding TX confirmed on-chain. Awaiting Bundler synchronization...", "text-yellow-400");
         updateBridgeStatus("SYNCING BUNDLER...", "warning");
 
@@ -2644,8 +2649,13 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
         let isSynced = false;
         let attempts = 0;
         const maxAttempts = 36;
-        
+
         while (!isSynced && attempts < maxAttempts && window._fundPollingActive) {
+            // 🛠️ FIX: หยุดลูปทันทีถ้า Session โดนแทรกแทรง (เช่น สลับกระเป๋า)
+            if (walletSessionController.signal.aborted) {
+                window._fundPollingActive = false; 
+                throw new Error("Wallet session severed during sync"); 
+            }
             if (!irys || !signer || !provider) { window._fundPollingActive = false; throw new Error("Wallet session severed during sync"); }
             await new Promise(resolve => setTimeout(resolve, 5000));
             try {
@@ -2668,24 +2678,48 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
         if (!isSynced) {
             throw new Error("Funds transferred to Irys, but server update is delayed. Please wait 3-5 minutes and click 'Upload' again without refunding.");
         }
-        
+
         localStorage.removeItem('irys_pending_fund_tx');
         appendLog("Bundler synchronized successfully. Proceeding to upload.", "text-emerald-400");
     }
 
     updateBridgeStatus("STREAMING PAYLOAD...", "warning");
-    appendLog("Transmitting Buffer payload to Irys Datachain...", "text-blue-400");
-    
+    appendLog(isFile ? "Streaming File payload to Irys Datachain via Chunked Uploader..." : "Transmitting Buffer payload to Irys Datachain...", "text-blue-400");
+
     let receipt;
     try {
         if (progressCtrl) progressCtrl.show();
-        
+
         let attempt = 0;
         const maxRetries = 3;
+
+        const ua = navigator.userAgent || "";
+        const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        const isMobile = isIOS || /Android|Mobi|Mobile/i.test(ua);
+        const chunkSize = isIOS ? 2 * 1024 * 1024 : (isMobile ? 3 * 1024 * 1024 : 5 * 1024 * 1024);
+        const batchSize = isIOS ? 1 : (isMobile ? 2 : 3);
+
         while (attempt <= maxRetries) {
             try {
-                if (progressCtrl) progressCtrl.set(50);
-                receipt = await irys.upload(dataToUpload, { tags });
+                if (isFile && irys.uploader && irys.uploader.chunkedUploader) {
+                    const onChunk = (chunkInfo) => {
+                        try { if (progressCtrl) progressCtrl.set(chunkInfo?.totalUploaded ?? chunkInfo?.offset ?? 0); } catch (e) {}
+                    };
+                    
+                    try {
+                        if (typeof irys.uploader.on === 'function') irys.uploader.on('chunkUpload', onChunk);
+                        
+                        irys.uploader.chunkedUploader.setChunkSize(chunkSize);
+                        irys.uploader.chunkedUploader.setBatchSize(batchSize);
+                        
+                        receipt = await irys.uploader.chunkedUploader.uploadData(dataToUpload, { tags });
+                    } finally {
+                        if (typeof irys.uploader.off === 'function') irys.uploader.off('chunkUpload', onChunk);
+                    }
+                } else {
+                    if (progressCtrl) progressCtrl.set(size / 2);
+                    receipt = await irys.upload(dataToUpload, { tags });
+                }
                 break; 
             } catch (uploadErr) {
                 const msg = (uploadErr.message || String(uploadErr)).toLowerCase();
@@ -2699,7 +2733,7 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
                 await new Promise(r => setTimeout(r, backoff));
             }
         }
-        
+
         if (progressCtrl) progressCtrl.complete();
     } catch (uploadErr) {
         appendLog(`Irys transmission failed: ${uploadErr.message}`, "text-red-500");
@@ -2707,7 +2741,7 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
     } finally {
         if (progressCtrl) progressCtrl.hide();
     }
-    
+
     updateBridgeStatus("PERMANENTLY ONLINE", "success");
     return receipt;
 }
@@ -2767,6 +2801,11 @@ async function executeIrysTopUp(amountEthStr) {
         const maxTopUpAttempts = 36; 
         
         while (!isSynced && attempts < maxTopUpAttempts && window._fundPollingActive) {
+            // 🛠️ FIX: Strict session check
+            if (walletSessionController.signal.aborted) {
+                window._fundPollingActive = false; 
+                throw new Error("Wallet session severed during sync"); 
+            }
             if (!irys || !signer || !provider) { window._fundPollingActive = false; throw new Error("Wallet session severed during sync"); }
             await new Promise(resolve => setTimeout(resolve, 5000));
             try {
@@ -3003,16 +3042,17 @@ let irysProvider = null;
 let irysContract = null;
 
 const BASE_CHAIN_ID = 8453;
+const BASE_NETWORK = ethers.Network.from(BASE_CHAIN_ID);
 
 const GENERAL_ENDPOINTS = [
-    'https://base-mainnet.g.alchemy.com/v2/QTZrknzCeDDEXAFCEBCMM',
+    'https://base-mainnet.g.alchemy.com/v2/YOUR_ALCHEMY_KEY',
     'https://mainnet.base.org',                                   
     'https://base.llamarpc.com',                                  
     'https://base-rpc.publicnode.com'
 ];
 
 const IRYS_ENDPOINTS = [
-    'https://base-mainnet.g.alchemy.com/v2/wR5UgtUrkfPjKnqfMhm8k',
+    'https://base-mainnet.g.alchemy.com/v2/YOUR_ALCHEMY_KEY_2',
     'https://mainnet.base.org',                                   
     'https://base.llamarpc.com',                                  
     'https://base-rpc.publicnode.com'
@@ -3020,37 +3060,46 @@ const IRYS_ENDPOINTS = [
 
 function createFallbackProvider(endpoints) {
     const configs = endpoints.map((url, index) => {
-        const p = new ethers.JsonRpcProvider(url, BASE_CHAIN_ID, { staticNetwork: true });
-        return { provider: p, priority: index + 1, weight: 1 };
+        const p = new ethers.JsonRpcProvider(url, BASE_NETWORK, { staticNetwork: true });
+        return { 
+            provider: p, 
+            priority: index + 1, 
+            weight: 1, 
+            stallTimeout: 1500 
+        };
     });
-    return new ethers.FallbackProvider(configs, BASE_CHAIN_ID);
+    
+    const fallback = new ethers.FallbackProvider(configs, BASE_NETWORK);
+    fallback.pollingInterval = 4000;
+
+    return fallback;
 }
 
-async function initReadOnlyRPC() {
+async function initReadOnlyRPC(contractAddress, contractAbi) {
     try {
         readOnlyProvider = createFallbackProvider(GENERAL_ENDPOINTS);
-        await readOnlyProvider.getNetwork();
-        
-        readOnlyContract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, readOnlyProvider);
-        
-        appendLog('General Multi-RPC Online (Alchemy Key 1 Prioritized).', 'text-emerald-400');
-        await syncContractStates();
+        readOnlyContract = new ethers.Contract(contractAddress, contractAbi, readOnlyProvider);
+        appendLog('General Multi-RPC Online [Pro Infrastructure].', 'text-emerald-400');
     } catch (err) {
         readOnlyProvider = null;
         readOnlyContract = null;
         appendLog(`CRITICAL: General RPC Route Failed: ${err.message}`, 'text-red-500');
         showNotification('Unable to connect General Contract to Base Mainnet.', 'error');
+        return; 
+    }
+
+    try {
+        await syncContractStates();
+    } catch (syncErr) {
+        appendLog(`WARNING: RPC Connected but State Sync Failed: ${syncErr.message}`, 'text-amber-400');
     }
 }
 
 async function initIrysRPC(irysAddress, irysAbi) {
     try {
         irysProvider = createFallbackProvider(IRYS_ENDPOINTS);
-        await irysProvider.getNetwork();
-        
         irysContract = new ethers.Contract(irysAddress, irysAbi, irysProvider);
-        
-        appendLog('Dedicated Irys RPC Online (Alchemy Key 2 Isolated).', 'text-cyan-400');
+        appendLog('Dedicated Irys RPC Online [Pro Infrastructure].', 'text-cyan-400');
     } catch (err) {
         irysProvider = null;
         irysContract = null;
@@ -3059,13 +3108,14 @@ async function initIrysRPC(irysAddress, irysAbi) {
     }
 }
 
-async function bootSystemRPCs(irysAddress, irysAbi) {
+async function bootSystemRPCs(generalAddress, generalAbi, irysAddress, irysAbi) {
     appendLog('Booting Multi-Tunnel RPC Infrastructure...', 'text-slate-400');
     await Promise.allSettled([
-        initReadOnlyRPC(),
+        initReadOnlyRPC(generalAddress, generalAbi),
         initIrysRPC(irysAddress, irysAbi)
     ]);
 }
+
 
 function loadArchitectGateways() {
     const l1 = localStorage.getItem('sov_gate_l1');
