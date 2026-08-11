@@ -3023,7 +3023,7 @@ function createFallbackProvider(endpoints) {
         const p = new ethers.JsonRpcProvider(url, BASE_CHAIN_ID, { staticNetwork: true });
         return { provider: p, priority: index + 1, weight: 1 };
     });
-    return new ethers.FallbackProvider(configs, 1);
+    return new ethers.FallbackProvider(configs, BASE_CHAIN_ID);
 }
 
 async function initReadOnlyRPC() {
@@ -3033,7 +3033,7 @@ async function initReadOnlyRPC() {
         
         readOnlyContract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, readOnlyProvider);
         
-        appendLog('General Multi-RPC Online.', 'text-emerald-400');
+        appendLog('General Multi-RPC Online (Alchemy Key 1 Prioritized).', 'text-emerald-400');
         await syncContractStates();
     } catch (err) {
         readOnlyProvider = null;
@@ -3050,7 +3050,7 @@ async function initIrysRPC(irysAddress, irysAbi) {
         
         irysContract = new ethers.Contract(irysAddress, irysAbi, irysProvider);
         
-        appendLog('Dedicated Irys RPC Online.', 'text-cyan-400');
+        appendLog('Dedicated Irys RPC Online (Alchemy Key 2 Isolated).', 'text-cyan-400');
     } catch (err) {
         irysProvider = null;
         irysContract = null;
@@ -3066,7 +3066,6 @@ async function bootSystemRPCs(irysAddress, irysAbi) {
         initIrysRPC(irysAddress, irysAbi)
     ]);
 }
-
 
 function loadArchitectGateways() {
     const l1 = localStorage.getItem('sov_gate_l1');
