@@ -23,28 +23,55 @@ window.InitSovereignIrys = async function(inputSigner, customRpcUrl = null) {
     isInitializingIrys = true;
 
     try {
-        if (!inputSigner || typeof inputSigner.signMessage !== 'function') throw new Error("❌ CRITICAL: Invalid Signer.");
-        const provider = inputSigner.provider;
-        if (!provider) throw new Error("❌ CRITICAL: Signer disconnected from RPC.");
+        // 1. Strict Signer & Provider Validation
+        if (!inputSigner || typeof inputSigner.signMessage !== 'function') {
+            throw new Error("❌ CRITICAL: Invalid Signer.");
+        }
         
-        const network = await withTimeout(provider.getNetwork(), 10000, "CRITICAL: RPC Node dead.");
-        if (BigInt(network.chainId) !== 8453n) throw new Error(`⛔ SYSTEM HALTED: Network mismatch.`);
+        const provider = inputSigner.provider;
+        if (!provider) {
+            throw new Error("❌ CRITICAL: Signer disconnected from RPC.");
+        }
+        
+        // 2. Network Validation with Timeout & Defensive Type Checking
+        const network = await withTimeout(provider.getNetwork(), 10000, "CRITICAL: RPC Node dead or unresponsive.");
+        
+        // HARDENED: Optional chaining and fallback to prevent BigInt(undefined) crash
+        const currentChainId = network?.chainId != null ? BigInt(network.chainId) : 0n;
+        if (currentChainId !== 8453n) {
+            throw new Error(`⛔ SYSTEM HALTED: Network mismatch. Expected Base Mainnet (8453).`);
+        }
 
-        const targetRpcUrl = customRpcUrl || (typeof window.getPrimaryIrysRpcUrl === 'function' ? window.getPrimaryIrysRpcUrl() : null) || (Array.isArray(window.IRYS_ENDPOINTS) && window.IRYS_ENDPOINTS.length > 0 ? window.IRYS_ENDPOINTS[0] : "https://mainnet.base.org");
+        // 3. RPC Resolution
+        const targetRpcUrl = customRpcUrl || 
+            (typeof window.getPrimaryIrysRpcUrl === 'function' ? window.getPrimaryIrysRpcUrl() : null) || 
+            (Array.isArray(window.IRYS_ENDPOINTS) && window.IRYS_ENDPOINTS.length > 0 ? window.IRYS_ENDPOINTS[0] : "https://mainnet.base.org");
 
-        const builder = WebUploader(WebEthereum).withAdapter(EthersV6Adapter(inputSigner)).withNetwork("mainnet").withToken("base-eth");
+        // 4. Irys Builder Construction
+        const builder = WebUploader(WebEthereum)
+            .withAdapter(EthersV6Adapter(inputSigner))
+            .withNetwork("mainnet")
+            .withToken("base-eth");
+            
         if (targetRpcUrl) builder.withRpc(targetRpcUrl);
 
+        // 5. Build Execution with Timeout
         const irysUploader = await withTimeout(builder.build(), 15000, "CRITICAL: Irys build timed out.");
         
-        if (!irysUploader.address) throw new Error("Address resolved to null.");
+        // HARDENED: Optional chaining on address resolution
+        if (!irysUploader?.address) {
+            throw new Error("Address resolved to null during Irys initialization.");
+        }
+        
         window.SovereignIrysInstance = irysUploader;
         return irysUploader;
 
     } catch (error) {
-        if (typeof window.lockSystem === 'function') window.lockSystem();
-        throw new Error(`Irys Bridge Failed: ${error.message}`);
+        // 🛡️ CRITICAL FIX: Ensure system unlocks on failure to prevent UI bricking
+        if (typeof window.unlockSystem === 'function') window.unlockSystem();
+        throw new Error(`Irys Bridge Failed: ${error?.message || "Unknown Error"}`);
     } finally {
+        // Guarantee mutex release
         isInitializingIrys = false;
     }
 };
