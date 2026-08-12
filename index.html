@@ -5730,16 +5730,41 @@ function onTypeToggle(station) {
     }
 }
 
-function revealApp() { document.body.classList.add('app-ready'); }
+function revealApp() { 
+    const body = document.body;
+    body.classList.add('app-ready'); 
+    // WAR MACHINE OVERRIDE: บังคับให้ UI ปรากฏเสมอ เผื่อ CSS Class ทำงานล้มเหลว
+    body.style.opacity = "1";
+    body.style.visibility = "visible";
+}
 
 const initializeSystem = async () => {
-    if (typeof fetchImperialManifest === 'function') await fetchImperialManifest();
+    // 1. SAFE FETCH: โหลด Manifest แบบมีการ Log Error ห้ามใช้ Empty Catch เด็ดขาด
+    if (typeof fetchImperialManifest === 'function') {
+        try {
+            await fetchImperialManifest();
+        } catch (error) {
+            console.warn("[WAR MACHINE] fetchImperialManifest bypassed or failed:", error);
+        }
+    }
     
-    setupMatrixGrid();
+    // 2. SAFE GRID RENDER: บังคับวาดหน้าจอ ห้ามโดนบล็อก
+    if (typeof setupMatrixGrid === 'function') {
+        try {
+            setupMatrixGrid();
+        } catch (error) {
+            console.error("[WAR MACHINE] setupMatrixGrid critical failure:", error);
+        }
+    }
     
     const grid = document.getElementById('matrixGridContainer'); 
     if (grid && !grid.dataset.clickAttached) {
-        const eventType = IS_TOUCH_DEVICE ? 'pointerup' : 'click';
+        
+        // 3. BULLETPROOF TOUCH CHECK: แก้บั๊ก ReferenceError ที่เคยทำให้สคริปต์ตาย
+        const isTouch = (typeof IS_TOUCH_DEVICE !== 'undefined' && IS_TOUCH_DEVICE) || 
+                        (typeof window !== 'undefined' && 'ontouchstart' in window) || 
+                        (typeof navigator !== 'undefined' && navigator.maxTouchPoints > 0);
+        const eventType = isTouch ? 'pointerup' : 'click';
         
         grid.addEventListener(eventType, async (e) => { 
             const targetNode = e.target.closest('.matrix-node'); 
@@ -5748,63 +5773,114 @@ const initializeSystem = async () => {
             const tokenId = targetNode.getAttribute('data-token-id');
             if (!tokenId) return;
 
-            // ยอมให้กดสลับโน้ตได้ตลอดเวลา ยกเว้นแค่ตอนทำธุรกรรมจริงๆ
+            // ตรวจสอบสถานะการทำธุรกรรม
             if (typeof isTransactionPending !== 'undefined' && isTransactionPending) {
-                if (typeof showNotification === 'function') showNotification("SYSTEM ENFORCEMENT: Transaction processing. Please wait.", "warning");
+                if (typeof showNotification === 'function') {
+                    showNotification("SYSTEM ENFORCEMENT: Transaction processing. Please wait.", "warning");
+                }
                 return;
             }
 
+            // 4. THE MASTER SWITCH (LAZY MINTING BYPASS): เช็คไฟแดง/ไฟเขียว
             try {
-                window.matrixDOMCache.forEach(n => n.classList.remove('bg-slate-800', 'border-yellow-500'));
-                targetNode.classList.add('bg-slate-800', 'border-yellow-500');
+                let isMintAllowed = true;
+                const isMintedAttr = targetNode.getAttribute('data-minted');
+                
+                // ตรวจสอบจาก HTML Attribute หรือ Global Object
+                if (isMintedAttr === 'false') {
+                    isMintAllowed = false;
+                } else if (typeof window.manifestData !== 'undefined') {
+                    const nodeData = window.manifestData[tokenId];
+                    if (!nodeData || !nodeData.image) {
+                        isMintAllowed = false;
+                    }
+                }
 
-                await auditTokenFromLedger(tokenId);
+                if (!isMintAllowed) {
+                    console.warn(`[WAR MACHINE] Node #${tokenId} lacks image metadata (Red Light). Bypass executed.`);
+                    return; // ตัดการทำงานทันที ระบบไม่ค้าง ไม่ยิง API มั่ว
+                }
+            } catch (bypassErr) {
+                console.error("[WAR MACHINE] Lazy Mint Bypass logic failed:", bypassErr);
+            }
+
+            // 5. SAFE DOM MANIPULATION & LEDGER AUDIT
+            try {
+                // ป้องกัน TypeError หาก matrixDOMCache หายไป
+                if (Array.isArray(window.matrixDOMCache)) {
+                    window.matrixDOMCache.forEach(n => {
+                        if (n && n.classList) n.classList.remove('bg-slate-800', 'border-yellow-500');
+                    });
+                }
+                
+                if (targetNode.classList) {
+                    targetNode.classList.add('bg-slate-800', 'border-yellow-500');
+                }
+
+                // ดึงข้อมูลเมื่อผ่านการกรองทุกด่านแล้วเท่านั้น
+                if (typeof auditTokenFromLedger === 'function') {
+                    await auditTokenFromLedger(tokenId);
+                }
             } catch (err) {
-                console.error(`[MATRIX GRID EXCEPTION] Failed to inspect node #${tokenId}:`, err);
-                if (typeof showNotification === 'function') showNotification("Failed to retrieve selected cell coordinate data.", "error");
+                console.error(`[WAR MACHINE] Failed to inspect node #${tokenId}:`, err);
+                if (typeof showNotification === 'function') {
+                    showNotification("Failed to retrieve selected cell coordinate data.", "error");
+                }
             }
         });
         grid.dataset.clickAttached = "true";
     }
 
-    if (window.visualViewport) {
-        window.visualViewport.addEventListener("resize", () => {
-            if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') {
+    // 6. SAFE VIEWPORT: ป้องกันบั๊กจอดำบนมือถือเวลาพิมพ์
+    if (typeof window !== 'undefined' && window.visualViewport) {
+        const handleViewport = () => {
+            const activeElement = document.activeElement ? document.activeElement.tagName : '';
+            if (activeElement === 'INPUT' || activeElement === 'TEXTAREA') {
                 document.body.style.height = `${window.visualViewport.height}px`;
             } else {
                 document.body.style.height = "";
                 document.body.style.overflow = "";
             }
-        });
-        window.visualViewport.addEventListener("scroll", () => {
-            if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') {
-                document.body.style.height = `${window.visualViewport.height}px`;
-            } else {
-                document.body.style.height = "";
-                document.body.style.overflow = "";
-            }
-        });
+        };
+        window.visualViewport.addEventListener("resize", handleViewport);
+        window.visualViewport.addEventListener("scroll", handleViewport);
     }
 };
 
+// ==========================================
+// 7. GUARANTEED BOOT SEQUENCE 
+// ==========================================
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
         revealApp();
-        initializeSystem();
+        initializeSystem().catch(e => console.error("[WAR MACHINE] DOMContentLoaded init failed:", e));
     }, { once: true }); 
 } else { 
     revealApp(); 
-    initializeSystem();
+    initializeSystem().catch(e => console.error("[WAR MACHINE] Direct init failed:", e));
 }
 
 window.addEventListener('load', async () => { 
     revealApp(); 
-    if (typeof loadArchitectGateways === 'function') { try { loadArchitectGateways(); } catch (e) {} } 
+    
+    // กวาดล้าง Empty Catch ทิ้งทั้งหมด
+    if (typeof loadArchitectGateways === 'function') { 
+        try { 
+            loadArchitectGateways(); 
+        } catch (e) {
+            console.error("[WAR MACHINE] loadArchitectGateways Execution Failed:", e);
+        } 
+    } 
+    
     if (typeof bootSystemRPCs === 'function' && typeof CONTRACT_ADDRESS !== 'undefined' && typeof CONTRACT_ABI !== 'undefined') { 
         try { 
             await bootSystemRPCs(CONTRACT_ADDRESS, CONTRACT_ABI); 
-            syncActiveMatrixNodes(); 
-        } catch (e) {} 
+            if (typeof syncActiveMatrixNodes === 'function') {
+                syncActiveMatrixNodes(); 
+            }
+        } catch (e) {
+            console.error("[WAR MACHINE] RPC Boot Sequence / Sync Failed:", e);
+        } 
     }
 });
 
