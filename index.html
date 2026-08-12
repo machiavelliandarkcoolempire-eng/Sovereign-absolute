@@ -353,7 +353,6 @@
         }
     }
 </style>
-</head>
 <body class="bg-black text-slate-100 font-mono antialiased relative">
 
 <div id="gasSurgeWarning" class="fixed top-4 left-1/2 transform -translate-x-1/2 bg-red-950/90 border border-red-500 text-red-100 px-6 py-3 rounded-xl z-[99999] hidden shadow-[0_0_20px_rgba(239,68,68,0.6)] backdrop-blur-md">
@@ -1441,12 +1440,6 @@ let pendingSyncRequest = false;
 const LOG_MAX_ROWS = 100;
 let _logScrollQueued = false;
 
-const MULTICALL3_ADDRESS = "0xcA11bde05977b3631167028862bE2a173976CA11";
-// [VERIFIED]: Standard Multicall3 ABI for aggregate3
-const MULTICALL3_ABI = [
-    "function aggregate3(tuple(address target, bool allowFailure, bytes callData)[] calls) payable returns (tuple(bool success, bytes returnData)[] returnData)"
-];
-
 const _multicallCtx = new WeakMap();
 async function debouncedMulticall(providerInstance, calls) {
     return new Promise((resolve, reject) => {
@@ -1471,15 +1464,13 @@ async function debouncedMulticall(providerInstance, calls) {
                     const allCalls = currentBatch.flatMap(item => item.calls);
                     let results = [];
                     
-                    // [VERIFIED]: Chunking at 100 to prevent RPC payload size limits
                     for (let i = 0; i < allCalls.length; i += 100) {
                         const chunk = allCalls.slice(i, i + 100);
                         try {
                             const chunkResults = await multicall.aggregate3(chunk);
                             results = results.concat(Array.from(chunkResults));
                         } catch (chunkErr) {
-                            console.warn("[MULTICALL] Chunk failed, executing graceful fallback:", chunkErr.message);
-                            // [VERIFIED]: Ethers v6 provider.call fallback mechanism
+                            console.warn("Multicall chunk failed, falling back to individual calls", chunkErr);
                             for (const call of chunk) {
                                 try {
                                     const res = await providerInstance.call({ to: call.target, data: call.callData });
@@ -1498,10 +1489,9 @@ async function debouncedMulticall(providerInstance, calls) {
                         offset += item.calls.length;
                     }
                 } catch (err) {
-                    console.error("[MULTICALL] Critical architecture failure:", err);
                     currentBatch.forEach(item => item.reject(err));
                 }
-            }, 50); // 50ms debounce window
+            }, 50);
         }
     });
 }
@@ -1882,7 +1872,7 @@ async function runTx(btnInput, label, methodName, args = [], overrides = {}, opt
     if (manageLock && (typeof lockSystem === 'function') && !lockSystem()) return false;
     
     const btn = (manageButton && typeof toggleButtonLoading === 'function') ? toggleButtonLoading(btnInput, true) : null;
-    let timeoutId; // 🛡️ SILENT BUG DESTROYED: Timer Reference
+    let timeoutId; 
 
     try {
         const isSurge = await checkGasSurge();
@@ -1939,7 +1929,7 @@ async function runTx(btnInput, label, methodName, args = [], overrides = {}, opt
         }
         return false;
     } finally {
-        if (timeoutId) clearTimeout(timeoutId); // 🛡️ SILENT BUG DESTROYED: Memory Cleanup
+        if (timeoutId) clearTimeout(timeoutId); 
         if (manageLock && typeof unlockSystem === 'function') unlockSystem();
         if (btn && typeof toggleButtonLoading === 'function') toggleButtonLoading(btn, false);
     }
@@ -1948,7 +1938,6 @@ async function runTx(btnInput, label, methodName, args = [], overrides = {}, opt
 async function checkGasSurge() {
     if(!provider) return false;
     try {
-        // 🛡️ SILENT BUG DESTROYED: Prevent Infinite Hang with 5s Timeout
         const feeData = await Promise.race([
             provider.getFeeData(),
             new Promise((_, reject) => setTimeout(() => reject(new Error("RPC_TIMEOUT")), 5000))
@@ -1967,7 +1956,6 @@ async function checkGasSurge() {
         }
         return false;
     } catch (e) { 
-        // If RPC times out or fails, we silently bypass the surge check to prevent UI deadlock
         return false; 
     }
 }
@@ -2037,33 +2025,24 @@ async function autoMap(tokenId) {
                     const timeoutId = setTimeout(() => controller.abort(), 5000);
                     
                     const onSessionAbort = () => controller.abort();
-                    if (walletSessionController && walletSessionController.signal.aborted) {
+                    if (walletSessionController.signal.aborted) {
                         controller.abort();
-                    } else if (walletSessionController) {
+                    } else {
                         walletSessionController.signal.addEventListener('abort', onSessionAbort, { once: true });
                     }
 
                     const metaResponse = await fetch(targetUrl, { signal: controller.signal });
                     clearTimeout(timeoutId);
-                    if (walletSessionController) {
-                        walletSessionController.signal.removeEventListener('abort', onSessionAbort);
-                    }
+                    walletSessionController.signal.removeEventListener('abort', onSessionAbort);
                     
                     if (metaResponse.ok) {
                         const contentLength = metaResponse.headers.get('content-length');
-                        const contentType = (metaResponse.headers.get('content-type') || '').toLowerCase();
-                        const isMedia = contentType.includes('video/') || contentType.includes('image/') || contentType.includes('audio/');
-                        
                         if (contentLength && parseInt(contentLength) > 51200) {
                             console.warn(`[autoMap] Payload exceeds 50KB limit. Rejected to protect UI thread.`);
-                        } else if (isMedia) {
-                            console.warn(`[autoMap] Rejected media type (${contentType}) to prevent memory exhaustion.`);
-                        } else if (contentType && !contentType.includes('application/json') && !contentType.includes('text/plain')) {
-                            console.warn(`[autoMap] Invalid content type (${contentType}). Rejected.`);
                         } else {
                             const text = await metaResponse.text();
                             if (text.length > 51200) { 
-                                console.warn(`[autoMap] Decoded payload exceeds 50KB limit. Rejected to protect UI thread.`);
+                                console.warn(`[autoMap] Payload exceeds 50KB limit. Rejected to protect UI thread.`);
                             } else {
                                 try {
                                     metadata = JSON.parse(text);
@@ -2073,10 +2052,8 @@ async function autoMap(tokenId) {
                             }
                         }
                     }
-                } catch (fetchErr) {
-                    if (fetchErr.name !== 'AbortError') {
-                        console.warn(`[autoMap] Metadata fetch failed at ${targetUrl}:`, fetchErr.message);
-                    }
+                } catch (e) {
+                    console.warn(`[autoMap] Metadata fetch failed for ${targetUrl}`, e);
                 }
             }
 
@@ -2111,7 +2088,6 @@ async function autoMap(tokenId) {
     PENDING_AUTOMAP_REQUESTS.set(tId, requestPromise);
     return requestPromise;
 }
-
 
 function setupRealTimeEvents() {
     if (!secureContract || !provider) return;
@@ -2621,6 +2597,13 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
             }
             dataToUpload = window.Buffer.from(payload, "utf-8");
             size = dataToUpload.length;
+        } else {
+            if (typeof window.Buffer === 'undefined') {
+                throw new Error("CRITICAL: window.Buffer is undefined. Polyfill failed to load.");
+            }
+            const arrayBuffer = await payload.arrayBuffer();
+            dataToUpload = window.Buffer.from(arrayBuffer);
+            size = dataToUpload.length;
         }
     } catch (conversionErr) {
         appendLog(`Payload conversion failed: ${conversionErr.message}`, "text-red-500");
@@ -2644,13 +2627,22 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
 
         const costStr = Number(ethers.formatEther(diffWithBuffer)).toString();
 
-        updateBridgeStatus("AWAITING WALLET SIGNATURE...", "warning");
-        appendLog(`Awaiting user transaction: Funding ${costStr} ETH. Please check your wallet.`, "text-yellow-400");
+        updateBridgeStatus("AWAITING FUNDING TX...", "warning");
+        appendLog(`Awaiting user transaction: Funding ${costStr} ETH`, "text-yellow-400");
 
         const isConfirmed = await requestFundConfirmation(costStr);
         if (!isConfirmed) throw new Error("User declined funding.");
 
-        // 1. เช็คว่ามี TX ค้างอยู่ไหม (ป้องกันจ่ายเงินซ้ำถ้ากด F5)
+        window._fundPollingActive = true;
+        showFundingOverlay(costStr);
+
+        const cancelBtn = document.getElementById('fundCancelBtn');
+        if (cancelBtn) {
+            cancelBtn.textContent = '[ REJECT IN WALLET ]';
+            cancelBtn.disabled = true;
+            cancelBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        }
+
         let pendingFundTx = null;
         try {
             const storedTx = localStorage.getItem('irys_pending_fund_tx');
@@ -2666,7 +2658,6 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
             localStorage.removeItem('irys_pending_fund_tx');
         }
 
-        // 2. เรียกกระเป๋าให้เซ็นก่อน (ยังไม่กาง Overlay บังหน้าจอ)
         if (pendingFundTx && pendingFundTx !== 'pending') {
             appendLog("Resuming pending funding transaction polling...", "text-yellow-400");
         } else {
@@ -2682,74 +2673,60 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
                 const isInsufficientFunds = /insufficient funds/i.test(feMsg);
                 
                 if (isUserRejection || isInsufficientFunds) {
-                    throw new Error(isUserRejection ? "Funding transaction cancelled by user in wallet." : "Insufficient ETH balance for funding.");
+                    hideFundingOverlay();
+                    throw new Error(isUserRejection ? "Funding transaction cancelled by user." : "Insufficient ETH balance for funding.");
                 } else {
-                    throw fundErr;
+                    appendLog(`[IRYS API WARNING] Fund API returned an error, but TX might be on-chain. Forcing balance verification...`, "text-yellow-500");
                 }
             }
         }
 
-        // 3. จ่ายเงินสำเร็จแล้ว ค่อยกาง Overlay บังหน้าจอเพื่อรอ Sync
-        window._fundPollingActive = true;
-        showFundingOverlay(costStr);
+        appendLog("Funding TX confirmed on-chain. Awaiting Bundler synchronization...", "text-yellow-400");
+        updateBridgeStatus("SYNCING BUNDLER...", "warning");
 
-        const cancelBtn = document.getElementById('fundCancelBtn');
-        if (cancelBtn) {
-            cancelBtn.textContent = '[ FORCE CLOSE / ABORT ]';
-            cancelBtn.disabled = false;
-            cancelBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        const titleEl = document.getElementById('fundOverlayTitle');
+        const subEl = document.getElementById('fundOverlaySub');
+        if(titleEl) titleEl.textContent = "SYNCING BUNDLER (BASE NETWORK)...";
+        if(subEl) {
+            subEl.replaceChildren();
+            const t1 = document.createTextNode("Funds transferred. Awaiting Irys balance update...");
+            const br = document.createElement('br');
+            const span = document.createElement('span');
+            span.className = "text-emerald-400 font-bold";
+            span.textContent = "(Base Network may take 1-3 minutes. Do not close this page or fund again.)";
+            subEl.append(t1, br, span);
         }
 
-        try {
-            appendLog("Funding TX confirmed on-chain. Awaiting Bundler synchronization...", "text-yellow-400");
-            updateBridgeStatus("SYNCING BUNDLER...", "warning");
+        let isSynced = false;
+        let attempts = 0;
+        const maxAttempts = 36;
 
-            const titleEl = document.getElementById('fundOverlayTitle');
-            const subEl = document.getElementById('fundOverlaySub');
-            if(titleEl) titleEl.textContent = "SYNCING BUNDLER (BASE NETWORK)...";
-            if(subEl) {
-                subEl.replaceChildren();
-                const t1 = document.createTextNode("Funds transferred. Awaiting Irys balance update...");
-                const br = document.createElement('br');
-                const span = document.createElement('span');
-                span.className = "text-emerald-400 font-bold";
-                span.textContent = "(Base Network may take 1-3 minutes. Do not close this page or fund again.)";
-                subEl.append(t1, br, span);
-            }
-
-            let isSynced = false;
-            let attempts = 0;
-            const maxAttempts = 36;
-
-            while (!isSynced && attempts < maxAttempts && window._fundPollingActive) {
-                if (!irys || !signer || !provider) { window._fundPollingActive = false; throw new Error("Wallet session severed during sync"); }
-                await new Promise(resolve => setTimeout(resolve, 5000));
-                try {
-                    const currentBalanceRaw = await withNetworkRetry(() => irys.getLoadedBalance());
-                    const currentBalance = toBigInt(currentBalanceRaw);
-                    appendLog(`[SYNC CHECK] Current Irys Balance: ${ethers.formatEther(currentBalance)} ETH`, "text-slate-500");
-                    if (currentBalance >= price) {
-                        isSynced = true;
-                    }
-                } catch(e) {}
-                attempts++;
-            }
-
-            if (!window._fundPollingActive) {
-                throw new Error("User cancelled waiting (Your funds remain safe in the Irys system).");
-            }
-
-            if (!isSynced) {
-                throw new Error("Funds transferred to Irys, but server update is delayed. Please wait 3-5 minutes and click 'Upload' again without refunding.");
-            }
-
-            localStorage.removeItem('irys_pending_fund_tx');
-            appendLog("Bundler synchronized successfully. Proceeding to upload.", "text-emerald-400");
-            
-        } finally {
-            // การันตีว่า Overlay จะถูกลบทิ้งเสมอ
-            hideFundingOverlay();
+        while (!isSynced && attempts < maxAttempts && window._fundPollingActive) {
+            if (!irys || !signer || !provider) { window._fundPollingActive = false; throw new Error("Wallet session severed during sync"); }
+            await new Promise(resolve => setTimeout(resolve, 5000));
+            try {
+                const currentBalanceRaw = await withNetworkRetry(() => irys.getLoadedBalance());
+                const currentBalance = toBigInt(currentBalanceRaw);
+                appendLog(`[SYNC CHECK] Current Irys Balance: ${ethers.formatEther(currentBalance)} ETH`, "text-slate-500");
+                if (currentBalance >= price) {
+                    isSynced = true;
+                }
+            } catch(e) {}
+            attempts++;
         }
+
+        hideFundingOverlay();
+
+        if (!window._fundPollingActive) {
+            throw new Error("User cancelled waiting (Your funds remain safe in the Irys system).");
+        }
+
+        if (!isSynced) {
+            throw new Error("Funds transferred to Irys, but server update is delayed. Please wait 3-5 minutes and click 'Upload' again without refunding.");
+        }
+
+        localStorage.removeItem('irys_pending_fund_tx');
+        appendLog("Bundler synchronized successfully. Proceeding to upload.", "text-emerald-400");
     }
 
     updateBridgeStatus("STREAMING PAYLOAD...", "warning");
@@ -2825,100 +2802,81 @@ async function executeIrysTopUp(amountEthStr) {
         
         const amountWei = ethers.parseEther(amountEthStr);
         
+        showFundingOverlay(amountEthStr);
         appendLog(`Initiating Irys Top-up: ${amountEthStr} ETH...`, "text-blue-400");
         
-        // 1. เช็คว่ามี TX ค้างอยู่ไหม
-        let pendingFundTx = null;
-        try {
-            const storedTx = localStorage.getItem('irys_pending_fund_tx');
-            if (storedTx) {
-                const parsedTx = JSON.parse(storedTx);
-                if (Date.now() - parsedTx.ts < 3600000) { 
-                    pendingFundTx = parsedTx.id;
-                } else {
-                    localStorage.removeItem('irys_pending_fund_tx');
-                }
-            }
-        } catch (e) {
-            localStorage.removeItem('irys_pending_fund_tx');
+        const cancelBtn = document.getElementById('fundCancelBtn');
+        if (cancelBtn) {
+            cancelBtn.textContent = '[ REJECT IN WALLET ]';
+            cancelBtn.disabled = true;
+            cancelBtn.classList.add('opacity-50', 'cursor-not-allowed');
         }
 
-        // 2. เรียกกระเป๋าให้เซ็นก่อน (ยังไม่กาง Overlay)
+        let fundCallFailed = false;
+        const pendingFundTx = localStorage.getItem('irys_pending_fund_tx');
         if (pendingFundTx && pendingFundTx !== 'pending') {
             appendLog("Resuming pending funding transaction polling...", "text-yellow-400");
         } else {
             try {
                 const fundRes = await irys.fund(amountWei.toString());
-                try { localStorage.setItem('irys_pending_fund_tx', JSON.stringify({ id: fundRes.id, ts: Date.now() })); } catch(e) {}
+                try { localStorage.setItem('irys_pending_fund_tx', fundRes.id || 'pending'); } catch(e) {}
             } catch (fundErr) {
                 const feMsg = (fundErr && fundErr.message) || "";
                 const isUserRejection = /user rejected|declined|denied|cancelled|user declined/i.test(feMsg);
                 if (isUserRejection) throw fundErr; 
+                fundCallFailed = true;
                 appendLog(`[IRYS FUND WARNING] Transaction confirmed on Blockchain but Irys Node response delayed. Entering polling mode...`, "text-yellow-500");
             }
         }
-
-        // 3. จ่ายเงินสำเร็จแล้ว ค่อยกาง Overlay บังหน้าจอเพื่อรอ Sync
-        window._fundPollingActive = true;
-        showFundingOverlay(amountEthStr);
         
-        const cancelBtn = document.getElementById('fundCancelBtn');
-        if (cancelBtn) {
-            cancelBtn.textContent = '[ FORCE CLOSE / ABORT ]';
-            cancelBtn.disabled = false;
-            cancelBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        const titleEl = document.getElementById('fundOverlayTitle');
+        const subEl = document.getElementById('fundOverlaySub');
+        if(titleEl) titleEl.textContent = "SYNCING BUNDLER (BASE NETWORK)...";
+        if(subEl) {
+            subEl.replaceChildren();
+            const t1 = document.createTextNode("Funds transferred. Awaiting Irys balance update...");
+            const br = document.createElement('br');
+            const span = document.createElement('span');
+            span.className = "text-emerald-400 font-bold";
+            span.textContent = "(Base Network may take 1-3 minutes. Do not close this page or fund again.)";
+            subEl.append(t1, br, span);
         }
 
-        try {
-            const titleEl = document.getElementById('fundOverlayTitle');
-            const subEl = document.getElementById('fundOverlaySub');
-            if(titleEl) titleEl.textContent = "SYNCING BUNDLER (BASE NETWORK)...";
-            if(subEl) {
-                subEl.replaceChildren();
-                const t1 = document.createTextNode("Funds transferred. Awaiting Irys balance update...");
-                const br = document.createElement('br');
-                const span = document.createElement('span');
-                span.className = "text-emerald-400 font-bold";
-                span.textContent = "(Base Network may take 1-3 minutes. Do not close this page or fund again.)";
-                subEl.append(t1, br, span);
-            }
+        let isSynced = false;
+        let attempts = 0;
+        const maxTopUpAttempts = 36; 
+        
+        while (!isSynced && attempts < maxTopUpAttempts && window._fundPollingActive) {
+            if (!irys || !signer || !provider) { window._fundPollingActive = false; throw new Error("Wallet session severed during sync"); }
+            await new Promise(resolve => setTimeout(resolve, 5000));
+            try {
+                const currentBalanceRaw = await irys.getLoadedBalance();
+                const currentBalance = toBigInt(currentBalanceRaw);
+                appendLog(`[SYNC CHECK] Current Irys Balance: ${ethers.formatEther(currentBalance)} ETH`, "text-slate-500");
+                if (currentBalance > initialBalance) {
+                    isSynced = true;
+                }
+            } catch(e) {}
+            attempts++;
+        }
+        
+        hideFundingOverlay();
+        
+        if (!window._fundPollingActive) {
+            throw new Error("User cancelled waiting (Your funds remain safe in the Irys system).");
+        }
 
-            let isSynced = false;
-            let attempts = 0;
-            const maxTopUpAttempts = 36; 
-            
-            while (!isSynced && attempts < maxTopUpAttempts && window._fundPollingActive) {
-                if (!irys || !signer || !provider) { window._fundPollingActive = false; throw new Error("Wallet session severed during sync"); }
-                await new Promise(resolve => setTimeout(resolve, 5000));
-                try {
-                    const currentBalanceRaw = await irys.getLoadedBalance();
-                    const currentBalance = toBigInt(currentBalanceRaw);
-                    appendLog(`[SYNC CHECK] Current Irys Balance: ${ethers.formatEther(currentBalance)} ETH`, "text-slate-500");
-                    if (currentBalance > initialBalance) {
-                        isSynced = true;
-                    }
-                } catch(e) {}
-                attempts++;
-            }
-            
-            if (!window._fundPollingActive) {
-                throw new Error("User cancelled waiting (Your funds remain safe in the Irys system).");
-            }
-
-            if (isSynced) {
-                localStorage.removeItem('irys_pending_fund_tx');
-                showNotification(`Irys balance updated successfully! You can now upload the file.`, "success");
-                appendLog(`Irys balance topped up successfully.`, "text-emerald-400");
-            } else {
-                showNotification(`Funds in Irys but server display is delayed. Wait 3 minutes and click 'Upload' without refunding.`, "warning");
-                appendLog(`Top-up TX confirmed on Base, but Irys node is lagging. Funds are safe.`, "text-yellow-500");
-            }
-        } finally {
-            // การันตีว่า Overlay จะหายไปแน่นอน
-            hideFundingOverlay();
+        if (isSynced) {
+            localStorage.removeItem('irys_pending_fund_tx');
+            showNotification(`Irys balance updated successfully! You can now upload the file.`, "success");
+            appendLog(`Irys balance topped up successfully.`, "text-emerald-400");
+        } else {
+            showNotification(`Funds in Irys but server display is delayed. Wait 3 minutes and click 'Upload' without refunding.`, "warning");
+            appendLog(`Top-up TX confirmed on Base, but Irys node is lagging. Funds are safe.`, "text-yellow-500");
         }
         
     } catch (err) {
+        hideFundingOverlay();
         const msg = err.message || "Unknown error";
         if (msg.includes("declined") || msg.includes("rejected") || msg.includes("cancelled") || msg.includes("user rejected")) {
             appendLog("User cancelled the top-up transaction.", "text-yellow-500");
@@ -3018,7 +2976,6 @@ async function executeArchitectCentralizedUpload(type) {
         
         if (typeof appendLog === 'function') appendLog(`Streaming ${type} payload to Irys Datachain...`, "text-blue-400");
         
-        // 🛡️ [SILENT BUG DESTROYED]: MIME Type Fallback Protection
         const mimeType = (file.type && file.type.trim() !== "") ? file.type : "application/octet-stream";
         const tags = [{ name: "Content-Type", value: mimeType }];
         
@@ -3037,7 +2994,6 @@ async function executeArchitectCentralizedUpload(type) {
         const sanitizedTxId = (typeof sanitizeForDOM === 'function') ? sanitizeForDOM(txId) : txId;
         if (typeof appendLog === 'function') appendLog(`Payload successfully anchored: ${sanitizedTxId}`, "text-emerald-400 font-bold");
         
-        // UI Synchronous Update
         if (type === 'front') {
             const frontUriField = document.getElementById('forgeFrontUri');
             if (frontUriField) frontUriField.value = txId;
@@ -3180,7 +3136,6 @@ async function loadDeedMetadata(tokenId) {
     }
 }
 
-// 🛡️ [DEFENSIVE TELEMETRY HELPERS] ป้องกัน ReferenceError หาก UI ฟังก์ชันยังไม่ถูกโหลด
 function safeAppendLog(msg, colorClass) {
     if (typeof window.appendLog === 'function') window.appendLog(msg, colorClass);
     else if (typeof appendLog === 'function') appendLog(msg, colorClass);
@@ -3211,7 +3166,6 @@ async function initReadOnlyRPC() {
         readOnlyProvider = createFallbackProvider(GENERAL_ENDPOINTS);
         await readOnlyProvider.getNetwork();
         
-        // 🛡️ SAFETY CHECK: ป้องกัน Crash จาก Placeholder Address
         if (CONTRACT_ADDRESS && ethers.isAddress(CONTRACT_ADDRESS) && CONTRACT_ADDRESS !== "0x0000000000000000000000000000000000000000") {
             readOnlyContract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, readOnlyProvider);
         }
@@ -3231,7 +3185,6 @@ async function initIrysRPC(irysAddress, irysAbi) {
         irysProvider = createFallbackProvider(IRYS_ENDPOINTS);
         await irysProvider.getNetwork();
         
-        // 🛡️ SAFETY CHECK: ตรวจสอบ Address ก่อน Instance
         if (irysAddress && ethers.isAddress(irysAddress) && irysAbi) {
             irysContract = new ethers.Contract(irysAddress, irysAbi, irysProvider);
         }
@@ -3253,9 +3206,7 @@ async function bootSystemRPCs(irysAddress, irysAbi) {
     ]);
 }
 
-// 🎯 Export ฟังก์ชันหลักให้ HTML เรียกใช้ได้
 window.bootSystemRPCs = bootSystemRPCs;
-
 
 function loadArchitectGateways() {
     const l1 = localStorage.getItem('sov_gate_l1');
@@ -3581,6 +3532,7 @@ async function connectWallet(e) {
         if (btn && typeof toggleButtonLoading === 'function') toggleButtonLoading(btn, false);
     }
 }
+
 
 let pendingProposalsRequest = false;
 async function fetchAndDisplayProposals() {
@@ -5730,41 +5682,16 @@ function onTypeToggle(station) {
     }
 }
 
-function revealApp() { 
-    const body = document.body;
-    body.classList.add('app-ready'); 
-    // WAR MACHINE OVERRIDE: บังคับให้ UI ปรากฏเสมอ เผื่อ CSS Class ทำงานล้มเหลว
-    body.style.opacity = "1";
-    body.style.visibility = "visible";
-}
+function revealApp() { document.body.classList.add('app-ready'); }
 
 const initializeSystem = async () => {
-    // 1. SAFE FETCH: โหลด Manifest แบบมีการ Log Error ห้ามใช้ Empty Catch เด็ดขาด
-    if (typeof fetchImperialManifest === 'function') {
-        try {
-            await fetchImperialManifest();
-        } catch (error) {
-            console.warn("[WAR MACHINE] fetchImperialManifest bypassed or failed:", error);
-        }
-    }
+    if (typeof fetchImperialManifest === 'function') await fetchImperialManifest();
     
-    // 2. SAFE GRID RENDER: บังคับวาดหน้าจอ ห้ามโดนบล็อก
-    if (typeof setupMatrixGrid === 'function') {
-        try {
-            setupMatrixGrid();
-        } catch (error) {
-            console.error("[WAR MACHINE] setupMatrixGrid critical failure:", error);
-        }
-    }
+    setupMatrixGrid();
     
     const grid = document.getElementById('matrixGridContainer'); 
     if (grid && !grid.dataset.clickAttached) {
-        
-        // 3. BULLETPROOF TOUCH CHECK: แก้บั๊ก ReferenceError ที่เคยทำให้สคริปต์ตาย
-        const isTouch = (typeof IS_TOUCH_DEVICE !== 'undefined' && IS_TOUCH_DEVICE) || 
-                        (typeof window !== 'undefined' && 'ontouchstart' in window) || 
-                        (typeof navigator !== 'undefined' && navigator.maxTouchPoints > 0);
-        const eventType = isTouch ? 'pointerup' : 'click';
+        const eventType = IS_TOUCH_DEVICE ? 'pointerup' : 'click';
         
         grid.addEventListener(eventType, async (e) => { 
             const targetNode = e.target.closest('.matrix-node'); 
@@ -5773,114 +5700,63 @@ const initializeSystem = async () => {
             const tokenId = targetNode.getAttribute('data-token-id');
             if (!tokenId) return;
 
-            // ตรวจสอบสถานะการทำธุรกรรม
+            // ยอมให้กดสลับโน้ตได้ตลอดเวลา ยกเว้นแค่ตอนทำธุรกรรมจริงๆ
             if (typeof isTransactionPending !== 'undefined' && isTransactionPending) {
-                if (typeof showNotification === 'function') {
-                    showNotification("SYSTEM ENFORCEMENT: Transaction processing. Please wait.", "warning");
-                }
+                if (typeof showNotification === 'function') showNotification("SYSTEM ENFORCEMENT: Transaction processing. Please wait.", "warning");
                 return;
             }
 
-            // 4. THE MASTER SWITCH (LAZY MINTING BYPASS): เช็คไฟแดง/ไฟเขียว
             try {
-                let isMintAllowed = true;
-                const isMintedAttr = targetNode.getAttribute('data-minted');
-                
-                // ตรวจสอบจาก HTML Attribute หรือ Global Object
-                if (isMintedAttr === 'false') {
-                    isMintAllowed = false;
-                } else if (typeof window.manifestData !== 'undefined') {
-                    const nodeData = window.manifestData[tokenId];
-                    if (!nodeData || !nodeData.image) {
-                        isMintAllowed = false;
-                    }
-                }
+                window.matrixDOMCache.forEach(n => n.classList.remove('bg-slate-800', 'border-yellow-500'));
+                targetNode.classList.add('bg-slate-800', 'border-yellow-500');
 
-                if (!isMintAllowed) {
-                    console.warn(`[WAR MACHINE] Node #${tokenId} lacks image metadata (Red Light). Bypass executed.`);
-                    return; // ตัดการทำงานทันที ระบบไม่ค้าง ไม่ยิง API มั่ว
-                }
-            } catch (bypassErr) {
-                console.error("[WAR MACHINE] Lazy Mint Bypass logic failed:", bypassErr);
-            }
-
-            // 5. SAFE DOM MANIPULATION & LEDGER AUDIT
-            try {
-                // ป้องกัน TypeError หาก matrixDOMCache หายไป
-                if (Array.isArray(window.matrixDOMCache)) {
-                    window.matrixDOMCache.forEach(n => {
-                        if (n && n.classList) n.classList.remove('bg-slate-800', 'border-yellow-500');
-                    });
-                }
-                
-                if (targetNode.classList) {
-                    targetNode.classList.add('bg-slate-800', 'border-yellow-500');
-                }
-
-                // ดึงข้อมูลเมื่อผ่านการกรองทุกด่านแล้วเท่านั้น
-                if (typeof auditTokenFromLedger === 'function') {
-                    await auditTokenFromLedger(tokenId);
-                }
+                await auditTokenFromLedger(tokenId);
             } catch (err) {
-                console.error(`[WAR MACHINE] Failed to inspect node #${tokenId}:`, err);
-                if (typeof showNotification === 'function') {
-                    showNotification("Failed to retrieve selected cell coordinate data.", "error");
-                }
+                console.error(`[MATRIX GRID EXCEPTION] Failed to inspect node #${tokenId}:`, err);
+                if (typeof showNotification === 'function') showNotification("Failed to retrieve selected cell coordinate data.", "error");
             }
         });
         grid.dataset.clickAttached = "true";
     }
 
-    // 6. SAFE VIEWPORT: ป้องกันบั๊กจอดำบนมือถือเวลาพิมพ์
-    if (typeof window !== 'undefined' && window.visualViewport) {
-        const handleViewport = () => {
-            const activeElement = document.activeElement ? document.activeElement.tagName : '';
-            if (activeElement === 'INPUT' || activeElement === 'TEXTAREA') {
+    if (window.visualViewport) {
+        window.visualViewport.addEventListener("resize", () => {
+            if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') {
                 document.body.style.height = `${window.visualViewport.height}px`;
             } else {
                 document.body.style.height = "";
                 document.body.style.overflow = "";
             }
-        };
-        window.visualViewport.addEventListener("resize", handleViewport);
-        window.visualViewport.addEventListener("scroll", handleViewport);
+        });
+        window.visualViewport.addEventListener("scroll", () => {
+            if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') {
+                document.body.style.height = `${window.visualViewport.height}px`;
+            } else {
+                document.body.style.height = "";
+                document.body.style.overflow = "";
+            }
+        });
     }
 };
 
-// ==========================================
-// 7. GUARANTEED BOOT SEQUENCE 
-// ==========================================
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
         revealApp();
-        initializeSystem().catch(e => console.error("[WAR MACHINE] DOMContentLoaded init failed:", e));
+        initializeSystem();
     }, { once: true }); 
 } else { 
     revealApp(); 
-    initializeSystem().catch(e => console.error("[WAR MACHINE] Direct init failed:", e));
+    initializeSystem();
 }
 
 window.addEventListener('load', async () => { 
     revealApp(); 
-    
-    // กวาดล้าง Empty Catch ทิ้งทั้งหมด
-    if (typeof loadArchitectGateways === 'function') { 
-        try { 
-            loadArchitectGateways(); 
-        } catch (e) {
-            console.error("[WAR MACHINE] loadArchitectGateways Execution Failed:", e);
-        } 
-    } 
-    
+    if (typeof loadArchitectGateways === 'function') { try { loadArchitectGateways(); } catch (e) {} } 
     if (typeof bootSystemRPCs === 'function' && typeof CONTRACT_ADDRESS !== 'undefined' && typeof CONTRACT_ABI !== 'undefined') { 
         try { 
             await bootSystemRPCs(CONTRACT_ADDRESS, CONTRACT_ABI); 
-            if (typeof syncActiveMatrixNodes === 'function') {
-                syncActiveMatrixNodes(); 
-            }
-        } catch (e) {
-            console.error("[WAR MACHINE] RPC Boot Sequence / Sync Failed:", e);
-        } 
+            syncActiveMatrixNodes(); 
+        } catch (e) {} 
     }
 });
 
