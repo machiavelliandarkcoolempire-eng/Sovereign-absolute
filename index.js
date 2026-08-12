@@ -34,10 +34,9 @@ window.InitSovereignIrys = async function(inputSigner, customRpcUrl = null) {
             (typeof window.getPrimaryIrysRpcUrl === 'function' ? window.getPrimaryIrysRpcUrl() : null) || 
             (Array.isArray(window.IRYS_ENDPOINTS) && window.IRYS_ENDPOINTS.length > 0 ? window.IRYS_ENDPOINTS[0] : "https://mainnet.base.org");
 
+        // [ PATCHED ]: กวาดล้างคำสั่งที่ขัดแย้งออก เพื่อให้สถาปัตยกรรม Match กับ SDK v0.0.4 แบบ 100%
         const builder = WebUploader(WebEthereum)
-            .withAdapter(EthersV6Adapter(provider))
-            .withNetwork("mainnet")
-            .withToken("base-eth");
+            .withAdapter(EthersV6Adapter(provider));
             
         if (targetRpcUrl) builder.withRpc(targetRpcUrl);
 
@@ -50,7 +49,6 @@ window.InitSovereignIrys = async function(inputSigner, customRpcUrl = null) {
 
     } catch (error) {
         // LAYER 2 ENFORCEMENT: Guaranteed UI State Unlock
-        // Replaced erroneous lockSystem() with unlockSystem(true) to prevent UI bricking.
         if (typeof window.unlockSystem === 'function') {
             window.unlockSystem(true);
         }
