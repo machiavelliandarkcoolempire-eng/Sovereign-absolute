@@ -1,45 +1,50 @@
+// index.js
 import { WebUploader } from "@irys/web-upload";
 import { WebEthereum } from "@irys/web-upload-ethereum";
 import { EthersV6Adapter } from "@irys/web-upload-ethereum-ethers-v6";
 import { ethers } from "ethers";
 
-window.InitSovereignIrys = async function(inputSigner) {
-    if (!inputSigner) throw new Error("❌ Web3 Signer is required.");
-    
+let isInitializingIrys = false;
+
+const withTimeout = (promise, timeoutMs, timeoutMessage) => {
+    let timer;
+    return Promise.race([
+        promise,
+        new Promise((_, reject) => {
+            timer = setTimeout(() => reject(new Error(timeoutMessage)), timeoutMs);
+        })
+    ]).finally(() => {
+        if (timer) clearTimeout(timer);
+    });
+};
+
+window.InitSovereignIrys = async function(inputSigner, customRpcUrl = null) {
+    if (isInitializingIrys) throw new Error("⛔ SYSTEM BUSY: Irys initialization is already in progress.");
+    isInitializingIrys = true;
+
     try {
-        // 🟢 WATERTIGHT AUTO-RESOLVE LOGIC: Irys strictly requires a Signer, not a Provider.
-        if (typeof inputSigner.signMessage !== 'function') {
-            throw new Error("CRITICAL: Input is not a valid Ethers v6 Signer.");
-        }
-        
+        if (!inputSigner || typeof inputSigner.signMessage !== 'function') throw new Error("❌ CRITICAL: Invalid Signer.");
         const provider = inputSigner.provider;
-        if (!provider) {
-            throw new Error("CRITICAL: Signer is disconnected from the RPC Provider.");
-        }
+        if (!provider) throw new Error("❌ CRITICAL: Signer disconnected from RPC.");
         
-        // 🛡️ [NETWORK VALIDATION STAGE]
-        const network = await provider.getNetwork();
-        if (Number(network.chainId) !== 8453) { 
-            throw new Error("⛔ SYSTEM HALTED: Please switch your wallet to Base Mainnet.");
-        }
+        const network = await withTimeout(provider.getNetwork(), 10000, "CRITICAL: RPC Node dead.");
+        if (BigInt(network.chainId) !== 8453n) throw new Error(`⛔ SYSTEM HALTED: Network mismatch.`);
+
+        const targetRpcUrl = customRpcUrl || (typeof window.getPrimaryIrysRpcUrl === 'function' ? window.getPrimaryIrysRpcUrl() : null) || (Array.isArray(window.IRYS_ENDPOINTS) && window.IRYS_ENDPOINTS.length > 0 ? window.IRYS_ENDPOINTS[0] : "https://mainnet.base.org");
+
+        const builder = WebUploader(WebEthereum).withAdapter(EthersV6Adapter(inputSigner)).withNetwork("mainnet").withToken("base-eth");
+        if (targetRpcUrl) builder.withRpc(targetRpcUrl);
+
+        const irysUploader = await withTimeout(builder.build(), 15000, "CRITICAL: Irys build timed out.");
         
-        // 🛡️ [RPC & IRYS INITIALIZATION STAGE]
-        const DEDICATED_BASE_RPC = "https://base-mainnet.g.alchemy.com/v2/wR5UgtUrkfPjKnqfMhm8k"; 
-
-        // 🎯 [CRITICAL FIX]: Pass the Signer directly to EthersV6Adapter
-        const irysUploader = await WebUploader(WebEthereum)
-            .withAdapter(EthersV6Adapter(inputSigner))
-            .withNetwork("mainnet") 
-            .withToken("base-eth")
-            .withRpc(DEDICATED_BASE_RPC)
-            .build(); 
-
-        console.log("✅ [NEXUS] Irys Modular Bridge Initialized via Dedicated RPC.");
+        if (!irysUploader.address) throw new Error("Address resolved to null.");
+        window.SovereignIrysInstance = irysUploader;
         return irysUploader;
 
     } catch (error) {
-        console.error("❌ [IRYS BRIDGE FAULT] Failed to initialize WebUploader:", error);
-        const errorMsg = error.message || "Unknown initialization error";
-        throw new Error(`Irys Bridge Initialization Failed: ${errorMsg}`);
+        if (typeof window.lockSystem === 'function') window.lockSystem();
+        throw new Error(`Irys Bridge Failed: ${error.message}`);
+    } finally {
+        isInitializingIrys = false;
     }
 };
