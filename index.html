@@ -25,6 +25,8 @@
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="./web3-polyfill.js"></script>
     <script src="./irys-bundle.js"></script>
+    
+</head>
 
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=JetBrains+Mono:wght@400;700;800&display=swap');
@@ -410,8 +412,6 @@ Code
 <div id="identityAuthModal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[80] hidden items-center justify-center p-4">
 <div class="chiaroscuro-bg p-6 rounded-2xl border border-rose-900/50 max-w-2xl w-full max-h-[90vh] flex flex-col">
 <h3 class="text-sm font-black font-cinzel text-rose-400 mb-2 uppercase tracking-widest flex-shrink-0">🔒 IDENTITY PASSPORT & SYSTEM GUIDE</h3>
-code
-Code
 <p class="text-[10px] font-mono text-slate-400 leading-relaxed mb-3 flex-shrink-0">
         The Forensic Laboratory is strictly Token-Gated. Please review the Sovereign Dashboard operational guide before executing the scan.
     </p>
@@ -2999,14 +2999,15 @@ async function loadDeedMetadata(tokenId) {
     }
 }
 
-// ==========================================
-// RPC INFRASTRUCTURE & GLOBAL STATE
-// ==========================================
 
+
+// 🛡️ ABSOLUTE OVERRIDE: ประกาศตัวแปรระดับ Global ทั้งหมดเพื่อป้องกัน Memory Reference Error
 let irysProvider = null;
 let irysContract = null;
 
-const BASE_CHAIN_ID = 8453; // Base Mainnet
+const BASE_CHAIN_ID = 8453;
+const CONTRACT_ADDRESS = "0x0000000000000000000000000000000000000000"; // ใส่ Address จริงที่นี่
+const CONTRACT_ABI = [];         
 
 const GENERAL_ENDPOINTS = [
     'https://base-mainnet.g.alchemy.com/v2/QTZrknzCeDDEXAFCEBCMM',
@@ -3016,51 +3017,59 @@ const GENERAL_ENDPOINTS = [
 ];
 
 const IRYS_ENDPOINTS = [
-    'https://base-mainnet.g.alchemy.com/v2/wR5UgtUrkfPjKnqfMhm8k',
+    'https://base-mainnet.g.alchemy.com/v2/wR5UgtUrkfPjKnqfMhm8k', // 🎯 Alchemy Key 2 สำหรับ Irys
     'https://mainnet.base.org',                                   
     'https://base.llamarpc.com',                                  
     'https://base-rpc.publicnode.com'
 ];
 
-// ==========================================
-// CORE FUNCTIONS
-// ==========================================
+// 🎯 [CROSS-FILE ACCESS] ผูก ENDPOINTS เข้า Global Scope เพื่อให้ไฟล์ Irys ดึง URL String ไปใช้ได้
+window.IRYS_ENDPOINTS = IRYS_ENDPOINTS;
+window.GENERAL_ENDPOINTS = GENERAL_ENDPOINTS;
 
-/**
- * สร้าง Fallback Provider ที่สลับ Node อัตโนมัติเมื่อ RPC ตาย
- * สถาปัตยกรรม: Ethers v6, Static Network (ลด Latency), Weight=1 (ป้องกัน Deadlock)
- */
+// 🛡️ [DEFENSIVE TELEMETRY HELPERS] ป้องกัน ReferenceError หาก UI ฟังก์ชันยังไม่ถูกโหลด
+function safeAppendLog(msg, colorClass) {
+    if (typeof window.appendLog === 'function') window.appendLog(msg, colorClass);
+    else if (typeof appendLog === 'function') appendLog(msg, colorClass);
+    else console.log(`[SYS LOG]: ${msg}`);
+}
+
+function safeShowNotification(msg, type) {
+    if (typeof window.showNotification === 'function') window.showNotification(msg, type);
+    else if (typeof showNotification === 'function') showNotification(msg, type);
+    else console.warn(`[NOTIF ${type}]: ${msg}`);
+}
+
+async function safeSyncContractStates() {
+    if (typeof window.syncContractStates === 'function') await window.syncContractStates();
+    else if (typeof syncContractStates === 'function') await syncContractStates();
+}
+
 function createFallbackProvider(endpoints) {
     const configs = endpoints.map((url, index) => {
-        // ใช้ staticNetwork: true เสมอสำหรับ Chain ที่ไม่มีวันเปลี่ยน ID เพื่อลดภาระ Network Request
         const p = new ethers.JsonRpcProvider(url, BASE_CHAIN_ID, { staticNetwork: true });
         return { provider: p, priority: index + 1, weight: 1 };
     });
-    // พารามิเตอร์ที่ 2 คือ Network (Chain ID) ไม่ใช่ Quorum
     return new ethers.FallbackProvider(configs, BASE_CHAIN_ID);
 }
 
 async function initReadOnlyRPC() {
     try {
         readOnlyProvider = createFallbackProvider(GENERAL_ENDPOINTS);
-        // บังคับยิง Request 1 ครั้งเพื่อเช็คว่า RPC ใช้งานได้จริงและ Chain ตรงกัน
-        await readOnlyProvider.getNetwork(); 
+        await readOnlyProvider.getNetwork();
         
-        readOnlyContract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, readOnlyProvider);
-        
-        appendLog('General Multi-RPC Online.', 'text-emerald-400');
-        
-        // ตรวจสอบว่ามีฟังก์ชันนี้อยู่ในระบบหรือไม่ก่อนเรียกใช้ เพื่อป้องกัน Runtime Error
-        if (typeof syncContractStates === 'function') {
-            await syncContractStates();
+        // 🛡️ SAFETY CHECK: ป้องกัน Crash จาก Placeholder Address
+        if (CONTRACT_ADDRESS && ethers.isAddress(CONTRACT_ADDRESS) && CONTRACT_ADDRESS !== "0x0000000000000000000000000000000000000000") {
+            readOnlyContract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, readOnlyProvider);
         }
+        
+        safeAppendLog('General Multi-RPC Online.', 'text-emerald-400');
+        await safeSyncContractStates();
     } catch (err) {
         readOnlyProvider = null;
         readOnlyContract = null;
-        appendLog(`CRITICAL: General RPC Route Failed: ${err.message}`, 'text-red-500');
-        if (typeof showNotification === 'function') {
-            showNotification('Unable to connect General Contract to Base Mainnet.', 'error');
-        }
+        safeAppendLog(`CRITICAL: General RPC Route Failed: ${err.message}`, 'text-red-500');
+        safeShowNotification('Unable to connect General Contract to Base Mainnet.', 'error');
     }
 }
 
@@ -3069,27 +3078,30 @@ async function initIrysRPC(irysAddress, irysAbi) {
         irysProvider = createFallbackProvider(IRYS_ENDPOINTS);
         await irysProvider.getNetwork();
         
-        irysContract = new ethers.Contract(irysAddress, irysAbi, irysProvider);
+        // 🛡️ SAFETY CHECK: ตรวจสอบ Address ก่อน Instance
+        if (irysAddress && ethers.isAddress(irysAddress) && irysAbi) {
+            irysContract = new ethers.Contract(irysAddress, irysAbi, irysProvider);
+        }
         
-        appendLog('Dedicated Irys RPC Online.', 'text-cyan-400');
+        safeAppendLog('Dedicated Irys RPC Online.', 'text-cyan-400');
     } catch (err) {
         irysProvider = null;
         irysContract = null;
-        appendLog(`CRITICAL: Irys Dedicated RPC Failed: ${err.message}`, 'text-red-500');
-        if (typeof showNotification === 'function') {
-            showNotification('Unable to connect Irys Pipeline to Base Mainnet.', 'error');
-        }
+        safeAppendLog(`CRITICAL: Irys Dedicated RPC Failed: ${err.message}`, 'text-red-500');
+        safeShowNotification('Unable to connect Irys Pipeline to Base Mainnet.', 'error');
     }
 }
 
 async function bootSystemRPCs(irysAddress, irysAbi) {
-    appendLog('Booting Multi-Tunnel RPC Infrastructure...', 'text-slate-400');
-    // ใช้ Promise.allSettled เพื่อให้ระบบรันต่อได้ แม้มี RPC เส้นใดเส้นหนึ่งพัง
+    safeAppendLog('Booting Multi-Tunnel RPC Infrastructure...', 'text-slate-400');
     await Promise.allSettled([
         initReadOnlyRPC(),
         initIrysRPC(irysAddress, irysAbi)
     ]);
 }
+
+// 🎯 Export ฟังก์ชันหลักให้ HTML เรียกใช้ได้
+window.bootSystemRPCs = bootSystemRPCs;
 
 
 function loadArchitectGateways() {
