@@ -2391,31 +2391,90 @@ function showNotification(msg, type = 'error') {
     }, 4500);
 }
 
+// ==============================================================================
+// 🔱 SOVEREIGN WAR MACHINE: IRYS PROTOCOL (REVISION 6 - ULTRA-LEAN ENGINE)
+// ==============================================================================
+
+function safeAppendLog(msg, colorClass) {
+    if (typeof window.appendLog === 'function') window.appendLog(msg, colorClass);
+    else if (typeof appendLog === 'function') appendLog(msg, colorClass);
+    else console.log(`[SYS LOG]: ${msg}`);
+}
+
 function toggleButtonLoading(targetInput, isLoading) {
-    if (!targetInput) return null;
-    const btn = targetInput.currentTarget || targetInput;
-    if (!btn || !btn.classList) return null;
+    // คว้า Element ที่ถูกกด ไม่ว่าจะส่ง Event, Target หรือ Button Element เข้ามา
+    let btn = targetInput;
+    if (targetInput && (targetInput.currentTarget || targetInput.target)) {
+        btn = targetInput.currentTarget || targetInput.target;
+    }
+    // ถ้าไม่ส่งมา ให้แอบดักจับจาก window.event ที่เกิด ณ ขณะนั้น
+    if (!btn && typeof window !== 'undefined' && window.event) {
+        btn = window.event.currentTarget || window.event.target;
+    }
+    
+    if (!btn || typeof btn.classList === 'undefined') return null;
 
     if (isLoading) {
+        if (btn.disabled || btn.classList.contains('btn-processing')) return btn;
+        
         const currentWidth = btn.offsetWidth;
-        btn.style.width = `${currentWidth}px`;
-        if (!btn.dataset.originalText) btn.dataset.originalText = btn.textContent.trim();
-        btn.textContent = ""; 
+        if (currentWidth > 0) btn.style.width = `${currentWidth}px`;
+        
+        if (typeof btn.dataset.originalText === 'undefined') {
+            btn.dataset.originalText = btn.innerHTML || btn.textContent.trim();
+        }
+        
+        btn.innerHTML = ""; 
         const spinner = document.createElement('span');
         spinner.className = "inline-block animate-spin mr-2";
-        spinner.textContent = "⏳";
+        spinner.textContent = "⏳"; 
         btn.appendChild(spinner);
-        btn.appendChild(document.createTextNode("DISPATCHING..."));
+        btn.appendChild(document.createTextNode("PROCESSING..."));
+        
         btn.disabled = true;
-        btn.classList.add('btn-processing', 'cursor-not-allowed', 'opacity-80');
+        // ปุ่มสีเทา, ยุบตัวลง (scale-95), เกรย์สเกล, ห้ามกดซ้ำ
+        btn.classList.add(
+            'btn-processing', 
+            'cursor-not-allowed', 
+            'opacity-60', 
+            'pointer-events-none', 
+            'scale-95',         
+            'grayscale',        
+            'shadow-inner'      
+        );
     } else {
-        if (btn.dataset.originalText) btn.textContent = btn.dataset.originalText;
+        if (typeof btn.dataset.originalText !== 'undefined') {
+            btn.innerHTML = btn.dataset.originalText;
+        }
         btn.style.width = ''; 
         btn.disabled = false;
-        btn.classList.remove('btn-processing', 'cursor-not-allowed', 'opacity-80');
+        // คืนค่าปุ่มกลับสู่สภาพเดิม
+        btn.classList.remove(
+            'btn-processing', 
+            'cursor-not-allowed', 
+            'opacity-60', 
+            'pointer-events-none', 
+            'scale-95', 
+            'grayscale',
+            'shadow-inner'
+        );
+        delete window._actionSettled; 
     }
     return btn;
 }
+
+// ----------------------------------------------------------------------
+// Silent Non-blocking UI Logic (ตัด Overlay ออก เหลือแค่ State Control)
+// ----------------------------------------------------------------------
+function showFundingOverlay(costStr) {
+    window._fundPollingActive = true; 
+    safeAppendLog(`[TX] Waiting for wallet approval. Funding cost: ${costStr} ETH...`, "text-yellow-400");
+}
+
+function hideFundingOverlay() {
+    window._fundPollingActive = false; 
+}
+// ----------------------------------------------------------------------
 
 function requestMediaConfirmation(uri, dnaString, mediaTypeHint = "") {
     return new Promise((resolve) => {
@@ -2436,8 +2495,8 @@ function requestMediaConfirmation(uri, dnaString, mediaTypeHint = "") {
         container.replaceChildren();
         dnaDisplay.textContent = `DNA FIELD: ${dnaString || "N/A"}`;
         
-        const lowerUri = (uri || "").toLowerCase();
-        const isVideoHint = (mediaTypeHint || "").toLowerCase().startsWith('video');
+        const lowerUri = String(uri || "").toLowerCase();
+        const isVideoHint = String(mediaTypeHint || "").toLowerCase().startsWith('video');
         
         if (isVideoHint || lowerUri.endsWith('.mp4') || lowerUri.endsWith('.webm') || lowerUri.includes('video')) {
             const video = document.createElement('video');
@@ -2521,72 +2580,18 @@ function updateBridgeStatus(msg, type) {
     });
 }
 
-function showFundingOverlay(costStr) {
-    window._fundPollingActive = true; 
-    
-    const overlay = document.createElement('div');
-    overlay.id = 'irysFundingOverlay';
-    overlay.className = 'fixed inset-0 bg-black/95 z-[9999999] flex flex-col items-center justify-center backdrop-blur-sm pointer-events-auto';
-    
-    const spinner = document.createElement('div');
-    spinner.className = 'text-blue-500 text-6xl mb-6 animate-spin';
-    spinner.textContent = '⚙️';
-    
-    const title = document.createElement('div');
-    title.id = 'fundOverlayTitle';
-    title.className = 'text-blue-400 font-bold font-mono text-xl tracking-widest uppercase';
-    title.textContent = 'WAITING FOR WALLET APPROVAL';
-    
-    const sub = document.createElement('div');
-    sub.id = 'fundOverlaySub';
-    sub.className = 'text-slate-300 font-mono text-xs mt-4 text-center px-4';
-    
-    const subText1 = document.createTextNode('Please confirm the transaction in your wallet');
-    const br = document.createElement('br');
-    const subText2 = document.createTextNode('to fund the upload cost of ');
-    const costSpan = document.createElement('span');
-    costSpan.className = 'text-yellow-400 font-bold';
-    costSpan.textContent = `${costStr} ETH`;
-    
-    sub.append(subText1, br, subText2, costSpan);
-    
-    const pulse = document.createElement('div');
-    pulse.className = 'text-slate-500 font-mono text-[10px] mt-6 animate-pulse';
-    pulse.textContent = '(Upload will begin automatically once confirmed. Do not close this page.)';
-    
-    const cancelBtn = document.createElement('button');
-    cancelBtn.id = 'fundCancelBtn';
-    cancelBtn.className = 'mt-8 px-4 py-2 border border-red-500 text-red-500 text-[10px] hover:bg-red-950 rounded cursor-pointer font-bold tracking-widest transition-colors';
-    cancelBtn.textContent = '[ FORCE CLOSE / ABORT ]';
-    cancelBtn.onclick = () => {
-        window._fundPollingActive = false;
-        hideFundingOverlay();
-        showNotification("Funding sequence aborted by user.", "warning");
-        if (typeof unlockSystem === 'function') unlockSystem(true);
-    };
-    
-    overlay.append(spinner, title, sub, pulse, cancelBtn);
-    document.body.appendChild(overlay);
-}
-
-function hideFundingOverlay() {
-    window._fundPollingActive = false; 
-    const overlay = document.getElementById('irysFundingOverlay');
-    if (overlay) overlay.remove();
-}
-
 async function ensureIrysReady(timeoutMs = 60000) {
-    if (irys) return true;
+    if (typeof irys !== 'undefined' && irys) return true;
     
-    if (!activeRawProvider) throw new Error("EVM Provider Uninitialized. Please connect Web3 Wallet first.");
-    if (!signer) throw new Error("EVM Signer Uninitialized. Wallet connection required.");
+    if (typeof activeRawProvider === 'undefined' || !activeRawProvider) throw new Error("EVM Provider Uninitialized. Please connect Web3 Wallet first.");
+    if (typeof signer === 'undefined' || !signer) throw new Error("EVM Signer Uninitialized. Wallet connection required.");
     
     if (typeof window.InitSovereignIrys !== 'function') {
         throw new Error("Irys Custom Bundle (irys-bundle.js) is missing or failed to load.");
     }
 
     updateBridgeStatus("ENGAGING IRYS BRIDGE...", "warning");
-    appendLog("Engaging isolated Irys Settlement Bridge via Custom Sovereign Bundle...", "text-blue-400");
+    safeAppendLog("[SYSTEM] Engaging isolated Irys Settlement Bridge via Custom Sovereign Bundle...", "text-blue-400");
 
     try {
         const initPromise = (async () => {
@@ -2601,12 +2606,12 @@ async function ensureIrysReady(timeoutMs = 60000) {
         await Promise.race([initPromise, timeoutPromise]);
 
         updateBridgeStatus("✅ IRYS PERMANENT BRIDGE ONLINE", "success");
-        appendLog("Autonomous Irys permanent settlement bridge successfully engaged.", "text-emerald-400 font-bold");
+        safeAppendLog("[SYSTEM] Autonomous Irys permanent settlement bridge successfully engaged.", "text-emerald-400 font-bold");
         return true;
     } catch (err) {
         irys = null;
         updateBridgeStatus("⚠ BRIDGE ERROR (CHECK LOG)", "error");
-        appendLog(`[IRYS FAULT] Bridge protocol initialization failed: ${err.message}`, "text-rose-500 font-bold");
+        safeAppendLog(`[IRYS FAULT] Bridge protocol initialization failed: ${err.message}`, "text-rose-500 font-bold");
         throw err;
     }
 }
@@ -2630,7 +2635,7 @@ function createProgressController(totalBytes) {
 
     function paint(force) {
         const now = performance.now();
-        if (!force && now - lastPaint < 400) return;
+        if (!force && now - lastPaint < 200) return;
         lastPaint = now;
         if (fill) fill.style.width = pct + '%';
         if (label) label.textContent = pct + '%';
@@ -2639,8 +2644,8 @@ function createProgressController(totalBytes) {
     return {
         show: () => { if (shell) shell.classList.remove('hidden'); paint(true); },
         set: (uploadedBytes) => {
-            if (!totalBytes) return;
-            const next = Math.min(100, Math.round((uploadedBytes / totalBytes) * 100));
+            if (!totalBytes || totalBytes <= 0) return;
+            const next = Math.min(100, Math.round((Number(uploadedBytes) / Number(totalBytes)) * 100));
             if (next !== pct) { pct = next; paint(false); }
         },
         complete: () => { pct = 100; paint(true); },
@@ -2648,277 +2653,287 @@ function createProgressController(totalBytes) {
             if (shell) shell.classList.add('hidden');
             if (fill) fill.style.width = '0%';
             if (label) label.textContent = '0%';
+            pct = 0;
         }
     };
 }
 
-async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = null) {
-    await ensureIrysReady();
+// ==============================================================================
+// UPLOAD ENGINE (AUTO-BUTTON DEPRESS & SPEED BOOSTED)
+// ==============================================================================
+async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = null, triggerBtn = null) {
+    // ยุบปุ่มอัตโนมัติ
+    const activeBtn = toggleButtonLoading(triggerBtn, true);
 
-    let dataToUpload = payload;
-    let size = isFile ? payload.size : 0;
-
-    // Locate executeIrysUpload in index.html and replace the try/catch block:
     try {
-        if (!isFile) {
-            if (typeof window.Buffer === 'undefined') {
-                throw new Error("CRITICAL: window.Buffer is undefined. Polyfill failed to load.");
+        await ensureIrysReady();
+
+        let dataToUpload;
+        let size = 0;
+
+        try {
+            if (!isFile) {
+                if (typeof window.Buffer === 'undefined') throw new Error("CRITICAL: window.Buffer is undefined. Polyfill failed.");
+                dataToUpload = window.Buffer.from(String(payload), "utf-8");
+                size = dataToUpload.length;
+            } else {
+                dataToUpload = payload;
+                size = payload.size;
             }
-            dataToUpload = window.Buffer.from(payload, "utf-8");
-            size = dataToUpload.length;
+        } catch (conversionErr) {
+            safeAppendLog(`Payload formatting failed: ${conversionErr?.message}`, "text-red-500");
+            throw new Error(`Payload conversion failed: ${conversionErr?.message}`);
+        }
+
+        const priceRaw = await withNetworkRetry(() => irys.getPrice(size));
+        const initialBalanceRaw = await withNetworkRetry(() => irys.getLoadedBalance());
+
+        const price = BigInt(priceRaw.toString());
+        const initialBalance = BigInt(initialBalanceRaw.toString());
+
+        if (initialBalance < price) {
+            let diffWithBuffer = price - initialBalance;
+            diffWithBuffer = diffWithBuffer + (diffWithBuffer * 20n) / 100n; 
+
+            const minFundWei = 100000000000000n; // 0.0001 ETH
+            if (diffWithBuffer < minFundWei) diffWithBuffer = minFundWei;
+
+            const costStr = Number(ethers.formatEther(diffWithBuffer)).toString();
+
+            updateBridgeStatus("AWAITING FUNDING TX...", "warning");
+            safeAppendLog(`Awaiting user transaction: Funding ${costStr} ETH`, "text-yellow-400");
+
+            if (typeof requestFundConfirmation === 'function') {
+                const isConfirmed = await requestFundConfirmation(costStr);
+                if (!isConfirmed) throw new Error("User declined funding.");
+            }
+
+            showFundingOverlay(costStr); 
+
+            let pendingFundTx = null;
+            try {
+                const storedTx = localStorage.getItem('irys_pending_fund_tx');
+                if (storedTx) {
+                    const parsedTx = JSON.parse(storedTx);
+                    if (Date.now() - parsedTx.ts < 3600000) pendingFundTx = parsedTx.id;
+                    else localStorage.removeItem('irys_pending_fund_tx');
+                }
+            } catch (e) {
+                localStorage.removeItem('irys_pending_fund_tx');
+            }
+
+            if (pendingFundTx && pendingFundTx !== 'pending') {
+                safeAppendLog("Resuming pending funding transaction polling...", "text-yellow-400");
+            } else {
+                try {
+                    const fundRes = await irys.fund(diffWithBuffer.toString());
+                    if (!fundRes || !fundRes.id) throw new Error("No transaction ID returned from bundler.");
+                    try { localStorage.setItem('irys_pending_fund_tx', JSON.stringify({ id: fundRes.id, ts: Date.now() })); } catch(e) {}
+                } catch (fundErr) {
+                    const feMsg = String(fundErr?.message || fundErr).toLowerCase();
+                    const isUserRejection = /user rejected|declined|denied|cancelled|user declined/.test(feMsg);
+                    const isInsufficientFunds = /insufficient funds/.test(feMsg);
+                    
+                    if (isUserRejection || isInsufficientFunds) {
+                        hideFundingOverlay();
+                        throw new Error(isUserRejection ? "Funding transaction cancelled by user." : "Insufficient ETH balance for funding.");
+                    } else {
+                        safeAppendLog(`[IRYS API WARNING] Fund API returned an error, but TX might be on-chain. Forcing balance verification...`, "text-yellow-500");
+                    }
+                }
+            }
+
+            safeAppendLog("Funding TX confirmed on-chain. Awaiting Bundler synchronization...", "text-yellow-400");
+            updateBridgeStatus("SYNCING BUNDLER...", "warning");
+
+            let isSynced = false;
+            let attempts = 0;
+            const maxAttempts = 36; 
+
+            while (!isSynced && attempts < maxAttempts && window._fundPollingActive) {
+                if (!irys || typeof signer === 'undefined' || !signer) { 
+                    window._fundPollingActive = false; 
+                    throw new Error("Wallet session severed during sync"); 
+                }
+                await new Promise(resolve => setTimeout(resolve, 5000));
+                try {
+                    const currentBalanceRaw = await withNetworkRetry(() => irys.getLoadedBalance());
+                    const currentBalance = BigInt(currentBalanceRaw.toString());
+                    safeAppendLog(`[SYNC CHECK] Current Irys Balance: ${ethers.formatEther(currentBalance)} ETH`, "text-slate-500");
+                    if (currentBalance >= price) {
+                        isSynced = true;
+                    }
+                } catch(e) {}
+                attempts++;
+            }
+
+            hideFundingOverlay();
+
+            if (!window._fundPollingActive) {
+                throw new Error("User cancelled waiting (Your funds remain safe in the Irys system).");
+            }
+
+            if (!isSynced) {
+                throw new Error("Funds transferred to Irys, but server update is delayed. Please wait 3-5 minutes and click 'Upload' again without refunding.");
+            }
+
+            localStorage.removeItem('irys_pending_fund_tx');
+            safeAppendLog("Bundler synchronized successfully. Proceeding to upload.", "text-emerald-400");
+        }
+
+        updateBridgeStatus("STREAMING PAYLOAD...", "warning");
+        safeAppendLog(isFile ? "Streaming File payload to Irys Datachain via Chunked Uploader..." : "Transmitting Buffer payload to Irys Datachain...", "text-blue-400");
+
+        let receipt;
+        try {
+            if (progressCtrl) progressCtrl.show();
+
+            let attempt = 0;
+            const maxRetries = 3;
+
+            // 🔱 [SPEED BOOST] ยกระดับ Chunk Size & Batching Speed
+            const ua = navigator.userAgent || "";
+            const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+            const isMobile = isIOS || /Android|Mobi|Mobile/i.test(ua);
+            
+            const chunkSize = isIOS ? 2 * 1024 * 1024 : (isMobile ? 3 * 1024 * 1024 : 5 * 1024 * 1024);
+            const batchSize = isIOS ? 2 : (isMobile ? 3 : 5); // iOS: 2, Android: 3, Desktop: 5
+
+            while (attempt <= maxRetries) {
+                try {
+                    if (isFile && typeof irys.uploader !== 'undefined' && typeof irys.uploader.chunkedUploader !== 'undefined') {
+                        const onChunk = (chunkInfo) => {
+                            try { if (progressCtrl) progressCtrl.set(chunkInfo?.totalUploaded ?? chunkInfo?.offset ?? 0); } catch (e) {}
+                        };
+                        
+                        try {
+                            if (typeof irys.uploader.on === 'function') irys.uploader.on('chunkUpload', onChunk);
+                            irys.uploader.chunkedUploader.setChunkSize(chunkSize);
+                            irys.uploader.chunkedUploader.setBatchSize(batchSize);
+                            
+                            receipt = await irys.uploader.chunkedUploader.uploadData(dataToUpload, { tags });
+                        } finally {
+                            if (typeof irys.uploader.off === 'function') irys.uploader.off('chunkUpload', onChunk);
+                        }
+                    } else {
+                        if (progressCtrl) progressCtrl.set(size / 2);
+                        receipt = await irys.upload(dataToUpload, { tags });
+                    }
+                    break; 
+                } catch (uploadErr) {
+                    const msg = String(uploadErr?.message || uploadErr).toLowerCase();
+                    if (msg.includes('declined') || msg.includes('rejected') || msg.includes('denied') || msg.includes('insufficient')) {
+                        throw uploadErr; 
+                    }
+                    attempt++;
+                    if (attempt > maxRetries) throw uploadErr;
+                    const backoff = 1000 * Math.pow(2, attempt);
+                    safeAppendLog(`[NETWORK] Transmission throttled. Retrying (${attempt}/${maxRetries}) in ${backoff/1000}s...`, "text-amber-400");
+                    await new Promise(r => setTimeout(r, backoff));
+                }
+            }
+
+            if (progressCtrl) progressCtrl.complete();
+        } catch (uploadErr) {
+            safeAppendLog(`Irys transmission failed: ${uploadErr.message}`, "text-red-500");
+            throw uploadErr;
+        } finally {
+            if (progressCtrl) progressCtrl.hide();
+        }
+
+        updateBridgeStatus("PERMANENTLY ONLINE", "success");
+        
+        if (typeof window.showNotification === 'function') {
+            window.showNotification("Upload Completed! Your payload is securely stored on-chain.", "success");
+        } else if (typeof showNotification === 'function') {
+            showNotification("Upload Completed! Your payload is securely stored on-chain.", "success");
         } else {
-            // [PATCHED]: Pass File object directly. Prevents RAM duplication and iOS Jetsam OOM crashes.
-            dataToUpload = payload;
-            size = payload.size;
+            alert("Upload Completed! Your payload is securely stored on-chain.");
         }
-    } catch (conversionErr) {
-        appendLog(`Payload conversion failed: ${conversionErr?.message}`, "text-red-500");
-        throw new Error(`Buffer conversion failed: ${conversionErr?.message}`);
+        safeAppendLog(`Transaction Successful: Payload permanently uploaded to Irys.`, "text-emerald-400 font-bold");
+
+        return receipt;
+
+    } catch (err) {
+        updateBridgeStatus("⚠ UPLOAD FAILED", "error");
+        if (typeof window.showNotification === 'function') window.showNotification(err.message, "error");
+        else if (typeof showNotification === 'function') showNotification(err.message, "error");
+        throw err;
+    } finally {
+        // คืนสภาพปุ่มให้กลับมาสดใส
+        toggleButtonLoading(activeBtn, false);
     }
+}
 
-    const priceRaw = await withNetworkRetry(() => irys.getPrice(size));
-    const initialBalanceRaw = await withNetworkRetry(() => irys.getLoadedBalance());
+// ==============================================================================
+// TOP-UP ENGINE (AUTO-BUTTON DEPRESS & JSON SCHEMA FIXED)
+// ==============================================================================
+async function executeIrysTopUp(amountEthStr, triggerBtn = null) {
+    if (typeof lockSystem === 'function' && !lockSystem()) return; 
+    
+    // ยุบปุ่มอัตโนมัติ
+    const activeBtn = toggleButtonLoading(triggerBtn, true);
 
-    const price = toBigInt(priceRaw);
-    const initialBalance = toBigInt(initialBalanceRaw);
-
-    if (initialBalance < price) {
-        let diffWithBuffer = price - initialBalance;
-        diffWithBuffer = diffWithBuffer + (diffWithBuffer * 20n) / 100n; 
-
-        const minFundWei = 100000000000000n; // 0.0001 ETH
-        if (diffWithBuffer < minFundWei) {
-            diffWithBuffer = minFundWei;
-        }
-
-        const costStr = Number(ethers.formatEther(diffWithBuffer)).toString();
-
-        updateBridgeStatus("AWAITING FUNDING TX...", "warning");
-        appendLog(`Awaiting user transaction: Funding ${costStr} ETH`, "text-yellow-400");
-
-        const isConfirmed = await requestFundConfirmation(costStr);
-        if (!isConfirmed) throw new Error("User declined funding.");
-
-        window._fundPollingActive = true;
-        showFundingOverlay(costStr);
-
-        const cancelBtn = document.getElementById('fundCancelBtn');
-        if (cancelBtn) {
-            cancelBtn.textContent = '[ REJECT IN WALLET ]';
-            cancelBtn.disabled = true;
-            cancelBtn.classList.add('opacity-50', 'cursor-not-allowed');
-        }
-
+    try {
+        await ensureIrysReady();
+        
+        const initialBalanceRaw = await irys.getLoadedBalance();
+        const initialBalance = BigInt(initialBalanceRaw.toString());
+        
+        const amountWei = ethers.parseEther(amountEthStr);
+        
+        showFundingOverlay(amountEthStr);
+        safeAppendLog(`Initiating Irys Top-up: ${amountEthStr} ETH...`, "text-blue-400");
+        
+        let fundCallFailed = false;
         let pendingFundTx = null;
+
+        // 🔱 [FIX] ล็อกโครงสร้าง LocalStorage เป็น JSON Schema ป้องกัน Crash
         try {
             const storedTx = localStorage.getItem('irys_pending_fund_tx');
             if (storedTx) {
                 const parsedTx = JSON.parse(storedTx);
-                if (Date.now() - parsedTx.ts < 3600000) { 
-                    pendingFundTx = parsedTx.id;
-                } else {
-                    localStorage.removeItem('irys_pending_fund_tx');
-                }
+                if (Date.now() - parsedTx.ts < 3600000) pendingFundTx = parsedTx.id;
+                else localStorage.removeItem('irys_pending_fund_tx');
             }
         } catch (e) {
             localStorage.removeItem('irys_pending_fund_tx');
         }
 
         if (pendingFundTx && pendingFundTx !== 'pending') {
-            appendLog("Resuming pending funding transaction polling...", "text-yellow-400");
-        } else {
-            try {
-                const fundRes = await irys.fund(diffWithBuffer.toString());
-                if (!fundRes || !fundRes.id) throw new Error("No transaction ID returned from bundler.");
-                try { 
-                    localStorage.setItem('irys_pending_fund_tx', JSON.stringify({ id: fundRes.id, ts: Date.now() })); 
-                } catch(e) {}
-            } catch (fundErr) {
-                const feMsg = (fundErr && fundErr.message) || "";
-                const isUserRejection = /user rejected|declined|denied|cancelled|user declined/i.test(feMsg);
-                const isInsufficientFunds = /insufficient funds/i.test(feMsg);
-                
-                if (isUserRejection || isInsufficientFunds) {
-                    hideFundingOverlay();
-                    throw new Error(isUserRejection ? "Funding transaction cancelled by user." : "Insufficient ETH balance for funding.");
-                } else {
-                    appendLog(`[IRYS API WARNING] Fund API returned an error, but TX might be on-chain. Forcing balance verification...`, "text-yellow-500");
-                }
-            }
-        }
-
-        appendLog("Funding TX confirmed on-chain. Awaiting Bundler synchronization...", "text-yellow-400");
-        updateBridgeStatus("SYNCING BUNDLER...", "warning");
-
-        const titleEl = document.getElementById('fundOverlayTitle');
-        const subEl = document.getElementById('fundOverlaySub');
-        if(titleEl) titleEl.textContent = "SYNCING BUNDLER (BASE NETWORK)...";
-        if(subEl) {
-            subEl.replaceChildren();
-            const t1 = document.createTextNode("Funds transferred. Awaiting Irys balance update...");
-            const br = document.createElement('br');
-            const span = document.createElement('span');
-            span.className = "text-emerald-400 font-bold";
-            span.textContent = "(Base Network may take 1-3 minutes. Do not close this page or fund again.)";
-            subEl.append(t1, br, span);
-        }
-
-        let isSynced = false;
-        let attempts = 0;
-        const maxAttempts = 36;
-
-        while (!isSynced && attempts < maxAttempts && window._fundPollingActive) {
-            if (!irys || !signer || !provider) { window._fundPollingActive = false; throw new Error("Wallet session severed during sync"); }
-            await new Promise(resolve => setTimeout(resolve, 5000));
-            try {
-                const currentBalanceRaw = await withNetworkRetry(() => irys.getLoadedBalance());
-                const currentBalance = toBigInt(currentBalanceRaw);
-                appendLog(`[SYNC CHECK] Current Irys Balance: ${ethers.formatEther(currentBalance)} ETH`, "text-slate-500");
-                if (currentBalance >= price) {
-                    isSynced = true;
-                }
-            } catch(e) {}
-            attempts++;
-        }
-
-        hideFundingOverlay();
-
-        if (!window._fundPollingActive) {
-            throw new Error("User cancelled waiting (Your funds remain safe in the Irys system).");
-        }
-
-        if (!isSynced) {
-            throw new Error("Funds transferred to Irys, but server update is delayed. Please wait 3-5 minutes and click 'Upload' again without refunding.");
-        }
-
-        localStorage.removeItem('irys_pending_fund_tx');
-        appendLog("Bundler synchronized successfully. Proceeding to upload.", "text-emerald-400");
-    }
-
-    updateBridgeStatus("STREAMING PAYLOAD...", "warning");
-    appendLog(isFile ? "Streaming File payload to Irys Datachain via Chunked Uploader..." : "Transmitting Buffer payload to Irys Datachain...", "text-blue-400");
-
-    let receipt;
-    try {
-        if (progressCtrl) progressCtrl.show();
-
-        let attempt = 0;
-        const maxRetries = 3;
-
-        const ua = navigator.userAgent || "";
-        const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-        const isMobile = isIOS || /Android|Mobi|Mobile/i.test(ua);
-        const chunkSize = isIOS ? 2 * 1024 * 1024 : (isMobile ? 3 * 1024 * 1024 : 5 * 1024 * 1024);
-        const batchSize = isIOS ? 1 : (isMobile ? 2 : 3);
-
-        while (attempt <= maxRetries) {
-            try {
-                if (isFile && irys.uploader && irys.uploader.chunkedUploader) {
-                    const onChunk = (chunkInfo) => {
-                        try { if (progressCtrl) progressCtrl.set(chunkInfo?.totalUploaded ?? chunkInfo?.offset ?? 0); } catch (e) {}
-                    };
-                    
-                    try {
-                        if (typeof irys.uploader.on === 'function') irys.uploader.on('chunkUpload', onChunk);
-                        
-                        irys.uploader.chunkedUploader.setChunkSize(chunkSize);
-                        irys.uploader.chunkedUploader.setBatchSize(batchSize);
-                        
-                        receipt = await irys.uploader.chunkedUploader.uploadData(dataToUpload, { tags });
-                    } finally {
-                        if (typeof irys.uploader.off === 'function') irys.uploader.off('chunkUpload', onChunk);
-                    }
-                } else {
-                    if (progressCtrl) progressCtrl.set(size / 2);
-                    receipt = await irys.upload(dataToUpload, { tags });
-                }
-                break; 
-            } catch (uploadErr) {
-                const msg = (uploadErr.message || String(uploadErr)).toLowerCase();
-                if (msg.includes('declined') || msg.includes('rejected') || msg.includes('denied')) {
-                    throw uploadErr; 
-                }
-                attempt++;
-                if (attempt > maxRetries) throw uploadErr;
-                const backoff = 1000 * Math.pow(2, attempt);
-                appendLog(`[NETWORK] Transmission throttled. Retrying (${attempt}/${maxRetries}) in ${backoff/1000}s...`, "text-amber-400");
-                await new Promise(r => setTimeout(r, backoff));
-            }
-        }
-
-        if (progressCtrl) progressCtrl.complete();
-    } catch (uploadErr) {
-        appendLog(`Irys transmission failed: ${uploadErr.message}`, "text-red-500");
-        throw uploadErr;
-    } finally {
-        if (progressCtrl) progressCtrl.hide();
-    }
-
-    updateBridgeStatus("PERMANENTLY ONLINE", "success");
-    return receipt;
-}
-
-async function executeIrysTopUp(amountEthStr) {
-    if (!lockSystem()) return; 
-    try {
-        await ensureIrysReady();
-        
-        const initialBalanceRaw = await irys.getLoadedBalance();
-        const initialBalance = toBigInt(initialBalanceRaw);
-        
-        const amountWei = ethers.parseEther(amountEthStr);
-        
-        showFundingOverlay(amountEthStr);
-        appendLog(`Initiating Irys Top-up: ${amountEthStr} ETH...`, "text-blue-400");
-        
-        const cancelBtn = document.getElementById('fundCancelBtn');
-        if (cancelBtn) {
-            cancelBtn.textContent = '[ REJECT IN WALLET ]';
-            cancelBtn.disabled = true;
-            cancelBtn.classList.add('opacity-50', 'cursor-not-allowed');
-        }
-
-        let fundCallFailed = false;
-        const pendingFundTx = localStorage.getItem('irys_pending_fund_tx');
-        if (pendingFundTx && pendingFundTx !== 'pending') {
-            appendLog("Resuming pending funding transaction polling...", "text-yellow-400");
+            safeAppendLog("Resuming pending funding transaction polling...", "text-yellow-400");
         } else {
             try {
                 const fundRes = await irys.fund(amountWei.toString());
-                try { localStorage.setItem('irys_pending_fund_tx', fundRes.id || 'pending'); } catch(e) {}
+                try { 
+                    localStorage.setItem('irys_pending_fund_tx', JSON.stringify({ 
+                        id: fundRes.id || 'pending', 
+                        ts: Date.now() 
+                    })); 
+                } catch(e) {}
             } catch (fundErr) {
-                const feMsg = (fundErr && fundErr.message) || "";
-                const isUserRejection = /user rejected|declined|denied|cancelled|user declined/i.test(feMsg);
-                if (isUserRejection) throw fundErr; 
+                const feMsg = String(fundErr?.message || fundErr).toLowerCase();
+                const isUserRejection = /user rejected|declined|denied|cancelled|user declined/.test(feMsg);
+                if (isUserRejection) throw new Error("Top-up transaction cancelled in wallet.");
                 fundCallFailed = true;
-                appendLog(`[IRYS FUND WARNING] Transaction confirmed on Blockchain but Irys Node response delayed. Entering polling mode...`, "text-yellow-500");
+                safeAppendLog(`[IRYS FUND WARNING] Transaction broadcasted but Irys Node response delayed. Polling active...`, "text-yellow-500");
             }
         }
         
-        const titleEl = document.getElementById('fundOverlayTitle');
-        const subEl = document.getElementById('fundOverlaySub');
-        if(titleEl) titleEl.textContent = "SYNCING BUNDLER (BASE NETWORK)...";
-        if(subEl) {
-            subEl.replaceChildren();
-            const t1 = document.createTextNode("Funds transferred. Awaiting Irys balance update...");
-            const br = document.createElement('br');
-            const span = document.createElement('span');
-            span.className = "text-emerald-400 font-bold";
-            span.textContent = "(Base Network may take 1-3 minutes. Do not close this page or fund again.)";
-            subEl.append(t1, br, span);
-        }
-
         let isSynced = false;
         let attempts = 0;
         const maxTopUpAttempts = 36; 
         
         while (!isSynced && attempts < maxTopUpAttempts && window._fundPollingActive) {
-            if (!irys || !signer || !provider) { window._fundPollingActive = false; throw new Error("Wallet session severed during sync"); }
+            if (!irys || typeof signer === 'undefined' || !signer) { 
+                window._fundPollingActive = false; 
+                throw new Error("Wallet session severed during sync protocol."); 
+            }
             await new Promise(resolve => setTimeout(resolve, 5000));
             try {
                 const currentBalanceRaw = await irys.getLoadedBalance();
-                const currentBalance = toBigInt(currentBalanceRaw);
-                appendLog(`[SYNC CHECK] Current Irys Balance: ${ethers.formatEther(currentBalance)} ETH`, "text-slate-500");
+                const currentBalance = BigInt(currentBalanceRaw.toString());
+                safeAppendLog(`[SYNC CHECK] Current Irys Balance: ${ethers.formatEther(currentBalance)} ETH`, "text-slate-500");
                 if (currentBalance > initialBalance) {
                     isSynced = true;
                 }
@@ -2929,32 +2944,42 @@ async function executeIrysTopUp(amountEthStr) {
         hideFundingOverlay();
         
         if (!window._fundPollingActive) {
-            throw new Error("User cancelled waiting (Your funds remain safe in the Irys system).");
+            throw new Error("User aborted sync monitoring (Your funds remain safe).");
         }
 
         if (isSynced) {
             localStorage.removeItem('irys_pending_fund_tx');
-            showNotification(`Irys balance updated successfully! You can now upload the file.`, "success");
-            appendLog(`Irys balance topped up successfully.`, "text-emerald-400");
+            
+            if (typeof window.showNotification === 'function') window.showNotification(`Transaction Successful! Irys balance updated.`, "success");
+            else if (typeof showNotification === 'function') showNotification(`Transaction Successful! Irys balance updated.`, "success");
+            else alert(`Transaction Successful! Irys balance updated.`);
+            
+            safeAppendLog(`Irys balance topped up successfully.`, "text-emerald-400 font-bold");
+            
         } else {
-            showNotification(`Funds in Irys but server display is delayed. Wait 3 minutes and click 'Upload' without refunding.`, "warning");
-            appendLog(`Top-up TX confirmed on Base, but Irys node is lagging. Funds are safe.`, "text-yellow-500");
+            if (typeof window.showNotification === 'function') window.showNotification(`Funds transferred, but balance display is delayed. Please wait a few minutes.`, "warning");
+            else if (typeof showNotification === 'function') showNotification(`Funds transferred, but balance display is delayed. Please wait a few minutes.`, "warning");
+            
+            safeAppendLog(`Top-up TX confirmed on network, but Node sync lagging. Funds safe.`, "text-yellow-500");
         }
         
     } catch (err) {
         hideFundingOverlay();
         const msg = err.message || "Unknown error";
-        if (msg.includes("declined") || msg.includes("rejected") || msg.includes("cancelled") || msg.includes("user rejected")) {
-            appendLog("User cancelled the top-up transaction.", "text-yellow-500");
-            showNotification("Transaction cancelled.", "warning");
+        if (msg.toLowerCase().includes("cancelled") || msg.toLowerCase().includes("rejected") || msg.toLowerCase().includes("declined")) {
+            safeAppendLog("User cancelled the top-up transaction.", "text-yellow-500");
+            if (typeof showNotification === 'function') showNotification("Transaction cancelled by user.", "warning");
         } else {
-            appendLog(`Top-up Exception: ${msg}`, "text-red-500");
-            showNotification(msg, "error");
+            safeAppendLog(`Top-up Exception: ${msg}`, "text-red-500");
+            if (typeof showNotification === 'function') showNotification(msg, "error");
         }
     } finally {
-        unlockSystem(); 
+        // คืนสภาพปุ่มให้กลับมาสดใส
+        toggleButtonLoading(activeBtn, false);
+        if (typeof unlockSystem === 'function') unlockSystem(); 
     }
 }
+
 
 function openIdentityAuthModal() { document.getElementById('identityAuthModal')?.classList.remove('hidden'); }
 function closeIdentityAuthModal() { document.getElementById('identityAuthModal')?.classList.add('hidden'); }
@@ -5608,6 +5633,12 @@ async function refreshTbaBalances(tbaAddress, sessionRef) {
     }
 }
 
+// --- SOVEREIGN NODE LIGHTING CLASSES ---
+const THINKING_CLASSES  = ['bg-blue-950/80', 'border-blue-500', 'shadow-[0_0_15px_rgba(59,130,246,0.8)]', 'animate-pulse', 'text-blue-400'];
+const ACTIVE_CLASSES    = ['bg-amber-950/80', 'border-yellow-400', 'shadow-[0_0_20px_rgba(234,179,8,0.8)]', 'text-yellow-400'];
+const ERROR_CLASSES     = ['bg-red-950/80', 'border-red-500', 'shadow-[0_0_15px_rgba(239,68,68,0.8)]', 'text-red-400'];
+const ALL_STATE_CLASSES = ['bg-slate-800', 'border-yellow-500', 'opacity-30', 'grayscale', ...THINKING_CLASSES, ...ACTIVE_CLASSES, ...ERROR_CLASSES];
+
 function filterSovereignGrid() { 
     clearTimeout(window.searchDebounceTimer);
     window.searchDebounceTimer = setTimeout(() => { 
@@ -5616,72 +5647,75 @@ function filterSovereignGrid() {
         const query = (inputEl.value || "").trim(); 
         const targetParsedInt = query !== "" ? parseInt(query, 10) : null;
 
-        window.matrixDOMCache.forEach((node, id) => {
+        window.matrixDOMCache?.forEach((node, id) => {
             if (query === "" || id.toString() === query || (targetParsedInt !== null && id === targetParsedInt)) { 
                 node.style.display = 'flex'; 
             } else { 
                 node.style.display = 'none'; 
             }
         });
-    }, 250);
+    }, 250); 
 }
 
 async function syncActiveMatrixNodes() { 
     const activeContract = typeof secureContract !== 'undefined' && secureContract ? secureContract : (typeof readOnlyContract !== 'undefined' ? readOnlyContract : null); 
-    if (!activeContract) return; 
+    if (!activeContract || typeof activeContract.getAllActiveTokens !== 'function') return; 
+    
     try { 
-        if (typeof activeContract.getAllActiveTokens === 'function') { 
-            const activeTokens = await activeContract.getAllActiveTokens();
-            const activeSet = new Set(activeTokens.map(t => Number(t))); 
-            
-            const calls = [];
-            for (let i = 1; i <= 333; i++) {
-                calls.push({ target: CONTRACT_ADDRESS, allowFailure: true, callData: activeContract.interface.encodeFunctionData("genesisMinted", [i.toString()]) });
-                calls.push({ target: CONTRACT_ADDRESS, allowFailure: true, callData: activeContract.interface.encodeFunctionData("tokenVotingLockUntil", [i.toString()]) });
-            }
-            const results = await debouncedMulticall(readOnlyProvider || provider, calls);
-            const currentEpoch = Math.floor(Date.now() / 1000);
-            
-            for (let i = 1; i <= 333; i++) { 
-                const node = window.matrixDOMCache.get(i); 
-                if (node) { 
-                    const resGen = results[(i-1)*2];
-                    const resLock = results[(i-1)*2 + 1];
-                    const isMintedEver = resGen && resGen.success ? activeContract.interface.decodeFunctionResult("genesisMinted", resGen.returnData)[0] : false;
-                    const lockUntil = resLock && resLock.success ? Number(activeContract.interface.decodeFunctionResult("tokenVotingLockUntil", resLock.returnData)[0]) : 0;
-                    const isLocked = lockUntil > currentEpoch;
+        const activeTokens = await activeContract.getAllActiveTokens();
+        const activeSet = new Set(activeTokens.map(t => Number(t))); 
+        
+        const calls = [];
+        for (let i = 1; i <= 333; i++) {
+            calls.push({ target: CONTRACT_ADDRESS, allowFailure: true, callData: activeContract.interface.encodeFunctionData("genesisMinted", [i.toString()]) });
+            calls.push({ target: CONTRACT_ADDRESS, allowFailure: true, callData: activeContract.interface.encodeFunctionData("tokenVotingLockUntil", [i.toString()]) });
+        }
+        
+        const providerTarget = (typeof readOnlyProvider !== 'undefined' && readOnlyProvider) ? readOnlyProvider : (typeof provider !== 'undefined' ? provider : null);
+        if (!providerTarget) throw new Error("[RPC] No valid provider targeting available for Multicall.");
 
-                    if (!activeSet.has(i)) { 
-                        node.classList.add('opacity-30', 'grayscale'); 
-                        node.classList.remove('bg-slate-950', 'bg-blue-950/50', 'cursor-not-allowed'); 
-                        if (!IS_TOUCH_DEVICE) node.classList.remove('hover:bg-slate-800');
-                        
-                        if (isMintedEver) {
-                            node.classList.add('bg-red-950/20'); 
-                            node.classList.remove('bg-amber-950/20');
-                            node.title = `NODE #${i} [BURNED - AWAITING REMINT]`; 
-                        } else {
-                            node.classList.add('bg-amber-950/20'); 
-                            node.classList.remove('bg-red-950/20');
-                            node.title = `NODE #${i} [VOID - UNMINTED]`; 
-                        }
-                    } else { 
-                        node.classList.remove('opacity-30', 'grayscale', 'cursor-not-allowed', 'bg-red-950/20', 'bg-amber-950/20'); 
-                        if (isLocked) {
-                            node.classList.add('bg-blue-950/50');
-                            node.classList.remove('bg-slate-950');
-                            node.title = `NODE #${i} [ACTIVE - LOCKED IN VOTING]`;
-                        } else {
-                            node.classList.add('bg-slate-950');
-                            node.classList.remove('bg-blue-950/50');
-                            node.title = `NODE #${i} [ACTIVE]`; 
-                        }
-                    } 
-                } 
+        const results = await debouncedMulticall(providerTarget, calls);
+        if (!results) throw new Error("[RPC] Multicall yielded null response.");
+
+        const currentEpoch = Math.floor(Date.now() / 1000);
+        
+        for (let i = 1; i <= 333; i++) { 
+            const node = window.matrixDOMCache?.get(i); 
+            if (!node) continue; 
+
+            const resGen = results[(i-1)*2];
+            const resLock = results[(i-1)*2 + 1];
+            
+            const isMintedEver = resGen?.success ? activeContract.interface.decodeFunctionResult("genesisMinted", resGen.returnData)[0] : false;
+            const lockUntil = resLock?.success ? Number(activeContract.interface.decodeFunctionResult("tokenVotingLockUntil", resLock.returnData)[0]) : 0;
+            const isLocked = lockUntil > currentEpoch;
+
+            node.classList.remove('opacity-30', 'grayscale', 'cursor-not-allowed', 'bg-red-950/20', 'bg-amber-950/20', 'bg-slate-950', 'bg-blue-950/50');
+            if (typeof IS_TOUCH_DEVICE !== 'undefined' && !IS_TOUCH_DEVICE) node.classList.add('hover:bg-slate-800');
+
+            if (!activeSet.has(i)) { 
+                node.classList.add('opacity-30', 'grayscale'); 
+                if (typeof IS_TOUCH_DEVICE !== 'undefined' && !IS_TOUCH_DEVICE) node.classList.remove('hover:bg-slate-800');
+                
+                if (isMintedEver) {
+                    node.classList.add('bg-red-950/20'); 
+                    node.title = `NODE #${i} [BURNED - AWAITING REMINT]`; 
+                } else {
+                    node.classList.add('bg-amber-950/20'); 
+                    node.title = `NODE #${i} [VOID - UNMINTED]`; 
+                }
+            } else { 
+                if (isLocked) {
+                    node.classList.add('bg-blue-950/50');
+                    node.title = `NODE #${i} [ACTIVE - LOCKED IN VOTING]`;
+                } else {
+                    node.classList.add('bg-slate-950');
+                    node.title = `NODE #${i} [ACTIVE]`; 
+                }
             } 
         } 
     } catch (err) { 
-        console.warn("[SYSTEM] Failed to sync active matrix nodes.", err); 
+        console.warn("[SYSTEM EXCEPTION] Matrix sync failed/throttled. Maintaining base state.", err); 
     } 
 }
 
@@ -5689,35 +5723,30 @@ function setupMatrixGrid() {
     const grid = document.getElementById('matrixGridContainer'); 
     if (!grid) return;
 
-    grid.replaceChildren();
-    window.matrixDOMCache.clear();
+    grid.replaceChildren(); 
+    if (window.matrixDOMCache) window.matrixDOMCache.clear();
+    else window.matrixDOMCache = new Map();
 
     const fragment = document.createDocumentFragment();
+    const isTouch = typeof IS_TOUCH_DEVICE !== 'undefined' && IS_TOUCH_DEVICE;
 
     for (let i = 1; i <= 333; i++) {
         let rankClass = "border-slate-800";
         let hasCrown = false;
 
         if ([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 50, 100].includes(i)) {
-            rankClass = "rank-prime";
-            hasCrown = true;
-        } else if (i >= 11 && i <= 100) {
-            rankClass = "rank-gold";
-        } else if (i >= 101 && i <= 200) {
-            rankClass = "rank-silver";
-        } else if (i >= 201 && i <= 332) {
-            rankClass = "rank-red";
-        } else if (i === 333) {
-            rankClass = "rank-imperial";
-            hasCrown = true;
-        }
+            rankClass = "rank-prime"; hasCrown = true;
+        } else if (i >= 11 && i <= 100) { rankClass = "rank-gold"; } 
+        else if (i >= 101 && i <= 200) { rankClass = "rank-silver"; } 
+        else if (i >= 201 && i <= 332) { rankClass = "rank-red"; } 
+        else if (i === 333) { rankClass = "rank-imperial"; hasCrown = true; }
 
         const node = document.createElement('div');
         node.id = `node-${i}`;
         node.setAttribute('data-token-id', i.toString());
         
-        const hoverClass = IS_TOUCH_DEVICE ? "active:bg-slate-800" : "hover:bg-slate-800";
-        node.className = `matrix-node aspect-square w-full bg-slate-950 border rounded flex flex-col items-center justify-center font-mono text-[8px] sm:text-[10px] md:text-xs text-slate-500 cursor-pointer p-1 sm:p-2 transition-colors ${hoverClass} ${rankClass}`;
+        const hoverClass = isTouch ? "active:bg-slate-800" : "hover:bg-slate-800";
+        node.className = `matrix-node aspect-square w-full bg-slate-950 border rounded flex flex-col items-center justify-center font-mono text-[8px] sm:text-[10px] md:text-xs text-slate-500 cursor-pointer p-1 sm:p-2 transition-all duration-300 ${hoverClass} ${rankClass}`;
         
         node.style.contentVisibility = 'auto';
         node.style.contain = 'strict';
@@ -5748,7 +5777,7 @@ function setupMatrixGrid() {
 
     const searchInput = document.getElementById('gridSearchInput');
     if (searchInput && !searchInput.dataset.listenerAttached) {
-        searchInput.addEventListener('input', filterSovereignGrid);
+        searchInput.addEventListener('input', filterSovereignGrid, { passive: true });
         searchInput.dataset.listenerAttached = "true";
     }
 }
@@ -5789,60 +5818,76 @@ function onTypeToggle(station) {
     }
 }
 
-function revealApp() { document.body.classList.add('app-ready'); }
+function revealApp() { 
+    if (!document.body.classList.contains('app-ready')) {
+        document.body.classList.add('app-ready'); 
+    }
+}
 
-const initializeSystem = async () => {
-    if (typeof fetchImperialManifest === 'function') await fetchImperialManifest();
+const initializeSystem = () => {
+    if (typeof fetchImperialManifest === 'function') {
+        fetchImperialManifest().catch(e => console.warn("[NON-BLOCKING] Manifest payload skip:", e));
+    }
     
     setupMatrixGrid();
     
     const grid = document.getElementById('matrixGridContainer'); 
     if (grid && !grid.dataset.clickAttached) {
-        const eventType = IS_TOUCH_DEVICE ? 'pointerup' : 'click';
+        const eventType = (typeof IS_TOUCH_DEVICE !== 'undefined' && IS_TOUCH_DEVICE) ? 'pointerup' : 'click';
         
-        grid.addEventListener(eventType, async (e) => { 
+        grid.addEventListener(eventType, (e) => { 
             const targetNode = e.target.closest('.matrix-node'); 
             if (!targetNode) return;
 
             const tokenId = targetNode.getAttribute('data-token-id');
             if (!tokenId) return;
 
-            // ยอมให้กดสลับโน้ตได้ตลอดเวลา ยกเว้นแค่ตอนทำธุรกรรมจริงๆ
             if (typeof isTransactionPending !== 'undefined' && isTransactionPending) {
-                if (typeof showNotification === 'function') showNotification("SYSTEM ENFORCEMENT: Transaction processing. Please wait.", "warning");
+                if (typeof showNotification === 'function') showNotification("SYSTEM ENFORCEMENT: Action locked. Await clearance.", "warning");
                 return;
             }
 
-            try {
-                window.matrixDOMCache.forEach(n => n.classList.remove('bg-slate-800', 'border-yellow-500'));
-                targetNode.classList.add('bg-slate-800', 'border-yellow-500');
+            // 1. UI INSTANT FEEDBACK
+            window.matrixDOMCache?.forEach(n => n.classList.remove(...ALL_STATE_CLASSES));
+            targetNode.classList.add(...THINKING_CLASSES);
+            window.globalSelectedTokenId = tokenId;
 
-                await auditTokenFromLedger(tokenId);
-            } catch (err) {
-                console.error(`[MATRIX GRID EXCEPTION] Failed to inspect node #${tokenId}:`, err);
-                if (typeof showNotification === 'function') showNotification("Failed to retrieve selected cell coordinate data.", "error");
+            if (typeof appendLog === 'function') appendLog(`[MATRIX] Engaging node #${tokenId}...`, "text-blue-400");
+
+            // 2. ASYNC LEDGER AUDIT
+            if (typeof auditTokenFromLedger === 'function') {
+                auditTokenFromLedger(tokenId)
+                    .then(() => {
+                        targetNode.classList.remove(...THINKING_CLASSES, ...ERROR_CLASSES);
+                        targetNode.classList.add(...ACTIVE_CLASSES);
+                    })
+                    .catch((err) => {
+                        console.warn(`[MATRIX GRID] Inspection pass-through for node #${tokenId}:`, err);
+                        targetNode.classList.remove(...THINKING_CLASSES, ...ACTIVE_CLASSES);
+                        targetNode.classList.add(...ERROR_CLASSES);
+                        window.globalSelectedTokenId = null;
+                    });
+            } else {
+                targetNode.classList.remove(...THINKING_CLASSES);
+                targetNode.classList.add(...ACTIVE_CLASSES);
             }
         });
         grid.dataset.clickAttached = "true";
     }
 
     if (window.visualViewport) {
-        window.visualViewport.addEventListener("resize", () => {
-            if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') {
+        const handleResize = () => {
+            if (document.activeElement?.tagName === 'INPUT' || document.activeElement?.tagName === 'TEXTAREA') {
                 document.body.style.height = `${window.visualViewport.height}px`;
             } else {
                 document.body.style.height = "";
                 document.body.style.overflow = "";
             }
-        });
-        window.visualViewport.addEventListener("scroll", () => {
-            if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') {
-                document.body.style.height = `${window.visualViewport.height}px`;
-            } else {
-                document.body.style.height = "";
-                document.body.style.overflow = "";
-            }
-        });
+        };
+        window.visualViewport.removeEventListener("resize", handleResize);
+        window.visualViewport.removeEventListener("scroll", handleResize);
+        window.visualViewport.addEventListener("resize", handleResize, { passive: true });
+        window.visualViewport.addEventListener("scroll", handleResize, { passive: true });
     }
 };
 
@@ -5856,14 +5901,20 @@ if (document.readyState === 'loading') {
     initializeSystem();
 }
 
-window.addEventListener('load', async () => { 
+window.addEventListener('load', () => { 
     revealApp(); 
-    if (typeof loadArchitectGateways === 'function') { try { loadArchitectGateways(); } catch (e) {} } 
+    if (typeof loadArchitectGateways === 'function') { 
+        try { loadArchitectGateways(); } catch (e) { console.warn("Gateways non-fatal skip"); } 
+    } 
+    
     if (typeof bootSystemRPCs === 'function' && typeof CONTRACT_ADDRESS !== 'undefined' && typeof CONTRACT_ABI !== 'undefined') { 
-        try { 
-            await bootSystemRPCs(CONTRACT_ADDRESS, CONTRACT_ABI); 
-            syncActiveMatrixNodes(); 
-        } catch (e) {} 
+        bootSystemRPCs(CONTRACT_ADDRESS, CONTRACT_ABI)
+            .then(() => {
+                if (typeof syncActiveMatrixNodes === 'function') {
+                    return syncActiveMatrixNodes();
+                }
+            })
+            .catch(e => console.warn("[NON-BLOCKING RPC] Initialization deferred:", e));
     }
 });
 
