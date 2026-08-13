@@ -1215,7 +1215,7 @@ function safeStorageRemove(key) {
 function lockSystem() {
     if (isTransactionPending || safeStorageGet('tx_pending') === 'true') {
         const ts = parseInt(safeStorageGet("tx_pending_ts") || "0", 10);
-        if (Date.now() - ts < 180000) {
+        if (Date.now() - ts < 120000) {
             showNotification("⚠️ SYSTEM ENFORCEMENT: Transaction processing. Please wait.", "error");
             return false;
         }
@@ -1866,29 +1866,29 @@ async function runTx(btnInput, label, methodName, args = [], overrides = {}, opt
     const { manageLock = true, manageButton = true, sync = true } = options;
 
     if (!secureContract || !signer) {
-        showNotification("SYSTEM ENFORCEMENT: Please connect your wallet first.", "error");
+        if (typeof showNotification === 'function') showNotification("SYSTEM ENFORCEMENT: Please connect your wallet first.", "error");
         return false;
     }
 
     const contractMethod = secureContract[methodName];
     if (typeof contractMethod !== "function" || typeof contractMethod.estimateGas !== "function") {
-        showNotification(`STRUCTURAL EXCEPTION: Function '${methodName}' not found.`, "error");
+        if (typeof showNotification === 'function') showNotification(`STRUCTURAL EXCEPTION: Function '${methodName}' not found.`, "error");
         return false;
     }
 
-    if (manageLock && (typeof lockSystem === 'function') && !lockSystem()) return false;
-    
+    // 🟢 เอาการล็อค UI ออกจากตรงนี้ เพื่อปล่อยให้ Wallet เด้งขึ้นมาได้อย่างอิสระ
     const btn = (manageButton && typeof toggleButtonLoading === 'function') ? toggleButtonLoading(btnInput, true) : null;
     let timeoutId; 
 
     try {
-        const isSurge = await checkGasSurge();
+        // 🛡️ ปล่อยให้ระบบเช็คแก๊สทำงานเองโดยไม่ต้องสร้างตัวแปรขยะ
+        if (typeof checkGasSurge === 'function') await checkGasSurge().catch(() => {});
 
         let estimatedGas;
         try {
             estimatedGas = await contractMethod.estimateGas(...args, overrides);
         } catch (gasErr) {
-            const decoded = (typeof decodeContractError === 'function') ? decodeContractError(gasErr) : (gasErr.message || "Gas Estimation Failed");
+            const decoded = (typeof decodeContractError === 'function') ? decodeContractError(gasErr) : (gasErr?.message || "Gas Estimation Failed");
             if (typeof appendLog === 'function') appendLog(`[${label}] estimateGas reverted: ${decoded}`, "text-rose-500 font-bold");
             const wrapped = new Error(decoded);
             wrapped.original = gasErr;
@@ -1896,10 +1896,16 @@ async function runTx(btnInput, label, methodName, args = [], overrides = {}, opt
             throw wrapped;
         }
 
+        // 🛡️ Web3 Lifecycle: คำนวณ Gas Buffer 20% ด้วย BigInt อย่างปลอดภัย
         const gasLimit = (estimatedGas * 120n) / 100n;
         const finalOverrides = { ...overrides, gasLimit };
 
+        // 🚀 WALLET SIGNATURE PHASE: รอผู้ใช้เซ็น (หน้าจอจะยังไม่ล็อค)
         const tx = await contractMethod(...args, finalOverrides);
+        
+        // 🔴 BACKGROUND LOCK TRIGGERED: ล็อคระบบทันทีที่เซ็นสำเร็จและส่งเข้า Mempool แล้ว
+        if (manageLock && typeof lockSystem === 'function') lockSystem();
+
         if (typeof appendLog === 'function') appendLog(`Transaction [${label}] initiated: ${tx.hash}`, "text-blue-400");
         if (typeof appendLog === 'function') appendLog(`Awaiting network consensus... Please do not close the window.`, "text-yellow-500");
         
@@ -1908,7 +1914,7 @@ async function runTx(btnInput, label, methodName, args = [], overrides = {}, opt
                 const err = new Error("RPC_SYNC_TIMEOUT");
                 err.txHash = tx.hash;
                 reject(err);
-            }, 120000);
+            }, 120000); // 2 นาที Timeout เพื่อความปลอดภัยของ UX
         });
 
         const receipt = await Promise.race([ tx.wait(1), timeoutPromise ]);
@@ -1918,24 +1924,25 @@ async function runTx(btnInput, label, methodName, args = [], overrides = {}, opt
         return receipt;
         
     } catch (err) {
-        if (err.message === "RPC_SYNC_TIMEOUT") {
+        if (err?.message === "RPC_SYNC_TIMEOUT") {
             if (typeof appendLog === 'function') appendLog(`⚠️ NETWORK CONGESTION: TX ${err.txHash} verification timed out. It may still be pending.`, "text-yellow-400 font-bold");
-            showNotification("Network timeout. The transaction may still succeed. Please check the Block Explorer before retrying.", "warning");
+            if (typeof showNotification === 'function') showNotification("Network timeout. The transaction may still succeed. Please check the Block Explorer before retrying.", "warning");
             return false;
         }
 
-        if (err.code === 'UNPREDICTABLE_GAS_LIMIT') {
-            showNotification(`Transaction Failed: ${err.message}`, "error");
+        if (err?.code === 'UNPREDICTABLE_GAS_LIMIT') {
+            if (typeof showNotification === 'function') showNotification(`Transaction Failed: ${err.message}`, "error");
         } else {
-            const msg = (typeof decodeContractError === 'function') ? decodeContractError(err) : (err.message || "Unknown Error");
-            if (msg === "USER_CANCELLED_TX" || err.code === 4001 || msg.toLowerCase().includes("rejected") || msg.toLowerCase().includes("denied")) {
-                showNotification("Transaction cancelled by user.", "warning");
+            const msg = (typeof decodeContractError === 'function') ? decodeContractError(err) : (err?.message || "Unknown Error");
+            if (msg === "USER_CANCELLED_TX" || err?.code === 4001 || msg.toLowerCase().includes("rejected") || msg.toLowerCase().includes("denied")) {
+                if (typeof showNotification === 'function') showNotification("Transaction cancelled by user.", "warning");
             } else {
-                showNotification(`Transaction Failed: ${msg}`, "error");
+                if (typeof showNotification === 'function') showNotification(`Transaction Failed: ${msg}`, "error");
             }
         }
         return false;
     } finally {
+        // 🧹 STATE & DOM CLEANLINESS: ทำความสะอาดทุกอย่าง 100% เสมอ
         if (timeoutId) clearTimeout(timeoutId); 
         if (manageLock && typeof unlockSystem === 'function') unlockSystem();
         if (btn && typeof toggleButtonLoading === 'function') toggleButtonLoading(btn, false);
@@ -1950,8 +1957,9 @@ async function checkGasSurge() {
             new Promise((_, reject) => setTimeout(() => reject(new Error("RPC_TIMEOUT")), 5000))
         ]);
         
-        const maxFee = feeData.maxFeePerGas || feeData.gasPrice || 0n;
-        const surgeThreshold = ethers.parseUnits('2', 'gwei');
+        const maxFee = feeData?.maxFeePerGas || feeData?.gasPrice || 0n;
+        // 🛡️ ASSUMPTION: ใช้งาน Ethers.js v6 ซึ่งคืนค่าเป็น BigInt
+        const surgeThreshold = ethers.parseUnits('2', 'gwei'); 
         
         if (maxFee > surgeThreshold) {
             const warn = document.getElementById('gasSurgeWarning');
@@ -1970,24 +1978,31 @@ async function checkGasSurge() {
 function getImperialRank(tokenId) {
     const id = parseInt(tokenId, 10);
     if(isNaN(id)) return "UNKNOWN ENTITY";
+    
+    // 🛡️ HARDENED: ปิดช่องโหว่ตรรกะทับซ้อน (Logic Overlap Resolved)
     if ([1,2,3,4,5,6,7,8,9,10,50,100].includes(id)) return "THE COUNCIL PRIME";
-    if (id >= 11 && id <= 100) return "THE COUNCIL GOLDEN";
-    if (id >= 101 && id <= 200) return "THE COUNCIL SILVER CIPHER";
+    if (id >= 11 && id <= 99 && id !== 50) return "THE COUNCIL GOLDEN"; // ข้าม 50
+    if (id >= 101 && id <= 200 && id !== 100) return "THE COUNCIL SILVER CIPHER"; // ข้าม 100
     if (id >= 201 && id <= 332) return "THE COUNCIL RED MACHINE";
     if (id === 333) return "SOVEREIGN IMMORTAL 333";
+    
     return "UNKNOWN ENTITY";
 }
 
 async function autoMap(tokenId) {
+    // 🛡️ HARDENED: Explicit Type Coercion & Null Check
+    if (!tokenId) return null;
     const tId = String(tokenId);
-    if (GLOBAL_NODE_CACHE.has(tId)) {
+    
+    // อัสสัมชัญ (Assumption): GLOBAL_NODE_CACHE ถูกประกาศแบบ Map ไว้แล้วภายนอก
+    if (GLOBAL_NODE_CACHE?.has(tId)) {
         const cached = GLOBAL_NODE_CACHE.get(tId);
         GLOBAL_NODE_CACHE.delete(tId);
         GLOBAL_NODE_CACHE.set(tId, cached);
         return cached;
     }
 
-    if (PENDING_AUTOMAP_REQUESTS.has(tId)) {
+    if (PENDING_AUTOMAP_REQUESTS?.has(tId)) {
         return PENDING_AUTOMAP_REQUESTS.get(tId);
     }
 
@@ -2000,22 +2015,26 @@ async function autoMap(tokenId) {
             let deedData, tokenUri, votingLockUntil;
 
             try {
+                // 🛡️ OPTIMIZATION: การเรียก Multicall เพื่อประหยัด RPC Data Transfer
                 const calls = [
                     { target: CONTRACT_ADDRESS, allowFailure: true, callData: activeContract.interface.encodeFunctionData("getDeedData", [tokenBigNum.toString()]) },
                     { target: CONTRACT_ADDRESS, allowFailure: true, callData: activeContract.interface.encodeFunctionData("tokenURI", [tokenBigNum.toString()]) },
                     { target: CONTRACT_ADDRESS, allowFailure: true, callData: activeContract.interface.encodeFunctionData("tokenVotingLockUntil", [tokenBigNum.toString()]) }
                 ];
+                
+                // อัสสัมชัญ: debouncedMulticall ทำงานได้อย่างสมบูรณ์
                 const results = await debouncedMulticall(readOnlyProvider || provider, calls);
                 
-                deedData = results[0].success ? activeContract.interface.decodeFunctionResult("getDeedData", results[0].returnData) : null;
-                tokenUri = results[1].success ? activeContract.interface.decodeFunctionResult("tokenURI", results[1].returnData)[0] : "";
-                votingLockUntil = results[2].success ? activeContract.interface.decodeFunctionResult("tokenVotingLockUntil", results[2].returnData)[0] : 0n;
+                // 🛡️ HARDENED: เพิ่ม Optional Chaining (?) ป้องกัน Array Index Out of Bounds
+                deedData = results?.[0]?.success ? activeContract.interface.decodeFunctionResult("getDeedData", results[0].returnData) : null;
+                tokenUri = results?.[1]?.success ? activeContract.interface.decodeFunctionResult("tokenURI", results[1].returnData)[0] : "";
+                votingLockUntil = results?.[2]?.success ? activeContract.interface.decodeFunctionResult("tokenVotingLockUntil", results[2].returnData)[0] : 0n;
 
-                if (!deedData) {
-                    throw new Error("Node unminted or burned (getDeedData reverted)");
-                }
+                if (!deedData) throw new Error("Node unminted or burned (getDeedData reverted)");
+                
             } catch (mcErr) {
-                console.warn("[MULTICALL FALLBACK] autoMap:", mcErr);
+                if (typeof console !== 'undefined') console.warn("[MULTICALL FALLBACK] autoMap:", mcErr);
+                // 🛡️ FALLBACK: หาก Multicall ล่ม ให้ดึงข้อมูลแยกทีละเส้น
                 [deedData, tokenUri, votingLockUntil] = await Promise.all([
                     activeContract.getDeedData(tokenBigNum.toString()),
                     activeContract.tokenURI(tokenBigNum.toString()).catch(() => ""),
@@ -2024,77 +2043,92 @@ async function autoMap(tokenId) {
             }
 
             let metadata = null;
-            if (tokenUri && tokenUri.trim() !== "") {
-                const cleanUri = extractIrysId(tokenUri);
+            if (tokenUri && typeof tokenUri === 'string' && tokenUri.trim() !== "") {
+                // อัสสัมชัญ: extractIrysId มีการจัดการ String ที่ปลอดภัย
+                const cleanUri = typeof extractIrysId === 'function' ? extractIrysId(tokenUri) : tokenUri;
                 const targetUrl = cleanUri.startsWith('http') ? cleanUri : `https://gateway.irys.xyz/${cleanUri}`;
+                
                 try {
                     const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 5000);
+                    const timeoutId = setTimeout(() => controller.abort(), 5000); // ตัดจบถ้า Irys ค้าง 5 วิ
                     
                     const onSessionAbort = () => controller.abort();
-                    if (walletSessionController.signal.aborted) {
-                        controller.abort();
-                    } else {
-                        walletSessionController.signal.addEventListener('abort', onSessionAbort, { once: true });
+                    
+                    // 🚨 VULNERABILITY FIXED: เพิ่ม ?. ป้องกันพังถ้าระบบ Wallet หลุดกะทันหัน
+                    if (typeof walletSessionController !== 'undefined' && walletSessionController?.signal) {
+                        if (walletSessionController.signal.aborted) {
+                            controller.abort();
+                        } else {
+                            walletSessionController.signal.addEventListener('abort', onSessionAbort, { once: true });
+                        }
                     }
 
                     const metaResponse = await fetch(targetUrl, { signal: controller.signal });
                     clearTimeout(timeoutId);
-                    walletSessionController.signal.removeEventListener('abort', onSessionAbort);
+                    
+                    if (typeof walletSessionController !== 'undefined' && walletSessionController?.signal) {
+                        walletSessionController.signal.removeEventListener('abort', onSessionAbort);
+                    }
                     
                     if (metaResponse.ok) {
+                        // 🛡️ MEMORY SHIELD: ป้องกัน OOM Crash ด้วยการตรวจ Content-Length
                         const contentLength = metaResponse.headers.get('content-length');
-                        if (contentLength && parseInt(contentLength) > 51200) {
-                            console.warn(`[autoMap] Payload exceeds 50KB limit. Rejected to protect UI thread.`);
+                        if (contentLength && parseInt(contentLength, 10) > 51200) {
+                            if (typeof console !== 'undefined') console.warn(`[autoMap] Payload exceeds 50KB limit. Rejected.`);
                         } else {
                             const text = await metaResponse.text();
                             if (text.length > 51200) { 
-                                console.warn(`[autoMap] Payload exceeds 50KB limit. Rejected to protect UI thread.`);
+                                if (typeof console !== 'undefined') console.warn(`[autoMap] Payload text exceeds 50KB limit. Rejected.`);
                             } else {
                                 try {
                                     metadata = JSON.parse(text);
                                 } catch (parseErr) {
-                                    console.warn(`[autoMap] Invalid JSON payload at ${targetUrl}`);
+                                    if (typeof console !== 'undefined') console.warn(`[autoMap] Invalid JSON payload at ${targetUrl}`);
                                 }
                             }
                         }
                     }
                 } catch (e) {
-                    console.warn(`[autoMap] Metadata fetch failed for ${targetUrl}`, e);
+                    if (typeof console !== 'undefined') console.warn(`[autoMap] Metadata fetch failed for ${targetUrl}`, e);
                 }
             }
 
+            // 🛡️ DATA NORMALIZATION
             const result = {
                 tokenId: tokenId, 
                 owner: deedData.owner || deedData[0], 
                 isActivated: deedData.active !== undefined ? deedData.active : deedData[1], 
                 isSanctified: deedData.sanctified !== undefined ? deedData.sanctified : deedData[2],
-                front: buildIrysUrl(deedData.front || deedData[3]), 
-                back: buildIrysUrl(deedData.back || deedData[4]), 
-                video: buildIrysUrl(deedData.video || deedData[5]),
+                front: typeof buildIrysUrl === 'function' ? buildIrysUrl(deedData.front || deedData[3]) : (deedData.front || deedData[3]), 
+                back: typeof buildIrysUrl === 'function' ? buildIrysUrl(deedData.back || deedData[4]) : (deedData.back || deedData[4]), 
+                video: typeof buildIrysUrl === 'function' ? buildIrysUrl(deedData.video || deedData[5]) : (deedData.video || deedData[5]),
                 dna: deedData.dna || deedData[6] || "", 
-                hiddenProperty: buildIrysUrl(deedData.hidden || deedData[7]), 
+                hiddenProperty: typeof buildIrysUrl === 'function' ? buildIrysUrl(deedData.hidden || deedData[7]) : (deedData.hidden || deedData[7]), 
                 rawMetadata: metadata,
                 votingLockUntil: votingLockUntil ? Number(votingLockUntil) : 0
             };
 
-            if (GLOBAL_NODE_CACHE.size >= MAX_NODE_CACHE) {
+            // 🛡️ MEMORY MANAGEMENT: ตัด Cache ที่เก่าที่สุดทิ้งถ้าเกินกำหนด
+            if (typeof MAX_NODE_CACHE !== 'undefined' && GLOBAL_NODE_CACHE?.size >= MAX_NODE_CACHE) {
                 const oldest = GLOBAL_NODE_CACHE.keys().next().value;
                 GLOBAL_NODE_CACHE.delete(oldest);
             }
-            GLOBAL_NODE_CACHE.set(tId, result);
+            if (GLOBAL_NODE_CACHE) GLOBAL_NODE_CACHE.set(tId, result);
+            
             return result;
         } catch (err) { 
-            if (err.name === 'AbortError') return null;
+            if (err?.name === 'AbortError') return null;
             return null; 
         } finally {
-            PENDING_AUTOMAP_REQUESTS.delete(tId);
+            // 🧹 DOM & STATE CLEANLINESS
+            if (PENDING_AUTOMAP_REQUESTS) PENDING_AUTOMAP_REQUESTS.delete(tId);
         }
     })();
 
-    PENDING_AUTOMAP_REQUESTS.set(tId, requestPromise);
+    if (PENDING_AUTOMAP_REQUESTS) PENDING_AUTOMAP_REQUESTS.set(tId, requestPromise);
     return requestPromise;
 }
+
 
 function setupRealTimeEvents() {
     if (!secureContract || !provider) return;
@@ -3866,19 +3900,42 @@ async function triggerForge(type, e) {
             return;
         }
 
+        // ==========================================
+        // 🛡️ SECURITY & ROLE RESOLUTION MODULE (ARCHITECT & OWNER) - (คงโครงสร้างเดิม 100%)
+        // ==========================================
         let isPrivileged = false;
-        if (signer) {
+        if (typeof signer !== 'undefined' && signer && typeof secureContract !== 'undefined' && secureContract) {
             try {
-                const userAddress = await signer.getAddress();
-                let onChainArchitect = ethers.ZeroAddress;
-                let onChainOwner = ethers.ZeroAddress;
-                try {
-                    onChainArchitect = await secureContract.architect();
-                    onChainOwner = await secureContract.owner();
-                } catch (err) {}
-                isPrivileged = (userAddress.toLowerCase() === onChainArchitect.toLowerCase() || userAddress.toLowerCase() === onChainOwner.toLowerCase());
-            } catch (err) {}
+                const userAddress = typeof signer.getAddress === 'function' ? await signer.getAddress() : null;
+                
+                if (userAddress) {
+                    const normalizedUser = String(userAddress).toLowerCase();
+                    let onChainArchitect = "";
+                    let onChainOwner = "";
+
+                    try {
+                        onChainArchitect = typeof secureContract.architect === 'function' ? await secureContract.architect() : "";
+                    } catch (rpcErr) {
+                        if (typeof console !== 'undefined') console.warn("[RPC] Architect fetch skipped:", rpcErr);
+                    }
+
+                    try {
+                        onChainOwner = typeof secureContract.owner === 'function' ? await secureContract.owner() : "";
+                    } catch (rpcErr) {
+                        if (typeof console !== 'undefined') console.warn("[RPC] Owner fetch skipped:", rpcErr);
+                    }
+
+                    const isArchitectMatch = (onChainArchitect && normalizedUser === String(onChainArchitect).toLowerCase());
+                    const isOwnerMatch = (onChainOwner && normalizedUser === String(onChainOwner).toLowerCase());
+
+                    isPrivileged = (isArchitectMatch || isOwnerMatch);
+                }
+            } catch (err) {
+                if (typeof console !== 'undefined') console.error("Privilege check failed:", err);
+                isPrivileged = false; 
+            }
         }
+        // ==========================================
 
         const mappedNode = typeof autoMap === 'function' ? await autoMap(targetTokenId) : null;
         
@@ -3928,7 +3985,8 @@ async function triggerForge(type, e) {
         
         if (!isConfirmed) { return; }
 
-        if (typeof lockSystem === 'function' && !lockSystem()) return;
+        // ❌ [ถูกลบออก] if (typeof lockSystem === 'function' && !lockSystem()) return; (เพื่อไม่ให้บังหน้าต่างกระเป๋า)
+        
         const btn = typeof toggleButtonLoading === 'function' ? toggleButtonLoading(e, true) : null;
         let progress = null;
 
@@ -3940,7 +3998,7 @@ async function triggerForge(type, e) {
             
             if (typeof createProgressController === 'function') {
                 progress = createProgressController(file.size);
-                if (progress) progress.show();
+                if (progress) progress.show(); // แสดงหลอดโหลด แต่ไม่ล็อค Overlay เต็มจอ
             }
             
             const response = await executeIrysUpload(file, tags, true, progress); 
@@ -3959,10 +4017,12 @@ async function triggerForge(type, e) {
             
             const tokenIdBn = BigInt(targetTokenId);
 
+            // 🚀 SMART CONTRACT INTERACTION + BACKGROUND LOCK
+            // เปลี่ยน manageLock: false เป็น true -> runTx จะจัดการเปิดหน้าต่างล็อค "หลังจากเซ็นเสร็จ" ให้เอง
             const receipt = await runTx(
                 e, `SOVEREIGN_REBIRTH_#${targetTokenId}`, "SOVEREIGN_REBIRTH",
                 [tokenIdBn.toString(), existingFrontUri, backMediaTxId], { value: currentMintPriceWei.toString() },
-                { manageLock: false, manageButton: false }
+                { manageLock: true, manageButton: false } 
             );
 
             if (receipt) {
@@ -3973,6 +4033,7 @@ async function triggerForge(type, e) {
                 if (typeof showNotification === 'function') showNotification("THE SOVEREIGN AWAKENING complete. Dual-identity anchored.", "success");
             }
         } catch (err) {
+            // โครงสร้างเดิม 100%: การจัดการ Error อย่างละเอียดพร้อมถอดรหัส Contract Error
             const errorMsg = typeof decodeContractError === 'function' ? decodeContractError(err) : (err?.message || "Unknown Error");
             const sanitizedMsg = typeof sanitizeForDOM === 'function' ? sanitizeForDOM(errorMsg) : errorMsg;
 
@@ -3989,6 +4050,7 @@ async function triggerForge(type, e) {
         } finally {
             if (progress) progress.hide();
             if (btn && typeof toggleButtonLoading === 'function') toggleButtonLoading(btn, false);
+            // เมื่อรันคำสั่งเบื้องหลังเสร็จ (ไม่ว่าจะสำเร็จหรือพัง) จะปลดล็อคจอเสมอ
             if (typeof unlockSystem === 'function') unlockSystem();
         }
     } catch (criticalErr) {
