@@ -136,7 +136,7 @@
         transition: left 0.6s cubic-bezier(0.4, 0, 0.2, 1);
         pointer-events: none;
     }
-    .btn-gold-master:hover:not(:disabled)::after, .btn-rebirth-bright:hover::after, .btn-remint-bright:hover::after { left: 130%; }
+    .btn-gold-master:hover:not(:disabled)::after, .btn-rebirth-bright:hover:not(:disabled)::after, .btn-remint-bright:hover:not(:disabled)::after { left: 130%; }
 
     .btn-gold-master {
         background: linear-gradient(120deg, #78350f 0%, #b45309 30%, #fbbf24 50%, #b45309 70%, #78350f 100%);
@@ -163,11 +163,12 @@
         border: 1.5px solid #fffbeb;
         will-change: transform, box-shadow;
     }
-    .btn-rebirth-bright:hover {
+    .btn-rebirth-bright:hover:not(:disabled) {
         transform: translateY(-2px) scale(1.012);
         box-shadow: 0 12px 30px rgba(0, 0, 0, 0.7), 0 0 55px rgba(253, 224, 71, 0.85), inset 0 1px 0 rgba(255, 255, 255, 0.9);
         cursor: pointer;
     }
+    .btn-rebirth-bright:disabled { filter: grayscale(100%); opacity: 0.4; cursor: not-allowed; }
 
     .btn-remint-bright {
         background: linear-gradient(120deg, #7f1d1d 0%, #be123c 35%, #fb7185 50%, #be123c 65%, #7f1d1d 100%);
@@ -178,7 +179,7 @@
         border: 1.5px solid #ffe4e6;
         will-change: transform, box-shadow;
     }
-    .btn-remint-bright:hover {
+    .btn-remint-bright:hover:not(:disabled) {
         transform: translateY(-2px) scale(1.012);
         box-shadow: 0 12px 30px rgba(0, 0, 0, 0.7), 0 0 55px rgba(244, 63, 94, 0.72), inset 0 1px 0 rgba(255, 228, 230, 0.7);
         cursor: pointer;
@@ -349,7 +350,7 @@
         border-radius: 0.4rem;
     }
 
-    .btn-gold-master:active:not(:disabled), .btn-rebirth-bright:active, .btn-remint-bright:active {
+    .btn-gold-master:active:not(:disabled), .btn-rebirth-bright:active:not(:disabled), .btn-remint-bright:active:not(:disabled) {
         transform: translateY(1px) scale(0.99);
         filter: brightness(0.95);
     }
@@ -520,6 +521,8 @@
             <div id="stagedBridgeStatus" class="text-[10px] text-amber-500 font-mono font-bold uppercase tracking-wider bg-stone-950 border border-rose-950 rounded p-2 text-center lg:text-left">
                 🧳 Permanent Bridge Standby
             </div>
+            <div id="irysHeaderStatus" class="hidden"></div>
+            <div id="bridgeErrorDisplay" class="hidden"></div>
             <div class="hidden w-full" id="uploadProgressShell" role="progressbar" aria-label="Upload progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
                 <div class="h-1.5 w-full bg-stone-900 rounded-full overflow-hidden border border-stone-800">
                     <div id="uploadProgressFill" class="h-full w-0 bg-amber-500 transition-[width] duration-200 ease-out" style="will-change:width"></div>
@@ -531,6 +534,7 @@
             <span class="text-stone-400">NET: <span id="hdrNetwork" class="text-amber-500 font-bold">—</span></span>
             <span class="text-stone-400">ADDR: <span id="hdrAddress" class="text-stone-200 font-bold">—</span></span>
             <span class="text-stone-400">DEED BALANCE: <span id="hdrBalance" class="text-rose-400 font-bold">0</span></span>
+            <span id="connStatusBase1" class="text-emerald-400 font-bold mt-1">⚪ Status: Disconnected</span>
         </div>
         <button id="btnConnect" onclick="connectWallet(this)" class="px-5 py-3 w-full lg:w-auto btn-gold-master rounded-xl text-xs">
             [ CONNECT SOVEREIGN WALLET ]
@@ -636,12 +640,9 @@
         </span>
         <div id="displayReserve" class="text-xl md:text-2xl font-black gold-text font-mono">0.00 <span class="text-xs text-stone-600">ETH</span></div>
     </div>
-    <div class="chiaroscuro-bg p-4 rounded-xl border-l-2 border-rose-700">
-        <span class="text-[9px] font-mono uppercase text-stone-500 block mb-1">PROTOCOL ECOSYSTEM STUDIO</span>
-        <div id="displayCouncilPool" class="text-xl md:text-2xl font-black crimson-text font-mono">0.00 <span class="text-xs text-stone-600">ETH</span></div>
-        <div class="mt-2 pt-2 border-t border-rose-900/50">
-            <span class="text-[8px] font-mono text-stone-400 block tracking-widest uppercase">DUST CAP BUFFER (WEI):</span>
-            <span id="dustVisualizer" class="text-[10px] font-mono text-amber-400 font-bold block overflow-hidden text-ellipsis truncate mt-0.5">0</span>
+        <div class="mt-3 pt-2 border-t border-rose-900/50">
+            <button id="executeClaimRewardBtn" onclick="executeClaimReward(this)" class="w-full bg-rose-950 hover:bg-rose-900 text-rose-200 border border-rose-700 text-[9px] py-2 rounded uppercase font-bold transition-colors hidden">COUNCIL ART</button>
+            <span id="rewardExclusionWarning" class="text-[8px] text-rose-500 font-bold uppercase hidden block text-center mt-1">NODE EXCLUDED FROM REWARDS</span>
         </div>
     </div>
     <div class="chiaroscuro-bg p-4 rounded-xl border-l-2 border-red-700">
@@ -693,7 +694,11 @@
         <div class="md:col-span-5 space-y-3">
             <span class="text-[9px] font-mono text-stone-400 uppercase tracking-wider block">// CRYPTOGRAPHIC ACTION Hub</span>
             <div class="grid grid-cols-1 gap-3">
-                <button onclick="triggerForge('REBIRTH', this)" class="btn-rebirth-bright text-xs py-3.5 rounded-xl font-black tracking-wide">[SOVEREIGN AWAKENING ♠️]</button>
+                <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" id="forgeConsentCheckbox" class="accent-amber-500 w-4 h-4" onchange="toggleForgeButtonState()" />
+                    <span class="text-[9px] font-mono text-stone-400 uppercase">I confirm the metadata and media are final.</span>
+                </label>
+                <button id="executeForgeBtn" onclick="triggerForge('REBIRTH', this)" class="btn-rebirth-bright text-xs py-3.5 rounded-xl font-black tracking-wide opacity-50 cursor-not-allowed" disabled>[SOVEREIGN AWAKENING ♠️]</button>
             </div>
             <p class="text-[9px] font-mono text-stone-600 uppercase mt-2">
               • Limited to 333 Absolute Passes Worldwide</p>
@@ -983,8 +988,9 @@
                     Exit Council • Permanent Pass Relinquishment via On-Chain Contract
                 </p>
             </div>
-            <div>
-                <button id="btnBurnToken" onclick="executeSovereignSupport(this)" class="w-full bg-red-800 hover:bg-red-700 text-white font-black text-xs py-3.5 rounded-lg uppercase tracking-widest transition-all shadow-[0_0_20px_rgba(220,38,38,0.4)] border border-red-500">[ 🔥 SOVEREIGN IMMOLATION ]</button>
+            <div class="flex gap-3">
+                <button id="btnBurnToken" onclick="executeSovereignSupport(this)" class="w-1/2 bg-red-800 hover:bg-red-700 text-white font-black text-xs py-3.5 rounded-lg uppercase tracking-widest transition-all shadow-[0_0_20px_rgba(220,38,38,0.4)] border border-red-500">[ 🔥 SOVEREIGN IMMOLATION ]</button>
+                <button id="btnTransferToken" onclick="executeTransferDeed(this)" class="w-1/2 bg-stone-900 hover:bg-stone-800 text-stone-300 font-black text-xs py-3.5 rounded-lg uppercase tracking-widest transition-all border border-stone-700">[ 📤 TRANSFER DEED ]</button>
             </div>
         </div>
     </div>
@@ -1130,6 +1136,11 @@
         This protocol operates an exclusive, private digital identity infrastructure accessible solely via direct curation. All proceeds represent lawful studio service fees. Reserve allocations fund software R&D and Ecosystem Infrastructure Support Grants. Minting and on-chain operations are executed 100% self-sovereignly by curated pass holders. This protocol does not offer public sales, securities, or financial returns.
     </div>
 </footer>
+
+
+
+
+
 
 
 
@@ -1495,19 +1506,21 @@ async function debouncedMulticall(providerInstance, calls) {
                     const allCalls = currentBatch.flatMap(item => item.calls);
                     let results = [];
                     
-                    for (let i = 0; i < allCalls.length; i += 100) {
-                        const chunk = allCalls.slice(i, i + 100);
-                        try {
-                            const chunkResults = await multicall.aggregate3(chunk);
-                            results = results.concat(Array.from(chunkResults));
-                        } catch (chunkErr) {
-                            console.warn("Multicall chunk failed, falling back to individual calls", chunkErr);
-                            for (const call of chunk) {
-                                try {
-                                    const res = await providerInstance.call({ to: call.target, data: call.callData });
-                                    results.push({ success: true, returnData: res });
-                                } catch (singleErr) {
-                                    results.push({ success: false, returnData: "0x" });
+                    if (allCalls.length > 0) {
+                        for (let i = 0; i < allCalls.length; i += 100) {
+                            const chunk = allCalls.slice(i, i + 100);
+                            try {
+                                const chunkResults = await multicall.aggregate3(chunk);
+                                results = results.concat(Array.from(chunkResults));
+                            } catch (chunkErr) {
+                                console.warn("Multicall chunk failed, falling back to individual calls", chunkErr);
+                                for (const call of chunk) {
+                                    try {
+                                        const res = await providerInstance.call({ to: call.target, data: call.callData });
+                                        results.push({ success: true, returnData: res });
+                                    } catch (singleErr) {
+                                        results.push({ success: false, returnData: "0x" });
+                                    }
                                 }
                             }
                         }
@@ -1526,6 +1539,7 @@ async function debouncedMulticall(providerInstance, calls) {
         }
     });
 }
+
 
 function clearAllTimers() {
     if (activeTimers && activeTimers.length > 0) {
@@ -1715,8 +1729,10 @@ function toggleCardFlip() {
         }
     };
 
+    let transitionFired = false;
     const onTransitionEnd = (e) => {
         if (e && (e.target !== card || e.propertyName !== 'transform')) return;
+        transitionFired = true;
         card.removeEventListener('transitionend', onTransitionEnd);
         swapVideos();
         isFlippingLock = false;
@@ -1726,12 +1742,12 @@ function toggleCardFlip() {
     card.classList.toggle('flipped');
 
     setTimeout(() => {
-        if (isFlippingLock) {
+        if (!transitionFired) {
             card.removeEventListener('transitionend', onTransitionEnd);
             swapVideos();
             isFlippingLock = false;
         }
-    }, 1000);
+    }, 1200);
 }
 
 function isMaliciousURI(uri) {
@@ -1847,28 +1863,11 @@ async function promptUserForFile(acceptType = 'image/*,video/*') {
 
         let isSettled = false;
 
-        const handleFocusFallback = () => {
-            setTimeout(() => {
-                if (!isSettled && fileInput.files.length === 0) handleCancel();
-            }, 500); 
-        };
-
-        const handleVisibilityChange = () => {
-            if (document.visibilityState === 'visible') handleFocusFallback();
-        };
-
-        const handleBlur = () => {
-            window.addEventListener('focus', handleFocusFallback, { once: true });
-            document.addEventListener('visibilitychange', handleVisibilityChange, { once: true });
-        };
-
         const cleanup = () => {
             if (fileInput.parentNode === document.body) {
                 document.body.removeChild(fileInput);
             }
-            window.removeEventListener('blur', handleBlur);
             window.removeEventListener('focus', handleFocusFallback);
-            document.removeEventListener('visibilitychange', handleVisibilityChange);
         };
 
         const handleFileChange = (event) => {
@@ -1878,20 +1877,26 @@ async function promptUserForFile(acceptType = 'image/*,video/*') {
             resolve(event.target.files[0] || null);
         };
 
-        const handleCancel = () => {
-            if (isSettled) return;
-            isSettled = true;
-            cleanup();
-            resolve(null);
+        const handleFocusFallback = () => {
+            setTimeout(() => {
+                if (!isSettled) {
+                    if (fileInput.files.length === 0) {
+                        isSettled = true;
+                        cleanup();
+                        resolve(null);
+                    }
+                }
+            }, 1000);
         };
 
         fileInput.addEventListener('change', handleFileChange, { once: true });
-        fileInput.addEventListener('cancel', handleCancel, { once: true });
-
-        window.addEventListener('blur', handleBlur, { once: true });
+        window.addEventListener('focus', handleFocusFallback, { once: true });
 
         document.body.appendChild(fileInput);
-        fileInput.click();
+        
+        requestAnimationFrame(() => {
+            fileInput.click();
+        });
     });
 }
 
@@ -1988,7 +1993,7 @@ async function checkGasSurge() {
         ]);
         
         const maxFee = feeData?.maxFeePerGas || feeData?.gasPrice || 0n;
-        const surgeThreshold = ethers.parseUnits('2', 'gwei'); 
+        const surgeThreshold = ethers.parseUnits('50', 'gwei'); 
         
         if (maxFee > surgeThreshold) {
             const warn = document.getElementById('gasSurgeWarning');
@@ -3595,7 +3600,7 @@ async function connectWallet(e) {
         
     } catch (error) { 
         const errorMsg = typeof decodeContractError === 'function' ? decodeContractError(error) : error.message;
-        if (errorMsg === "USER_CANCELLED_TX" || error?.code === 4001 || error?.code === -32002 || error.message.includes("WALLET_TIMEOUT")) {
+        if (errorMsg === "USER_CANCELLED_TX" || error?.code === 4001 || error?.code === -32002 || error.message.includes("WALLET_TIMEOUT") || error.message.includes("Connection request reset")) {
             appendLog(`Wallet process interrupted: ${error.message}`, "text-yellow-500");
             showNotification("Process cancelled or wallet awaiting confirmation.", "warning");
         } else {
@@ -3604,6 +3609,7 @@ async function connectWallet(e) {
         }
     } finally {
         if (btn && typeof toggleButtonLoading === 'function') toggleButtonLoading(btn, false);
+        if (typeof unlockSystem === 'function') unlockSystem(true);
     }
 }
 
@@ -5830,9 +5836,7 @@ function revealApp() {
                     return;
                 }
 
-                // 🛡️ 1. LOCK STATE IN RAM & DOM IMMEDIATELY (แก้บัค Scope Mismatch ตรงนี้!)
-                globalSelectedTokenId = tokenId; // อัพเดทตัวแปร Local
-                window.globalSelectedTokenId = tokenId; // อัพเดทตัวแปร Global
+                window.globalSelectedTokenId = tokenId;
                 
                 const novaTokenEl = document.getElementById('novaTokenId');
                 if (novaTokenEl) novaTokenEl.value = tokenId;
@@ -5841,13 +5845,11 @@ function revealApp() {
                 const dnaVerifyTokenId = document.getElementById('dnaVerifyTokenId');
                 if (dnaVerifyTokenId) dnaVerifyTokenId.value = tokenId;
 
-                // 1. UI INSTANT FEEDBACK
                 window.matrixDOMCache?.forEach(n => n.classList.remove(...ALL_STATE_CLASSES));
                 targetNode.classList.add(...THINKING_CLASSES);
 
                 if (typeof appendLog === 'function') appendLog(`[MATRIX] Engaging node #${tokenId}...`, "text-blue-400");
 
-                // 🛡️ 2. PRIVILEGE VERIFICATION (เช็คสิทธิ์ Architect)
                 let isAdmin = false;
                 if (typeof secureContract !== 'undefined' && secureContract && typeof signer !== 'undefined' && signer) {
                     try {
@@ -5859,7 +5861,6 @@ function revealApp() {
                     } catch(e) {}
                 }
 
-                // 🛡️ 3. LEDGER AUDIT WITH ARCHITECT BYPASS (ตรวจสอบช่องว่าง)
                 if (typeof auditTokenFromLedger === 'function') {
                     auditTokenFromLedger(tokenId)
                         .then(() => {
@@ -5887,7 +5888,6 @@ function revealApp() {
                                 }
                             } else {
                                 targetNode.classList.add(...ERROR_CLASSES); 
-                                globalSelectedTokenId = null;
                                 window.globalSelectedTokenId = null;
                                 if (novaTokenEl) novaTokenEl.value = '';
                                 if (settleTokenInput) settleTokenInput.value = '';
