@@ -1134,7 +1134,6 @@
 
 
 
-
 <script>
 "use strict";
 
@@ -5831,7 +5830,9 @@ function revealApp() {
                     return;
                 }
 
-                window.globalSelectedTokenId = tokenId;
+                // 🛡️ 1. LOCK STATE IN RAM & DOM IMMEDIATELY (แก้บัค Scope Mismatch ตรงนี้!)
+                globalSelectedTokenId = tokenId; // อัพเดทตัวแปร Local
+                window.globalSelectedTokenId = tokenId; // อัพเดทตัวแปร Global
                 
                 const novaTokenEl = document.getElementById('novaTokenId');
                 if (novaTokenEl) novaTokenEl.value = tokenId;
@@ -5840,11 +5841,13 @@ function revealApp() {
                 const dnaVerifyTokenId = document.getElementById('dnaVerifyTokenId');
                 if (dnaVerifyTokenId) dnaVerifyTokenId.value = tokenId;
 
+                // 1. UI INSTANT FEEDBACK
                 window.matrixDOMCache?.forEach(n => n.classList.remove(...ALL_STATE_CLASSES));
                 targetNode.classList.add(...THINKING_CLASSES);
 
                 if (typeof appendLog === 'function') appendLog(`[MATRIX] Engaging node #${tokenId}...`, "text-blue-400");
 
+                // 🛡️ 2. PRIVILEGE VERIFICATION (เช็คสิทธิ์ Architect)
                 let isAdmin = false;
                 if (typeof secureContract !== 'undefined' && secureContract && typeof signer !== 'undefined' && signer) {
                     try {
@@ -5856,6 +5859,7 @@ function revealApp() {
                     } catch(e) {}
                 }
 
+                // 🛡️ 3. LEDGER AUDIT WITH ARCHITECT BYPASS (ตรวจสอบช่องว่าง)
                 if (typeof auditTokenFromLedger === 'function') {
                     auditTokenFromLedger(tokenId)
                         .then(() => {
@@ -5883,6 +5887,7 @@ function revealApp() {
                                 }
                             } else {
                                 targetNode.classList.add(...ERROR_CLASSES); 
+                                globalSelectedTokenId = null;
                                 window.globalSelectedTokenId = null;
                                 if (novaTokenEl) novaTokenEl.value = '';
                                 if (settleTokenInput) settleTokenInput.value = '';
