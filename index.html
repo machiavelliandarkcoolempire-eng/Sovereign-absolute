@@ -1217,15 +1217,22 @@ async function fetchImperialManifest() {
         const response = await fetch(`./imperial-manifest.json?t=${Date.now()}`);
         if (response.ok) {
             window.IMPERIAL_MANIFEST = await response.json();
-            appendLog("Imperial Manifest synchronized successfully. Lazy Minting Ready.", "text-emerald-400 font-bold");
-        } else {
-            throw new Error("Manifest not found");
+            if (typeof appendLog === 'function') {
+                appendLog("Imperial Manifest synchronized successfully. Lazy Minting Ready.", "text-emerald-400 font-bold");
+            }
+            return;
         }
+        throw new Error("Manifest not found");
     } catch (err) {
-        appendLog("System Notice: Imperial Manifest offline. Only Architect manual overrides permitted.", "text-yellow-500");
+
         window.IMPERIAL_MANIFEST = {}; 
+
+        if (typeof appendLog === 'function') {
+            appendLog("System Notice: Imperial Manifest offline. Architect and Owner manual overrides permitted. Front media is strictly required for minting execution.", "text-yellow-500 font-bold");
+        }
     }
 }
+
 
 function safeStorageSet(key, value) {
     try { localStorage.setItem(key, value); } catch (e) { console.warn("Storage disabled"); }
@@ -5823,7 +5830,6 @@ function revealApp() {
         document.body.classList.add('app-ready'); 
     }
 }
-
 const initializeSystem = () => {
     if (typeof fetchImperialManifest === 'function') {
         fetchImperialManifest().catch(e => console.warn("[NON-BLOCKING] Manifest payload skip:", e));
@@ -5835,7 +5841,7 @@ const initializeSystem = () => {
     if (grid && !grid.dataset.clickAttached) {
         const eventType = (typeof IS_TOUCH_DEVICE !== 'undefined' && IS_TOUCH_DEVICE) ? 'pointerup' : 'click';
         
-        grid.addEventListener(eventType, (e) => { 
+        grid.addEventListener(eventType, async (e) => { 
             const targetNode = e.target.closest('.matrix-node'); 
             if (!targetNode) return;
 
@@ -5847,14 +5853,32 @@ const initializeSystem = () => {
                 return;
             }
 
+            // 🛡️ 1. LOCK STATE IN RAM & DOM IMMEDIATELY
+            window.globalSelectedTokenId = tokenId;
+            const novaTokenEl = document.getElementById('novaTokenId');
+            if (novaTokenEl) novaTokenEl.value = tokenId;
+            const settleTokenInput = document.getElementById('settleTokenId');
+            if (settleTokenInput) settleTokenInput.value = tokenId;
+
             // 1. UI INSTANT FEEDBACK
             window.matrixDOMCache?.forEach(n => n.classList.remove(...ALL_STATE_CLASSES));
             targetNode.classList.add(...THINKING_CLASSES);
-            window.globalSelectedTokenId = tokenId;
 
             if (typeof appendLog === 'function') appendLog(`[MATRIX] Engaging node #${tokenId}...`, "text-blue-400");
 
-            // 2. ASYNC LEDGER AUDIT
+            // 🛡️ 2. PRIVILEGE VERIFICATION (เช็คสิทธิ์ Architect)
+            let isAdmin = false;
+            if (typeof secureContract !== 'undefined' && secureContract && typeof signer !== 'undefined' && signer) {
+                try {
+                    const userAddress = (await signer.getAddress()).toLowerCase();
+                    let arch = ethers.ZeroAddress, owner = ethers.ZeroAddress;
+                    try { arch = await secureContract.architect(); } catch (e) {}
+                    try { owner = await secureContract.owner(); } catch (e) {}
+                    isAdmin = (userAddress === arch.toLowerCase() || userAddress === owner.toLowerCase());
+                } catch(e) {}
+            }
+
+            // 🛡️ 3. LEDGER AUDIT WITH ARCHITECT BYPASS (ตรวจสอบช่องว่าง)
             if (typeof auditTokenFromLedger === 'function') {
                 auditTokenFromLedger(tokenId)
                     .then(() => {
@@ -5862,10 +5886,18 @@ const initializeSystem = () => {
                         targetNode.classList.add(...ACTIVE_CLASSES);
                     })
                     .catch((err) => {
-                        console.warn(`[MATRIX GRID] Inspection pass-through for node #${tokenId}:`, err);
-                        targetNode.classList.remove(...THINKING_CLASSES, ...ACTIVE_CLASSES);
-                        targetNode.classList.add(...ERROR_CLASSES);
-                        window.globalSelectedTokenId = null;
+                        targetNode.classList.remove(...THINKING_CLASSES);
+                        if (isAdmin) {
+                            // ถ้าเป็นแอดมิน ให้ไฟติดเป็น Active และคงค่า Token ID ไว้
+                            targetNode.classList.add(...ACTIVE_CLASSES); 
+                            if (typeof appendLog === 'function') appendLog(`[ADMIN OVERRIDE] Architect privileges engaged for Void Node #${tokenId}.`, "text-emerald-400 font-bold");
+                        } else {
+                            // ถ้าเป็น User ทั่วไป ให้ไฟแดงขึ้น Error และล้างค่า Token ID ทิ้ง
+                            targetNode.classList.add(...ERROR_CLASSES); 
+                            window.globalSelectedTokenId = null;
+                            if (novaTokenEl) novaTokenEl.value = '';
+                            if (typeof showNotification === 'function') showNotification("ACCESS DENIED: Selected Node is uninitialized.", "error");
+                        }
                     });
             } else {
                 targetNode.classList.remove(...THINKING_CLASSES);
@@ -5890,7 +5922,6 @@ const initializeSystem = () => {
         window.visualViewport.addEventListener("scroll", handleResize, { passive: true });
     }
 };
-
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
         revealApp();
