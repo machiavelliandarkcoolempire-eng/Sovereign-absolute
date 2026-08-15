@@ -19,7 +19,6 @@
     
     <link rel="stylesheet" href="./dist.css" />
 
-    <!-- SRI hashes are enforced via CSP and CI/CD pipeline injection for production -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://unpkg.com/@walletconnect/ethereum-provider@2.11.1/dist/index.umd.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
@@ -391,8 +390,8 @@
             The network telemetry detects insufficient balance on the Irys Permanent Settlement Bridge for this immutable archival sequence. System requires additional gas allocation of: <span id="fundAmountDisplay" class="text-amber-400 font-bold">0.0000</span> ETH (15% buffer included)
         </p>
         <div class="flex gap-2">
-            <button onclick="window.resolveFundConfirm(false)" class="w-1/2 bg-stone-950 text-stone-400 font-mono text-[11px] py-3 rounded-lg uppercase border border-stone-800 cursor-pointer">CANCEL</button>
-            <button onclick="window.resolveFundConfirm(true)" class="w-1/2 btn-gold-master text-[11px] py-3 rounded-lg">FUND BRIDGE BALANCES</button>
+            <button onclick="if(typeof window.resolveFundConfirm === 'function') window.resolveFundConfirm(false)" class="w-1/2 bg-stone-950 text-stone-400 font-mono text-[11px] py-3 rounded-lg uppercase border border-stone-800 cursor-pointer">CANCEL</button>
+            <button onclick="if(typeof window.resolveFundConfirm === 'function') window.resolveFundConfirm(true)" class="w-1/2 btn-gold-master text-[11px] py-3 rounded-lg">FUND BRIDGE BALANCES</button>
         </div>
     </div>
 </div>
@@ -408,8 +407,8 @@
             DNA: —
         </div>
         <div class="flex gap-3">
-            <button onclick="window.resolveMediaConfirm(false)" class="w-1/2 bg-stone-950 text-stone-400 font-mono text-[11px] py-3 rounded-xl uppercase border border-stone-800 font-bold cursor-pointer hover:bg-stone-900">ABORT CHAIN INJECTION</button>
-            <button onclick="window.resolveMediaConfirm(true)" class="w-1/2 btn-gold-master text-[11px] py-3 rounded-xl font-bold">CONSECRATE & SIGN TRANSMISSION ⚔</button>
+            <button onclick="if(typeof window.resolveMediaConfirm === 'function') window.resolveMediaConfirm(false)" class="w-1/2 bg-stone-950 text-stone-400 font-mono text-[11px] py-3 rounded-xl uppercase border border-stone-800 font-bold cursor-pointer hover:bg-stone-900">ABORT CHAIN INJECTION</button>
+            <button onclick="if(typeof window.resolveMediaConfirm === 'function') window.resolveMediaConfirm(true)" class="w-1/2 btn-gold-master text-[11px] py-3 rounded-xl font-bold">CONSECRATE & SIGN TRANSMISSION ⚔</button>
         </div>
     </div>
 </div>
@@ -419,11 +418,12 @@
         <h3 id="actionConfirmTitle" class="text-sm font-black font-cinzel text-rose-400 mb-3 uppercase tracking-widest text-center">⚠ CRITICAL ENFORCEMENT</h3>
         <p id="actionConfirmMessage" class="text-[11px] font-mono text-slate-300 text-center leading-relaxed mb-6 break-words"></p>
         <div class="flex gap-3">
-            <button onclick="window.resolveActionConfirm(false)" class="w-1/2 bg-stone-950 text-stone-400 font-mono text-[11px] py-3 rounded-xl uppercase border border-stone-800 font-bold cursor-pointer hover:bg-stone-900">ABORT</button>
-            <button onclick="window.resolveActionConfirm(true)" class="w-1/2 bg-rose-950 text-rose-100 border border-rose-500 font-mono text-[11px] py-3 rounded-xl uppercase font-bold cursor-pointer hover:bg-rose-900">CONFIRM & PROCEED ⚔</button>
+            <button onclick="if(typeof window.resolveActionConfirm === 'function') window.resolveActionConfirm(false)" class="w-1/2 bg-stone-950 text-stone-400 font-mono text-[11px] py-3 rounded-xl uppercase border border-stone-800 font-bold cursor-pointer hover:bg-stone-900">ABORT</button>
+            <button onclick="if(typeof window.resolveActionConfirm === 'function') window.resolveActionConfirm(true)" class="w-1/2 bg-rose-950 text-rose-100 border border-rose-500 font-mono text-[11px] py-3 rounded-xl uppercase font-bold cursor-pointer hover:bg-rose-900">CONFIRM & PROCEED ⚔</button>
         </div>
     </div>
 </div>
+
 <div id="identityAuthModal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[80] hidden items-center justify-center p-4">
 <div class="chiaroscuro-bg p-6 rounded-2xl border border-rose-900/50 max-w-2xl w-full max-h-[90vh] flex flex-col">
 <h3 class="text-sm font-black font-cinzel text-rose-400 mb-2 uppercase tracking-widest flex-shrink-0">🔒 IDENTITY PASSPORT & SYSTEM GUIDE</h3>
@@ -476,8 +476,8 @@
         </div>
     </div>
     <div class="flex gap-2 flex-shrink-0">
-        <button onclick="closeIdentityAuthModal()" class="w-1/2 bg-stone-950 text-stone-400 font-mono text-[11px] py-3 rounded-lg uppercase border border-stone-800 cursor-pointer hover:bg-stone-900 transition-colors">ABORT SCAN</button>
-        <button onclick="executeGatewayUnlock(event)" class="w-1/2 bg-rose-950/60 text-rose-300 border border-rose-700 font-mono font-bold text-[11px] py-3 rounded-lg uppercase hover:bg-rose-900 cursor-pointer transition-colors shadow-[0_0_15px_rgba(153,27,27,0.4)]">AGREE & EXECUTE SCAN 🧬</button>
+        <button onclick="if(typeof closeIdentityAuthModal === 'function') closeIdentityAuthModal()" class="w-1/2 bg-stone-950 text-stone-400 font-mono text-[11px] py-3 rounded-lg uppercase border border-stone-800 cursor-pointer hover:bg-stone-900 transition-colors">ABORT SCAN</button>
+        <button onclick="if(typeof executeGatewayUnlock === 'function') executeGatewayUnlock(event)" class="w-1/2 bg-rose-950/60 text-rose-300 border border-rose-700 font-mono font-bold text-[11px] py-3 rounded-lg uppercase hover:bg-rose-900 cursor-pointer transition-colors shadow-[0_0_15px_rgba(153,27,27,0.4)]">AGREE & EXECUTE SCAN 🧬</button>
     </div>
 </div>
 </div>
@@ -497,8 +497,8 @@
             </span>
         </label>
         <div class="flex gap-2">
-            <button onclick="closeNovaWarn(false)" class="w-1/2 bg-stone-950 text-stone-400 font-mono text-[11px] py-3 rounded-lg uppercase border border-stone-800 hover:bg-stone-900 transition-colors cursor-pointer">ABORT</button>
-            <button id="novaConfirmBtn" onclick="closeNovaWarn(true)" class="w-1/2 btn-gold-master text-[11px] py-3 rounded-lg">SIGN TRANSACTION</button>
+            <button onclick="if(typeof closeNovaWarn === 'function') closeNovaWarn(false)" class="w-1/2 bg-stone-950 text-stone-400 font-mono text-[11px] py-3 rounded-lg uppercase border border-stone-800 hover:bg-stone-900 transition-colors cursor-pointer">ABORT</button>
+            <button id="novaConfirmBtn" onclick="if(typeof closeNovaWarn === 'function') closeNovaWarn(true)" class="w-1/2 btn-gold-master text-[11px] py-3 rounded-lg">SIGN TRANSACTION</button>
         </div>
     </div>
 </div>
@@ -536,14 +536,14 @@
             <span class="text-stone-400">DEED BALANCE: <span id="hdrBalance" class="text-rose-400 font-bold">0</span></span>
             <span id="connStatusBase1" class="text-emerald-400 font-bold mt-1">⚪ Status: Disconnected</span>
         </div>
-        <button id="btnConnect" onclick="connectWallet(this)" class="px-5 py-3 w-full lg:w-auto btn-gold-master rounded-xl text-xs">
+        <button id="btnConnect" onclick="if(typeof connectWallet === 'function') connectWallet(this)" class="px-5 py-3 w-full lg:w-auto btn-gold-master rounded-xl text-xs">
             [ CONNECT SOVEREIGN WALLET ]
         </button>
     </div>
 </header>
 
 <section class="mb-6 relative z-10">
-    <div onclick="openIdentityAuthModal()" class="scanline-bar chiaroscuro-bg p-6 rounded-2xl cursor-pointer hover:border-blue-500 transition-all shadow-[inset_0_0_20px_rgba(0,0,0,0.9)]" title="INITIALIZE IDENTITY PROBE">
+    <div onclick="if(typeof openIdentityAuthModal === 'function') openIdentityAuthModal()" class="scanline-bar chiaroscuro-bg p-6 rounded-2xl cursor-pointer hover:border-blue-500 transition-all shadow-[inset_0_0_20px_rgba(0,0,0,0.9)]" title="INITIALIZE IDENTITY PROBE">
         <h2 class="gold-vivid text-center font-cinzel font-black text-lg md:text-2xl tracking-[0.25em] opacity-90 hover:opacity-100 transition-all drop-shadow-2xl select-none uppercase">
             UNCOMPROMISED INTEGRITY PROTOCOL
         </h2>
@@ -616,7 +616,7 @@
                 </div>
             </div>
 
-            <button onclick="processIdentityDnaInspectionOnChain()" class="w-full bg-rose-950/40 text-rose-300 border border-rose-700 text-[11px] font-black py-3.5 rounded-lg uppercase hover:bg-rose-900/60 transition-all tracking-widest shadow-[0_0_15px_rgba(153,27,27,0.2)] cursor-pointer mt-2">
+            <button onclick="if(typeof processIdentityDnaInspectionOnChain === 'function') processIdentityDnaInspectionOnChain()" class="w-full bg-rose-950/40 text-rose-300 border border-rose-700 text-[11px] font-black py-3.5 rounded-lg uppercase hover:bg-rose-900/60 transition-all tracking-widest shadow-[0_0_15px_rgba(153,27,27,0.2)] cursor-pointer mt-2">
                 EXTRACT ON-CHAIN STRUCTURAL TRACE — autoMap() 🧬
             </button>
 
@@ -654,6 +654,7 @@
         </div>
         <div class="text-[9px] font-mono text-stone-500 mt-2 pt-1 border-t border-stone-900">
             HIST MINTS: <span id="lblHistoricalMint" class="text-stone-200 font-bold">0</span> | RES/NFT: <span id="lblReservePerNFT" class="text-stone-200 font-bold">0.0</span>
+            <span class="mx-1">|</span> DUST: <span id="dustVisualizer" class="text-stone-400 font-bold">0</span> WEI
         </div>
     </div>
 </section>
@@ -693,10 +694,10 @@
             <span class="text-[9px] font-mono text-stone-400 uppercase tracking-wider block">// CRYPTOGRAPHIC ACTION Hub</span>
             <div class="grid grid-cols-1 gap-3">
                 <label class="flex items-center gap-2 cursor-pointer">
-                    <input type="checkbox" id="forgeConsentCheckbox" class="accent-amber-500 w-4 h-4" onchange="toggleForgeButtonState()" />
+                    <input type="checkbox" id="forgeConsentCheckbox" class="accent-amber-500 w-4 h-4" onchange="if(typeof toggleForgeButtonState === 'function') toggleForgeButtonState()" />
                     <span class="text-[9px] font-mono text-stone-400 uppercase">I confirm the metadata and media are final.</span>
                 </label>
-                <button id="executeForgeBtn" onclick="triggerForge('REBIRTH', this)" class="btn-rebirth-bright text-xs py-3.5 rounded-xl font-black tracking-wide opacity-50 cursor-not-allowed" disabled>[SOVEREIGN AWAKENING ♠️]</button>
+                <button id="executeForgeBtn" onclick="if(typeof triggerForge === 'function') triggerForge('REBIRTH', this)" class="btn-rebirth-bright text-xs py-3.5 rounded-xl font-black tracking-wide opacity-50 cursor-not-allowed" disabled>[SOVEREIGN AWAKENING ♠️]</button>
             </div>
             <p class="text-[9px] font-mono text-stone-600 uppercase mt-2">
               • Limited to 333 Absolute Passes Worldwide</p>
@@ -728,7 +729,7 @@
                 <label class="text-[9px] text-stone-500 font-mono block mb-1 uppercase tracking-widest">TBA: 0x... (ERC-6551 Address)</label>
                 <div class="flex gap-2">
                     <input type="text" id="tbaAddressDisplay" readonly placeholder="0x0000000000000000000000000000000000000000" class="flex-grow bg-stone-950 border border-stone-900 p-2.5 text-[10px] font-mono text-amber-400 rounded outline-none select-all" />
-                    <button onclick="navigator.clipboard.writeText(document.getElementById('tbaAddressDisplay').value); alert('TBA Address Copied!');" class="px-4 bg-stone-900 border border-stone-800 text-stone-300 hover:border-amber-500 hover:text-amber-500 rounded text-[10px] font-mono uppercase font-bold transition-all">COPY TBA</button>
+                    <button onclick="navigator.clipboard.writeText(document.getElementById('tbaAddressDisplay').value); if(typeof showNotification === 'function') showNotification('TBA Address Copied!', 'success'); else console.log('Copied');" class="px-4 bg-stone-900 border border-stone-800 text-stone-300 hover:border-amber-500 hover:text-amber-500 rounded text-[10px] font-mono uppercase font-bold transition-all">COPY TBA</button>
                 </div>
             </div>
         </div>
@@ -741,7 +742,7 @@
             <h2 class="text-lg font-black font-cinzel gold-text uppercase tracking-tight">🎬 Real-Time Interactive Canvas Framework (Billboard)</h2>
             <p class="text-[9px] font-mono text-stone-500 uppercase tracking-wide">4 STRUCTURAL VIDEO PREVIEW SLOTS // 180 DEGREE INSPECTION ROTATOR CANVAS</p>
         </div>
-        <button onclick="toggleCardFlip()" class="px-4 py-3 bg-rose-900 hover:bg-rose-800 text-white font-black text-xs font-mono rounded-xl transition-all shadow-[0_0_15px_rgba(136,19,55,0.4)] uppercase tracking-wider border border-rose-600">
+        <button onclick="if(typeof toggleCardFlip === 'function') toggleCardFlip()" class="px-4 py-3 bg-rose-900 hover:bg-rose-800 text-white font-black text-xs font-mono rounded-xl transition-all shadow-[0_0_15px_rgba(136,19,55,0.4)] uppercase tracking-wider border border-rose-600">
             🔄 FLIP INSPECTION CANVAS (180°)
         </button>
     </div>
@@ -761,22 +762,22 @@
         <div class="lg:col-span-8 w-full">
             <span class="text-[9px] font-mono text-stone-500 uppercase tracking-widest block mb-3">// CHRONOGRAPH PREVIEW MATRIX (READ-ONLY FOR USERS)</span>
             <div class="grid grid-cols-2 gap-4 max-w-xl">
-                <div id="vSlot1" onclick="handleSlotClick(1)" class="preview-slot aspect-[9/16] rounded-xl p-3 flex flex-col justify-between cursor-pointer relative overflow-hidden">
+                <div id="vSlot1" onclick="if(typeof handleSlotClick === 'function') handleSlotClick(1)" class="preview-slot aspect-[9/16] rounded-xl p-3 flex flex-col justify-between cursor-pointer relative overflow-hidden">
                     <div class="text-right text-[10px] font-mono text-stone-400 font-bold relative z-10">SLOT #01</div>
                     <div class="flex-grow flex items-center justify-center relative z-10"><span class="text-amber-500 text-3xl drop-shadow-[0_0_10px_rgba(217,119,6,0.5)]">▶</span></div>
                     <span id="vSlotStatus1" class="text-[8px] text-stone-400 uppercase mt-1 block text-center relative z-10 font-bold">CONTACT ARCHITECT TO DEPLOY</span>
                 </div>
-                <div id="vSlot2" onclick="handleSlotClick(2)" class="preview-slot aspect-[9/16] rounded-xl p-3 flex flex-col justify-between cursor-pointer relative overflow-hidden">
+                <div id="vSlot2" onclick="if(typeof handleSlotClick === 'function') handleSlotClick(2)" class="preview-slot aspect-[9/16] rounded-xl p-3 flex flex-col justify-between cursor-pointer relative overflow-hidden">
                     <div class="text-right text-[10px] font-mono text-stone-400 font-bold relative z-10">SLOT #02</div>
                     <div class="flex-grow flex items-center justify-center relative z-10"><span class="text-amber-500 text-3xl drop-shadow-[0_0_10px_rgba(217,119,6,0.5)]">▶</span></div>
                     <span id="vSlotStatus2" class="text-[8px] text-stone-400 uppercase mt-1 block text-center relative z-10 font-bold">CONTACT ARCHITECT TO DEPLOY</span>
                 </div>
-                <div id="vSlot3" onclick="handleSlotClick(3)" class="preview-slot aspect-[9/16] rounded-xl p-3 flex flex-col justify-between cursor-pointer relative overflow-hidden">
+                <div id="vSlot3" onclick="if(typeof handleSlotClick === 'function') handleSlotClick(3)" class="preview-slot aspect-[9/16] rounded-xl p-3 flex flex-col justify-between cursor-pointer relative overflow-hidden">
                     <div class="text-right text-[10px] font-mono text-stone-400 font-bold relative z-10">SLOT #03</div>
                     <div class="flex-grow flex items-center justify-center relative z-10"><span class="text-amber-500 text-3xl drop-shadow-[0_0_10px_rgba(217,119,6,0.5)]">▶</span></div>
                     <span id="vSlotStatus3" class="text-[8px] text-stone-400 uppercase mt-1 block text-center relative z-10 font-bold">CONTACT ARCHITECT TO DEPLOY</span>
                 </div>
-                <div id="vSlot4" onclick="handleSlotClick(4)" class="preview-slot aspect-[9/16] rounded-xl p-3 flex flex-col justify-between cursor-pointer relative overflow-hidden">
+                <div id="vSlot4" onclick="if(typeof handleSlotClick === 'function') handleSlotClick(4)" class="preview-slot aspect-[9/16] rounded-xl p-3 flex flex-col justify-between cursor-pointer relative overflow-hidden">
                     <div class="text-right text-[10px] font-mono text-stone-400 font-bold relative z-10">SLOT #04</div>
                     <div class="flex-grow flex items-center justify-center relative z-10"><span class="text-amber-500 text-3xl drop-shadow-[0_0_10px_rgba(217,119,6,0.5)]">▶</span></div>
                     <span id="vSlotStatus4" class="text-[8px] text-stone-400 uppercase mt-1 block text-center relative z-10 font-bold">CONTACT ARCHITECT TO DEPLOY</span>
@@ -808,28 +809,28 @@
     </div>
 
     <div class="flex gap-2 mb-5" role="tablist" aria-label="Transmission station selector">
-        <button type="button" role="tab" aria-selected="true" aria-controls="stationFront" onclick="switchStation('front')" id="tabFront" class="tab-btn active flex-1 bg-stone-950 border border-stone-900 rounded-lg py-3 text-[10px] font-black font-mono uppercase tracking-wider text-stone-300 transition-all cursor-pointer">OBVERSE TRANSMISSION DECK (FRONT STATION)</button>
-        <button type="button" role="tab" aria-selected="false" aria-controls="stationBack" onclick="switchStation('back')" id="tabBack" class="tab-btn flex-1 bg-stone-950 border border-stone-900 rounded-lg py-3 text-[10px] font-black font-mono uppercase tracking-wider text-stone-300 transition-all cursor-pointer">REVERSE TRANSMISSION DECK (BACK STATION)</button>
+        <button type="button" role="tab" aria-selected="true" aria-controls="stationFront" onclick="if(typeof switchStation === 'function') switchStation('front')" id="tabFront" class="tab-btn active flex-1 bg-stone-950 border border-stone-900 rounded-lg py-3 text-[10px] font-black font-mono uppercase tracking-wider text-stone-300 transition-all cursor-pointer">OBVERSE TRANSMISSION DECK (FRONT STATION)</button>
+        <button type="button" role="tab" aria-selected="false" aria-controls="stationBack" onclick="if(typeof switchStation === 'function') switchStation('back')" id="tabBack" class="tab-btn flex-1 bg-stone-950 border border-stone-900 rounded-lg py-3 text-[10px] font-black font-mono uppercase tracking-wider text-stone-300 transition-all cursor-pointer">REVERSE TRANSMISSION DECK (BACK STATION)</button>
     </div>
 
     <div id="stationFront" class="station-panel space-y-4">
         <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 bg-stone-950 border border-stone-900 rounded-lg p-3">
             <span class="text-[10px] font-mono uppercase text-slate-400 flex items-center">
                 OBVERSE TARGET FILE CLASSIFICATION: 
-                <input type="radio" name="frontType" value="image" checked class="ml-2 accent-amber-500 cursor-pointer w-4 h-4" onchange="onTypeToggle('front')" /> <span class="text-amber-500 font-bold ml-1">IMAGE</span> 
+                <input type="radio" name="frontType" value="image" checked class="ml-2 accent-amber-500 cursor-pointer w-4 h-4" onchange="if(typeof onTypeToggle === 'function') onTypeToggle('front')" /> <span class="text-amber-500 font-bold ml-1">IMAGE</span> 
                 <span class="mx-2">/</span>
-                <input type="radio" name="frontType" value="video" class="ml-2 accent-rose-500 cursor-pointer w-4 h-4" onchange="onTypeToggle('front')" /> <span class="text-rose-500 font-bold ml-1">VIDEO ANIMATION</span>
+                <input type="radio" name="frontType" value="video" class="ml-2 accent-rose-500 cursor-pointer w-4 h-4" onchange="if(typeof onTypeToggle === 'function') onTypeToggle('front')" /> <span class="text-rose-500 font-bold ml-1">VIDEO ANIMATION</span>
             </span>
             
-            <button id="btnConnectIrys" onclick="ensureIrysReady()" type="button" class="w-full md:w-auto px-4 py-2 bg-slate-900 border border-blue-900 text-blue-400 font-mono text-sm hover:bg-blue-950 hover:text-blue-300 transition-colors duration-300 shadow-[0_0_15px_rgba(30,58,138,0.3)]">
+            <button id="btnConnectIrys" onclick="if(typeof ensureIrysReady === 'function') ensureIrysReady()" type="button" class="w-full md:w-auto px-4 py-2 bg-slate-900 border border-blue-900 text-blue-400 font-mono text-sm hover:bg-blue-950 hover:text-blue-300 transition-colors duration-300 shadow-[0_0_15px_rgba(30,58,138,0.3)]">
                 ⚡ ENGAGE IRYS BRIDGE
             </button>
             
-            <button onclick="executeIrysTopUp('0.001')" type="button" class="w-full md:w-auto px-4 py-2 bg-blue-950 border border-blue-900 text-blue-300 hover:bg-blue-900 text-[10px] font-mono font-bold uppercase rounded shadow-[0_0_10px_rgba(30,58,138,0.2)] transition-colors">
+            <button onclick="if(typeof executeIrysTopUp === 'function') executeIrysTopUp('0.001')" type="button" class="w-full md:w-auto px-4 py-2 bg-blue-950 border border-blue-900 text-blue-300 hover:bg-blue-900 text-[10px] font-mono font-bold uppercase rounded shadow-[0_0_10px_rgba(30,58,138,0.2)] transition-colors">
                 TOP-UP IRYS (0.001 ETH)
             </button>
 
-            <button onclick="executeArchitectCentralizedUpload('front')" type="button" class="w-full md:w-auto px-4 py-2 bg-amber-700 hover:bg-amber-600 text-black font-bold text-[10px] font-mono uppercase rounded transition-all">
+            <button onclick="if(typeof executeArchitectCentralizedUpload === 'function') executeArchitectCentralizedUpload('front')" type="button" class="w-full md:w-auto px-4 py-2 bg-amber-700 hover:bg-amber-600 text-black font-bold text-[10px] font-mono uppercase rounded transition-all">
                 STREAM OBVERSE PAYLOAD
             </button>
         </div>
@@ -844,11 +845,11 @@
         <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 bg-stone-950 border border-stone-900 rounded-lg p-3">
             <span class="text-[10px] font-mono uppercase text-slate-400 flex items-center">
                 REVERSE TARGET FILE CLASSIFICATION: 
-                <input type="radio" name="backType" value="image" checked class="ml-2 accent-amber-500 cursor-pointer w-4 h-4" onchange="onTypeToggle('back')" /> <span class="text-amber-500 font-bold ml-1">IMAGE</span> 
+                <input type="radio" name="backType" value="image" checked class="ml-2 accent-amber-500 cursor-pointer w-4 h-4" onchange="if(typeof onTypeToggle === 'function') onTypeToggle('back')" /> <span class="text-amber-500 font-bold ml-1">IMAGE</span> 
                 <span class="mx-2">/</span>
-                <input type="radio" name="backType" value="video" class="ml-2 accent-rose-500 cursor-pointer w-4 h-4" onchange="onTypeToggle('back')" /> <span class="text-rose-500 font-bold ml-1">VIDEO ANIMATION</span>
+                <input type="radio" name="backType" value="video" class="ml-2 accent-rose-500 cursor-pointer w-4 h-4" onchange="if(typeof onTypeToggle === 'function') onTypeToggle('back')" /> <span class="text-rose-500 font-bold ml-1">VIDEO ANIMATION</span>
             </span>
-            <button onclick="executeArchitectCentralizedUpload('back')" type="button" class="w-full md:w-auto px-4 py-2 bg-amber-700 hover:bg-amber-600 text-black font-bold text-[10px] font-mono uppercase rounded transition-all">
+            <button onclick="if(typeof executeArchitectCentralizedUpload === 'function') executeArchitectCentralizedUpload('back')" type="button" class="w-full md:w-auto px-4 py-2 bg-amber-700 hover:bg-amber-600 text-black font-bold text-[10px] font-mono uppercase rounded transition-all">
                 STREAM REVERSE PAYLOAD
             </button>
         </div>
@@ -892,7 +893,7 @@
             <span class="text-[9px] font-mono text-rose-400 uppercase tracking-widest block mb-3 pb-4 leading-relaxed">• Unlocks Sanctified Status & Lifetime Identity Updates | UPDATE IDENTITY: Requires Sanctified status (isSanctified == true). Accepts 4 parameters: Token ID (t), Front URI (front), Back URI (back), Video URI (video).</span>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <button onclick="document.getElementById('novaWarnModal').classList.remove('hidden')" class="btn-gold-master rounded-xl py-3.5 text-xs">[ ⚡ SANCTIFY NOVA CONSECRATION ]</button>
-                <button onclick="executeUpdateIdentity(this)" class="bg-stone-950 border border-rose-700 text-rose-400 font-black font-mono text-xs py-3.5 rounded-xl uppercase tracking-wider hover:bg-stone-900 transition-all">[ 📜 UPDATE SANCTIFIED IDENTITY ]</button>
+                <button onclick="if(typeof executeUpdateIdentity === 'function') executeUpdateIdentity(this)" class="bg-stone-950 border border-rose-700 text-rose-400 font-black font-mono text-xs py-3.5 rounded-xl uppercase tracking-wider hover:bg-stone-900 transition-all">[ 📜 UPDATE SANCTIFIED IDENTITY ]</button>
             </div>
         </div>
     </div>
@@ -933,7 +934,7 @@
                     <input type="number" id="voteTokenId" min="1" max="333" placeholder="WEIGHT CELL ID" class="w-full bg-stone-950 border border-stone-900 p-2.5 text-[10px] font-mono text-amber-500 rounded outline-none" />
                 </div>
             </div>
-            <button onclick="executeCastVote(this)" class="w-full bg-gradient-to-r from-rose-950 to-rose-700 text-white font-black font-mono text-xs py-3.5 rounded-lg uppercase tracking-widest hover:brightness-110 transition-all shadow-[0_0_15px_rgba(136,19,55,0.25)] border border-rose-500">🔥 VOTE (AFFIRMATIVE)</button>
+            <button onclick="if(typeof executeCastVote === 'function') executeCastVote(this)" class="w-full bg-gradient-to-r from-rose-950 to-rose-700 text-white font-black font-mono text-xs py-3.5 rounded-lg uppercase tracking-widest hover:brightness-110 transition-all shadow-[0_0_15px_rgba(136,19,55,0.25)] border border-rose-500">🔥 VOTE (AFFIRMATIVE)</button>
         </div>
 
         <div class="space-y-3 bg-black/40 p-4 rounded-xl border border-stone-900 flex flex-col justify-between">
@@ -945,7 +946,7 @@
                     <input type="number" id="propDurationInput" min="1" max="30" placeholder="DAYS(1-30)" class="bg-stone-950 border border-stone-900 p-2.5 text-[10px] font-mono text-stone-200 rounded outline-none" />
                 </div>
             </div>
-            <button onclick="executeCreateProposal(this)" class="w-full bg-stone-950 border border-amber-600 text-amber-400 font-black font-mono text-[11px] py-3.5 rounded-lg uppercase tracking-wider hover:bg-stone-900 transition-all shadow-[0_0_15px_rgba(217,119,6,0.15)]">⚡ PROPOSE MODIFICATION</button>
+            <button onclick="if(typeof executeCreateProposal === 'function') executeCreateProposal(this)" class="w-full bg-stone-950 border border-amber-600 text-amber-400 font-black font-mono text-[11px] py-3.5 rounded-lg uppercase tracking-wider hover:bg-stone-900 transition-all shadow-[0_0_15px_rgba(217,119,6,0.15)]">⚡ PROPOSE MODIFICATION</button>
         </div>
 
         <div class="space-y-3 bg-black/40 p-4 rounded-xl border border-stone-900 flex flex-col justify-between">
@@ -954,8 +955,8 @@
                 <input type="number" id="timelockActionProposalId" placeholder="TARGET MANDATE DIRECTIVE ID" class="w-full bg-stone-950 border border-stone-900 p-2.5 text-[11px] font-mono text-stone-200 rounded outline-none mb-2" />
             </div>
             <div class="grid grid-cols-2 gap-2">
-                <button onclick="executeQueueProposal(document.getElementById('timelockActionProposalId').value, this)" class="bg-stone-950 border border-rose-800 text-rose-400 font-bold font-mono text-[10px] py-3.5 rounded-lg uppercase hover:bg-stone-900 transition-all">QUEUE TIMELOCK</button>                    
-                <button onclick="triggerExecuteProposal(document.getElementById('timelockActionProposalId').value, this)" class="bg-rose-900 text-white font-black font-mono text-[10px] py-3.5 rounded-lg uppercase hover:bg-rose-800 transition-all shadow-[0_0_15px_rgba(136,19,55,0.4)] border border-rose-600">EXECUTE PROPOSAL DISPATCH</button>
+                <button onclick="if(typeof executeQueueProposal === 'function') executeQueueProposal(document.getElementById('timelockActionProposalId').value, this)" class="bg-stone-950 border border-rose-800 text-rose-400 font-bold font-mono text-[10px] py-3.5 rounded-lg uppercase hover:bg-stone-900 transition-all">QUEUE TIMELOCK</button>                    
+                <button onclick="if(typeof triggerExecuteProposal === 'function') triggerExecuteProposal(document.getElementById('timelockActionProposalId').value, this)" class="bg-rose-900 text-white font-black font-mono text-[10px] py-3.5 rounded-lg uppercase hover:bg-rose-800 transition-all shadow-[0_0_15px_rgba(136,19,55,0.4)] border border-rose-600">EXECUTE PROPOSAL DISPATCH</button>
             </div>
         </div>
     </div>
@@ -987,7 +988,7 @@
                 </p>
             </div>
             <div class="flex">
-                <button id="btnBurnToken" onclick="executeSovereignSupport(this)" class="w-full bg-red-800 hover:bg-red-700 text-white font-black text-xs py-3.5 rounded-lg uppercase tracking-widest transition-all shadow-[0_0_20px_rgba(220,38,38,0.4)] border border-red-500">[ 🔥 SOVEREIGN IMMOLATION ]
+                <button id="btnBurnToken" onclick="if(typeof executeSovereignSupport === 'function') executeSovereignSupport(this)" class="w-full bg-red-800 hover:bg-red-700 text-white font-black text-xs py-3.5 rounded-lg uppercase tracking-widest transition-all shadow-[0_0_20px_rgba(220,38,38,0.4)] border border-red-500">[ 🔥 SOVEREIGN IMMOLATION ]
                 </button>
             </div>
         </div>
@@ -1020,7 +1021,7 @@
                     <input type="text" id="prop2" value="TRANSFERABLE" class="w-full bg-black border border-stone-900 p-2 text-[10px] font-mono text-stone-200 rounded" />
                 </div>
             </div>
-            <button onclick="buildAndUploadMetadata(this)" class="w-full bg-gradient-to-r from-amber-900 to-amber-700 text-black font-black font-mono text-[10px] py-3 rounded-lg uppercase tracking-wider">COMPILE & TRANSMIT MANIFEST JSON</button>
+            <button onclick="if(typeof buildAndUploadMetadata === 'function') buildAndUploadMetadata(this)" class="w-full bg-gradient-to-r from-amber-900 to-amber-700 text-black font-black font-mono text-[10px] py-3 rounded-lg uppercase tracking-wider">COMPILE & TRANSMIT MANIFEST JSON</button>
         </div>
 
         <div class="space-y-3 border border-stone-900 p-4 rounded-xl bg-black/40">
@@ -1031,28 +1032,28 @@
                     <label class="text-[9px] text-stone-400 font-mono block">SLOT #01 TARGET URI</label>
                     <div class="flex gap-2">
                         <input type="text" id="vSlotUri1" placeholder="Irys Tx ID or URL" class="flex-grow bg-stone-950 border border-stone-900 p-2 text-[10px] font-mono text-stone-200 rounded" />
-                        <button onclick="applySlotToNova(1)" class="px-3 bg-rose-950 border border-rose-700 text-rose-300 text-[9px] rounded">APPLY</button>
+                        <button onclick="if(typeof applySlotToNova === 'function') applySlotToNova(1)" class="px-3 bg-rose-950 border border-rose-700 text-rose-300 text-[9px] rounded">APPLY</button>
                     </div>
                 </div>
                 <div>
                     <label class="text-[9px] text-stone-400 font-mono block">SLOT #02 TARGET URI</label>
                     <div class="flex gap-2">
                         <input type="text" id="vSlotUri2" placeholder="Irys Tx ID or URL" class="flex-grow bg-stone-950 border border-stone-900 p-2 text-[10px] font-mono text-stone-200 rounded" />
-                        <button onclick="applySlotToNova(2)" class="px-3 bg-rose-950 border border-rose-700 text-rose-300 text-[9px] rounded">APPLY</button>
+                        <button onclick="if(typeof applySlotToNova === 'function') applySlotToNova(2)" class="px-3 bg-rose-950 border border-rose-700 text-rose-300 text-[9px] rounded">APPLY</button>
                     </div>
                 </div>
                 <div>
                     <label class="text-[9px] text-stone-400 font-mono block">SLOT #03 TARGET URI</label>
                     <div class="flex gap-2">
                         <input type="text" id="vSlotUri3" placeholder="Irys Tx ID or URL" class="flex-grow bg-stone-950 border border-stone-900 p-2 text-[10px] font-mono text-stone-200 rounded" />
-                        <button onclick="applySlotToNova(3)" class="px-3 bg-rose-950 border border-rose-700 text-rose-300 text-[9px] rounded">APPLY</button>
+                        <button onclick="if(typeof applySlotToNova === 'function') applySlotToNova(3)" class="px-3 bg-rose-950 border border-rose-700 text-rose-300 text-[9px] rounded">APPLY</button>
                     </div>
                 </div>
                 <div>
                     <label class="text-[9px] text-stone-400 font-mono block">SLOT #04 TARGET URI</label>
                     <div class="flex gap-2">
                         <input type="text" id="vSlotUri4" placeholder="Irys Tx ID or URL" class="flex-grow bg-stone-950 border border-stone-900 p-2 text-[10px] font-mono text-stone-200 rounded" />
-                        <button onclick="applySlotToNova(4)" class="px-3 bg-rose-950 border border-rose-700 text-rose-300 text-[9px] rounded">APPLY</button>
+                        <button onclick="if(typeof applySlotToNova === 'function') applySlotToNova(4)" class="px-3 bg-rose-950 border border-rose-700 text-rose-300 text-[9px] rounded">APPLY</button>
                     </div>
                 </div>
             </div>
@@ -1064,15 +1065,15 @@
                 <div><label class="text-[9px] text-stone-500 font-mono block">MINT FEE ETH</label><input type="number" step="0.001" id="inputAdminMint" class="w-full bg-black border border-stone-900 p-2.5 text-xs font-mono text-amber-500 rounded" /></div>
                 <div><label class="text-[9px] text-stone-500 font-mono block">NOVA FEE ETH</label><input type="number" step="0.001" id="inputAdminNova" class="w-full bg-black border border-stone-900 p-2.5 text-xs font-mono text-rose-400 rounded" /></div>
             </div>
-            <button onclick="executeSetParams(this)" class="w-full bg-amber-700 text-black font-black font-mono text-[10px] py-2.5 rounded uppercase hover:bg-amber-600 transition-colors">RATIFY setParams</button>
+            <button onclick="if(typeof executeSetParams === 'function') executeSetParams(this)" class="w-full bg-amber-700 text-black font-black font-mono text-[10px] py-2.5 rounded uppercase hover:bg-amber-600 transition-colors">RATIFY setParams</button>
             <div class="pt-2">
                 <label class="text-[9px] text-stone-500 font-mono block">GLOBAL BASE TARGET URI</label>
                 <input type="text" id="inputBaseUri" class="w-full bg-black border border-stone-900 p-2.5 text-xs font-mono text-stone-200 rounded" />
             </div>
-            <button onclick="executeSetBaseUri(this)" class="w-full bg-stone-950 border border-amber-700 text-amber-400 font-black font-mono text-[10px] py-2.5 rounded uppercase hover:bg-stone-900 transition-colors">AMEND setBaseURI</button>
+            <button onclick="if(typeof executeSetBaseUri === 'function') executeSetBaseUri(this)" class="w-full bg-stone-950 border border-amber-700 text-amber-400 font-black font-mono text-[10px] py-2.5 rounded uppercase hover:bg-stone-900 transition-colors">AMEND setBaseURI</button>
             <div class="grid grid-cols-2 gap-2 pt-2">
-                <button onclick="executeContractPause(true, this)" class="bg-rose-950 border border-rose-800 text-rose-400 font-mono text-[10px] py-2.5 rounded uppercase hover:bg-rose-900 transition-colors">PAUSE</button>
-                <button onclick="executeContractPause(false, this)" class="bg-stone-950 border border-amber-800 text-amber-400 font-mono text-[10px] py-2.5 rounded uppercase hover:bg-stone-900 transition-colors">UNPAUSE</button>
+                <button onclick="if(typeof executeContractPause === 'function') executeContractPause(true, this)" class="bg-rose-950 border border-rose-800 text-rose-400 font-mono text-[10px] py-2.5 rounded uppercase hover:bg-rose-900 transition-colors">PAUSE</button>
+                <button onclick="if(typeof executeContractPause === 'function') executeContractPause(false, this)" class="bg-stone-950 border border-amber-800 text-amber-400 font-mono text-[10px] py-2.5 rounded uppercase hover:bg-stone-900 transition-colors">UNPAUSE</button>
             </div>
         </div>
         
@@ -1085,10 +1086,10 @@
             </div>
 
             <div class="grid grid-cols-1 gap-2 pt-1">
-                <button onclick="executeArchitectMint(event)" class="w-full bg-gradient-to-r from-emerald-950 to-stone-900 border border-emerald-800 text-emerald-400 font-black font-mono text-[10px] py-3 rounded-lg uppercase hover:brightness-125 transition-all shadow-[0_0_15px_rgba(52,211,153,0.15)]">
+                <button onclick="if(typeof executeArchitectMint === 'function') executeArchitectMint(event)" class="w-full bg-gradient-to-r from-emerald-950 to-stone-900 border border-emerald-800 text-emerald-400 font-black font-mono text-[10px] py-3 rounded-lg uppercase hover:brightness-125 transition-all shadow-[0_0_15px_rgba(52,211,153,0.15)]">
                     ✦ EXECUTE ARCHITECT FREE MINT
                 </button>
-                <button onclick="executeArchitectRemint(event)" class="w-full bg-gradient-to-r from-rose-950 to-stone-900 border border-rose-800 text-rose-400 font-black font-mono text-[10px] py-3 rounded-lg uppercase hover:brightness-125 transition-all shadow-[0_0_15px_rgba(153,27,27,0.15)]">
+                <button onclick="if(typeof executeArchitectRemint === 'function') executeArchitectRemint(event)" class="w-full bg-gradient-to-r from-rose-950 to-stone-900 border border-rose-800 text-rose-400 font-black font-mono text-[10px] py-3 rounded-lg uppercase hover:brightness-125 transition-all shadow-[0_0_15px_rgba(153,27,27,0.15)]">
                     ♺ EXECUTE ARCHITECT REMINT ♠️
                 </button>
             </div>
@@ -1105,7 +1106,7 @@
         <div><label class="block text-[9px] text-stone-500 mb-1">DISCORD ROOM LINK</label><input type="text" id="inputLink3" class="w-full bg-black border border-stone-900 p-2.5 rounded text-stone-300" /></div>
         <div><label class="block text-[9px] text-stone-500 mb-1">CLUB HOUSE LINK</label><input type="text" id="inputLinkClubHouse" class="w-full bg-black border border-stone-900 p-2.5 rounded text-stone-300" /></div>
     </div>
-    <button onclick="saveArchitectGateways(this)" class="px-5 py-2.5 bg-amber-700 text-black font-black text-[10px] rounded uppercase hover:bg-amber-600 transition-colors w-full md:w-auto mt-2">RE-ALIGN VECTORS</button>
+    <button onclick="if(typeof saveArchitectGateways === 'function') saveArchitectGateways(this)" class="px-5 py-2.5 bg-amber-700 text-black font-black text-[10px] rounded uppercase hover:bg-amber-600 transition-colors w-full md:w-auto mt-2">RE-ALIGN VECTORS</button>
 </div>
 
 <section class="chiaroscuro-bg mt-6 p-4 rounded-xl border border-slate-900">
@@ -1134,6 +1135,9 @@
         This protocol operates an exclusive, private digital identity infrastructure accessible solely via direct curation. All proceeds represent lawful studio service fees. Reserve allocations fund software R&D and Ecosystem Infrastructure Support Grants. Minting and on-chain operations are executed 100% self-sovereignly by curated pass holders. This protocol does not offer public sales, securities, or financial returns.
     </div>
 </footer>
+
+
+
 
 <script>
 "use strict";
@@ -1474,13 +1478,10 @@ const LOG_MAX_ROWS = 100;
 let _logScrollQueued = false;
 
 const _multicallCtx = new WeakMap();
-
 async function debouncedMulticall(providerInstance, calls) {
     return new Promise((resolve, reject) => {
         if (!providerInstance) return reject(new Error("Provider instance is null"));
-        
-        // 🛡️ WAR MACHINE FIX 2: ป้องกัน Microtask Crash จาก Input ผิดประเภท
-        if (!Array.isArray(calls)) return reject(new Error("Calls must be an array"));
+        if (!Array.isArray(calls)) return reject(new TypeError("Calls must be an array"));
         
         if (!_multicallCtx.has(providerInstance)) {
             _multicallCtx.set(providerInstance, { queue: [], scheduled: false });
@@ -1498,7 +1499,6 @@ async function debouncedMulticall(providerInstance, calls) {
                 if (currentBatch.length === 0) return;
 
                 try {
-                    // 🛡️ WAR MACHINE FIX 3: ป้องกัน ReferenceError หากหา Address ไม่เจอ
                     if (typeof MULTICALL3_ADDRESS === 'undefined' || !MULTICALL3_ADDRESS) {
                         throw new Error("MULTICALL3_ADDRESS is undefined");
                     }
@@ -1512,29 +1512,20 @@ async function debouncedMulticall(providerInstance, calls) {
                             const chunk = allCalls.slice(i, i + 100);
                             try {
                                 const chunkResults = await multicall.aggregate3(chunk);
-                                results = results.concat(Array.from(chunkResults));
+                                const mappedResults = Array.from(chunkResults).map(res => ({
+                                    success: Boolean(res.success),
+                                    returnData: String(res.returnData)
+                                }));
+                                results = results.concat(mappedResults);
                             } catch (chunkErr) {
                                 console.warn("Multicall chunk failed, falling back to individual calls", chunkErr);
                                 for (const call of chunk) {
                                     try {
                                         const res = await providerInstance.call({ to: call.target, data: call.callData });
-                                        // 🛡️ WAR MACHINE FIX 1 & 4: สร้าง Object เลียนแบบ Ethers Result ป้องกัน Caller พังเมื่ออ่านด้วย Index [0], [1]
-                                        if (res === "0x") {
-                                            const fakeResult = [false, "0x"];
-                                            fakeResult.success = false;
-                                            fakeResult.returnData = "0x";
-                                            results.push(fakeResult);
-                                        } else {
-                                            const fakeResult = [true, res];
-                                            fakeResult.success = true;
-                                            fakeResult.returnData = res;
-                                            results.push(fakeResult);
-                                        }
+                                        // FIX: Successful call returning "0x" is still success: true
+                                        results.push({ success: true, returnData: res || "0x" });
                                     } catch (singleErr) {
-                                        const fakeResult = [false, "0x"];
-                                        fakeResult.success = false;
-                                        fakeResult.returnData = "0x";
-                                        results.push(fakeResult);
+                                        results.push({ success: false, returnData: "0x" });
                                     }
                                 }
                             }
@@ -1554,6 +1545,7 @@ async function debouncedMulticall(providerInstance, calls) {
         }
     });
 }
+
 
 
 function clearAllTimers() {
@@ -2759,9 +2751,6 @@ function createProgressController(totalBytes) {
     };
 }
 
-// ----------------------------------------------------------------------------
-// 4. CORE EXECUTION: UPLOAD PROTOCOL (ASYNC NON-BLOCKING)
-// ----------------------------------------------------------------------------
 async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = null, triggerBtn = null) { 
     const activeBtn = toggleButtonLoading(triggerBtn, true);
 
@@ -2773,14 +2762,19 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
 
         try {
             if (!isFile) {
-                dataToUpload = new TextEncoder().encode(String(payload));
+                dataToUpload = window.Buffer.from(String(payload), 'utf-8');
                 size = dataToUpload.length;
+                safeAppendLog(`[IRYS TELEMETRY] String payload converted to Buffer. Size: ${size} bytes.`, "text-slate-400");
             } else {
+                if (!(payload instanceof File) && !(payload instanceof Blob)) {
+                    throw new TypeError("Payload must be a File or Blob when isFile is true.");
+                }
                 dataToUpload = payload;
                 size = payload.size;
+                safeAppendLog(`[IRYS TELEMETRY] File payload mapped for streaming. Size: ${size} bytes.`, "text-slate-400");
             }
         } catch (conversionErr) {
-            safeAppendLog(`Payload formatting failed: ${conversionErr?.message}`, "text-red-500");
+            safeAppendLog(`[IRYS TELEMETRY] Payload mapping failed: ${conversionErr?.message}`, "text-red-500");
             throw new Error(`Payload conversion failed: ${conversionErr?.message}`);
         }
 
@@ -2797,7 +2791,8 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
             const minFundWei = 100000000000000n; 
             if (diffWithBuffer < minFundWei) diffWithBuffer = minFundWei;
 
-            const costStr = Number(ethers.formatEther(diffWithBuffer)).toString();
+            // FIX: Prevent scientific notation string conversion
+            const costStr = ethers.formatEther(diffWithBuffer);
 
             updateBridgeStatus("AWAITING FUNDING TX...", "warning");
             safeAppendLog(`Awaiting user transaction: Funding ${costStr} ETH`, "text-yellow-400");
@@ -2824,7 +2819,6 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
                     }
                 }
             } catch (e) {
-                // Safeguard for Safari QuotaExceededError in Private Browsing
                 localStorage.removeItem('irys_pending_fund_tx');
             }
 
@@ -2859,7 +2853,6 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
             let attempts = 0;
             const maxAttempts = 36; 
 
-            // BACKGROUND POLLING: Non-blocking state
             while (!isSynced && attempts < maxAttempts) {
                 if (!irys || typeof signer === 'undefined' || !signer) { 
                     throw new Error("Wallet session severed during sync"); 
@@ -2885,7 +2878,7 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
         }
 
         updateBridgeStatus("STREAMING PAYLOAD...", "warning");
-        safeAppendLog(isFile ? "Streaming payload to Irys Datachain..." : "Transmitting Buffer payload to Irys Datachain...", "text-blue-400");
+        safeAppendLog(isFile ? "[IRYS TELEMETRY] Streaming File to Irys Datachain..." : "[IRYS TELEMETRY] Transmitting String Buffer to Irys Datachain...", "text-blue-400");
 
         let receipt;
         try {
@@ -2893,19 +2886,20 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
 
             let attempt = 0;
             const maxRetries = 3;
-            const threshold = 25 * 1024 * 1024; // 25 MB Limit for chunking
+            const threshold = 25 * 1024 * 1024; 
             const useChunking = isFile && size >= threshold;
-            const chunkSize = 5 * 1024 * 1024; // 5MB Chunk
-            const batchSize = 3; // Max 3 Concurrent Chunks to save RAM
+            const chunkSize = 5 * 1024 * 1024; 
+            const batchSize = 3; 
 
             const onChunk = (chunkInfo) => {
                 try { if (progressCtrl) progressCtrl.set(chunkInfo?.totalUploaded ?? chunkInfo?.offset ?? 0); } catch (e) {}
             };
             
             let listenerAttached = false;
+            // FIX: Attach event directly to chunkedUploader instance
             if (useChunking && typeof irys.uploader?.chunkedUploader !== 'undefined') {
-                if (typeof irys.uploader.on === 'function') {
-                    irys.uploader.on('chunkUpload', onChunk);
+                if (typeof irys.uploader.chunkedUploader.on === 'function') {
+                    irys.uploader.chunkedUploader.on('chunkUpload', onChunk);
                     listenerAttached = true;
                 }
             }
@@ -2914,10 +2908,14 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
                 while (attempt <= maxRetries) {
                     try {
                         if (useChunking) {
-                            safeAppendLog(`Large file detected (${(size/1024/1024).toFixed(2)} MB). Activating Chunked Uploader...`, "text-blue-400");
+                            safeAppendLog(`[IRYS TELEMETRY] Large file detected (${(size/1024/1024).toFixed(2)} MB). Activating Chunked Uploader...`, "text-blue-400");
                             irys.uploader.chunkedUploader.setChunkSize(chunkSize);
                             irys.uploader.chunkedUploader.setBatchSize(batchSize);
                             receipt = await irys.uploader.chunkedUploader.uploadData(dataToUpload, { tags });
+                        } else if (isFile && typeof irys.uploadFile === 'function') {
+                            // FIX: Use uploadFile for non-chunked Web File/Blob objects
+                            if (progressCtrl) progressCtrl.set(size / 2);
+                            receipt = await irys.uploadFile(dataToUpload, { tags });
                         } else {
                             if (progressCtrl) progressCtrl.set(size / 2);
                             receipt = await irys.upload(dataToUpload, { tags });
@@ -2931,20 +2929,19 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
                         attempt++;
                         if (attempt > maxRetries) throw uploadErr;
                         const backoff = 1000 * Math.pow(2, attempt);
-                        safeAppendLog(`[NETWORK] Transmission throttled. Retrying (${attempt}/${maxRetries}) in ${backoff/1000}s...`, "text-amber-400");
+                        safeAppendLog(`[IRYS TELEMETRY] Transmission throttled. Retrying (${attempt}/${maxRetries}) in ${backoff/1000}s...`, "text-amber-400");
                         await new Promise(r => setTimeout(r, backoff));
                     }
                 }
             } finally {
-                // EXPLICIT LISTENER DETACHMENT
-                if (listenerAttached && typeof irys.uploader.off === 'function') {
-                    irys.uploader.off('chunkUpload', onChunk);
+                if (listenerAttached && typeof irys.uploader.chunkedUploader.off === 'function') {
+                    irys.uploader.chunkedUploader.off('chunkUpload', onChunk);
                 }
             }
 
             if (progressCtrl) progressCtrl.complete();
         } catch (uploadErr) {
-            safeAppendLog(`Irys transmission failed: ${uploadErr.message}`, "text-red-500");
+            safeAppendLog(`[IRYS TELEMETRY] Irys transmission failed: ${uploadErr.message}`, "text-red-500");
             throw uploadErr;
         } finally {
             if (progressCtrl) progressCtrl.hide();
@@ -2952,7 +2949,7 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
 
         updateBridgeStatus("PERMANENTLY ONLINE", "success");
         showNotification("Upload Completed! Your payload is securely stored on-chain.", "success");
-        safeAppendLog(`Transaction Successful: Payload permanently uploaded to Irys.`, "text-emerald-400 font-bold");
+        safeAppendLog(`[IRYS TELEMETRY] Transaction Successful: Payload permanently uploaded to Irys.`, "text-emerald-400 font-bold");
 
         return receipt;
 
@@ -2961,9 +2958,10 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
         showNotification(err.message, "error");
         throw err;
     } finally {
-        toggleButtonLoading(activeBtn, false);
+        if (activeBtn) toggleButtonLoading(activeBtn, false);
     }
 }
+
 
 // ----------------------------------------------------------------------------
 // 5. CORE EXECUTION: TOP-UP PROTOCOL (ASYNC NON-BLOCKING)
@@ -5329,12 +5327,9 @@ async function renderToViewport(containerId, path, defaultText, explicitMediaTyp
     }
 }
 
-
 function renderMediaToDOM(container, resolvedMedia, mediaType, abortSignal) {
-    // 1. [HARD LOCK] Early Exit: ป้องกัน Race Condition หาก Signal ถูก Abort ไปแล้วตั้งแต่ต้น
     if (abortSignal && abortSignal.aborted) return;
 
-    // 2. [CLEANUP] ทำลาย HLS Instance เดิมที่ค้างอยู่ใน Container
     if (container._hlsInstance) {
         if (typeof container._hlsInstance.detachMedia === 'function') {
             container._hlsInstance.detachMedia();
@@ -5343,15 +5338,20 @@ function renderMediaToDOM(container, resolvedMedia, mediaType, abortSignal) {
         container._hlsInstance = null;
     }
 
-    // 3. [CLEANUP] Revoke Blob URL เก่าเพื่อคืน Memory ให้ Browser (ถ้า URL ไม่ตรงกับของใหม่)
     if (container._activeBlobUrl && container._activeBlobUrl !== resolvedMedia.url) {
         URL.revokeObjectURL(container._activeBlobUrl);
         container._activeBlobUrl = null;
     }
 
-    // 4. [PURGE DOM] กวาดล้าง Child Elements เก่าทั้งหมดอย่างปลอดภัย
+    // FIX: Comprehensive DOM Purge clearing all event handlers on any child node
     while (container.firstChild) {
         const child = container.firstChild;
+        child.onload = null;
+        child.onerror = null;
+        child.onloadeddata = null;
+        child.oncanplay = null;
+        child.onclick = null;
+
         if (child.tagName === 'VIDEO' || child.tagName === 'IMG') {
             if (typeof videoCullingObserver !== 'undefined' && videoCullingObserver) {
                 videoCullingObserver.unobserve(child);
@@ -5366,7 +5366,6 @@ function renderMediaToDOM(container, resolvedMedia, mediaType, abortSignal) {
                     child._hlsInstance.destroy();
                     child._hlsInstance = null;
                 }
-                // ⚠️ [CRITICAL FIX]: ป้องกัน WebKit Network Spam ห้ามใช้ child.src = ""; เด็ดขาด
                 child.removeAttribute('src');
                 child.load(); 
             } else {
@@ -5379,10 +5378,8 @@ function renderMediaToDOM(container, resolvedMedia, mediaType, abortSignal) {
     const isVideo = mediaType === 'video';
     const el = document.createElement(isVideo ? 'video' : 'img');
     
-    // ตั้งค่า Class ตามโครงสร้าง UI เดิมอย่างเคร่งครัด
     el.className = 'w-full h-full object-cover p-1 rounded bg-black shadow-[0_0_15px_rgba(0,0,0,0.8)] z-10 relative opacity-0 transition-opacity duration-500';
     
-    // 5. [MEMORY SAFEGUARD] จัดการ Blob URL พร้อมผูกกับ AbortSignal เพื่อกัน Leak ตอน Unmount
     if (resolvedMedia.isBlob) {
         container._activeBlobUrl = resolvedMedia.url;
         if (abortSignal) {
@@ -5394,6 +5391,24 @@ function renderMediaToDOM(container, resolvedMedia, mediaType, abortSignal) {
                 }
             }, { once: true });
         }
+    }
+
+    // FIX: Abort Signal Listener cleans up active element from DOM and halts streaming
+    if (abortSignal) {
+        abortSignal.addEventListener('abort', () => {
+            el.onload = null;
+            el.onerror = null;
+            el.onloadeddata = null;
+            el.oncanplay = null;
+            if (isVideo) {
+                el.pause();
+                el.removeAttribute('src');
+                el.load();
+            } else {
+                el.removeAttribute('src');
+            }
+            if (el.parentNode) el.parentNode.removeChild(el);
+        }, { once: true });
     }
 
     if (isVideo) {
@@ -5411,8 +5426,9 @@ function renderMediaToDOM(container, resolvedMedia, mediaType, abortSignal) {
             
             if (playPromise !== undefined) {
                 playPromise.catch((error) => {
+                    if (error.name === 'AbortError') return; 
+                    
                     if (error.name === 'NotAllowedError' && (!abortSignal || !abortSignal.aborted)) {
-                        // ป้องกันการสร้างปุ่มซ้ำซ้อน
                         if (!container.querySelector('.play-overlay-btn')) {
                             const playBtn = document.createElement('button');
                             playBtn.className = 'play-overlay-btn absolute inset-0 m-auto w-12 h-12 bg-black/60 border border-slate-500 rounded-full flex items-center justify-center text-white z-30 hover:bg-black/80 transition-colors cursor-pointer';
@@ -5438,7 +5454,6 @@ function renderMediaToDOM(container, resolvedMedia, mediaType, abortSignal) {
             container._hlsInstance = hls; 
             el._hlsInstance = hls; 
             
-            // 6. [HLS SAFEGUARD] ทำลาย HLS Instance ทันทีเมื่อได้รับการส่งสัญญาณ Abort
             if (abortSignal) {
                 abortSignal.addEventListener('abort', () => {
                     if (container._hlsInstance === hls) {
@@ -5463,7 +5478,7 @@ function renderMediaToDOM(container, resolvedMedia, mediaType, abortSignal) {
                         container._hlsInstance = null;
                         el._hlsInstance = null;
                     }
-                    el.remove(); // ลบ Element ผีออกจาก DOM
+                    el.remove(); 
                     
                     if (!abortSignal || !abortSignal.aborted) {
                         if (typeof renderEmptyState !== 'undefined') {
@@ -5498,7 +5513,7 @@ function renderMediaToDOM(container, resolvedMedia, mediaType, abortSignal) {
     }
 
     el.onerror = () => {
-        el.remove(); // ลบ Element ผีออกก่อนเรนเดอร์ Empty State
+        el.remove(); 
         if (!abortSignal || !abortSignal.aborted) {
             if (typeof renderEmptyState !== 'undefined') {
                 renderEmptyState(container, "ARTIFACT CORRUPTED (RENDER FAILED)", "text-red-500");
@@ -5506,11 +5521,11 @@ function renderMediaToDOM(container, resolvedMedia, mediaType, abortSignal) {
         }
     };
 
-    // 7. [FINAL DOM MOUNT] ตรวจสอบ Abort ครั้งสุดท้ายก่อนยัดลง DOM ป้องกัน State คลาดเคลื่อน
     if (!abortSignal || !abortSignal.aborted) {
         container.appendChild(el);
     }
 }
+
 
 
 function updateVideoSlotsUI() {
