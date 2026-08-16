@@ -3011,52 +3011,110 @@ async function checkHolding(account) {
 }
 
 async function executeArchitectCentralizedUpload(type) {
+    // LAYER 1: INTERNAL SAFE GUARDS & PARAMETER VALIDATION (สกัดกั้นการสูญเสียเงินทุนฟรี)
+    const safeNotify = (msg, status) => { if (typeof safeShowNotification === 'function') safeShowNotification(msg, status); else console.log(`[${status}] ${msg}`); };
+    const safeLog = (msg, cls) => { if (typeof safeAppendLog === 'function') safeAppendLog(msg, cls); else console.log(msg); };
+
+    if (type !== 'front' && type !== 'back') {
+        safeNotify("SYSTEM HALT: Invalid asset aspect. Must be 'front' or 'back'.", "error");
+        return;
+    }
+
+    // 2. AUTHENTICATION BOUNDARY & RPC STABILITY CHECK
     if (typeof secureContract === 'undefined' || !secureContract || typeof signer === 'undefined' || !signer) { 
-        safeShowNotification("Action suspended: Authenticate wallet signature first.", "error"); 
+        safeNotify("Action suspended: Authenticate wallet signature first.", "error"); 
         return; 
     }
     
     try {
         const userAddress = await signer.getAddress();
-        let onChainArchitect = typeof ethers !== 'undefined' ? ethers.ZeroAddress : "0x0";
-        let onChainOwner = typeof ethers !== 'undefined' ? ethers.ZeroAddress : "0x0";
+        
+        const ZERO_ADDRESS = (typeof ethers !== 'undefined' && ethers.ZeroAddress) ? ethers.ZeroAddress : 
+                             (typeof ethers !== 'undefined' && ethers.constants && ethers.constants.AddressZero) ? ethers.constants.AddressZero : 
+                             "0x0000000000000000000000000000000000000000";
+
+        let onChainArchitect = ZERO_ADDRESS;
+        let onChainOwner = ZERO_ADDRESS;
         
         try {
             if (typeof secureContract.architect === 'function') onChainArchitect = await secureContract.architect();
             if (typeof secureContract.owner === 'function') onChainOwner = await secureContract.owner();
         } catch (err) { 
-            console.warn("[SYS LOG] Privilege query skipped or unavailable.", err?.message); 
+            console.warn("[SYS LOG] Privilege query skipped or unavailable. Network may be unstable.", err?.message); 
         }
 
         if (userAddress.toLowerCase() !== onChainArchitect.toLowerCase() && userAddress.toLowerCase() !== onChainOwner.toLowerCase()) {
-            safeShowNotification("SECURITY ENFORCEMENT: Architect privileges required.", "error");
+            safeNotify("SECURITY ENFORCEMENT: Architect privileges required.", "error");
             return;
         }
     } catch (err) {
-        safeShowNotification("System Warning: Failed to verify privileges.", "error");
+        safeNotify("System Warning: Wallet disconnected or RPC failure during privilege check.", "error");
         return;
     }
 
     if (typeof globalSelectedTokenId === 'undefined' || globalSelectedTokenId === null) {
-        safeShowNotification("Centralized Controller Exception: Please select a Token ID cell coordinate on the Matrix first.", "error");
+        safeNotify("Centralized Controller Exception: Please select a Token ID cell coordinate on the Matrix first.", "error");
         return;
     }
     
-    const file = (typeof promptUserForFile === 'function') ? await promptUserForFile('image/*,video/*') : null;
+    // 3. SECURE FILE ACQUISITION BOUNDARY (แก้ไข Memory Leak สมบูรณ์)
+    let file = null;
+    if (typeof promptUserForFile === 'function') {
+        file = await promptUserForFile('image/*,video/*');
+    } else {
+        file = await new Promise((resolve) => {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*,video/*';
+            
+            input.onchange = (e) => {
+                resolve(e.target.files[0] || null);
+                input.remove(); // Clean up DOM
+            };
+            
+            input.addEventListener('cancel', () => {
+                resolve(null);
+                input.remove(); // Clean up DOM
+            });
+            
+            input.click();
+            
+            // Fallback for strict browsers
+            window.addEventListener('focus', () => {
+                setTimeout(() => { 
+                    if (!input.files || input.files.length === 0) {
+                        resolve(null);
+                        input.remove(); // Clean up DOM
+                    }
+                }, 1000);
+            }, { once: true });
+        });
+    }
+
     if (!file) {
-        safeAppendLog("[SYSTEM] File selection aborted by user.", "text-yellow-500");
+        safeLog("[SYSTEM] File selection aborted by user.", "text-yellow-500");
         return;
     }
 
-    if (typeof lockSystem === 'function' && !lockSystem()) return;
+    // 4. THREAD LOCKING
+    if (typeof lockSystem === 'function') {
+        const lockStatus = lockSystem();
+        if (lockStatus === false) return; 
+    }
+    
     let progress = null;
     
+    // 5. EXTERNAL I/O BOUNDARY (IRYS DATACHAIN)
     try {
         if (typeof irys === 'undefined' || !irys) {
-            if (typeof ensureIrysReady === 'function') await ensureIrysReady();
+            if (typeof ensureIrysReady === 'function') {
+                await ensureIrysReady();
+            } else {
+                throw new Error("Irys SDK configuration missing from environment.");
+            }
         }
         
-        safeAppendLog(`Streaming ${type} payload to Irys Datachain...`, "text-blue-400");
+        safeLog(`Streaming ${type} payload to Irys Datachain...`, "text-blue-400");
         
         const mimeType = (file.type && file.type.trim() !== "") ? file.type : "application/octet-stream";
         const tags = [{ name: "Content-Type", value: mimeType }];
@@ -3066,16 +3124,23 @@ async function executeArchitectCentralizedUpload(type) {
             if (progress && typeof progress.show === 'function') progress.show();
         }
         
-        const response = (typeof executeIrysUpload === 'function') ? await executeIrysUpload(file, tags, true, progress) : null;
-        const txId = response?.data?.id || response?.id; 
+        if (typeof executeIrysUpload !== 'function') throw new Error("Execute function for Irys missing.");
+
+        const response = await executeIrysUpload(file, tags, true, progress);
+        
+        const txId = response?.data?.id || response?.id || response?.txId; 
         
         if (!txId || typeof txId !== 'string' || txId.trim() === "") { 
-            throw new Error("Irys payload generation failed: null or invalid TxID."); 
+            throw new Error("Irys datachain rejected payload or returned null TxID."); 
         }
 
-        const sanitizedTxId = (typeof sanitizeForDOM === 'function') ? sanitizeForDOM(txId) : txId;
-        safeAppendLog(`Payload successfully anchored: ${sanitizedTxId}`, "text-emerald-400 font-bold");
+        const sanitizedTxId = (typeof sanitizeForDOM === 'function') 
+            ? sanitizeForDOM(txId) 
+            : txId.replace(/[^a-zA-Z0-9_-]/g, '');
+
+        safeLog(`Payload successfully anchored: ${sanitizedTxId}`, "text-emerald-400 font-bold");
         
+        // 6. DOM STATE RECONCILIATION
         if (type === 'front') {
             const frontUriField = document.getElementById('forgeFrontUri');
             if (frontUriField) frontUriField.value = sanitizedTxId;
@@ -3087,16 +3152,19 @@ async function executeArchitectCentralizedUpload(type) {
             if (typeof currentLoadedMediaData !== 'undefined' && currentLoadedMediaData) currentLoadedMediaData.back = sanitizedTxId;
             if (typeof renderToViewport === 'function') renderToViewport('previewBackContainer', sanitizedTxId, "Reverse diagnostic data trace is currently null.", mimeType);
         }
-        safeShowNotification(`${type.toUpperCase()} payload streamed successfully.`, "success");
+        
+        safeNotify(`${type.toUpperCase()} payload streamed successfully.`, "success");
+        
     } catch (err) {
-        const errMsg = err?.message || "Unknown error occurred during upload.";
-        safeAppendLog(`Upload failed: ${errMsg}`, "text-red-500");
-        safeShowNotification(`Upload failed: ${errMsg}`, "error");
+        const errMsg = err?.message || "Unknown external I/O error occurred.";
+        safeLog(`Upload payload failed: ${errMsg}`, "text-red-500");
+        safeNotify(`Upload failed: ${errMsg}`, "error");
     } finally {
         if (progress && typeof progress.hide === 'function') progress.hide();
         if (typeof unlockSystem === 'function') unlockSystem();
     }
 }
+
 
 // 🎯 FIXED: Destructive Input Wiping (Layer 1.2)
 function resetAdminInputs(forceClear = false) {
