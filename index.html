@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en" style="background-color:#0a1128;color-scheme:dark" class="bg-[#0a1128] text-slate-100 overflow-x-hidden selection:bg-rose-700 selection:text-white">
+<html lang="en" style="background-color:#050814;color-scheme:dark" class="bg-[#050814] text-slate-100 overflow-x-hidden selection:bg-rose-700 selection:text-white">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<meta name="theme-color" content="#0a1128" />
+<meta name="theme-color" content="#050814" />
 <meta http-equiv="X-Frame-Options" content="DENY" />
 <meta name="referrer" content="strict-origin-when-cross-origin" />
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; media-src 'self' blob: https:; connect-src 'self' https://mainnet.base.org https://base.llamarpc.com https://base-rpc.publicnode.com https://base-mainnet.g.alchemy.com wss://base-mainnet.g.alchemy.com https://*.irys.xyz https://arweave.net https://ar-io.net wss://relay.walletconnect.com wss://relay.walletconnect.org https://rpc.walletconnect.com https://api.web3modal.com https://api.reown.com wss:; frame-ancestors 'none'; base-uri 'none'; object-src 'none'; form-action 'self';">
@@ -25,15 +25,13 @@
     <script src="./web3-polyfill.js"></script>
     <script src="./irys-bundle.js"></script>
     
-</head>
-
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=JetBrains+Mono:wght@400;700;800&display=swap');
 
     :root {
         --void: #000000;
-        --midnight: #0a1128;
-        --midnight-2: #0f172a;
+        --midnight: #050814;
+        --midnight-2: #0a0f24;
         --gold-bright: #fbbf24;
         --gold: #d97706;
         --gold-deep: #78350f;
@@ -41,10 +39,10 @@
         --crimson: #be123c;
         --crimson-deep: #9f1239;
         --crimson-dark: #7f1d1d;
-        --hairline: rgba(251, 191, 36, 0.14);
+        --hairline: rgba(251, 191, 36, 0.15);
     }
 
-    html, body { background-color: #000000 !important; }
+    html, body { background-color: var(--midnight) !important; }
     body { visibility: hidden; }
     body.app-ready { visibility: visible; }
     
@@ -58,545 +56,410 @@
     body {
         font-family: 'JetBrains Mono', monospace;
         background-image:
-            radial-gradient(circle at 12% 8%, rgba(217, 119, 6, 0.14) 0%, transparent 42%),
-            radial-gradient(circle at 88% 6%, rgba(190, 18, 60, 0.12) 0%, transparent 40%),
-            radial-gradient(ellipse at 50% 120%, rgba(15, 23, 42, 0.9) 0%, transparent 55%),
-            radial-gradient(circle at 50% 40%, rgba(10, 17, 40, 0.55) 0%, transparent 70%);
+            radial-gradient(circle at 15% 10%, rgba(217, 119, 6, 0.12) 0%, transparent 45%),
+            radial-gradient(circle at 85% 5%, rgba(190, 18, 60, 0.1) 0%, transparent 45%),
+            radial-gradient(ellipse at 50% 110%, rgba(10, 15, 36, 0.95) 0%, transparent 60%);
         background-attachment: fixed;
-        padding: clamp(0.75rem, 2vw, 2.25rem);
-        max-width: 1600px;
+        padding: clamp(0.5rem, 2vw, 2rem);
+        max-width: 1400px;
         margin-inline: auto;
     }
 
     body::before {
-        content: '';
-        position: fixed;
-        inset: 0;
-        pointer-events: none;
-        z-index: 0;
-        background: radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.85) 100%);
+        content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+        background: radial-gradient(ellipse at center, transparent 40%, rgba(0, 0, 0, 0.9) 100%);
         mix-blend-mode: multiply;
     }
 
     body::after {
-        content: '';
-        position: fixed;
-        inset: 0;
-        pointer-events: none;
-        z-index: 0;
-        opacity: 0.035;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+        content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: 0.04;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
     }
 
     .font-mono { font-family: 'JetBrains Mono', monospace; }
     .font-cinzel { font-family: 'Cinzel', serif; }
 
+    /* Enhanced Glassmorphism for Panels */
     .chiaroscuro-bg {
         position: relative;
-        background: linear-gradient(150deg, rgba(15, 23, 42, 0.82) 0%, rgba(10, 17, 40, 0.9) 45%, rgba(2, 4, 12, 0.96) 100%);
-        border: 1px solid var(--hairline);
-        border-radius: 1rem;
-        backdrop-filter: blur(18px) saturate(120%);
-        -webkit-backdrop-filter: blur(18px) saturate(120%);
-        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.045), inset 0 0 40px rgba(0, 0, 0, 0.55), 0 30px 70px rgba(0, 0, 0, 0.85);
+        background: linear-gradient(160deg, rgba(15, 20, 35, 0.85) 0%, rgba(5, 8, 20, 0.95) 100%);
+        border: 1px solid rgba(251, 191, 36, 0.15);
+        border-radius: 1.25rem;
+        backdrop-filter: blur(20px) saturate(130%);
+        -webkit-backdrop-filter: blur(20px) saturate(130%);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 20px 50px rgba(0, 0, 0, 0.7);
     }
 
     .chiaroscuro-bg::before {
-        content: '';
-        position: absolute;
-        inset: 0 0 auto 0;
-        height: 1px;
-        border-radius: 1rem 1rem 0 0;
-        background: linear-gradient(90deg, transparent 0%, rgba(251, 191, 36, 0.55) 25%, rgba(254, 240, 138, 0.75) 50%, rgba(251, 191, 36, 0.55) 75%, transparent 100%);
-        opacity: 0.5;
-        pointer-events: none;
+        content: ''; position: absolute; inset: 0 0 auto 0; height: 1px; border-radius: 1.25rem 1.25rem 0 0;
+        background: linear-gradient(90deg, transparent 0%, rgba(251, 191, 36, 0.4) 30%, rgba(254, 240, 138, 0.8) 50%, rgba(251, 191, 36, 0.4) 70%, transparent 100%);
+        opacity: 0.6; pointer-events: none;
     }
 
     .gold-text {
-        background: linear-gradient(135deg, #fffbeb 0%, #fef08a 22%, #fbbf24 48%, #d97706 74%, #78350f 100%);
-        -webkit-background-clip: text;
-        background-clip: text;
-        -webkit-text-fill-color: transparent;
-        filter: drop-shadow(0 1px 8px rgba(217, 119, 6, 0.35));
+        background: linear-gradient(135deg, #fffbeb 0%, #fef08a 25%, #fbbf24 50%, #d97706 75%, #78350f 100%);
+        -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+        filter: drop-shadow(0 2px 10px rgba(217, 119, 6, 0.4));
     }
 
-    .crimson-text { color: #fda4af; text-shadow: 0 0 18px rgba(190, 18, 60, 0.7), 0 0 6px rgba(190, 18, 60, 0.5); }
-    .red-vivid { color: #f87171; text-shadow: 0 0 18px rgba(239, 68, 68, 0.5); }
-    .gold-vivid { color: #fcd34d; text-shadow: 0 0 30px rgba(251, 191, 36, 0.9), 0 0 14px rgba(251, 191, 36, 0.55), 0 2px 4px rgba(0, 0, 0, 0.8); }
+    .crimson-text { color: #fda4af; text-shadow: 0 0 15px rgba(190, 18, 60, 0.8); }
+    .red-vivid { color: #f87171; text-shadow: 0 0 20px rgba(239, 68, 68, 0.6); }
+    .gold-vivid { color: #fcd34d; text-shadow: 0 0 25px rgba(251, 191, 36, 0.8), 0 2px 4px rgba(0, 0, 0, 0.9); }
 
+    /* Button Animations */
     .btn-gold-master, .btn-rebirth-bright, .btn-remint-bright { position: relative; overflow: hidden; isolation: isolate; }
     .btn-gold-master::after, .btn-rebirth-bright::after, .btn-remint-bright::after {
-        content: '';
-        position: absolute;
-        top: 0; left: -130%;
-        width: 60%; height: 100%;
-        background: linear-gradient(100deg, transparent 0%, rgba(255, 255, 255, 0.45) 50%, transparent 100%);
-        transform: skewX(-20deg);
-        transition: left 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-        pointer-events: none;
+        content: ''; position: absolute; top: 0; left: -150%; width: 70%; height: 100%;
+        background: linear-gradient(100deg, transparent 0%, rgba(255, 255, 255, 0.5) 50%, transparent 100%);
+        transform: skewX(-25deg); transition: left 0.7s cubic-bezier(0.4, 0, 0.2, 1); pointer-events: none;
     }
-    .btn-gold-master:hover:not(:disabled)::after, .btn-rebirth-bright:hover:not(:disabled)::after, .btn-remint-bright:hover:not(:disabled)::after { left: 130%; }
+    .btn-gold-master:hover:not(:disabled)::after, .btn-rebirth-bright:hover:not(:disabled)::after, .btn-remint-bright:hover:not(:disabled)::after { left: 150%; }
 
     .btn-gold-master {
-        background: linear-gradient(120deg, #78350f 0%, #b45309 30%, #fbbf24 50%, #b45309 70%, #78350f 100%);
-        color: #1a0e00; font-weight: 900; text-transform: uppercase;
-        letter-spacing: 0.08em;
-        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6), 0 0 22px rgba(217, 119, 6, 0.28), inset 0 1px 0 rgba(255, 251, 235, 0.6);
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        border: 1px solid #fef08a;
-        will-change: transform, box-shadow;
+        background: linear-gradient(135deg, #78350f 0%, #b45309 25%, #fbbf24 50%, #b45309 75%, #78350f 100%);
+        color: #1a0e00; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.7), 0 0 25px rgba(217, 119, 6, 0.3), inset 0 1px 1px rgba(255, 251, 235, 0.7);
+        transition: all 0.3s ease; border: 1px solid #fef08a;
     }
     .btn-gold-master:hover:not(:disabled) {
         transform: translateY(-2px);
-        box-shadow: 0 10px 26px rgba(0, 0, 0, 0.65), 0 0 40px rgba(217, 119, 6, 0.6), inset 0 1px 0 rgba(255, 251, 235, 0.8);
-        cursor: pointer;
+        box-shadow: 0 12px 25px rgba(0, 0, 0, 0.8), 0 0 45px rgba(217, 119, 6, 0.6), inset 0 1px 2px rgba(255, 251, 235, 0.9);
     }
-    .btn-gold-master:disabled { filter: grayscale(100%); opacity: 0.4; cursor: not-allowed; }
+    .btn-gold-master:disabled { filter: grayscale(100%); opacity: 0.5; cursor: not-allowed; }
 
     .btn-rebirth-bright {
-        background: linear-gradient(120deg, #b45309 0%, #fbbf24 35%, #fef9c3 50%, #fbbf24 65%, #b45309 100%);
-        color: #1a0e00; font-weight: 900; text-transform: uppercase;
-        letter-spacing: 0.1em;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 38px rgba(253, 224, 71, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.7);
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        border: 1.5px solid #fffbeb;
-        will-change: transform, box-shadow;
+        background: linear-gradient(135deg, #b45309 0%, #fbbf24 30%, #fef9c3 50%, #fbbf24 70%, #b45309 100%);
+        color: #1a0e00; font-weight: 900; text-transform: uppercase; letter-spacing: 0.12em;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.7), 0 0 40px rgba(253, 224, 71, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.8);
+        transition: all 0.3s ease; border: 1px solid #fffbeb;
     }
     .btn-rebirth-bright:hover:not(:disabled) {
-        transform: translateY(-2px) scale(1.012);
-        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.7), 0 0 55px rgba(253, 224, 71, 0.85), inset 0 1px 0 rgba(255, 255, 255, 0.9);
-        cursor: pointer;
+        transform: translateY(-2px) scale(1.02);
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.8), 0 0 60px rgba(253, 224, 71, 0.8), inset 0 1px 2px rgba(255, 255, 255, 1);
     }
-    .btn-rebirth-bright:disabled { filter: grayscale(100%); opacity: 0.4; cursor: not-allowed; }
+    .btn-rebirth-bright:disabled { filter: grayscale(100%); opacity: 0.5; cursor: not-allowed; }
 
-    .btn-remint-bright {
-        background: linear-gradient(120deg, #7f1d1d 0%, #be123c 35%, #fb7185 50%, #be123c 65%, #7f1d1d 100%);
-        color: #fff5f5; font-weight: 900; text-transform: uppercase;
-        letter-spacing: 0.1em;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 38px rgba(244, 63, 94, 0.42), inset 0 1px 0 rgba(255, 228, 230, 0.5);
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        border: 1.5px solid #ffe4e6;
-        will-change: transform, box-shadow;
-    }
-    .btn-remint-bright:hover:not(:disabled) {
-        transform: translateY(-2px) scale(1.012);
-        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.7), 0 0 55px rgba(244, 63, 94, 0.72), inset 0 1px 0 rgba(255, 228, 230, 0.7);
-        cursor: pointer;
-    }
+    /* Scrollbar */
+    .scroll-dark::-webkit-scrollbar { width: 4px; height: 4px; }
+    .scroll-dark::-webkit-scrollbar-track { background: rgba(0,0,0,0.5); border-radius: 4px; }
+    .scroll-dark::-webkit-scrollbar-thumb { background: #7f1d1d; border-radius: 4px; }
+    .scroll-dark::-webkit-scrollbar-thumb:hover { background: #be123c; }
 
-    .scroll-dark::-webkit-scrollbar { width: 6px; height: 6px; }
-    .scroll-dark::-webkit-scrollbar-track { background: #020203; }
-    .scroll-dark::-webkit-scrollbar-thumb { background: #4c0519; border-radius: 3px; }
-    .scroll-dark::-webkit-scrollbar-thumb:hover { background: #881337; }
-
-    .deed-card-container {
-        perspective: 1200px;
-        width: 100%;
-        max-width: 320px;
-        aspect-ratio: 9 / 16;
-    }
+    /* 3D Card */
+    .deed-card-container { perspective: 1500px; width: 100%; max-width: 340px; aspect-ratio: 9 / 16; margin: 0 auto; }
     .deed-card-inner {
-        position: relative;
-        width: 100%;
-        height: 100%;
-        text-align: center;
-        transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-        transform-style: preserve-3d;
-        will-change: transform;
+        position: relative; width: 100%; height: 100%; text-align: center;
+        transition: transform 0.9s cubic-bezier(0.4, 0, 0.2, 1); transform-style: preserve-3d;
     }
     .deed-card-inner.flipped { transform: rotateY(180deg); }
-    
     .deed-card-front, .deed-card-back {
-        position: absolute; width: 100%; height: 100%;
-        backface-visibility: hidden; border-radius: 0.75rem; overflow: hidden;
+        position: absolute; width: 100%; height: 100%; backface-visibility: hidden;
+        border-radius: 1rem; overflow: hidden;
     }
     .deed-card-back { transform: rotateY(180deg); }
 
     .preview-slot {
-        background: linear-gradient(180deg, rgba(20, 10, 15, 0.8) 0%, rgba(2, 2, 4, 0.95) 100%);
-        border: 1px solid rgba(136, 19, 55, 0.4);
-        transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        background: linear-gradient(180deg, rgba(15, 10, 20, 0.9) 0%, rgba(5, 5, 10, 0.98) 100%);
+        border: 1px solid rgba(136, 19, 55, 0.5); transition: all 0.3s ease;
     }
     .preview-slot:hover, .preview-slot.active {
-        border-color: rgba(217, 119, 6, 0.8);
-        box-shadow: 0 0 30px rgba(217, 119, 6, 0.25);
+        border-color: rgba(217, 119, 6, 0.9); box-shadow: 0 0 35px rgba(217, 119, 6, 0.3);
     }
 
+    /* Scanline Banner */
     .scanline-bar {
-        position: relative; overflow: hidden;
-        border: 1px solid rgba(251, 191, 36, 0.3);
-        border-radius: 1rem;
-        background: linear-gradient(135deg, rgba(20, 12, 4, 0.96) 0%, rgba(6, 4, 2, 0.98) 55%, rgba(18, 4, 10, 0.96) 100%);
-        box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.9), 0 0 30px rgba(217, 119, 6, 0.12);
-        transition: box-shadow 0.4s ease, border-color 0.4s ease;
+        position: relative; overflow: hidden; border: 1px solid rgba(251, 191, 36, 0.4);
+        border-radius: 1.25rem;
+        background: linear-gradient(135deg, rgba(20, 15, 5, 0.95) 0%, rgba(5, 5, 5, 0.98) 50%, rgba(20, 5, 10, 0.95) 100%);
+        box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.9), 0 0 40px rgba(217, 119, 6, 0.15);
+        transition: all 0.4s ease;
     }
     .scanline-bar:hover {
-        border-color: rgba(251, 191, 36, 0.6);
-        box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.9), 0 0 55px rgba(217, 119, 6, 0.3);
+        border-color: rgba(251, 191, 36, 0.8); box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.9), 0 0 60px rgba(217, 119, 6, 0.4);
     }
     .scanline-bar::before {
-        content: ''; position: absolute; top: -10%; left: 0;
-        width: 100%; height: 2px;
+        content: ''; position: absolute; top: -10%; left: 0; width: 100%; height: 2px;
         background: linear-gradient(90deg, transparent, #fef08a 50%, transparent);
-        box-shadow: 0 0 28px 6px rgba(251, 191, 36, 0.75);
-        animation: scanline 3.8s linear infinite;
+        box-shadow: 0 0 30px 8px rgba(251, 191, 36, 0.8); animation: scanline 3s linear infinite;
     }
-    .scanline-bar::after {
-        content: '';
-        position: absolute; inset: 10px;
-        border-radius: 0.6rem;
-        pointer-events: none;
-        background:
-            linear-gradient(#fbbf24, #fbbf24) left top / 22px 2px no-repeat,
-            linear-gradient(#fbbf24, #fbbf24) left top / 2px 22px no-repeat,
-            linear-gradient(#fbbf24, #fbbf24) right top / 22px 2px no-repeat,
-            linear-gradient(#fbbf24, #fbbf24) right top / 2px 22px no-repeat,
-            linear-gradient(#fbbf24, #fbbf24) left bottom / 22px 2px no-repeat,
-            linear-gradient(#fbbf24, #fbbf24) left bottom / 2px 22px no-repeat,
-            linear-gradient(#fbbf24, #fbbf24) right bottom / 22px 2px no-repeat,
-            linear-gradient(#fbbf24, #fbbf24) right bottom / 2px 22px no-repeat;
-        opacity: 0.55;
-    }
-    @keyframes scanline {
-        0% { top: -10%; opacity: 0; }
-        10% { opacity: 1; } 90% { opacity: 1; }
-        100% { top: 100%; opacity: 0; }
-    }
-    
+    @keyframes scanline { 0% { top: -10%; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { top: 100%; opacity: 0; } }
+
+    /* Matrix Nodes */
     .matrix-node {
-        position: relative;
-        transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
-        background: radial-gradient(circle at 50% 30%, rgba(30, 41, 59, 0.3) 0%, rgba(2, 4, 12, 0.95) 100%);
-        border: 1px solid #1e293b; 
-        color: #475569; 
+        position: relative; transition: all 0.2s ease;
+        background: radial-gradient(circle at 50% 30%, rgba(30, 41, 59, 0.4) 0%, rgba(5, 5, 15, 0.95) 100%);
+        border: 1px solid #1e293b; color: #475569;
     }
     @media (hover: hover) {
-        .matrix-node:hover {
-            transform: scale(1.18) translateY(-1px);
-            z-index: 20;
-            will-change: transform;
-            box-shadow: 0 0 16px 2px rgba(255, 255, 255, 0.15);
-        }
+        .matrix-node:hover { transform: scale(1.15) translateY(-2px); z-index: 20; box-shadow: 0 0 20px rgba(255, 255, 255, 0.2); }
     }
-    .matrix-node::before {
-        content: '';
-        position: absolute;
-        inset: 0;
-        border-radius: inherit;
-        background: linear-gradient(160deg, rgba(255, 255, 255, 0.05) 0%, transparent 45%);
-        pointer-events: none;
-    }
-
-    .rank-red { 
-        border-color: #991b1b !important; 
-        box-shadow: inset 0 0 10px rgba(153, 27, 27, 0.2) !important; 
-    }
-    .rank-silver { 
-        border-color: #94a3b8 !important; 
-        box-shadow: inset 0 0 10px rgba(148, 163, 184, 0.2) !important; 
-    }
-    .rank-gold { 
-        border-color: #ca8a04 !important; 
-        box-shadow: inset 0 0 10px rgba(202, 138, 4, 0.2) !important; 
-    }
-    .rank-prime { 
-        border-color: #d97706 !important; 
-        box-shadow: inset 0 0 12px rgba(217, 119, 6, 0.3) !important; 
-    }
+    .rank-red { border-color: #991b1b !important; box-shadow: inset 0 0 10px rgba(153, 27, 27, 0.3) !important; }
+    .rank-silver { border-color: #94a3b8 !important; box-shadow: inset 0 0 10px rgba(148, 163, 184, 0.3) !important; }
+    .rank-gold { border-color: #ca8a04 !important; box-shadow: inset 0 0 10px rgba(202, 138, 4, 0.3) !important; }
+    .rank-prime { border-color: #d97706 !important; box-shadow: inset 0 0 15px rgba(217, 119, 6, 0.4) !important; }
     .rank-imperial { 
-        border: 2px solid #ea580c !important; 
-        box-shadow: inset 0 0 15px rgba(234, 88, 12, 0.4) !important; 
-        animation: imperialPulse 2.6s ease-in-out infinite;
+        border: 2px solid #ea580c !important; box-shadow: inset 0 0 20px rgba(234, 88, 12, 0.5) !important; 
+        animation: imperialPulse 2s ease-in-out infinite;
     }
     @keyframes imperialPulse {
-        0%, 100% { box-shadow: 0 0 10px rgba(234, 88, 12, 0.3), inset 0 0 10px rgba(234, 88, 12, 0.3); }
-        50% { box-shadow: 0 0 20px rgba(234, 88, 12, 0.6), inset 0 0 15px rgba(234, 88, 12, 0.5); }
+        0%, 100% { box-shadow: 0 0 15px rgba(234, 88, 12, 0.4), inset 0 0 15px rgba(234, 88, 12, 0.4); }
+        50% { box-shadow: 0 0 30px rgba(234, 88, 12, 0.8), inset 0 0 25px rgba(234, 88, 12, 0.6); }
     }
 
     .node-active {
-        background: radial-gradient(circle at 50% 30%, rgba(251, 191, 36, 0.5) 0%, rgba(180, 83, 9, 0.35) 100%) !important;
-        border-color: #fbbf24 !important;
-        color: #fffbeb !important; 
-        box-shadow: 0 0 22px rgba(251, 191, 36, 0.8), inset 0 0 12px rgba(251, 191, 36, 0.5) !important;
-    }
-    .node-sanctified {
-        background: radial-gradient(circle at 50% 30%, rgba(16, 185, 129, 0.5) 0%, rgba(6, 78, 59, 0.35) 100%) !important;
-        border-color: #10b981 !important;
-        color: #ffffff !important;
-        box-shadow: 0 0 25px rgba(16, 185, 129, 0.85), inset 0 0 15px rgba(16, 185, 129, 0.5) !important;
-        animation: novaDivinePulse 2s infinite alternate ease-in-out;
-        z-index: 15;
-    }
-    @keyframes novaDivinePulse {
-        0% { box-shadow: 0 0 15px rgba(16, 185, 129, 0.5), inset 0 0 10px rgba(16, 185, 129, 0.3); }
-        100% { box-shadow: 0 0 35px rgba(16, 185, 129, 1), inset 0 0 20px rgba(16, 185, 129, 0.7); border-color: #34d399 !important; }
-    }
-    .node-council {
-        background: radial-gradient(circle at 50% 30%, rgba(190, 18, 60, 0.5) 0%, rgba(127, 29, 29, 0.35) 100%) !important;
-        border-color: #f43f5e !important;
-        color: #ffe4e6 !important;
-        box-shadow: 0 0 22px rgba(190, 18, 60, 0.75) !important;
+        background: radial-gradient(circle at 50% 30%, rgba(251, 191, 36, 0.6) 0%, rgba(180, 83, 9, 0.4) 100%) !important;
+        border-color: #fbbf24 !important; color: #fffbeb !important; 
+        box-shadow: 0 0 25px rgba(251, 191, 36, 0.9), inset 0 0 15px rgba(251, 191, 36, 0.6) !important;
     }
 
-    .tab-btn.active { background: rgba(245,158,11,0.12); border-color: rgba(245,158,11,0.6); color: #fbbf24; }
-    .tab-btn:hover:not(.active) { border-color: rgba(245,158,11,0.35); color: #fcd34d; }
-    .tab-btn:active { transform: translateY(1px); }
-
-    :focus { outline: none; }
-    a:focus-visible, button:focus-visible, input:focus-visible, [tabindex]:focus-visible {
-        outline: 2px solid #fbbf24;
-        outline-offset: 2px;
-        border-radius: 0.4rem;
+    /* Input Fields */
+    input[type="text"], input[type="number"] {
+        background-color: rgba(0, 0, 0, 0.6);
+        border: 1px solid rgba(63, 63, 70, 0.8);
+        color: #fcd34d;
+        transition: all 0.3s ease;
     }
-
-    .btn-gold-master:active:not(:disabled), .btn-rebirth-bright:active:not(:disabled), .btn-remint-bright:active:not(:disabled) {
-        transform: translateY(1px) scale(0.99);
-        filter: brightness(0.95);
+    input[type="text"]:focus, input[type="number"]:focus {
+        border-color: #fbbf24;
+        box-shadow: 0 0 15px rgba(251, 191, 36, 0.2);
+        outline: none;
     }
-    .btn-gold-master:focus-visible, .btn-rebirth-bright:focus-visible, .btn-remint-bright:focus-visible {
-        outline: 2px solid #fde68a;
-        outline-offset: 3px;
-    }
+    
+    /* Tabs */
+    .tab-btn.active { background: rgba(245,158,11,0.15); border-color: rgba(245,158,11,0.8); color: #fbbf24; }
+    .tab-btn:hover:not(.active) { border-color: rgba(245,158,11,0.5); color: #fcd34d; }
 
-    .preview-slot:active { transform: scale(0.99); }
-
-    @media (prefers-reduced-motion: reduce) {
-        *, *::before, *::after {
-            animation-duration: 0.001ms !important;
-            animation-iteration-count: 1 !important;
-            transition-duration: 0.001ms !important;
-        }
-    }
 </style>
+</head>
 
-<body class="bg-black text-slate-100 font-mono antialiased relative">
+<body class="text-slate-100 font-mono antialiased relative">
 
-<div id="gasSurgeWarning" class="fixed top-4 left-1/2 transform -translate-x-1/2 bg-red-950/90 border border-red-500 text-red-100 px-6 py-3 rounded-xl z-[99999] hidden shadow-[0_0_20px_rgba(239,68,68,0.6)] backdrop-blur-md">
+<!-- Modals (Kept exactly as original logic, improved styling) -->
+<div id="gasSurgeWarning" class="fixed top-4 left-1/2 transform -translate-x-1/2 bg-red-950/95 border border-red-500 text-red-100 px-6 py-3 rounded-xl z-[99999] hidden shadow-[0_0_30px_rgba(239,68,68,0.8)] backdrop-blur-md">
     <span class="font-cinzel font-black uppercase text-xs flex items-center gap-2"><span class="animate-pulse">⚠</span> NETWORK GAS SURGE DETECTED</span>
-    <p class="text-[10px] font-mono mt-1 text-red-300">Gas price is currently highly volatile. Proceeding may result in unexpected fees or front-running risks.</p>
+    <p class="text-[10px] font-mono mt-1 text-red-300">Gas price is currently highly volatile. Proceeding may result in unexpected fees.</p>
 </div>
 
-<div id="securityHardLockOverlay" class="fixed inset-0 bg-red-950/95 z-[99999] flex flex-col items-center justify-center p-6 hidden text-center font-mono border-4 border-red-600 m-4 rounded shadow-[0_0_50px_rgba(239,68,68,0.5)]">
+<div id="securityHardLockOverlay" class="fixed inset-0 bg-red-950/95 z-[99999] flex flex-col items-center justify-center p-6 hidden text-center font-mono border-4 border-red-600 m-4 rounded-2xl shadow-[0_0_60px_rgba(239,68,68,0.6)] backdrop-blur-xl">
     <span class="text-6xl mb-4 animate-bounce">🛡️</span>
-    <h1 class="text-2xl font-black text-red-100 tracking-widest mb-2">NETWORK CHAIN VIOLATION DETECTED</h1>
-    <p class="text-sm text-red-300 max-w-md mb-6 font-bold">FRONTEND SYSTEM COMPLETELY LOCKED. WALLET NOT CONNECTED TO BASE MAINNET. SWITCH NETWORK TO UNLOCK.</p>
-    <button onclick="window.location.reload();" class="px-6 py-2 bg-red-800 hover:bg-red-700 border border-red-400 text-white font-bold rounded text-xs tracking-wider transition-all">RE-INITIALIZE TELEMETRY</button>
+    <h1 class="text-2xl md:text-3xl font-black text-red-100 tracking-widest mb-2 font-cinzel">NETWORK CHAIN VIOLATION</h1>
+    <p class="text-xs md:text-sm text-red-300 max-w-md mb-8 font-bold leading-relaxed">FRONTEND SYSTEM COMPLETELY LOCKED. WALLET NOT CONNECTED TO BASE MAINNET. SWITCH NETWORK TO UNLOCK.</p>
+    <button onclick="window.location.reload();" class="px-8 py-3 bg-red-800 hover:bg-red-700 border border-red-400 text-white font-bold rounded-xl text-xs tracking-wider transition-all shadow-[0_0_20px_rgba(220,38,38,0.5)]">RE-INITIALIZE TELEMETRY</button>
 </div>
 
-<div id="fundConfirmModal" class="fixed inset-0 bg-black/95 backdrop-blur-md z-[9999999] hidden items-center justify-center p-4">
-    <div class="chiaroscuro-bg p-6 rounded-2xl border border-amber-600/50 max-w-md w-full text-center">
-        <h3 class="text-sm font-black font-cinzel text-amber-500 mb-2 uppercase tracking-widest">⛽ BRIDGE CAPITAL DEPLETION</h3>
-        <p class="text-[11px] font-mono text-slate-300 leading-relaxed mb-4">
-            The network telemetry detects insufficient balance on the Irys Permanent Settlement Bridge for this immutable archival sequence. System requires additional gas allocation of: <span id="fundAmountDisplay" class="text-amber-400 font-bold">0.0000</span> ETH (15% buffer included)
+<div id="fundConfirmModal" class="fixed inset-0 bg-black/95 backdrop-blur-xl z-[9999999] hidden items-center justify-center p-4">
+    <div class="chiaroscuro-bg p-6 md:p-8 rounded-2xl border border-amber-600/60 max-w-md w-full text-center shadow-[0_0_50px_rgba(217,119,6,0.3)]">
+        <h3 class="text-base font-black font-cinzel text-amber-500 mb-3 uppercase tracking-widest">⛽ BRIDGE CAPITAL DEPLETION</h3>
+        <p class="text-[11px] md:text-xs font-mono text-slate-300 leading-relaxed mb-6">
+            The network telemetry detects insufficient balance on the Irys Permanent Settlement Bridge. System requires additional gas allocation of: <br><span id="fundAmountDisplay" class="text-amber-400 font-bold text-lg block mt-2">0.0000</span> <span class="text-amber-500/70 text-[10px]">ETH (15% buffer included)</span>
         </p>
-        <div class="flex gap-2">
-            <button onclick="if(typeof window.resolveFundConfirm === 'function') window.resolveFundConfirm(false)" class="w-1/2 bg-stone-950 text-stone-400 font-mono text-[11px] py-3 rounded-lg uppercase border border-stone-800 cursor-pointer">CANCEL</button>
-            <button onclick="if(typeof window.resolveFundConfirm === 'function') window.resolveFundConfirm(true)" class="w-1/2 btn-gold-master text-[11px] py-3 rounded-lg">FUND BRIDGE BALANCES</button>
+        <div class="flex flex-col sm:flex-row gap-3">
+            <button onclick="if(typeof window.resolveFundConfirm === 'function') window.resolveFundConfirm(false)" class="w-full sm:w-1/2 bg-stone-950 text-stone-400 font-mono text-xs py-3.5 rounded-xl uppercase border border-stone-800 hover:bg-stone-900 transition-colors">CANCEL</button>
+            <button onclick="if(typeof window.resolveFundConfirm === 'function') window.resolveFundConfirm(true)" class="w-full sm:w-1/2 btn-gold-master text-xs py-3.5 rounded-xl">FUND BRIDGE</button>
         </div>
     </div>
 </div>
 
-<div id="mediaConfirmModal" class="fixed inset-0 bg-black/95 backdrop-blur-md z-[9999999] hidden items-center justify-center p-4">
-    <div class="chiaroscuro-bg p-6 rounded-2xl border border-amber-600/50 max-w-lg w-full flex flex-col shadow-[0_0_50px_rgba(217,119,6,0.3)]">
-        <h3 class="text-sm font-black font-cinzel text-amber-500 mb-2 uppercase tracking-widest text-center">🎬 CRYPTOGRAPHIC MEDIA PREVIEW</h3>
-        <p class="text-[10px] font-mono text-slate-400 text-center uppercase mb-4 tracking-wider">
-            Please verify the cryptographic DNA and artifact asset structure before ledger deployment.
-        </p>
-        <div id="mediaConfirmationPreviewContainer" class="aspect-[16/9] w-full bg-black border border-stone-900 rounded-xl overflow-hidden flex items-center justify-center mb-4"></div>
-        <div id="mediaConfirmDnaDisplay" class="p-2.5 bg-stone-950 border border-rose-950/40 rounded-lg text-center font-mono text-[10px] text-rose-400 mb-5 break-all">
+<div id="mediaConfirmModal" class="fixed inset-0 bg-black/95 backdrop-blur-xl z-[9999999] hidden items-center justify-center p-4">
+    <div class="chiaroscuro-bg p-6 rounded-2xl border border-amber-600/60 max-w-lg w-full flex flex-col shadow-[0_0_60px_rgba(217,119,6,0.4)]">
+        <h3 class="text-base font-black font-cinzel text-amber-500 mb-2 uppercase tracking-widest text-center">🎬 CRYPTOGRAPHIC MEDIA PREVIEW</h3>
+        <p class="text-[10px] font-mono text-slate-400 text-center uppercase mb-5 tracking-wider">Verify cryptographic DNA and artifact structure before ledger deployment.</p>
+        <div id="mediaConfirmationPreviewContainer" class="aspect-[16/9] w-full bg-black border border-stone-800 rounded-xl overflow-hidden flex items-center justify-center mb-5 shadow-inner"></div>
+        <div id="mediaConfirmDnaDisplay" class="p-3 bg-stone-950 border border-rose-950/60 rounded-xl text-center font-mono text-[10px] text-rose-400 mb-6 break-all shadow-[inset_0_0_15px_rgba(0,0,0,0.8)]">
             DNA: —
         </div>
-        <div class="flex gap-3">
-            <button onclick="if(typeof window.resolveMediaConfirm === 'function') window.resolveMediaConfirm(false)" class="w-1/2 bg-stone-950 text-stone-400 font-mono text-[11px] py-3 rounded-xl uppercase border border-stone-800 font-bold cursor-pointer hover:bg-stone-900">ABORT CHAIN INJECTION</button>
-            <button onclick="if(typeof window.resolveMediaConfirm === 'function') window.resolveMediaConfirm(true)" class="w-1/2 btn-gold-master text-[11px] py-3 rounded-xl font-bold">CONSECRATE & SIGN TRANSMISSION ⚔</button>
+        <div class="flex flex-col sm:flex-row gap-3">
+            <button onclick="if(typeof window.resolveMediaConfirm === 'function') window.resolveMediaConfirm(false)" class="w-full sm:w-1/2 bg-stone-950 text-stone-400 font-mono text-[11px] py-3.5 rounded-xl uppercase border border-stone-800 font-bold hover:bg-stone-900 transition-colors">ABORT INJECTION</button>
+            <button onclick="if(typeof window.resolveMediaConfirm === 'function') window.resolveMediaConfirm(true)" class="w-full sm:w-1/2 btn-gold-master text-[11px] py-3.5 rounded-xl font-bold">CONSECRATE & SIGN ⚔</button>
         </div>
     </div>
 </div>
 
-<div id="actionConfirmModal" class="fixed inset-0 bg-black/95 backdrop-blur-md z-[9999999] hidden items-center justify-center p-4">
-    <div class="chiaroscuro-bg p-6 rounded-2xl border border-rose-700/60 max-w-md w-full flex flex-col shadow-[0_0_50px_rgba(190,18,60,0.35)]">
-        <h3 id="actionConfirmTitle" class="text-sm font-black font-cinzel text-rose-400 mb-3 uppercase tracking-widest text-center">⚠ CRITICAL ENFORCEMENT</h3>
-        <p id="actionConfirmMessage" class="text-[11px] font-mono text-slate-300 text-center leading-relaxed mb-6 break-words"></p>
-        <div class="flex gap-3">
-            <button onclick="if(typeof window.resolveActionConfirm === 'function') window.resolveActionConfirm(false)" class="w-1/2 bg-stone-950 text-stone-400 font-mono text-[11px] py-3 rounded-xl uppercase border border-stone-800 font-bold cursor-pointer hover:bg-stone-900">ABORT</button>
-            <button onclick="if(typeof window.resolveActionConfirm === 'function') window.resolveActionConfirm(true)" class="w-1/2 bg-rose-950 text-rose-100 border border-rose-500 font-mono text-[11px] py-3 rounded-xl uppercase font-bold cursor-pointer hover:bg-rose-900">CONFIRM & PROCEED ⚔</button>
+<div id="actionConfirmModal" class="fixed inset-0 bg-black/95 backdrop-blur-xl z-[9999999] hidden items-center justify-center p-4">
+    <div class="chiaroscuro-bg p-6 md:p-8 rounded-2xl border border-rose-700/80 max-w-md w-full flex flex-col shadow-[0_0_60px_rgba(190,18,60,0.5)]">
+        <h3 id="actionConfirmTitle" class="text-base font-black font-cinzel text-rose-400 mb-4 uppercase tracking-widest text-center">⚠ CRITICAL ENFORCEMENT</h3>
+        <p id="actionConfirmMessage" class="text-xs font-mono text-slate-300 text-center leading-relaxed mb-8 break-words"></p>
+        <div class="flex flex-col sm:flex-row gap-3">
+            <button onclick="if(typeof window.resolveActionConfirm === 'function') window.resolveActionConfirm(false)" class="w-full sm:w-1/2 bg-stone-950 text-stone-400 font-mono text-xs py-3.5 rounded-xl uppercase border border-stone-800 font-bold hover:bg-stone-900 transition-colors">ABORT</button>
+            <button onclick="if(typeof window.resolveActionConfirm === 'function') window.resolveActionConfirm(true)" class="w-full sm:w-1/2 bg-rose-950 text-rose-100 border border-rose-500 font-mono text-xs py-3.5 rounded-xl uppercase font-bold hover:bg-rose-900 transition-colors shadow-[0_0_20px_rgba(220,38,38,0.4)]">CONFIRM & PROCEED ⚔</button>
         </div>
     </div>
 </div>
 
-<div id="identityAuthModal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[80] hidden items-center justify-center p-4">
-<div class="chiaroscuro-bg p-6 rounded-2xl border border-rose-900/50 max-w-2xl w-full max-h-[90vh] flex flex-col">
-<h3 class="text-sm font-black font-cinzel text-rose-400 mb-2 uppercase tracking-widest flex-shrink-0">🔒 IDENTITY PASSPORT & SYSTEM GUIDE</h3>
-<p class="text-[10px] font-mono text-slate-400 leading-relaxed mb-3 flex-shrink-0">
-        The Forensic Laboratory is strictly Token-Gated. Please review the Sovereign Dashboard operational guide before executing the scan.
-    </p>
+<div id="identityAuthModal" class="fixed inset-0 bg-black/95 backdrop-blur-xl z-[80] hidden items-center justify-center p-4">
+    <div class="chiaroscuro-bg p-6 md:p-8 rounded-2xl border border-rose-900/70 max-w-2xl w-full max-h-[90vh] flex flex-col shadow-[0_0_50px_rgba(153,27,27,0.3)]">
+        <h3 class="text-base font-black font-cinzel text-rose-400 mb-2 uppercase tracking-widest flex-shrink-0">🔒 IDENTITY PASSPORT & SYSTEM GUIDE</h3>
+        <p class="text-[10px] md:text-xs font-mono text-slate-400 leading-relaxed mb-4 flex-shrink-0">
+            The Forensic Laboratory is strictly Token-Gated. Review the Sovereign Dashboard operational guide before executing the scan.
+        </p>
 
-    <div class="bg-black/80 border border-stone-800 rounded-xl p-4 pb-8 mb-4 overflow-y-auto scroll-dark text-[10px] font-mono text-slate-300 space-y-5 flex-grow shadow-[inset_0_0_20px_rgba(0,0,0,0.9)] h-72">
-        <div>
-            <h4 class="text-amber-500 font-black uppercase mb-1.5 border-b border-stone-800 pb-1">Phase 1: Sovereign Awakening</h4>
-            <ul class="space-y-1.5 list-none pl-1">
-                <li><span class="text-rose-400 font-bold">Action:</span> Connect Web3 wallet and mint the Deed Access Utility Token on the Base network.</li>
-                <li><span class="text-rose-400 font-bold">Fact:</span> Automatically deploys a Token Bound Account (TBA - ERC-6551) via Lazy Initialization. The dev team is permanently stripped of control with No Backdoors.</li>
-                <li><span class="text-rose-400 font-bold">Outcome:</span> Absolute operational utility and control over metadata and media transfer strictly to the active keyholder.</li>
-            </ul>
+        <div class="bg-black/80 border border-stone-800 rounded-xl p-5 mb-5 overflow-y-auto scroll-dark text-[10px] md:text-[11px] font-mono text-slate-300 space-y-6 flex-grow shadow-[inset_0_0_30px_rgba(0,0,0,0.9)] h-72">
+            <!-- Content kept identical to original -->
+            <div>
+                <h4 class="text-amber-500 font-black uppercase mb-2 border-b border-stone-800 pb-1.5">Phase 1: Sovereign Awakening</h4>
+                <ul class="space-y-2 list-none pl-1">
+                    <li><span class="text-rose-400 font-bold">Action:</span> Connect Web3 wallet and mint the Deed Access Utility Token on the Base network.</li>
+                    <li><span class="text-rose-400 font-bold">Fact:</span> Automatically deploys a Token Bound Account (TBA - ERC-6551) via Lazy Initialization. The dev team is permanently stripped of control with No Backdoors.</li>
+                    <li><span class="text-rose-400 font-bold">Outcome:</span> Absolute operational utility and control over metadata and media transfer strictly to the active keyholder.</li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="text-amber-500 font-black uppercase mb-2 border-b border-stone-800 pb-1.5">Phase 2: Deed Ascension</h4>
+                <ul class="space-y-2 list-none pl-1">
+                    <li><span class="text-rose-400 font-bold">9:16 Video Preview Slots:</span> Designed strictly for viewing Nova sample templates. No data fields.</li>
+                    <li><span class="text-rose-400 font-bold">Premium 4K Production:</span> Select a template version → Contact the Architect via social links → Submit 5 source images. The Architect custom-engineers a 4K Branding Video and 5 profiles with personalized cryptographic DNA engraved at <span class="text-red-400 font-bold bg-red-950/40 px-1.5 py-0.5 rounded">3% Opacity</span> for forensic proof.</li>
+                    <li><span class="text-rose-400 font-bold">Nova Input Fields:</span> Enter 4 parameters required by Smart Contract: Token ID (t), Identity DNA (dna), Video URI (video), and Chrono-Map / Pixel Anchor (hiddenProperty).</li>
+                    <li class="mt-3 text-[10px] text-red-400 border border-red-900/60 bg-red-950/30 p-3 rounded-lg uppercase font-bold leading-relaxed">
+                        CRITICAL WARNING: identityDNA and hiddenProperty are permanently Immutable upon Nova execution. Media URIs (front, back, video) can be updated anytime for FREE (gas fee only) via updateIdentity() once Sanctified.
+                    </li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="text-amber-500 font-black uppercase mb-2 border-b border-stone-800 pb-1.5">Phase 3: Forensic DNA Lab</h4>
+                <ul class="space-y-2 list-none pl-1">
+                    <li><span class="text-rose-400 font-bold">Action:</span> Access via the hidden trigger under the "Uncompromised Integrity Protocol" section.</li>
+                    <li><span class="text-rose-400 font-bold">Fact:</span> On-chain verification restricts access exclusively to the verified Deed holder.</li>
+                    <li><span class="text-rose-400 font-bold">Outcome:</span> Instantly cross-checks personal DNA footprints to deliver irrefutable, court-admissible evidence, significantly expediting identity theft and deepfake litigation.</li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="text-amber-500 font-black uppercase mb-2 border-b border-stone-800 pb-1.5">Phase 4: Governance Panel</h4>
+                <ul class="space-y-2 list-none pl-1">
+                    <li><span class="text-rose-400 font-bold">Council Panel:</span> Dashboard UI displays ONLY the "Digital live vote tally" tracking towards the 199/333 Absolute Quorum. Opening a vote (Create Proposal) must be executed by a Council Member via BaseScan directly. (Deeds #1-10 hold Council Technical Governance Rights & Primary Quorum Authority; #50 and #100 hold Council Technical Governance Rights with standard execution weight).</li>
+                    <li><span class="text-rose-400 font-bold">Protocol Routing:</span> Automated 7-unit execution routing strictly dedicated to protocol operational processing, decentralized infrastructure maintenance, and system development support.</li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="text-amber-500 font-black uppercase mb-2 border-b border-stone-800 pb-1.5">Phase 5: Sovereign Dissolution & Remint Loop</h4>
+                <ul class="space-y-2 list-none pl-1">
+                    <li><span class="text-rose-400 font-bold">Sovereign Immolation:</span> In times of protocol instability, nodes possess the autonomy to self-destruct (Burn). The immutable contract strictly executes an automated state-deactivation and resource release mechanism directly on-chain. <i>There are no manual overrides, and the protocol operates without human administration.</i></li>
+                    <li><span class="text-rose-400 font-bold">The Architect Restriction:</span> The void left by burned elements maps to address(0). The Architect holds severely bottlenecked structural access (Hardcapped overrides) to inject new meta-state and trigger a Re-Mint, restoring the empire's mass entirely strictly dictated by on-chain math.</li>
+                </ul>
+            </div>
         </div>
-        <div>
-            <h4 class="text-amber-500 font-black uppercase mb-1.5 border-b border-stone-800 pb-1">Phase 2: Deed Ascension</h4>
-            <ul class="space-y-1.5 list-none pl-1">
-                <li><span class="text-rose-400 font-bold">9:16 Video Preview Slots:</span> Designed strictly for viewing Nova sample templates. No data fields.</li>
-                <li><span class="text-rose-400 font-bold">Premium 4K Production:</span> Select a template version → Contact the Architect via social links → Submit 5 source images. The Architect custom-engineers a 4K Branding Video and 5 profiles with personalized cryptographic DNA engraved at <span class="text-red-400 font-bold bg-red-950/40 px-1 rounded">3% Opacity</span> for forensic proof.</li>
-                <li><span class="text-rose-400 font-bold">Nova Input Fields:</span> Enter 4 parameters required by Smart Contract: Token ID (t), Identity DNA (dna), Video URI (video), and Chrono-Map / Pixel Anchor (hiddenProperty).</li>
-                <li class="mt-2 text-[9px] text-red-400 border border-red-900/50 bg-red-950/20 p-2 rounded uppercase font-bold">
-                    CRITICAL WARNING: identityDNA and hiddenProperty are permanently Immutable upon Nova execution. Media URIs (front, back, video) can be updated anytime for FREE (gas fee only) via updateIdentity() once Sanctified.
-                </li>
-            </ul>
-        </div>
-        <div>
-            <h4 class="text-amber-500 font-black uppercase mb-1.5 border-b border-stone-800 pb-1">Phase 3: Forensic DNA Lab</h4>
-            <ul class="space-y-1.5 list-none pl-1">
-                <li><span class="text-rose-400 font-bold">Action:</span> Access via the hidden trigger under the "Uncompromised Integrity Protocol" section.</li>
-                <li><span class="text-rose-400 font-bold">Fact:</span> On-chain verification restricts access exclusively to the verified Deed holder.</li>
-                <li><span class="text-rose-400 font-bold">Outcome:</span> Instantly cross-checks personal DNA footprints to deliver irrefutable, court-admissible evidence, significantly expediting identity theft and deepfake litigation.
-                </li>
-            </ul>
-        </div>
-        <div>
-            <h4 class="text-amber-500 font-black uppercase mb-1.5 border-b border-stone-800 pb-1">Phase 4: Governance Panel</h4>
-            <ul class="space-y-1.5 list-none pl-1">
-                <li><span class="text-rose-400 font-bold">Council Panel:</span> Dashboard UI displays ONLY the "Digital live vote tally" tracking towards the 199/333 Absolute Quorum. Opening a vote (Create Proposal) must be executed by a Council Member via BaseScan directly. (Deeds #1-10 hold Council Technical Governance Rights & Primary Quorum Authority; #50 and #100 hold Council Technical Governance Rights with standard execution weight).</li>
-                <li><span class="text-rose-400 font-bold">Protocol Routing:</span> Automated 7-unit execution routing strictly dedicated to protocol operational processing, decentralized infrastructure maintenance, and system development support.</li>
-            </ul>
-        </div>
-        <div>
-         <h4 class="text-amber-500 font-black uppercase mb-1.5 border-b border-stone-800 pb-1">Phase 5: Sovereign Dissolution & Remint Loop</h4>
-         <ul class="space-y-1.5 list-none pl-1">
-        <li><span class="text-rose-400 font-bold">Sovereign Immolation:</span> In times of protocol instability, nodes possess the autonomy to self-destruct (Burn). The immutable contract strictly executes an automated state-deactivation and resource release mechanism directly on-chain. <i>There are no manual overrides, and the protocol operates without human administration.</i></li>
-        <li><span class="text-rose-400 font-bold">The Architect Restriction:</span> The void left by burned elements maps to address(0). The Architect holds severely bottlenecked structural access (Hardcapped overrides) to inject new meta-state and trigger a Re-Mint, restoring the empire's mass entirely strictly dictated by on-chain math.</li>
-            </ul>
+        <div class="flex flex-col sm:flex-row gap-3 flex-shrink-0">
+            <button onclick="if(typeof closeIdentityAuthModal === 'function') closeIdentityAuthModal()" class="w-full sm:w-1/2 bg-stone-950 text-stone-400 font-mono text-xs py-3.5 rounded-xl uppercase border border-stone-800 hover:bg-stone-900 transition-colors">ABORT SCAN</button>
+            <button onclick="if(typeof executeGatewayUnlock === 'function') executeGatewayUnlock(event)" class="w-full sm:w-1/2 bg-rose-950/80 text-rose-200 border border-rose-600 font-mono font-bold text-xs py-3.5 rounded-xl uppercase hover:bg-rose-900 transition-colors shadow-[0_0_20px_rgba(153,27,27,0.5)]">AGREE & EXECUTE SCAN 🧬</button>
         </div>
     </div>
-    <div class="flex gap-2 flex-shrink-0">
-        <button onclick="if(typeof closeIdentityAuthModal === 'function') closeIdentityAuthModal()" class="w-1/2 bg-stone-950 text-stone-400 font-mono text-[11px] py-3 rounded-lg uppercase border border-stone-800 cursor-pointer hover:bg-stone-900 transition-colors">ABORT SCAN</button>
-        <button onclick="if(typeof executeGatewayUnlock === 'function') executeGatewayUnlock(event)" class="w-1/2 bg-rose-950/60 text-rose-300 border border-rose-700 font-mono font-bold text-[11px] py-3 rounded-lg uppercase hover:bg-rose-900 cursor-pointer transition-colors shadow-[0_0_15px_rgba(153,27,27,0.4)]">AGREE & EXECUTE SCAN 🧬</button>
-    </div>
-</div>
 </div>
 
-<div id="novaWarnModal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[80] hidden items-center justify-center p-4">
-    <div class="chiaroscuro-bg p-6 rounded-2xl border border-red-900/60 max-w-lg w-full shadow-[0_0_50px_rgba(153,27,27,0.4)]">
-        <h3 class="text-sm font-black font-cinzel text-red-500 mb-3 border-b border-stone-900 pb-2 uppercase tracking-wider">
+<div id="novaWarnModal" class="fixed inset-0 bg-black/95 backdrop-blur-xl z-[80] hidden items-center justify-center p-4">
+    <div class="chiaroscuro-bg p-6 md:p-8 rounded-2xl border border-red-900/80 max-w-lg w-full shadow-[0_0_60px_rgba(153,27,27,0.5)]">
+        <h3 class="text-base font-black font-cinzel text-red-500 mb-4 border-b border-stone-800 pb-3 uppercase tracking-wider">
             ⚠ Uncompromised Integrity Warning
         </h3>
-        <p class="text-[11px] font-mono text-slate-300 leading-relaxed mb-4">
+        <p class="text-[11px] md:text-xs font-mono text-slate-300 leading-relaxed mb-6">
             Forensic Integrity Warning: 'Identity DNA' and 'Chrono-Map (Hidden Property)' parameters will be immutably bound to the genesis blockchain deed. This action cannot be revoked or altered under any jurisdiction. Ensure 100% precision before executing the transaction.
         </p>
-        <label class="flex items-start gap-2 mb-4 cursor-pointer">
-            <input type="checkbox" id="novaAck" class="mt-0.5 accent-red-700 w-4 h-4" />
-            <span class="text-[10px] font-mono text-slate-400 uppercase tracking-wide">
+        <label class="flex items-start gap-3 mb-6 cursor-pointer bg-black/50 p-4 rounded-xl border border-red-950">
+            <input type="checkbox" id="novaAck" class="mt-1 accent-red-600 w-5 h-5 flex-shrink-0" />
+            <span class="text-[10px] md:text-[11px] font-mono text-slate-400 uppercase tracking-wide leading-relaxed">
                 I have thoroughly verified all parameters and acknowledge that this cryptographic binding is completely irreversible.
             </span>
         </label>
-        <div class="flex gap-2">
-            <button onclick="if(typeof closeNovaWarn === 'function') closeNovaWarn(false)" class="w-1/2 bg-stone-950 text-stone-400 font-mono text-[11px] py-3 rounded-lg uppercase border border-stone-800 hover:bg-stone-900 transition-colors cursor-pointer">ABORT</button>
-            <button id="novaConfirmBtn" onclick="if(typeof closeNovaWarn === 'function') closeNovaWarn(true)" class="w-1/2 btn-gold-master text-[11px] py-3 rounded-lg">SIGN TRANSACTION</button>
+        <div class="flex flex-col sm:flex-row gap-3">
+            <button onclick="if(typeof closeNovaWarn === 'function') closeNovaWarn(false)" class="w-full sm:w-1/2 bg-stone-950 text-stone-400 font-mono text-xs py-3.5 rounded-xl uppercase border border-stone-800 hover:bg-stone-900 transition-colors">ABORT</button>
+            <button id="novaConfirmBtn" onclick="if(typeof closeNovaWarn === 'function') closeNovaWarn(true)" class="w-full sm:w-1/2 btn-gold-master text-xs py-3.5 rounded-xl">SIGN TRANSACTION</button>
         </div>
     </div>
 </div>
 
-<header class="chiaroscuro-bg p-4 md:p-5 rounded-2xl mb-6 relative z-10 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-    <div class="flex items-center gap-3">
-        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-600 to-rose-950 flex items-center justify-center font-cinzel font-black text-black text-2xl shadow-[0_0_18px_rgba(217,119,6,0.35)]">Ω</div>
-        <div>
-            <h1 class="text-base md:text-xl font-black tracking-wider uppercase font-cinzel text-stone-100">
+<!-- Main UI Starts Here -->
+<header class="chiaroscuro-bg p-5 md:p-6 rounded-2xl mb-6 relative z-10 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-5">
+    <div class="flex items-center gap-4 w-full lg:w-auto">
+        <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-amber-500 to-rose-900 flex items-center justify-center font-cinzel font-black text-black text-3xl shadow-[0_0_25px_rgba(217,119,6,0.4)] flex-shrink-0">Ω</div>
+        <div class="overflow-hidden">
+            <h1 class="text-lg md:text-2xl font-black tracking-wider uppercase font-cinzel text-stone-100 truncate">
                 THE IMPERIAL SOVEREIGN <span class="gold-text">DEED</span>
             </h1>
-            <p class="text-[9px] font-mono text-rose-400/60 uppercase tracking-[0.2em] mt-1">
+            <p class="text-[9px] md:text-[10px] font-mono text-rose-400/80 uppercase tracking-[0.15em] mt-1 truncate">
                 333 Bespoke Council Passes • Base Mainnet • <span class="font-bold text-stone-300" id="hdrContract">0x920c1........A2b230C9</span>
             </p>
         </div>
     </div>
 
-    <div class="flex flex-wrap items-center gap-3 w-full lg:w-auto justify-start lg:justify-end">
-        <div class="flex flex-col gap-1 w-full lg:w-auto">
-            <div id="stagedBridgeStatus" class="text-[10px] text-amber-500 font-mono font-bold uppercase tracking-wider bg-stone-950 border border-rose-950 rounded p-2 text-center lg:text-left">
+    <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full lg:w-auto justify-start lg:justify-end">
+        <div class="flex flex-col gap-2 w-full sm:w-auto">
+            <div id="stagedBridgeStatus" class="text-[10px] text-amber-500 font-mono font-bold uppercase tracking-wider bg-stone-950 border border-rose-950 rounded-lg p-2.5 text-center sm:text-left shadow-inner">
                 🧳 Permanent Bridge Standby
             </div>
             <div id="irysHeaderStatus" class="hidden"></div>
             <div id="bridgeErrorDisplay" class="hidden"></div>
             <div class="hidden w-full" id="uploadProgressShell" role="progressbar" aria-label="Upload progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
-                <div class="h-1.5 w-full bg-stone-900 rounded-full overflow-hidden border border-stone-800">
+                <div class="h-2 w-full bg-stone-900 rounded-full overflow-hidden border border-stone-800">
                     <div id="uploadProgressFill" class="h-full w-0 bg-amber-500 transition-[width] duration-200 ease-out" style="will-change:width"></div>
                 </div>
-                <div id="uploadProgressLabel" class="mt-0.5 text-[9px] font-mono font-bold text-amber-400 tabular-nums text-right">0%</div>
+                <div id="uploadProgressLabel" class="mt-1 text-[10px] font-mono font-bold text-amber-400 tabular-nums text-right">0%</div>
             </div>
         </div>
-        <div id="walletInfo" class="hidden flex-col items-end text-[9px] font-mono uppercase w-full lg:w-auto">
+        <div id="walletInfo" class="hidden flex-col items-start sm:items-end text-[10px] font-mono uppercase w-full sm:w-auto bg-black/40 p-2.5 rounded-lg border border-stone-800">
             <span class="text-stone-400">NET: <span id="hdrNetwork" class="text-amber-500 font-bold">—</span></span>
             <span class="text-stone-400">ADDR: <span id="hdrAddress" class="text-stone-200 font-bold">—</span></span>
             <span class="text-stone-400">DEED BALANCE: <span id="hdrBalance" class="text-rose-400 font-bold">0</span></span>
             <span id="connStatusBase1" class="text-emerald-400 font-bold mt-1">⚪ Status: Disconnected</span>
         </div>
-        <button id="btnConnect" onclick="if(typeof connectWallet === 'function') connectWallet(this)" class="px-5 py-3 w-full lg:w-auto btn-gold-master rounded-xl text-xs">
+        <button id="btnConnect" onclick="if(typeof connectWallet === 'function') connectWallet(this)" class="px-6 py-3.5 w-full sm:w-auto btn-gold-master rounded-xl text-xs whitespace-nowrap">
             [ CONNECT SOVEREIGN WALLET ]
         </button>
     </div>
 </header>
 
 <section class="mb-6 relative z-10">
-    <div onclick="if(typeof openIdentityAuthModal === 'function') openIdentityAuthModal()" class="scanline-bar chiaroscuro-bg p-6 rounded-2xl cursor-pointer hover:border-blue-500 transition-all shadow-[inset_0_0_20px_rgba(0,0,0,0.9)]" title="INITIALIZE IDENTITY PROBE">
-        <h2 class="gold-vivid text-center font-cinzel font-black text-lg md:text-2xl tracking-[0.25em] opacity-90 hover:opacity-100 transition-all drop-shadow-2xl select-none uppercase">
+    <div onclick="if(typeof openIdentityAuthModal === 'function') openIdentityAuthModal()" class="scanline-bar chiaroscuro-bg p-6 md:p-8 rounded-2xl cursor-pointer hover:border-amber-500 transition-all shadow-[inset_0_0_30px_rgba(0,0,0,0.9)]" title="INITIALIZE IDENTITY PROBE">
+        <h2 class="gold-vivid text-center font-cinzel font-black text-xl md:text-3xl tracking-[0.2em] md:tracking-[0.3em] opacity-90 hover:opacity-100 transition-all drop-shadow-2xl select-none uppercase">
             UNCOMPROMISED INTEGRITY PROTOCOL
         </h2>
     </div>
 </section>
 
 <div id="memberDnaStudio" class="hidden mb-6 relative z-10">
-    <div class="chiaroscuro-bg p-6 rounded-2xl border border-rose-950">
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-stone-900 pb-3 mb-5 gap-2">
+    <div class="chiaroscuro-bg p-6 md:p-8 rounded-2xl border border-rose-900/50 shadow-[0_0_40px_rgba(153,27,27,0.15)]">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-stone-800 pb-4 mb-6 gap-3">
             <div>
-                <h2 class="text-lg font-black font-cinzel text-rose-400 uppercase tracking-tight">SOVEREIGN NOVA: ON-CHAIN FORENSIC TRUTH</h2>
-                <p class="text-[9px] font-mono text-stone-500 uppercase tracking-wide mt-1">RESTRICTED SYSTEM — HOLDER IDENTITY ACCREDITED BY CRYPTOGRAPHY</p>
+                <h2 class="text-xl font-black font-cinzel text-rose-400 uppercase tracking-tight">SOVEREIGN NOVA: ON-CHAIN FORENSIC TRUTH</h2>
+                <p class="text-[10px] font-mono text-stone-500 uppercase tracking-wide mt-1">RESTRICTED SYSTEM — HOLDER IDENTITY ACCREDITED BY CRYPTOGRAPHY</p>
             </div>
-            <span id="labAccessBadge" class="bg-rose-950/40 text-rose-400 border border-rose-800 text-[10px] font-black px-2.5 py-1.5 tracking-widest uppercase rounded">HOLDER VERIFIED</span>
+            <span id="labAccessBadge" class="bg-rose-950/60 text-rose-300 border border-rose-700 text-[10px] font-black px-3 py-2 tracking-widest uppercase rounded-lg shadow-[0_0_15px_rgba(153,27,27,0.4)]">HOLDER VERIFIED</span>
         </div>
 
-        <div class="space-y-4 font-mono">
-            <div class="p-3 bg-stone-950 border border-stone-900 rounded-lg">
-                <label class="text-[10px] text-amber-500 font-bold block mb-1 uppercase">1. TOKEN ID</label>
-                <input type="number" id="dnaVerifyTokenId" min="1" max="333" placeholder="TOKEN ID (1-333)" class="w-full bg-black border border-rose-950 p-2.5 text-sm text-amber-500 rounded outline-none focus:border-amber-600 transition-all" />
+        <div class="space-y-5 font-mono">
+            <div class="p-4 bg-stone-950 border border-stone-800 rounded-xl shadow-inner">
+                <label class="text-[11px] text-amber-500 font-bold block mb-2 uppercase tracking-wider">1. TOKEN ID</label>
+                <input type="number" id="dnaVerifyTokenId" min="1" max="333" placeholder="TOKEN ID (1-333)" class="w-full bg-black border border-rose-900/50 p-3 text-sm text-amber-500 rounded-lg outline-none focus:border-amber-500 transition-all" />
             </div>
 
-            <div class="p-3 bg-stone-950 border border-stone-900 rounded-lg">
-                <label class="text-[10px] text-amber-500 font-bold block mb-1 uppercase">2. DNA = IDENTITY DNA : YOUR NAME</label>
-                <div class="p-2.5 bg-black/80 rounded border border-rose-950/50">
+            <div class="p-4 bg-stone-950 border border-stone-800 rounded-xl shadow-inner">
+                <label class="text-[11px] text-amber-500 font-bold block mb-2 uppercase tracking-wider">2. DNA = IDENTITY DNA : YOUR NAME</label>
+                <div class="p-3 bg-black/80 rounded-lg border border-rose-900/40">
                     <span id="metaRawDna" class="text-stone-300 text-xs break-all select-all">IDENTITY DNA : YOUR NAME [3% OPACITY]</span>
                 </div>
             </div>
 
-            <div class="p-3 bg-stone-950 border border-stone-900 rounded-lg">
-                <label class="text-[10px] text-amber-500 font-bold block mb-1 uppercase">3. VIDEO : LINK , ID IRYS-XYZ</label>
-                <div class="p-2.5 bg-black/80 rounded border border-stone-900 text-[10px] flex justify-between items-center gap-2">
+            <div class="p-4 bg-stone-950 border border-stone-800 rounded-xl shadow-inner">
+                <label class="text-[11px] text-amber-500 font-bold block mb-2 uppercase tracking-wider">3. VIDEO : LINK , ID IRYS-XYZ</label>
+                <div class="p-3 bg-black/80 rounded-lg border border-stone-800 text-[10px] flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                     <span id="irysLinkDisplay" class="text-stone-300 break-all">LINK: https://gateway.irys.xyz/IRYS-XYZ | ID: IRYS-XYZ</span>
-                    <span class="text-rose-400 font-bold px-2 py-0.5 border border-rose-900 rounded bg-rose-950/30 shrink-0">PAUSE 9S (ZOOM 5X)</span>
+                    <span class="text-rose-400 font-bold px-3 py-1.5 border border-rose-800 rounded-lg bg-rose-950/40 shrink-0 shadow-[0_0_10px_rgba(153,27,27,0.3)]">PAUSE 9S (ZOOM 5X)</span>
                 </div>
             </div>
 
-            <div class="p-3 bg-stone-950 border border-stone-900 rounded-lg space-y-2.5">
-                <label class="text-[10px] text-amber-500 font-bold block uppercase">4. HIDDEN</label>
+            <div class="p-4 bg-stone-950 border border-stone-800 rounded-xl space-y-4 shadow-inner">
+                <label class="text-[11px] text-amber-500 font-bold block uppercase tracking-wider">4. HIDDEN</label>
                 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-[9px]">
-                    <div class="p-2 bg-black/80 rounded border border-stone-900">
-                        <span class="text-stone-500 block uppercase font-bold">SANCTIFIED TIMESTAMPS</span>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-[10px]">
+                    <div class="p-3 bg-black/80 rounded-lg border border-stone-800">
+                        <span class="text-stone-500 block uppercase font-bold mb-1">SANCTIFIED TIMESTAMPS</span>
                         <span class="text-rose-400 font-bold">SANCTIFIED AT 9S FR 1-5 | SANCTIFIED AT 12S FR 11-15</span>
                     </div>
-                    <div class="p-2 bg-black/80 rounded border border-stone-900 flex flex-col">
-                        <span class="text-stone-500 block uppercase font-bold">PIXEL ANCHOR (ZOOM 7X)</span>
+                    <div class="p-3 bg-black/80 rounded-lg border border-stone-800 flex flex-col">
+                        <span class="text-stone-500 block uppercase font-bold mb-1">PIXEL ANCHOR (ZOOM 7X)</span>
                         <span id="propDisplay1" class="text-amber-500 font-bold mb-1">X : 1014 Y : 1754</span>
                         <span id="metaHiddenProperty" class="text-amber-500 font-bold">AWAITING EXTRACTION...</span>
                     </div>
                 </div>
 
-                <div class="p-2 bg-black/90 rounded border border-stone-900/80 text-[8px] text-stone-400 flex flex-wrap justify-between gap-1">
+                <div class="p-3 bg-black/90 rounded-lg border border-stone-800 text-[9px] text-stone-400 flex flex-wrap justify-between gap-2">
                     <span>BRIGHTNESS: <strong class="text-amber-400">+50</strong></span>
                     <span>CONTRAST: <strong class="text-amber-400">+20</strong></span>
                     <span>SHADOWS: <strong class="text-amber-400">+35</strong></span>
@@ -604,76 +467,79 @@
                     <span>DETAILS: <strong class="text-amber-400">+50</strong></span>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-[9px]">
-                    <div class="p-2 bg-black/80 rounded border border-stone-900">
-                        <span class="text-rose-400 block uppercase font-bold">AI DEEP FAKE NEWS (VIDEO)</span>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-[10px]">
+                    <div class="p-3 bg-black/80 rounded-lg border border-stone-800">
+                        <span class="text-rose-400 block uppercase font-bold mb-1">AI DEEP FAKE NEWS (VIDEO)</span>
                         <span class="text-stone-300">VIDEO: 0.01 FR 4-8 = NO NEW PIXEL GENERATION AT 0.01S</span>
                     </div>
-                    <div class="p-2 bg-black/80 rounded border border-stone-900">
-                        <span class="text-rose-400 block uppercase font-bold">SOCIAL COPY CHECK (IMAGE)</span>
-                        <span class="text-stone-300">IMAGE: X:1344, Y:168 (OPACITY 3%) SOCIAL MEDIA COMPRESSION (FB/IG) DESTROYS 3% OPACITY PIXEL DATA</span>
+                    <div class="p-3 bg-black/80 rounded-lg border border-stone-800">
+                        <span class="text-rose-400 block uppercase font-bold mb-1">SOCIAL COPY CHECK (IMAGE)</span>
+                        <span class="text-stone-300">IMAGE: X:1344, Y:168 (OPACITY 3%) SOCIAL MEDIA COMPRESSION DESTROYS 3% OPACITY PIXEL DATA</span>
                     </div>
                 </div>
             </div>
 
-            <button onclick="if(typeof processIdentityDnaInspectionOnChain === 'function') processIdentityDnaInspectionOnChain()" class="w-full bg-rose-950/40 text-rose-300 border border-rose-700 text-[11px] font-black py-3.5 rounded-lg uppercase hover:bg-rose-900/60 transition-all tracking-widest shadow-[0_0_15px_rgba(153,27,27,0.2)] cursor-pointer mt-2">
+            <button onclick="if(typeof processIdentityDnaInspectionOnChain === 'function') processIdentityDnaInspectionOnChain()" class="w-full bg-rose-950/60 text-rose-200 border border-rose-600 text-xs font-black py-4 rounded-xl uppercase hover:bg-rose-900 transition-all tracking-widest shadow-[0_0_25px_rgba(153,27,27,0.4)] cursor-pointer mt-4">
                 EXTRACT ON-CHAIN STRUCTURAL TRACE — autoMap() 🧬
             </button>
 
-            <div id="dnaAnalysisTerminalOut" class="p-2 bg-stone-950 border border-stone-800 rounded text-center mt-2 text-[9px] text-stone-500 font-mono uppercase tracking-widest">
+            <div id="dnaAnalysisTerminalOut" class="p-3 bg-stone-950 border border-stone-800 rounded-xl text-center mt-3 text-[10px] text-stone-500 font-mono uppercase tracking-widest shadow-inner">
                 AWAITING FORENSIC EXTRACTION...
             </div>
 
-            <div id="dnaLabDisplay" class="hidden p-2 bg-emerald-950/20 border border-emerald-900/40 rounded text-center mt-2">
-                <span class="text-[9px] text-emerald-400 block tracking-widest uppercase font-bold">SANCTIFIED PROOF: EXECUTION SUCCESSFUL</span>
-                <span id="dnaTargetText" class="text-[8px] text-emerald-500/70 block mt-1 break-all"></span>
+            <div id="dnaLabDisplay" class="hidden p-4 bg-emerald-950/30 border border-emerald-800/50 rounded-xl text-center mt-3 shadow-[0_0_20px_rgba(16,185,129,0.15)]">
+                <span class="text-[10px] text-emerald-400 block tracking-widest uppercase font-bold mb-2">SANCTIFIED PROOF: EXECUTION SUCCESSFUL</span>
+                <span id="dnaTargetText" class="text-[9px] text-emerald-300 block break-all"></span>
             </div>
         </div>
     </div>
 </div>
 
-<section class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6 relative z-10">
-    <div class="chiaroscuro-bg p-4 rounded-xl border-l-2 border-amber-500">
-        <span class="text-[9px] font-mono uppercase text-stone-500 flex justify-between items-center mb-1">
+<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5 mb-6 relative z-10">
+    <div class="chiaroscuro-bg p-5 rounded-2xl border-l-4 border-amber-500">
+        <span class="text-[10px] font-mono uppercase text-stone-400 flex justify-between items-center mb-2 tracking-wider">
             THE IMPERIAL MACRO ART
-            <span id="rpcStatus" class="text-[8px] text-amber-500">◌ RPC SYNC</span>
+            <span id="rpcStatus" class="text-[9px] text-amber-500 font-bold">◌ RPC SYNC</span>
         </span>
-        <div id="displayReserve" class="text-xl md:text-2xl font-black gold-text font-mono">0.00 <span class="text-xs text-stone-600">ETH</span></div>
-        <div class="mt-3 pt-2 border-t border-rose-900/50">
-            <div id="displayCouncilPool" class="text-sm font-black gold-text font-mono mb-2">0.0000 <span class="text-xs text-stone-600">ETH / NODE</span></div>
+        <div id="displayReserve" class="text-2xl md:text-3xl font-black gold-text font-mono">0.00 <span class="text-sm text-stone-500">ETH</span></div>
+        <div class="mt-4 pt-3 border-t border-stone-800">
+            <div id="displayCouncilPool" class="text-sm md:text-base font-black gold-text font-mono">0.0000 <span class="text-xs text-stone-500">ETH / NODE</span></div>
         </div>
     </div>
-    <div class="chiaroscuro-bg p-4 rounded-xl border-l-2 border-red-700">
-        <span class="text-[9px] font-mono uppercase text-stone-500 block mb-1">SANCTIFIED ACTIVE DEEDS</span>
-        <div id="displaySupply" class="text-xl md:text-2xl font-black red-vivid font-mono">0 / 333</div>
+    <div class="chiaroscuro-bg p-5 rounded-2xl border-l-4 border-rose-700">
+        <span class="text-[10px] font-mono uppercase text-stone-400 block mb-2 tracking-wider">SANCTIFIED ACTIVE DEEDS</span>
+        <div id="displaySupply" class="text-2xl md:text-3xl font-black red-vivid font-mono mt-1">0 / 333</div>
     </div>
-    <div class="chiaroscuro-bg p-4 rounded-xl border-l-2 border-amber-700">
-        <span class="text-[9px] font-mono uppercase text-stone-500 block mb-1">TRIBUTE TARIFF METRICS</span>
-        <div class="text-xs font-mono text-stone-300 mt-1 leading-relaxed break-words">
+    <div class="chiaroscuro-bg p-5 rounded-2xl border-l-4 border-amber-700 sm:col-span-2 lg:col-span-2">
+        <span class="text-[10px] font-mono uppercase text-stone-400 block mb-2 tracking-wider">TRIBUTE TARIFF METRICS</span>
+        <div class="text-xs md:text-sm font-mono text-stone-300 mt-2 leading-relaxed break-words">
             MINT: <span id="lblMintPrice" class="text-amber-500 font-bold">0.0</span> | NOVA: <span id="lblNovaFee" class="text-rose-400 font-bold">0.0</span> ETH
         </div>
-        <div class="text-[9px] font-mono text-stone-500 mt-2 pt-1 border-t border-stone-900">
-            HIST MINTS: <span id="lblHistoricalMint" class="text-stone-200 font-bold">0</span> | RES/NFT: <span id="lblReservePerNFT" class="text-stone-200 font-bold">0.0</span>
-            <span class="mx-1">|</span> DUST: <span id="dustVisualizer" class="text-stone-400 font-bold">0</span> WEI
+        <div class="text-[10px] font-mono text-stone-500 mt-3 pt-2 border-t border-stone-800 flex flex-wrap gap-2">
+            <span>HIST MINTS: <span id="lblHistoricalMint" class="text-stone-300 font-bold">0</span></span>
+            <span class="hidden sm:inline">|</span>
+            <span>RES/NFT: <span id="lblReservePerNFT" class="text-stone-300 font-bold">0.0</span></span>
+            <span class="hidden sm:inline">|</span>
+            <span>DUST: <span id="dustVisualizer" class="text-stone-400 font-bold">0</span> WEI</span>
         </div>
     </div>
 </section>
 
-<section class="chiaroscuro-bg p-6 rounded-2xl mb-6 relative z-10 border border-rose-950">
-    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-stone-900 pb-3 mb-5 gap-3">
+<section class="chiaroscuro-bg p-6 md:p-8 rounded-2xl mb-6 relative z-10 border border-rose-900/40">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-stone-800 pb-4 mb-6 gap-4">
         <div>
-            <h2 class="text-lg font-black font-cinzel text-stone-100 uppercase tracking-tight">🗺 Sovereign Node Matrix Layout Map</h2>
-            <p class="text-[9px] font-mono text-stone-500 uppercase tracking-wide">333 STRUCTURAL CELLS • LIVE LEDGER MAPS WITH MEMORY OBJECT CACHE</p>
+            <h2 class="text-xl font-black font-cinzel text-stone-100 uppercase tracking-tight">🗺 Sovereign Node Matrix Layout Map</h2>
+            <p class="text-[10px] font-mono text-stone-500 uppercase tracking-wide mt-1">333 STRUCTURAL CELLS • LIVE LEDGER MAPS WITH MEMORY OBJECT CACHE</p>
         </div>
-        <div class="flex items-center gap-2 w-full sm:w-auto">
-            <input type="number" id="gridSearchInput" min="1" max="333" placeholder="ISOLATE NODE (1-333)" class="bg-black border border-stone-900 px-3 py-2 text-sm font-mono text-amber-500 rounded outline-none focus:border-amber-600 w-full sm:w-48" />
-            <span class="text-[10px] font-mono text-stone-500 uppercase whitespace-nowrap">ACTIVE: <span id="matrixActiveCount" class="text-amber-500 font-bold">0</span>/333</span>
+        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full md:w-auto">
+            <input type="number" id="gridSearchInput" min="1" max="333" placeholder="ISOLATE NODE (1-333)" class="bg-black border border-stone-800 px-4 py-2.5 text-sm font-mono text-amber-500 rounded-lg outline-none focus:border-amber-500 w-full sm:w-56 transition-all" />
+            <span class="text-[11px] font-mono text-stone-400 uppercase whitespace-nowrap bg-stone-950 px-3 py-2.5 rounded-lg border border-stone-800">ACTIVE: <span id="matrixActiveCount" class="text-amber-500 font-bold text-sm">0</span>/333</span>
         </div>
     </div>
-    <div id="matrixGridContainer" class="grid grid-cols-6 sm:grid-cols-10 md:grid-cols-12 lg:grid-cols-16 gap-2 max-h-[400px] overflow-y-auto scroll-dark pr-3 p-2 bg-black/30 rounded-xl border border-stone-900/50 shadow-inner">
+    <div id="matrixGridContainer" class="grid grid-cols-5 sm:grid-cols-8 md:grid-cols-12 lg:grid-cols-16 gap-2 md:gap-3 max-h-[500px] overflow-y-auto scroll-dark pr-2 p-3 bg-black/50 rounded-xl border border-stone-900 shadow-inner">
     </div>
     
-    <div class="flex flex-wrap gap-5 mt-6 text-tiny font-mono uppercase text-stone-400 bg-black/40 p-4 rounded-xl border border-stone-800">
+    <div class="flex flex-wrap gap-4 md:gap-6 mt-6 text-[9px] md:text-[10px] font-mono uppercase text-stone-400 bg-black/60 p-4 md:p-5 rounded-xl border border-stone-800">
         <span class="flex items-center gap-2"><span class="w-4 h-4 rounded bg-stone-900 border border-stone-700"></span> Dormant Space</span>
         <span class="flex items-center gap-2"><span class="w-4 h-4 rounded border rank-prime"></span> RANK-PRIME (1-10, 50, 100)</span>
         <span class="flex items-center gap-2"><span class="w-4 h-4 rounded border rank-gold"></span> GOLD (11-99)</span>
@@ -683,455 +549,457 @@
     </div>
 </section>
 
-<section class="chiaroscuro-bg p-6 rounded-2xl mb-6 relative z-10 border border-rose-950 shadow-[0_0_25px_rgba(217,119,6,0.1)]">
-    <div class="border-b border-stone-900 pb-3 mb-4">
-        <h2 class="text-base font-black font-cinzel text-amber-500 uppercase tracking-wider">⚡ SOVEREIGN ART FORGE & TBA REGISTRY</h2>
-        <p class="text-[9px] font-mono text-stone-500 uppercase tracking-wide">⚡ SOVEREIGN ART FORGE & TBA REGISTRY</p>
+<section class="chiaroscuro-bg p-6 md:p-8 rounded-2xl mb-6 relative z-10 border border-amber-900/30 shadow-[0_0_40px_rgba(217,119,6,0.1)]">
+    <div class="border-b border-stone-800 pb-4 mb-6">
+        <h2 class="text-xl font-black font-cinzel text-amber-500 uppercase tracking-wider">⚡ SOVEREIGN ART FORGE & TBA REGISTRY</h2>
+        <p class="text-[10px] font-mono text-stone-500 uppercase tracking-wide mt-1">CRYPTOGRAPHIC ACTION HUB & DETERMINISTIC VAULT</p>
     </div>
     
-    <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
-        <div class="md:col-span-5 space-y-3">
-            <span class="text-[9px] font-mono text-stone-400 uppercase tracking-wider block">// CRYPTOGRAPHIC ACTION Hub</span>
-            <div class="grid grid-cols-1 gap-3">
-                <label class="flex items-center gap-2 cursor-pointer">
-                    <input type="checkbox" id="forgeConsentCheckbox" class="accent-amber-500 w-4 h-4" onchange="if(typeof toggleForgeButtonState === 'function') toggleForgeButtonState()" />
-                    <span class="text-[9px] font-mono text-stone-400 uppercase">I confirm the metadata and media are final.</span>
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <div class="lg:col-span-5 space-y-5">
+            <span class="text-[10px] font-mono text-stone-400 uppercase tracking-wider block font-bold">// CRYPTOGRAPHIC ACTION HUB</span>
+            <div class="flex flex-col gap-4 bg-black/40 p-5 rounded-xl border border-stone-800">
+                <label class="flex items-start gap-3 cursor-pointer">
+                    <input type="checkbox" id="forgeConsentCheckbox" class="mt-0.5 accent-amber-500 w-5 h-5 flex-shrink-0" onchange="if(typeof toggleForgeButtonState === 'function') toggleForgeButtonState()" />
+                    <span class="text-[11px] font-mono text-stone-300 uppercase leading-relaxed">I confirm the metadata and media are final.</span>
                 </label>
-                <button id="executeForgeBtn" onclick="if(typeof triggerForge === 'function') triggerForge('REBIRTH', this)" class="btn-rebirth-bright text-xs py-3.5 rounded-xl font-black tracking-wide opacity-50 cursor-not-allowed" disabled>[SOVEREIGN AWAKENING ♠️]</button>
+                <button id="executeForgeBtn" onclick="if(typeof triggerForge === 'function') triggerForge('REBIRTH', this)" class="btn-rebirth-bright text-sm py-4 rounded-xl font-black tracking-widest opacity-50 cursor-not-allowed w-full" disabled>[SOVEREIGN AWAKENING ♠️]</button>
             </div>
-            <p class="text-[9px] font-mono text-stone-600 uppercase mt-2">
+            <p class="text-[10px] font-mono text-stone-500 uppercase mt-2 pl-2 border-l-2 border-stone-800">
               • Limited to 333 Absolute Passes Worldwide</p>
         </div>
         
-        <div class="md:col-span-7 bg-black/60 p-4 rounded-xl border border-stone-900 flex flex-col justify-between">
+        <div class="lg:col-span-7 bg-black/60 p-5 md:p-6 rounded-2xl border border-stone-800 flex flex-col justify-between shadow-inner">
             <div>
-                <span class="text-[9px] font-mono text-amber-500 uppercase tracking-wider block mb-2">// SPECIFIC ACTIVE DEED OWNERSHIP STATE</span>
-                <div id="activeDeedMetadataDisplay" class="w-full bg-stone-950 border border-stone-900 rounded p-3 text-center text-[11px] font-mono text-stone-400 truncate uppercase">
+                <span class="text-[10px] font-mono text-amber-500 uppercase tracking-wider block mb-3 font-bold">// SPECIFIC ACTIVE DEED OWNERSHIP STATE</span>
+                <div id="activeDeedMetadataDisplay" class="w-full bg-stone-950 border border-stone-800 rounded-xl p-4 text-center text-xs font-mono text-stone-400 truncate uppercase shadow-[inset_0_0_15px_rgba(0,0,0,0.8)]">
                     ○ STATUS: UNVERIFIED // DEED NODE ID: #...
                 </div>
             </div>
 
-            <div class="mt-3 p-3 bg-gradient-to-br from-stone-950 to-[#1c0a10] border border-amber-600/30 rounded-xl">
-                <span class="text-[9px] font-mono text-amber-400 font-bold block uppercase mb-2 tracking-widest">♠️ TBA WALLET</span>
-                <div class="grid grid-cols-2 gap-2 text-[10px] font-mono">
-                    <div class="p-2.5 bg-black/80 rounded border border-stone-950 flex justify-between items-center">
-                        <span class="text-stone-500">TBA VAULT FUEL (ETH):</span>
-                        <span id="tbaEthBalance" class="text-amber-500 font-bold">0.0000 ETH</span>
+            <div class="mt-5 p-4 md:p-5 bg-gradient-to-br from-stone-950 to-[#15080c] border border-amber-700/40 rounded-xl shadow-[0_0_20px_rgba(217,119,6,0.1)]">
+                <span class="text-[11px] font-mono text-amber-400 font-bold block uppercase mb-3 tracking-widest flex items-center gap-2">♠️ TBA WALLET</span>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-[11px] font-mono">
+                    <div class="p-3 bg-black/80 rounded-lg border border-stone-800 flex flex-col gap-1">
+                        <span class="text-stone-500 uppercase">TBA VAULT FUEL (ETH):</span>
+                        <span id="tbaEthBalance" class="text-amber-500 font-bold text-sm">0.0000 ETH</span>
                     </div>
-                    <div class="p-2.5 bg-black/80 rounded border border-stone-950 flex justify-between items-center">
-                        <span class="text-stone-500">NETWORK FLUIDITY (WETH):</span>
-                        <span id="tbaWethBalance" class="text-rose-400 font-bold">0.0000 WETH</span>
+                    <div class="p-3 bg-black/80 rounded-lg border border-stone-800 flex flex-col gap-1">
+                        <span class="text-stone-500 uppercase">NETWORK FLUIDITY (WETH):</span>
+                        <span id="tbaWethBalance" class="text-rose-400 font-bold text-sm">0.0000 WETH</span>
                     </div>
                 </div>
             </div>
 
-            <div class="mt-3 pt-3 border-t border-stone-900/60">
-                <label class="text-[9px] text-stone-500 font-mono block mb-1 uppercase tracking-widest">TBA: 0x... (ERC-6551 Address)</label>
-                <div class="flex gap-2">
-                    <input type="text" id="tbaAddressDisplay" readonly placeholder="0x0000000000000000000000000000000000000000" class="flex-grow bg-stone-950 border border-stone-900 p-2.5 text-[10px] font-mono text-amber-400 rounded outline-none select-all" />
-                    <button onclick="navigator.clipboard.writeText(document.getElementById('tbaAddressDisplay').value); if(typeof showNotification === 'function') showNotification('TBA Address Copied!', 'success'); else console.log('Copied');" class="px-4 bg-stone-900 border border-stone-800 text-stone-300 hover:border-amber-500 hover:text-amber-500 rounded text-[10px] font-mono uppercase font-bold transition-all">COPY TBA</button>
+            <div class="mt-5 pt-4 border-t border-stone-800">
+                <label class="text-[10px] text-stone-500 font-mono block mb-2 uppercase tracking-widest">TBA: 0x... (ERC-6551 Address)</label>
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <input type="text" id="tbaAddressDisplay" readonly placeholder="0x0000000000000000000000000000000000000000" class="flex-grow bg-stone-950 border border-stone-800 p-3 text-[11px] font-mono text-amber-400 rounded-lg outline-none select-all text-center sm:text-left" />
+                    <button onclick="navigator.clipboard.writeText(document.getElementById('tbaAddressDisplay').value); if(typeof showNotification === 'function') showNotification('TBA Address Copied!', 'success'); else console.log('Copied');" class="px-6 py-3 bg-stone-900 border border-stone-700 text-stone-300 hover:border-amber-500 hover:text-amber-400 rounded-lg text-[10px] font-mono uppercase font-bold transition-all whitespace-nowrap">COPY TBA</button>
                 </div>
             </div>
         </div>
     </div>
 </section>
 
-<section class="chiaroscuro-bg p-6 rounded-2xl mb-6 relative z-10 border border-rose-950">
-    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-stone-900 pb-3 mb-5 gap-4">
+<section class="chiaroscuro-bg p-6 md:p-8 rounded-2xl mb-6 relative z-10 border border-rose-900/40">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-stone-800 pb-4 mb-6 gap-4">
         <div>
-            <h2 class="text-lg font-black font-cinzel gold-text uppercase tracking-tight">🎬 Real-Time Interactive Canvas Framework (Billboard)</h2>
-            <p class="text-[9px] font-mono text-stone-500 uppercase tracking-wide">4 STRUCTURAL VIDEO PREVIEW SLOTS // 180 DEGREE INSPECTION ROTATOR CANVAS</p>
+            <h2 class="text-xl font-black font-cinzel gold-text uppercase tracking-tight">🎬 Real-Time Interactive Canvas Framework</h2>
+            <p class="text-[10px] font-mono text-stone-500 uppercase tracking-wide mt-1">4 STRUCTURAL VIDEO PREVIEW SLOTS // 180 DEGREE INSPECTION ROTATOR</p>
         </div>
-        <button onclick="if(typeof toggleCardFlip === 'function') toggleCardFlip()" class="px-4 py-3 bg-rose-900 hover:bg-rose-800 text-white font-black text-xs font-mono rounded-xl transition-all shadow-[0_0_15px_rgba(136,19,55,0.4)] uppercase tracking-wider border border-rose-600">
+        <button onclick="if(typeof toggleCardFlip === 'function') toggleCardFlip()" class="w-full md:w-auto px-5 py-3.5 bg-rose-950 hover:bg-rose-900 text-rose-200 font-black text-xs font-mono rounded-xl transition-all shadow-[0_0_20px_rgba(153,27,27,0.4)] uppercase tracking-wider border border-rose-700">
             🔄 FLIP INSPECTION CANVAS (180°)
         </button>
     </div>
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center justify-items-center lg:justify-items-start">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center justify-items-center lg:justify-items-start">
         <div class="lg:col-span-4 flex flex-col items-center w-full">
             <div class="deed-card-container">
                 <div id="sovereignFlipCard" class="deed-card-inner">
-                    <div id="previewFrontContainer" class="deed-card-front preview-slot border border-amber-600/50 flex flex-col items-center justify-center p-4">
-                        <span class="text-[9px] font-mono text-stone-500 text-center uppercase italic">[ OBVERSE ELEMENT UNINITIALIZED ]</span>
+                    <div id="previewFrontContainer" class="deed-card-front preview-slot border border-amber-600/50 flex flex-col items-center justify-center p-4 shadow-[0_0_30px_rgba(217,119,6,0.15)]">
+                        <span class="text-[10px] font-mono text-stone-500 text-center uppercase italic">[ OBVERSE ELEMENT UNINITIALIZED ]</span>
                     </div>
-                    <div id="previewBackContainer" class="deed-card-back preview-slot border border-rose-900/50 flex flex-col items-center justify-center p-4">
-                        <span class="text-[9px] font-mono text-rose-400 text-center uppercase italic">[ REVERSE ELEMENT UNINITIALIZED ]</span>
+                    <div id="previewBackContainer" class="deed-card-back preview-slot border border-rose-900/50 flex flex-col items-center justify-center p-4 shadow-[0_0_30px_rgba(153,27,27,0.15)]">
+                        <span class="text-[10px] font-mono text-rose-400 text-center uppercase italic">[ REVERSE ELEMENT UNINITIALIZED ]</span>
                     </div>
                 </div>
             </div>
         </div>
         <div class="lg:col-span-8 w-full">
-            <span class="text-[9px] font-mono text-stone-500 uppercase tracking-widest block mb-3">// CHRONOGRAPH PREVIEW MATRIX (READ-ONLY FOR USERS)</span>
-            <div class="grid grid-cols-2 gap-4 max-w-xl">
-                <div id="vSlot1" onclick="if(typeof handleSlotClick === 'function') handleSlotClick(1)" class="preview-slot aspect-[9/16] rounded-xl p-3 flex flex-col justify-between cursor-pointer relative overflow-hidden">
-                    <div class="text-right text-[10px] font-mono text-stone-400 font-bold relative z-10">SLOT #01</div>
-                    <div class="flex-grow flex items-center justify-center relative z-10"><span class="text-amber-500 text-3xl drop-shadow-[0_0_10px_rgba(217,119,6,0.5)]">▶</span></div>
-                    <span id="vSlotStatus1" class="text-[8px] text-stone-400 uppercase mt-1 block text-center relative z-10 font-bold">CONTACT ARCHITECT TO DEPLOY</span>
+            <span class="text-[10px] font-mono text-stone-400 uppercase tracking-widest block mb-4 font-bold">// CHRONOGRAPH PREVIEW MATRIX (READ-ONLY)</span>
+            <div class="grid grid-cols-2 gap-3 md:gap-5 max-w-2xl">
+                <div id="vSlot1" onclick="if(typeof handleSlotClick === 'function') handleSlotClick(1)" class="preview-slot aspect-[9/16] rounded-xl p-3 md:p-4 flex flex-col justify-between cursor-pointer relative overflow-hidden group">
+                    <div class="text-right text-[10px] md:text-xs font-mono text-stone-400 font-bold relative z-10 group-hover:text-amber-400 transition-colors">SLOT #01</div>
+                    <div class="flex-grow flex items-center justify-center relative z-10"><span class="text-amber-500/50 group-hover:text-amber-400 text-4xl drop-shadow-[0_0_15px_rgba(217,119,6,0.6)] transition-colors">▶</span></div>
+                    <span id="vSlotStatus1" class="text-[8px] md:text-[9px] text-stone-500 uppercase mt-2 block text-center relative z-10 font-bold group-hover:text-stone-300 transition-colors">CONTACT ARCHITECT TO DEPLOY</span>
                 </div>
-                <div id="vSlot2" onclick="if(typeof handleSlotClick === 'function') handleSlotClick(2)" class="preview-slot aspect-[9/16] rounded-xl p-3 flex flex-col justify-between cursor-pointer relative overflow-hidden">
-                    <div class="text-right text-[10px] font-mono text-stone-400 font-bold relative z-10">SLOT #02</div>
-                    <div class="flex-grow flex items-center justify-center relative z-10"><span class="text-amber-500 text-3xl drop-shadow-[0_0_10px_rgba(217,119,6,0.5)]">▶</span></div>
-                    <span id="vSlotStatus2" class="text-[8px] text-stone-400 uppercase mt-1 block text-center relative z-10 font-bold">CONTACT ARCHITECT TO DEPLOY</span>
+                <div id="vSlot2" onclick="if(typeof handleSlotClick === 'function') handleSlotClick(2)" class="preview-slot aspect-[9/16] rounded-xl p-3 md:p-4 flex flex-col justify-between cursor-pointer relative overflow-hidden group">
+                    <div class="text-right text-[10px] md:text-xs font-mono text-stone-400 font-bold relative z-10 group-hover:text-amber-400 transition-colors">SLOT #02</div>
+                    <div class="flex-grow flex items-center justify-center relative z-10"><span class="text-amber-500/50 group-hover:text-amber-400 text-4xl drop-shadow-[0_0_15px_rgba(217,119,6,0.6)] transition-colors">▶</span></div>
+                    <span id="vSlotStatus2" class="text-[8px] md:text-[9px] text-stone-500 uppercase mt-2 block text-center relative z-10 font-bold group-hover:text-stone-300 transition-colors">CONTACT ARCHITECT TO DEPLOY</span>
                 </div>
-                <div id="vSlot3" onclick="if(typeof handleSlotClick === 'function') handleSlotClick(3)" class="preview-slot aspect-[9/16] rounded-xl p-3 flex flex-col justify-between cursor-pointer relative overflow-hidden">
-                    <div class="text-right text-[10px] font-mono text-stone-400 font-bold relative z-10">SLOT #03</div>
-                    <div class="flex-grow flex items-center justify-center relative z-10"><span class="text-amber-500 text-3xl drop-shadow-[0_0_10px_rgba(217,119,6,0.5)]">▶</span></div>
-                    <span id="vSlotStatus3" class="text-[8px] text-stone-400 uppercase mt-1 block text-center relative z-10 font-bold">CONTACT ARCHITECT TO DEPLOY</span>
+                <div id="vSlot3" onclick="if(typeof handleSlotClick === 'function') handleSlotClick(3)" class="preview-slot aspect-[9/16] rounded-xl p-3 md:p-4 flex flex-col justify-between cursor-pointer relative overflow-hidden group">
+                    <div class="text-right text-[10px] md:text-xs font-mono text-stone-400 font-bold relative z-10 group-hover:text-amber-400 transition-colors">SLOT #03</div>
+                    <div class="flex-grow flex items-center justify-center relative z-10"><span class="text-amber-500/50 group-hover:text-amber-400 text-4xl drop-shadow-[0_0_15px_rgba(217,119,6,0.6)] transition-colors">▶</span></div>
+                    <span id="vSlotStatus3" class="text-[8px] md:text-[9px] text-stone-500 uppercase mt-2 block text-center relative z-10 font-bold group-hover:text-stone-300 transition-colors">CONTACT ARCHITECT TO DEPLOY</span>
                 </div>
-                <div id="vSlot4" onclick="if(typeof handleSlotClick === 'function') handleSlotClick(4)" class="preview-slot aspect-[9/16] rounded-xl p-3 flex flex-col justify-between cursor-pointer relative overflow-hidden">
-                    <div class="text-right text-[10px] font-mono text-stone-400 font-bold relative z-10">SLOT #04</div>
-                    <div class="flex-grow flex items-center justify-center relative z-10"><span class="text-amber-500 text-3xl drop-shadow-[0_0_10px_rgba(217,119,6,0.5)]">▶</span></div>
-                    <span id="vSlotStatus4" class="text-[8px] text-stone-400 uppercase mt-1 block text-center relative z-10 font-bold">CONTACT ARCHITECT TO DEPLOY</span>
+                <div id="vSlot4" onclick="if(typeof handleSlotClick === 'function') handleSlotClick(4)" class="preview-slot aspect-[9/16] rounded-xl p-3 md:p-4 flex flex-col justify-between cursor-pointer relative overflow-hidden group">
+                    <div class="text-right text-[10px] md:text-xs font-mono text-stone-400 font-bold relative z-10 group-hover:text-amber-400 transition-colors">SLOT #04</div>
+                    <div class="flex-grow flex items-center justify-center relative z-10"><span class="text-amber-500/50 group-hover:text-amber-400 text-4xl drop-shadow-[0_0_15px_rgba(217,119,6,0.6)] transition-colors">▶</span></div>
+                    <span id="vSlotStatus4" class="text-[8px] md:text-[9px] text-stone-500 uppercase mt-2 block text-center relative z-10 font-bold group-hover:text-stone-300 transition-colors">CONTACT ARCHITECT TO DEPLOY</span>
                 </div>
             </div>
         </div>
-        <div class="lg:col-span-12 w-full mt-4">
-            <div class="bg-stone-950 border border-rose-950 rounded-xl p-5">
-                <div class="flex flex-wrap items-center justify-center gap-3">
-                    <a id="linkSocial1" href="#" target="_blank" rel="noopener noreferrer" class="px-4 py-2.5 bg-stone-900 border border-stone-800 rounded-lg text-[10px] font-mono uppercase text-stone-300 hover:border-amber-500 hover:text-amber-500 transition-colors">✦ LinkedIn Gateway</a>
-                    <a id="linkSocial2" href="#" target="_blank" rel="noopener noreferrer" class="px-4 py-2.5 bg-stone-900 border border-stone-800 rounded-lg text-[10px] font-mono uppercase text-stone-300 hover:border-amber-500 hover:text-amber-500 transition-colors">✦ X / Twitter Gateway</a>
-                    <a id="linkSocial3" href="#" target="_blank" rel="noopener noreferrer" class="px-4 py-2.5 bg-stone-900 border border-stone-800 rounded-lg text-[10px] font-mono uppercase text-stone-300 hover:border-rose-600 hover:text-rose-400 transition-colors">✦ Council Room Discord</a>
-                    <a id="linkSocialClubHouse" href="#" target="_blank" rel="noopener noreferrer" class="px-4 py-2.5 bg-gradient-to-r from-[#78350f] to-[#d97706] border border-[#fef08a] rounded-lg text-[10px] font-mono font-black uppercase text-black hover:brightness-110 transition-all shadow-[0_0_15px_rgba(217,119,6,0.3)]">🏆 THE SOVEREIGN CLUB HOUSE & SOCIAL</a>
+        <div class="lg:col-span-12 w-full mt-2">
+            <div class="bg-stone-950 border border-rose-900/50 rounded-xl p-5 md:p-6 shadow-inner">
+                <div class="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-3 md:gap-4">
+                    <a id="linkSocial1" href="#" target="_blank" rel="noopener noreferrer" class="w-full sm:w-auto px-5 py-3 bg-stone-900 border border-stone-700 rounded-lg text-[10px] md:text-xs font-mono uppercase text-stone-300 hover:border-amber-500 hover:text-amber-400 transition-colors text-center">✦ LinkedIn Gateway</a>
+                    <a id="linkSocial2" href="#" target="_blank" rel="noopener noreferrer" class="w-full sm:w-auto px-5 py-3 bg-stone-900 border border-stone-700 rounded-lg text-[10px] md:text-xs font-mono uppercase text-stone-300 hover:border-amber-500 hover:text-amber-400 transition-colors text-center">✦ X / Twitter Gateway</a>
+                    <a id="linkSocial3" href="#" target="_blank" rel="noopener noreferrer" class="w-full sm:w-auto px-5 py-3 bg-stone-900 border border-stone-700 rounded-lg text-[10px] md:text-xs font-mono uppercase text-stone-300 hover:border-rose-500 hover:text-rose-400 transition-colors text-center">✦ Council Room Discord</a>
+                    <a id="linkSocialClubHouse" href="#" target="_blank" rel="noopener noreferrer" class="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-[#78350f] to-[#d97706] border border-[#fef08a] rounded-lg text-[10px] md:text-xs font-mono font-black uppercase text-black hover:brightness-110 transition-all shadow-[0_0_20px_rgba(217,119,6,0.4)] text-center">🏆 THE SOVEREIGN CLUB HOUSE</a>
                 </div>
             </div>
         </div>
     </div>
 </section>
 
-<section class="chiaroscuro-bg p-6 rounded-2xl mb-6 relative z-10 border border-rose-950">
-    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-stone-900 pb-3 mb-5 gap-2">
+<section class="chiaroscuro-bg p-6 md:p-8 rounded-2xl mb-6 relative z-10 border border-rose-900/40">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-stone-800 pb-4 mb-6 gap-4">
         <div>
-            <h2 class="text-lg font-black font-cinzel text-stone-100 uppercase tracking-tight">📡 Decentralized Media Transmission Station</h2>
-            <p class="text-[9px] font-mono text-stone-500 uppercase tracking-wide">DIRECT IRYS BRIDGING TRANSMISSION • EXPLICIT MAXIMUM CAPACITY RESTRICTIONS: 300MB</p>
+            <h2 class="text-xl font-black font-cinzel text-stone-100 uppercase tracking-tight">📡 Decentralized Media Transmission Station</h2>
+            <p class="text-[10px] font-mono text-stone-500 uppercase tracking-wide mt-1">DIRECT IRYS BRIDGING TRANSMISSION • MAXIMUM CAPACITY: 300MB</p>
         </div>
-        <div id="targetBridgeFieldLabel" class="text-[9px] font-mono font-bold text-amber-500 uppercase bg-stone-950 px-2.5 py-1.5 border border-stone-900 rounded">
+        <div id="targetBridgeFieldLabel" class="text-[10px] font-mono font-bold text-amber-500 uppercase bg-stone-950 px-4 py-2 border border-stone-800 rounded-lg shadow-inner text-center w-full md:w-auto">
             TARGET ASPECT: DORMANT (CHOOSE NODES COORD)
         </div>
     </div>
 
-    <div class="flex gap-2 mb-5" role="tablist" aria-label="Transmission station selector">
-        <button type="button" role="tab" aria-selected="true" aria-controls="stationFront" onclick="if(typeof switchStation === 'function') switchStation('front')" id="tabFront" class="tab-btn active flex-1 bg-stone-950 border border-stone-900 rounded-lg py-3 text-[10px] font-black font-mono uppercase tracking-wider text-stone-300 transition-all cursor-pointer">OBVERSE TRANSMISSION DECK (FRONT STATION)</button>
-        <button type="button" role="tab" aria-selected="false" aria-controls="stationBack" onclick="if(typeof switchStation === 'function') switchStation('back')" id="tabBack" class="tab-btn flex-1 bg-stone-950 border border-stone-900 rounded-lg py-3 text-[10px] font-black font-mono uppercase tracking-wider text-stone-300 transition-all cursor-pointer">REVERSE TRANSMISSION DECK (BACK STATION)</button>
+    <div class="flex flex-col sm:flex-row gap-3 mb-6" role="tablist" aria-label="Transmission station selector">
+        <button type="button" role="tab" aria-selected="true" aria-controls="stationFront" onclick="if(typeof switchStation === 'function') switchStation('front')" id="tabFront" class="tab-btn active flex-1 bg-stone-950 border border-stone-800 rounded-xl py-4 text-[11px] font-black font-mono uppercase tracking-wider text-stone-300 transition-all cursor-pointer">OBVERSE DECK (FRONT)</button>
+        <button type="button" role="tab" aria-selected="false" aria-controls="stationBack" onclick="if(typeof switchStation === 'function') switchStation('back')" id="tabBack" class="tab-btn flex-1 bg-stone-950 border border-stone-800 rounded-xl py-4 text-[11px] font-black font-mono uppercase tracking-wider text-stone-300 transition-all cursor-pointer">REVERSE DECK (BACK)</button>
     </div>
 
-    <div id="stationFront" class="station-panel space-y-4">
-        <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 bg-stone-950 border border-stone-900 rounded-lg p-3">
-            <span class="text-[10px] font-mono uppercase text-slate-400 flex items-center">
-                OBVERSE TARGET FILE CLASSIFICATION: 
-                <input type="radio" name="frontType" value="image" checked class="ml-2 accent-amber-500 cursor-pointer w-4 h-4" onchange="if(typeof onTypeToggle === 'function') onTypeToggle('front')" /> <span class="text-amber-500 font-bold ml-1">IMAGE</span> 
-                <span class="mx-2">/</span>
-                <input type="radio" name="frontType" value="video" class="ml-2 accent-rose-500 cursor-pointer w-4 h-4" onchange="if(typeof onTypeToggle === 'function') onTypeToggle('front')" /> <span class="text-rose-500 font-bold ml-1">VIDEO ANIMATION</span>
+    <div id="stationFront" class="station-panel space-y-5">
+        <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 bg-stone-950 border border-stone-800 rounded-xl p-4 md:p-5 shadow-inner">
+            <span class="text-[11px] font-mono uppercase text-slate-400 flex items-center flex-wrap gap-2">
+                TARGET FILE CLASSIFICATION: 
+                <label class="flex items-center cursor-pointer ml-2"><input type="radio" name="frontType" value="image" checked class="accent-amber-500 w-4 h-4" onchange="if(typeof onTypeToggle === 'function') onTypeToggle('front')" /> <span class="text-amber-500 font-bold ml-1.5">IMAGE</span></label>
+                <span class="text-stone-600 mx-1">/</span>
+                <label class="flex items-center cursor-pointer"><input type="radio" name="frontType" value="video" class="accent-rose-500 w-4 h-4" onchange="if(typeof onTypeToggle === 'function') onTypeToggle('front')" /> <span class="text-rose-500 font-bold ml-1.5">VIDEO</span></label>
             </span>
             
-            <button id="btnConnectIrys" onclick="if(typeof ensureIrysReady === 'function') ensureIrysReady()" type="button" class="w-full md:w-auto px-4 py-2 bg-slate-900 border border-blue-900 text-blue-400 font-mono text-sm hover:bg-blue-950 hover:text-blue-300 transition-colors duration-300 shadow-[0_0_15px_rgba(30,58,138,0.3)]">
-                ⚡ ENGAGE IRYS BRIDGE
-            </button>
-            
-            <button onclick="if(typeof executeIrysTopUp === 'function') executeIrysTopUp('0.001')" type="button" class="w-full md:w-auto px-4 py-2 bg-blue-950 border border-blue-900 text-blue-300 hover:bg-blue-900 text-[10px] font-mono font-bold uppercase rounded shadow-[0_0_10px_rgba(30,58,138,0.2)] transition-colors">
-                TOP-UP IRYS (0.001 ETH)
-            </button>
-
-            <button onclick="if(typeof executeArchitectCentralizedUpload === 'function') executeArchitectCentralizedUpload('front')" type="button" class="w-full md:w-auto px-4 py-2 bg-amber-700 hover:bg-amber-600 text-black font-bold text-[10px] font-mono uppercase rounded transition-all">
-                STREAM OBVERSE PAYLOAD
-            </button>
+            <div class="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+                <button id="btnConnectIrys" onclick="if(typeof ensureIrysReady === 'function') ensureIrysReady()" type="button" class="w-full sm:w-auto px-5 py-3 bg-slate-900 border border-blue-800 text-blue-400 font-mono text-xs font-bold hover:bg-blue-950 hover:text-blue-300 transition-colors shadow-[0_0_15px_rgba(30,58,138,0.4)] rounded-lg">
+                    ⚡ ENGAGE IRYS BRIDGE
+                </button>
+                <button onclick="if(typeof executeIrysTopUp === 'function') executeIrysTopUp('0.001')" type="button" class="w-full sm:w-auto px-5 py-3 bg-blue-950 border border-blue-900 text-blue-300 hover:bg-blue-900 text-[10px] font-mono font-bold uppercase rounded-lg shadow-[0_0_10px_rgba(30,58,138,0.3)] transition-colors">
+                    TOP-UP (0.001 ETH)
+                </button>
+                <button onclick="if(typeof executeArchitectCentralizedUpload === 'function') executeArchitectCentralizedUpload('front')" type="button" class="w-full sm:w-auto px-5 py-3 bg-amber-700 hover:bg-amber-600 text-black font-black text-[11px] font-mono uppercase rounded-lg transition-all shadow-[0_0_15px_rgba(217,119,6,0.3)]">
+                    STREAM PAYLOAD
+                </button>
+            </div>
         </div>
         <div>
-            <label class="text-[9px] text-stone-400 font-mono block mb-1 uppercase">FRONT <span id="frontTypeLabel" class="text-amber-500 font-bold">IMAGE</span> SOURCE REFERENCE URI</label>
-            <input type="text" id="forgeFrontUri" placeholder="e.g. Irys Tx ID (43 chars) or full URL" class="w-full bg-stone-950 border border-stone-900 p-3 text-sm font-mono text-stone-200 rounded outline-none focus:border-amber-600 transition-all" />
-            <p class="text-[9px] font-mono text-stone-600 mt-1 uppercase">MAPS CODE TARGET TO → <span id="frontMapTarget" class="text-amber-500 font-bold">frontURI / imageURI</span></p>
+            <label class="text-[10px] text-stone-400 font-mono block mb-2 uppercase tracking-wider">FRONT <span id="frontTypeLabel" class="text-amber-500 font-bold">IMAGE</span> SOURCE REFERENCE URI</label>
+            <input type="text" id="forgeFrontUri" placeholder="e.g. Irys Tx ID (43 chars) or full URL" class="w-full bg-black border border-stone-800 p-3.5 text-sm font-mono text-stone-200 rounded-xl outline-none focus:border-amber-500 transition-all" />
+            <p class="text-[10px] font-mono text-stone-500 mt-2 uppercase">MAPS CODE TARGET TO → <span id="frontMapTarget" class="text-amber-500 font-bold">frontURI / imageURI</span></p>
         </div>
     </div>
 
-    <div id="stationBack" class="station-panel space-y-4 hidden">
-        <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 bg-stone-950 border border-stone-900 rounded-lg p-3">
-            <span class="text-[10px] font-mono uppercase text-slate-400 flex items-center">
-                REVERSE TARGET FILE CLASSIFICATION: 
-                <input type="radio" name="backType" value="image" checked class="ml-2 accent-amber-500 cursor-pointer w-4 h-4" onchange="if(typeof onTypeToggle === 'function') onTypeToggle('back')" /> <span class="text-amber-500 font-bold ml-1">IMAGE</span> 
-                <span class="mx-2">/</span>
-                <input type="radio" name="backType" value="video" class="ml-2 accent-rose-500 cursor-pointer w-4 h-4" onchange="if(typeof onTypeToggle === 'function') onTypeToggle('back')" /> <span class="text-rose-500 font-bold ml-1">VIDEO ANIMATION</span>
+    <div id="stationBack" class="station-panel space-y-5 hidden">
+        <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 bg-stone-950 border border-stone-800 rounded-xl p-4 md:p-5 shadow-inner">
+            <span class="text-[11px] font-mono uppercase text-slate-400 flex items-center flex-wrap gap-2">
+                TARGET FILE CLASSIFICATION: 
+                <label class="flex items-center cursor-pointer ml-2"><input type="radio" name="backType" value="image" checked class="accent-amber-500 w-4 h-4" onchange="if(typeof onTypeToggle === 'function') onTypeToggle('back')" /> <span class="text-amber-500 font-bold ml-1.5">IMAGE</span></label>
+                <span class="text-stone-600 mx-1">/</span>
+                <label class="flex items-center cursor-pointer"><input type="radio" name="backType" value="video" class="accent-rose-500 w-4 h-4" onchange="if(typeof onTypeToggle === 'function') onTypeToggle('back')" /> <span class="text-rose-500 font-bold ml-1.5">VIDEO</span></label>
             </span>
-            <button onclick="if(typeof executeArchitectCentralizedUpload === 'function') executeArchitectCentralizedUpload('back')" type="button" class="w-full md:w-auto px-4 py-2 bg-amber-700 hover:bg-amber-600 text-black font-bold text-[10px] font-mono uppercase rounded transition-all">
+            <button onclick="if(typeof executeArchitectCentralizedUpload === 'function') executeArchitectCentralizedUpload('back')" type="button" class="w-full lg:w-auto px-6 py-3 bg-amber-700 hover:bg-amber-600 text-black font-black text-[11px] font-mono uppercase rounded-lg transition-all shadow-[0_0_15px_rgba(217,119,6,0.3)]">
                 STREAM REVERSE PAYLOAD
             </button>
         </div>
         <div>
-            <label class="text-[9px] text-stone-400 font-mono block mb-1 uppercase">BACK <span id="backTypeLabel" class="text-amber-500 font-bold">IMAGE</span> SOURCE REFERENCE URI</label>
-            <input type="text" id="forgeBackUri" placeholder="e.g. Irys Tx ID (43 chars) or full URL" class="w-full bg-stone-950 border border-stone-900 p-3 text-sm font-mono text-stone-200 rounded outline-none focus:border-amber-600 transition-all" />
-            <p class="text-[9px] font-mono text-stone-600 mt-1 uppercase">MAPS CODE TARGET TO → <span id="backMapTarget" class="text-amber-500 font-bold">backURI / imageURI</span></p>
+            <label class="text-[10px] text-stone-400 font-mono block mb-2 uppercase tracking-wider">BACK <span id="backTypeLabel" class="text-amber-500 font-bold">IMAGE</span> SOURCE REFERENCE URI</label>
+            <input type="text" id="forgeBackUri" placeholder="e.g. Irys Tx ID (43 chars) or full URL" class="w-full bg-black border border-stone-800 p-3.5 text-sm font-mono text-stone-200 rounded-xl outline-none focus:border-amber-500 transition-all" />
+            <p class="text-[10px] font-mono text-stone-500 mt-2 uppercase">MAPS CODE TARGET TO → <span id="backMapTarget" class="text-amber-500 font-bold">backURI / imageURI</span></p>
         </div>
     </div>
 </section>
 
-<section class="chiaroscuro-bg p-6 rounded-2xl mb-6 relative z-10 border border-rose-950">
-    <div class="border-b border-stone-900 pb-3 mb-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+<section class="chiaroscuro-bg p-6 md:p-8 rounded-2xl mb-6 relative z-10 border border-rose-900/40">
+    <div class="border-b border-stone-800 pb-4 mb-6">
+        <h2 class="text-xl font-black font-cinzel gold-text uppercase tracking-tight">⚡ Master Inscription Ledger Operations</h2>
+        <p class="text-[10px] font-mono text-stone-500 uppercase tracking-wide mt-1">IMMUTABLE IDENTITY ASSIGNMENTS • FORGING CRYPTOGRAPHIC CONSENSUS PIPELINES</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
         <div>
-            <h2 class="text-lg font-black font-cinzel gold-text uppercase tracking-tight">⚡ Master Inscription Ledger Operations</h2>
-            <p class="text-[9px] font-mono text-stone-500 uppercase tracking-wide">IMMUTABLE IDENTITY ASSIGNMENTS • FORGING CRYPTOGRAPHIC CONSENSUS PIPELINES</p>
+            <label class="text-[10px] text-stone-400 font-mono block mb-2 uppercase tracking-wider">① Token ID (t)</label>
+            <input type="number" id="novaTokenId" min="1" max="333" placeholder="1 - 333 Execution coordinate" class="w-full bg-black border border-stone-800 p-3.5 text-sm font-mono text-amber-500 rounded-xl outline-none focus:border-amber-500 transition-all" />
+        </div>
+        <div>
+            <label class="text-[10px] text-stone-400 font-mono block mb-2 uppercase tracking-wider">② Identity DNA : (YOUR NAME)</label>
+            <input type="text" id="novaDnaInput" maxlength="1024" placeholder='e.g. Anchor identifier sequence' class="w-full bg-black border border-stone-800 p-3.5 text-sm font-mono text-rose-300 rounded-xl outline-none focus:border-rose-500 transition-all" />
+        </div>
+        <div>
+            <label class="text-[10px] text-stone-400 font-mono block mb-2 uppercase tracking-wider">③ Video URI (video)</label>
+            <input type="text" id="novaVideoUri" maxlength="128" placeholder="Irys Tx ID (43 chars) or full URI" class="w-full bg-black border border-stone-800 p-3.5 text-sm font-mono text-amber-400 rounded-xl outline-none focus:border-amber-500 transition-all" />
+        </div>
+        <div>
+            <label class="text-[10px] text-stone-400 font-mono block mb-2 uppercase tracking-wider">④ Chrono-Map/Pixel Anchor (hiddenProperty)</label>
+            <input type="text" id="novaHiddenInput" maxlength="1024" placeholder="Irys Tx ID (43 chars) or full URI" class="w-full bg-black border border-rose-900/60 p-3.5 text-sm font-mono text-rose-400 rounded-xl outline-none focus:border-rose-500 transition-all" />
         </div>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-            <label class="text-[9px] text-stone-400 font-mono block mb-1 uppercase">① Token ID (t)</label>
-            <input type="number" id="novaTokenId" min="1" max="333" placeholder="1 - 333 Execution coordinate" class="w-full bg-stone-950 border border-stone-900 p-3 text-sm font-mono text-amber-500 rounded outline-none focus:border-amber-600 transition-all" />
-        </div>
-        <div>
-            <label class="text-[9px] text-stone-400 font-mono block mb-1 uppercase">② Identity DNA : (YOUR NAME)</label>
-            <input type="text" id="novaDnaInput" maxlength="1024" placeholder='e.g. Anchor identifier sequence mapping coordinates' class="w-full bg-stone-950 border border-stone-900 p-3 text-sm font-mono text-rose-300 rounded outline-none focus:border-rose-600 transition-all" />
-        </div>
-        <div>
-            <label class="text-[9px] text-stone-400 font-mono block mb-1 uppercase">③ Video URI (video)</label>
-            <input type="text" id="novaVideoUri" maxlength="128" placeholder="Irys Tx ID (43 chars) or full URI" class="w-full bg-stone-950 border border-stone-900 p-3 text-sm font-mono text-amber-400 rounded outline-none focus:border-amber-500 transition-all" />
-        </div>
-        <div>
-            <label class="text-[9px] text-stone-400 font-mono block mb-1 uppercase">④ Chrono-Map/Pixel Anchor (hiddenProperty)</label>
-            <input type="text" id="novaHiddenInput" maxlength="1024" placeholder="Irys Tx ID (43 chars) or full URI" class="w-full bg-stone-950 border border-rose-950 p-3 text-sm font-mono text-rose-400 rounded outline-none focus:border-rose-600 transition-all" />
-        </div>
-    </div>
-
-    <div class="mt-8 flex flex-col gap-4">
-        <div class="p-4 border border-rose-950 rounded-xl bg-black/40">
-            <span class="text-[9px] font-mono text-rose-400 uppercase tracking-widest block mb-3 pb-4 leading-relaxed">• Unlocks Sanctified Status & Lifetime Identity Updates | UPDATE IDENTITY: Requires Sanctified status (isSanctified == true). Accepts 4 parameters: Token ID (t), Front URI (front), Back URI (back), Video URI (video).</span>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <button onclick="document.getElementById('novaWarnModal').classList.remove('hidden')" class="btn-gold-master rounded-xl py-3.5 text-xs">[ ⚡ SANCTIFY NOVA CONSECRATION ]</button>
-                <button onclick="if(typeof executeUpdateIdentity === 'function') executeUpdateIdentity(this)" class="bg-stone-950 border border-rose-700 text-rose-400 font-black font-mono text-xs py-3.5 rounded-xl uppercase tracking-wider hover:bg-stone-900 transition-all">[ 📜 UPDATE SANCTIFIED IDENTITY ]</button>
+    <div class="mt-8">
+        <div class="p-5 md:p-6 border border-rose-900/50 rounded-2xl bg-black/40 shadow-inner">
+            <span class="text-[10px] font-mono text-rose-400 uppercase tracking-widest block mb-4 pb-4 border-b border-stone-800 leading-relaxed">
+                • Unlocks Sanctified Status & Lifetime Identity Updates | UPDATE IDENTITY: Requires Sanctified status (isSanctified == true). Accepts 4 parameters: Token ID (t), Front URI (front), Back URI (back), Video URI (video).
+            </span>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <button onclick="document.getElementById('novaWarnModal').classList.remove('hidden')" class="btn-gold-master rounded-xl py-4 text-xs md:text-sm shadow-[0_0_20px_rgba(217,119,6,0.3)]">[ ⚡ SANCTIFY NOVA CONSECRATION ]</button>
+                <button onclick="if(typeof executeUpdateIdentity === 'function') executeUpdateIdentity(this)" class="bg-stone-950 border border-rose-700 text-rose-400 font-black font-mono text-xs md:text-sm py-4 rounded-xl uppercase tracking-wider hover:bg-rose-950 transition-all shadow-[0_0_15px_rgba(153,27,27,0.2)]">[ 📜 UPDATE SANCTIFIED IDENTITY ]</button>
             </div>
         </div>
     </div>
 </section>
 
-<section class="chiaroscuro-bg p-6 rounded-2xl mb-6 relative z-10 border border-rose-950">
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-stone-900 pb-3 mb-5 gap-2">
+<section class="chiaroscuro-bg p-6 md:p-8 rounded-2xl mb-6 relative z-10 border border-rose-900/40">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-stone-800 pb-4 mb-6 gap-3">
         <div>
-            <h2 class="text-lg font-black font-cinzel text-stone-100 uppercase tracking-tight">📡 Imperial Governance Room Ledger</h2>
-            <p class="text-[9px] font-mono text-stone-500 uppercase tracking-wide">RATIFICATION REGISTRY ENGINE // RESTRICTED MANDATE GENERATION PIPELINES</p>
+            <h2 class="text-xl font-black font-cinzel text-stone-100 uppercase tracking-tight">📡 Imperial Governance Room Ledger</h2>
+            <p class="text-[10px] font-mono text-stone-500 uppercase tracking-wide mt-1">RATIFICATION REGISTRY ENGINE // RESTRICTED MANDATE GENERATION PIPELINES</p>
         </div>
-        <span class="bg-stone-950 text-stone-400 border border-stone-800 text-[10px] font-black px-2.5 py-1.5 tracking-widest uppercase rounded">ACTIVE MANDATE REGISTER</span>
+        <span class="bg-stone-950 text-stone-400 border border-stone-700 text-[10px] font-black px-3 py-2 tracking-widest uppercase rounded-lg shadow-inner">ACTIVE MANDATE REGISTER</span>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 mb-5">
-        <div class="lg:col-span-5 space-y-2 max-h-56 overflow-y-auto scroll-dark pr-2 w-full" id="proposalBoard">
-            <div id="proposalBoardSkeleton" class="space-y-2 w-full">
-                <div class="w-full h-14 bg-stone-900/40 rounded-lg animate-pulse border border-stone-800"></div>
-                <div class="w-full h-14 bg-stone-900/40 rounded-lg animate-pulse border border-stone-800" style="animation-delay: 150ms;"></div>
-                <div class="w-full h-14 bg-stone-900/40 rounded-lg animate-pulse border border-stone-800" style="animation-delay: 300ms;"></div>
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
+        <div class="lg:col-span-5 space-y-3 max-h-64 overflow-y-auto scroll-dark pr-3 w-full" id="proposalBoard">
+            <div id="proposalBoardSkeleton" class="space-y-3 w-full">
+                <div class="w-full h-16 bg-stone-900/40 rounded-xl animate-pulse border border-stone-800"></div>
+                <div class="w-full h-16 bg-stone-900/40 rounded-xl animate-pulse border border-stone-800" style="animation-delay: 150ms;"></div>
+                <div class="w-full h-16 bg-stone-900/40 rounded-xl animate-pulse border border-stone-800" style="animation-delay: 300ms;"></div>
             </div>
         </div>
 
-        <div class="lg:col-span-7 grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div class="bg-black/50 rounded-lg border border-stone-900 p-3"><span class="text-[9px] font-mono uppercase text-stone-500 block">QUORUM TARGET</span><span id="govQuorum" class="text-lg font-black font-mono text-rose-400">199</span></div>
-            <div class="bg-black/50 rounded-lg border border-stone-900 p-3"><span class="text-[9px] font-mono uppercase text-stone-500 block">TOTAL DIRECTIVES</span><span id="govTotalProposals" class="text-lg font-black font-mono text-stone-200">0</span></div>
-            <div class="bg-black/50 rounded-lg border border-stone-900 p-3"><span class="text-[9px] font-mono uppercase text-stone-500 block">MANDATE ID</span><span id="govProposalId" class="text-lg font-black font-mono text-amber-500">—</span></div>
-            <div class="bg-black/50 rounded-lg border border-stone-900 p-3"><span class="text-[9px] font-mono uppercase text-stone-500 block">CHAMBER STATE</span><span id="govState" class="text-xs font-black font-mono text-amber-500 mt-1 block">IDLE</span></div>
+        <div class="lg:col-span-7 grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div class="bg-black/60 rounded-xl border border-stone-800 p-4 flex flex-col justify-center shadow-inner"><span class="text-[10px] font-mono uppercase text-stone-500 block mb-1">QUORUM TARGET</span><span id="govQuorum" class="text-xl md:text-2xl font-black font-mono text-rose-400">199</span></div>
+            <div class="bg-black/60 rounded-xl border border-stone-800 p-4 flex flex-col justify-center shadow-inner"><span class="text-[10px] font-mono uppercase text-stone-500 block mb-1">TOTAL DIRECTIVES</span><span id="govTotalProposals" class="text-xl md:text-2xl font-black font-mono text-stone-200">0</span></div>
+            <div class="bg-black/60 rounded-xl border border-stone-800 p-4 flex flex-col justify-center shadow-inner"><span class="text-[10px] font-mono uppercase text-stone-500 block mb-1">MANDATE ID</span><span id="govProposalId" class="text-xl md:text-2xl font-black font-mono text-amber-500">—</span></div>
+            <div class="bg-black/60 rounded-xl border border-stone-800 p-4 flex flex-col justify-center shadow-inner"><span class="text-[10px] font-mono uppercase text-stone-500 block mb-1">CHAMBER STATE</span><span id="govState" class="text-sm md:text-base font-black font-mono text-amber-500 mt-1 block">IDLE</span></div>
         </div>
     </div>
 
-    <div class="pt-5 border-t border-stone-900 grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div class="space-y-3 bg-black/40 p-4 rounded-xl border border-stone-900 flex flex-col justify-between">
+    <div class="pt-6 border-t border-stone-800 grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="space-y-4 bg-black/40 p-5 rounded-2xl border border-stone-800 flex flex-col justify-between shadow-inner">
             <div>
-                <span class="text-[9px] font-mono text-stone-400 uppercase tracking-wider block mb-2">// CONFIRM AFFIRMATIVE WEIGHT RATIFICATION</span>
-                <div class="grid grid-cols-2 gap-2 mb-2">
-                    <input type="number" id="voteProposalId" placeholder="MANDATE ID" class="w-full bg-stone-950 border border-stone-900 p-2.5 text-[10px] font-mono text-stone-200 rounded outline-none" />
-                    <input type="number" id="voteTokenId" min="1" max="333" placeholder="WEIGHT CELL ID" class="w-full bg-stone-950 border border-stone-900 p-2.5 text-[10px] font-mono text-amber-500 rounded outline-none" />
+                <span class="text-[10px] font-mono text-stone-400 uppercase tracking-wider block mb-3 font-bold">// CONFIRM AFFIRMATIVE WEIGHT RATIFICATION</span>
+                <div class="flex flex-col sm:flex-row gap-3 mb-3">
+                    <input type="number" id="voteProposalId" placeholder="MANDATE ID" class="w-full bg-black border border-stone-800 p-3 text-[11px] font-mono text-stone-200 rounded-lg outline-none focus:border-amber-500 transition-all" />
+                    <input type="number" id="voteTokenId" min="1" max="333" placeholder="WEIGHT CELL ID" class="w-full bg-black border border-stone-800 p-3 text-[11px] font-mono text-amber-500 rounded-lg outline-none focus:border-amber-500 transition-all" />
                 </div>
             </div>
-            <button onclick="if(typeof executeCastVote === 'function') executeCastVote(this)" class="w-full bg-gradient-to-r from-rose-950 to-rose-700 text-white font-black font-mono text-xs py-3.5 rounded-lg uppercase tracking-widest hover:brightness-110 transition-all shadow-[0_0_15px_rgba(136,19,55,0.25)] border border-rose-500">🔥 VOTE (AFFIRMATIVE)</button>
+            <button onclick="if(typeof executeCastVote === 'function') executeCastVote(this)" class="w-full bg-gradient-to-r from-rose-950 to-rose-800 text-white font-black font-mono text-xs py-4 rounded-xl uppercase tracking-widest hover:brightness-110 transition-all shadow-[0_0_20px_rgba(153,27,27,0.4)] border border-rose-600">🔥 VOTE (AFFIRMATIVE)</button>
         </div>
 
-        <div class="space-y-3 bg-black/40 p-4 rounded-xl border border-stone-900 flex flex-col justify-between">
+        <div class="space-y-4 bg-black/40 p-5 rounded-2xl border border-stone-800 flex flex-col justify-between shadow-inner">
             <div>
-                <span class="text-[9px] font-mono text-amber-500 uppercase tracking-wider block mb-2">// DISSEMINATE STRUCTURAL DIRECTIVE (COUNCIL 12 ONLY)</span>
-                <div class="grid grid-cols-3 gap-2 mb-2">
-                    <input type="text" id="propAmountInput" placeholder="ETH AMT" class="bg-stone-950 border border-stone-900 p-2.5 text-[10px] font-mono text-stone-200 rounded outline-none" />
-                    <input type="text" id="propTargetInput" placeholder="PAYEE HEX ADDR" maxlength="128" class="bg-stone-950 border border-stone-900 p-2.5 text-[10px] font-mono text-stone-200 rounded outline-none" />
-                    <input type="number" id="propDurationInput" min="1" max="30" placeholder="DAYS(1-30)" class="bg-stone-950 border border-stone-900 p-2.5 text-[10px] font-mono text-stone-200 rounded outline-none" />
+                <span class="text-[10px] font-mono text-amber-500 uppercase tracking-wider block mb-3 font-bold">// DISSEMINATE STRUCTURAL DIRECTIVE (COUNCIL 12 ONLY)</span>
+                <div class="flex flex-col gap-3 mb-3">
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <input type="text" id="propAmountInput" placeholder="ETH AMT" class="w-full sm:w-1/2 bg-black border border-stone-800 p-3 text-[11px] font-mono text-stone-200 rounded-lg outline-none focus:border-amber-500 transition-all" />
+                        <input type="number" id="propDurationInput" min="1" max="30" placeholder="DAYS(1-30)" class="w-full sm:w-1/2 bg-black border border-stone-800 p-3 text-[11px] font-mono text-stone-200 rounded-lg outline-none focus:border-amber-500 transition-all" />
+                    </div>
+                    <input type="text" id="propTargetInput" placeholder="PAYEE HEX ADDR" maxlength="128" class="w-full bg-black border border-stone-800 p-3 text-[11px] font-mono text-stone-200 rounded-lg outline-none focus:border-amber-500 transition-all" />
                 </div>
             </div>
-            <button onclick="if(typeof executeCreateProposal === 'function') executeCreateProposal(this)" class="w-full bg-stone-950 border border-amber-600 text-amber-400 font-black font-mono text-[11px] py-3.5 rounded-lg uppercase tracking-wider hover:bg-stone-900 transition-all shadow-[0_0_15px_rgba(217,119,6,0.15)]">⚡ PROPOSE MODIFICATION</button>
+            <button onclick="if(typeof executeCreateProposal === 'function') executeCreateProposal(this)" class="w-full bg-stone-950 border border-amber-600 text-amber-400 font-black font-mono text-xs py-4 rounded-xl uppercase tracking-wider hover:bg-stone-900 transition-all shadow-[0_0_20px_rgba(217,119,6,0.2)]">⚡ PROPOSE MODIFICATION</button>
         </div>
 
-        <div class="space-y-3 bg-black/40 p-4 rounded-xl border border-stone-900 flex flex-col justify-between">
+        <div class="space-y-4 bg-black/40 p-5 rounded-2xl border border-stone-800 flex flex-col justify-between shadow-inner">
             <div>
-                <span class="text-[9px] font-mono text-rose-400 uppercase tracking-wider block mb-2">// TIMELOCK APPRAISAL MACHINERY PIPELINES</span>
-                <input type="number" id="timelockActionProposalId" placeholder="TARGET MANDATE DIRECTIVE ID" class="w-full bg-stone-950 border border-stone-900 p-2.5 text-[11px] font-mono text-stone-200 rounded outline-none mb-2" />
+                <span class="text-[10px] font-mono text-rose-400 uppercase tracking-wider block mb-3 font-bold">// TIMELOCK APPRAISAL MACHINERY PIPELINES</span>
+                <input type="number" id="timelockActionProposalId" placeholder="TARGET MANDATE DIRECTIVE ID" class="w-full bg-black border border-stone-800 p-3 text-[11px] font-mono text-stone-200 rounded-lg outline-none focus:border-rose-500 transition-all mb-3" />
             </div>
-            <div class="grid grid-cols-2 gap-2">
-                <button onclick="if(typeof executeQueueProposal === 'function') executeQueueProposal(document.getElementById('timelockActionProposalId').value, this)" class="bg-stone-950 border border-rose-800 text-rose-400 font-bold font-mono text-[10px] py-3.5 rounded-lg uppercase hover:bg-stone-900 transition-all">QUEUE TIMELOCK</button>                    
-                <button onclick="if(typeof triggerExecuteProposal === 'function') triggerExecuteProposal(document.getElementById('timelockActionProposalId').value, this)" class="bg-rose-900 text-white font-black font-mono text-[10px] py-3.5 rounded-lg uppercase hover:bg-rose-800 transition-all shadow-[0_0_15px_rgba(136,19,55,0.4)] border border-rose-600">EXECUTE PROPOSAL DISPATCH</button>
+            <div class="flex flex-col sm:flex-row gap-3">
+                <button onclick="if(typeof executeQueueProposal === 'function') executeQueueProposal(document.getElementById('timelockActionProposalId').value, this)" class="w-full sm:w-1/2 bg-stone-950 border border-rose-800 text-rose-400 font-bold font-mono text-[10px] py-4 rounded-xl uppercase hover:bg-stone-900 transition-all">QUEUE TIMELOCK</button>                    
+                <button onclick="if(typeof triggerExecuteProposal === 'function') triggerExecuteProposal(document.getElementById('timelockActionProposalId').value, this)" class="w-full sm:w-1/2 bg-rose-900 text-white font-black font-mono text-[10px] py-4 rounded-xl uppercase hover:bg-rose-800 transition-all shadow-[0_0_20px_rgba(153,27,27,0.5)] border border-rose-600">EXECUTE DISPATCH</button>
             </div>
         </div>
     </div>
 </section>
 
-<section class="chiaroscuro-bg p-6 rounded-2xl mb-6 relative z-10 border border-rose-950">
-    <div class="border-b border-stone-900 pb-3 mb-5">
-        <h2 class="text-lg font-black font-cinzel text-stone-100 uppercase tracking-tight">👑 Protocol Architecture Deployment</h2>
-        <p class="text-[9px] font-mono text-stone-500 uppercase tracking-wide">AUTONOMOUS INFRASTRUCTURE DEPLOYMENT & STATE RELINQUISHMENT PROTOCOL</p>
+<section class="chiaroscuro-bg p-6 md:p-8 rounded-2xl mb-6 relative z-10 border border-rose-900/40">
+    <div class="border-b border-stone-800 pb-4 mb-6">
+        <h2 class="text-xl font-black font-cinzel text-stone-100 uppercase tracking-tight flex items-center gap-2">👑 Protocol Architecture Deployment</h2>
+        <p class="text-[10px] font-mono text-stone-500 uppercase tracking-wide mt-1">AUTONOMOUS INFRASTRUCTURE DEPLOYMENT & STATE RELINQUISHMENT PROTOCOL</p>
     </div>
     
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <div class="lg:col-span-4 flex flex-col justify-center">
-            <div class="bg-stone-950 p-4 rounded-xl border border-stone-900 shadow-[inset_0_0_20px_rgba(0,0,0,0.9)]">
-                <label class="text-[10px] text-stone-400 font-mono font-bold block mb-2 uppercase tracking-widest text-center border-b border-stone-900 pb-2">TARGET CELL POSITION IDENTIFIER</label>
-                <input type="number" id="settleTokenId" min="1" max="333" placeholder="Token ID (1-333) coordinate input" class="w-full bg-black border border-stone-800 p-3 text-sm font-mono text-center text-white rounded outline-none focus:border-amber-500 transition-all mb-4" />
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div class="lg:col-span-5 flex flex-col justify-center">
+            <div class="bg-stone-950 p-5 md:p-6 rounded-2xl border border-stone-800 shadow-[inset_0_0_30px_rgba(0,0,0,0.9)]">
+                <label class="text-[11px] text-stone-400 font-mono font-bold block mb-4 uppercase tracking-widest text-center border-b border-stone-800 pb-3">TARGET CELL POSITION IDENTIFIER</label>
+                <input type="number" id="settleTokenId" min="1" max="333" placeholder="Token ID (1-333) coordinate input" class="w-full bg-black border border-stone-700 p-4 text-base font-mono text-center text-white rounded-xl outline-none focus:border-amber-500 transition-all mb-5 shadow-inner" />
                 
-                <div class="bg-black/80 border border-stone-900 rounded-lg p-3 text-[10px] font-mono space-y-2">
-                    <div class="flex justify-between items-center"><span class="text-stone-500">CENTRAL PROTOCOL ALLOCATION:</span><span class="text-stone-200" id="exitResPerNft">0.0000 ETH</span></div>
-                    <div class="flex justify-between items-center border-t border-stone-900 pt-2"><span class="text-stone-500">AUTONOMOUS MATHEMATICAL REPATRIATION:</span><span class="text-rose-400 font-bold" id="exitRefund">0.0000 ETH</span></div>
+                <div class="bg-black/80 border border-stone-800 rounded-xl p-4 text-[11px] font-mono space-y-3">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-1"><span class="text-stone-500">CENTRAL PROTOCOL ALLOCATION:</span><span class="text-stone-200 font-bold" id="exitResPerNft">0.0000 ETH</span></div>
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-1 border-t border-stone-800 pt-3"><span class="text-stone-500">AUTONOMOUS MATHEMATICAL REPATRIATION:</span><span class="text-rose-400 font-bold" id="exitRefund">0.0000 ETH</span></div>
                 </div>
             </div>
         </div>
-        <div class="lg:col-span-8 bg-stone-950 border border-red-950 p-5 rounded-xl flex flex-col justify-between shadow-[0_0_20px_rgba(220,38,38,0.05)] hover:border-red-700/50 transition-colors">
+        <div class="lg:col-span-7 bg-stone-950 border border-red-900/60 p-6 md:p-8 rounded-2xl flex flex-col justify-between shadow-[0_0_30px_rgba(220,38,38,0.1)] hover:border-red-700/80 transition-colors">
             <div>
-                <h3 class="text-red-500 font-black font-mono text-sm mb-2 uppercase tracking-wider flex items-center gap-2"><span>🩸</span> THE SOVEREIGN IMMOLATION RITUAL</h3>
-                <p class="text-[10px] text-stone-400 font-mono mb-4 leading-relaxed">
+                <h3 class="text-red-500 font-black font-mono text-base md:text-lg mb-3 uppercase tracking-wider flex items-center gap-3"><span class="text-2xl">🩸</span> THE SOVEREIGN IMMOLATION RITUAL</h3>
+                <p class="text-[11px] md:text-xs text-stone-400 font-mono mb-6 leading-relaxed">
                     Exit Council • Permanent Pass Relinquishment via On-Chain Contract
                 </p>
             </div>
             <div class="flex">
-                <button id="btnBurnToken" onclick="if(typeof executeSovereignSupport === 'function') executeSovereignSupport(this)" class="w-full bg-red-800 hover:bg-red-700 text-white font-black text-xs py-3.5 rounded-lg uppercase tracking-widest transition-all shadow-[0_0_20px_rgba(220,38,38,0.4)] border border-red-500">[ 🔥 SOVEREIGN IMMOLATION ]
+                <button id="btnBurnToken" onclick="if(typeof executeSovereignSupport === 'function') executeSovereignSupport(this)" class="w-full bg-red-900 hover:bg-red-800 text-white font-black text-sm py-4 rounded-xl uppercase tracking-widest transition-all shadow-[0_0_30px_rgba(220,38,38,0.5)] border border-red-500">[ 🔥 SOVEREIGN IMMOLATION ]
                 </button>
             </div>
         </div>
     </div>
 </section>
 
-<section id="adminSector" class="admin-locked chiaroscuro-bg p-6 rounded-2xl mb-6 relative z-10 border border-rose-950 shadow-[0_0_35px_rgba(0,0,0,0.9)] hidden">
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-stone-900 pb-3 mb-5 gap-2">
+<section id="adminSector" class="admin-locked chiaroscuro-bg p-6 md:p-8 rounded-2xl mb-6 relative z-10 border border-rose-900/50 shadow-[0_0_40px_rgba(0,0,0,0.9)] hidden">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-stone-800 pb-4 mb-6 gap-3">
         <div>
-            <h2 class="text-lg font-black font-cinzel text-rose-500 uppercase tracking-tight">♠️ Imperial Override Console (ARCHITECT)</h2>
-            <p class="text-[9px] font-mono text-stone-600 uppercase tracking-wide">// RESTRICTED OVERRIDE OPERATIONS DETECTED BY ON-CHAIN PRIVILEGES</p>
+            <h2 class="text-xl font-black font-cinzel text-rose-500 uppercase tracking-tight">♠️ Imperial Override Console (ARCHITECT)</h2>
+            <p class="text-[10px] font-mono text-stone-500 uppercase tracking-wide mt-1">// RESTRICTED OVERRIDE OPERATIONS DETECTED BY ON-CHAIN PRIVILEGES</p>
         </div>
-        <span class="bg-rose-950/20 text-rose-600 border border-rose-900/30 text-[10px] font-black px-2.5 py-1.5 tracking-widest uppercase rounded">CONSOLE MANAGEMENT</span>
+        <span class="bg-rose-950/40 text-rose-400 border border-rose-800 text-[10px] font-black px-3 py-2 tracking-widest uppercase rounded-lg shadow-inner">CONSOLE MANAGEMENT</span>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div class="space-y-4 border border-stone-900 p-4 rounded-xl bg-black/40">
-            <span class="text-[10px] font-mono font-bold text-amber-500 uppercase tracking-widest block border-b border-stone-900 pb-1">⚙ MANIFEST COMPONENT (2 AUTO-MAP FIELDS)</span>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
+        <div class="space-y-5 border border-stone-800 p-5 rounded-2xl bg-black/50 shadow-inner">
+            <span class="text-[11px] font-mono font-bold text-amber-500 uppercase tracking-widest block border-b border-stone-800 pb-2">// MANIFEST COMPONENT (2 AUTO-MAP FIELDS)</span>
             <div>
-                <label class="text-[9px] text-stone-500 font-mono block mb-1">ROOT PROPERTY NAME</label>
-                <input type="text" id="propName" value="THE IMPERIAL SOVEREIGN DEED ♠️" maxlength="128" class="w-full bg-stone-950 border border-stone-900 p-2.5 text-[10px] font-mono text-stone-200 rounded outline-none" />
+                <label class="text-[10px] text-stone-500 font-mono block mb-2">ROOT PROPERTY NAME</label>
+                <input type="text" id="propName" value="THE IMPERIAL SOVEREIGN DEED ♠️" maxlength="128" class="w-full bg-black border border-stone-800 p-3 text-[11px] font-mono text-stone-200 rounded-lg outline-none focus:border-amber-500 transition-all" />
             </div>
-            <div class="space-y-2 max-h-64 overflow-y-auto scroll-dark pr-1">
-                <div class="bg-stone-950 p-2.5 rounded border border-stone-900">
-                    <input type="text" id="propKey1" value="RANK" class="w-full bg-black border border-stone-900 p-2 text-[9px] font-mono mb-1 text-stone-400 rounded" />
-                    <input type="text" id="prop1" value="" placeholder="AUTO-EXTRACTED FROM RANK DETAILED" class="w-full bg-black border border-stone-900 p-2 text-[10px] font-mono text-stone-200 rounded" />
+            <div class="space-y-3 max-h-64 overflow-y-auto scroll-dark pr-2">
+                <div class="bg-stone-950 p-3 rounded-lg border border-stone-800">
+                    <input type="text" id="propKey1" value="RANK" class="w-full bg-black border border-stone-800 p-2.5 text-[10px] font-mono mb-2 text-stone-400 rounded-md outline-none" />
+                    <input type="text" id="prop1" value="" placeholder="AUTO-EXTRACTED FROM RANK DETAILED" class="w-full bg-black border border-stone-800 p-2.5 text-[11px] font-mono text-stone-200 rounded-md outline-none" />
                 </div>
-                <div class="bg-stone-950 p-2.5 rounded border border-stone-900">
-                    <input type="text" id="propKey2" value="TRANSFER" class="w-full bg-black border border-stone-900 p-2 text-[9px] font-mono mb-1 text-stone-400 rounded" />
-                    <input type="text" id="prop2" value="TRANSFERABLE" class="w-full bg-black border border-stone-900 p-2 text-[10px] font-mono text-stone-200 rounded" />
+                <div class="bg-stone-950 p-3 rounded-lg border border-stone-800">
+                    <input type="text" id="propKey2" value="TRANSFER" class="w-full bg-black border border-stone-800 p-2.5 text-[10px] font-mono mb-2 text-stone-400 rounded-md outline-none" />
+                    <input type="text" id="prop2" value="TRANSFERABLE" class="w-full bg-black border border-stone-800 p-2.5 text-[11px] font-mono text-stone-200 rounded-md outline-none" />
                 </div>
             </div>
-            <button onclick="if(typeof buildAndUploadMetadata === 'function') buildAndUploadMetadata(this)" class="w-full bg-gradient-to-r from-amber-900 to-amber-700 text-black font-black font-mono text-[10px] py-3 rounded-lg uppercase tracking-wider">COMPILE & TRANSMIT MANIFEST JSON</button>
+            <button onclick="if(typeof buildAndUploadMetadata === 'function') buildAndUploadMetadata(this)" class="w-full bg-gradient-to-r from-amber-900 to-amber-700 text-black font-black font-mono text-[11px] py-3.5 rounded-xl uppercase tracking-wider shadow-[0_0_15px_rgba(217,119,6,0.3)]">COMPILE & TRANSMIT MANIFEST JSON</button>
         </div>
 
-        <div class="space-y-3 border border-stone-900 p-4 rounded-xl bg-black/40">
-            <span class="text-[10px] font-mono text-amber-600 font-bold uppercase tracking-wider block border-b border-stone-900 pb-1">// CHRONOGRAPH LINK DEPLOYMENT CONSOLE</span>
+        <div class="space-y-4 border border-stone-800 p-5 rounded-2xl bg-black/50 shadow-inner">
+            <span class="text-[11px] font-mono text-amber-600 font-bold uppercase tracking-wider block border-b border-stone-800 pb-2">// CHRONOGRAPH LINK DEPLOYMENT CONSOLE</span>
             
-            <div class="space-y-3">
+            <div class="space-y-4">
                 <div>
-                    <label class="text-[9px] text-stone-400 font-mono block">SLOT #01 TARGET URI</label>
-                    <div class="flex gap-2">
-                        <input type="text" id="vSlotUri1" placeholder="Irys Tx ID or URL" class="flex-grow bg-stone-950 border border-stone-900 p-2 text-[10px] font-mono text-stone-200 rounded" />
-                        <button onclick="if(typeof applySlotToNova === 'function') applySlotToNova(1)" class="px-3 bg-rose-950 border border-rose-700 text-rose-300 text-[9px] rounded">APPLY</button>
+                    <label class="text-[10px] text-stone-500 font-mono block mb-1.5">SLOT #01 TARGET URI</label>
+                    <div class="flex flex-col sm:flex-row gap-2">
+                        <input type="text" id="vSlotUri1" placeholder="Irys Tx ID or URL" class="flex-grow bg-black border border-stone-800 p-2.5 text-[11px] font-mono text-stone-200 rounded-lg outline-none focus:border-amber-500" />
+                        <button onclick="if(typeof applySlotToNova === 'function') applySlotToNova(1)" class="px-4 py-2.5 bg-rose-950 border border-rose-700 text-rose-300 text-[10px] rounded-lg font-bold hover:bg-rose-900 transition-colors">APPLY</button>
                     </div>
                 </div>
                 <div>
-                    <label class="text-[9px] text-stone-400 font-mono block">SLOT #02 TARGET URI</label>
-                    <div class="flex gap-2">
-                        <input type="text" id="vSlotUri2" placeholder="Irys Tx ID or URL" class="flex-grow bg-stone-950 border border-stone-900 p-2 text-[10px] font-mono text-stone-200 rounded" />
-                        <button onclick="if(typeof applySlotToNova === 'function') applySlotToNova(2)" class="px-3 bg-rose-950 border border-rose-700 text-rose-300 text-[9px] rounded">APPLY</button>
+                    <label class="text-[10px] text-stone-500 font-mono block mb-1.5">SLOT #02 TARGET URI</label>
+                    <div class="flex flex-col sm:flex-row gap-2">
+                        <input type="text" id="vSlotUri2" placeholder="Irys Tx ID or URL" class="flex-grow bg-black border border-stone-800 p-2.5 text-[11px] font-mono text-stone-200 rounded-lg outline-none focus:border-amber-500" />
+                        <button onclick="if(typeof applySlotToNova === 'function') applySlotToNova(2)" class="px-4 py-2.5 bg-rose-950 border border-rose-700 text-rose-300 text-[10px] rounded-lg font-bold hover:bg-rose-900 transition-colors">APPLY</button>
                     </div>
                 </div>
                 <div>
-                    <label class="text-[9px] text-stone-400 font-mono block">SLOT #03 TARGET URI</label>
-                    <div class="flex gap-2">
-                        <input type="text" id="vSlotUri3" placeholder="Irys Tx ID or URL" class="flex-grow bg-stone-950 border border-stone-900 p-2 text-[10px] font-mono text-stone-200 rounded" />
-                        <button onclick="if(typeof applySlotToNova === 'function') applySlotToNova(3)" class="px-3 bg-rose-950 border border-rose-700 text-rose-300 text-[9px] rounded">APPLY</button>
+                    <label class="text-[10px] text-stone-500 font-mono block mb-1.5">SLOT #03 TARGET URI</label>
+                    <div class="flex flex-col sm:flex-row gap-2">
+                        <input type="text" id="vSlotUri3" placeholder="Irys Tx ID or URL" class="flex-grow bg-black border border-stone-800 p-2.5 text-[11px] font-mono text-stone-200 rounded-lg outline-none focus:border-amber-500" />
+                        <button onclick="if(typeof applySlotToNova === 'function') applySlotToNova(3)" class="px-4 py-2.5 bg-rose-950 border border-rose-700 text-rose-300 text-[10px] rounded-lg font-bold hover:bg-rose-900 transition-colors">APPLY</button>
                     </div>
                 </div>
                 <div>
-                    <label class="text-[9px] text-stone-400 font-mono block">SLOT #04 TARGET URI</label>
-                    <div class="flex gap-2">
-                        <input type="text" id="vSlotUri4" placeholder="Irys Tx ID or URL" class="flex-grow bg-stone-950 border border-stone-900 p-2 text-[10px] font-mono text-stone-200 rounded" />
-                        <button onclick="if(typeof applySlotToNova === 'function') applySlotToNova(4)" class="px-3 bg-rose-950 border border-rose-700 text-rose-300 text-[9px] rounded">APPLY</button>
+                    <label class="text-[10px] text-stone-500 font-mono block mb-1.5">SLOT #04 TARGET URI</label>
+                    <div class="flex flex-col sm:flex-row gap-2">
+                        <input type="text" id="vSlotUri4" placeholder="Irys Tx ID or URL" class="flex-grow bg-black border border-stone-800 p-2.5 text-[11px] font-mono text-stone-200 rounded-lg outline-none focus:border-amber-500" />
+                        <button onclick="if(typeof applySlotToNova === 'function') applySlotToNova(4)" class="px-4 py-2.5 bg-rose-950 border border-rose-700 text-rose-300 text-[10px] rounded-lg font-bold hover:bg-rose-900 transition-colors">APPLY</button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="space-y-3 border border-stone-900 p-4 rounded-xl bg-black/40">
-            <span class="text-[10px] font-mono text-rose-400 font-bold uppercase tracking-wider block border-b border-stone-900 pb-1">// MACRO POLICIES & RE-MINT CYCLE</span>
-            <div class="grid grid-cols-2 gap-2">
-                <div><label class="text-[9px] text-stone-500 font-mono block">MINT FEE ETH</label><input type="number" step="0.001" id="inputAdminMint" class="w-full bg-black border border-stone-900 p-2.5 text-xs font-mono text-amber-500 rounded" /></div>
-                <div><label class="text-[9px] text-stone-500 font-mono block">NOVA FEE ETH</label><input type="number" step="0.001" id="inputAdminNova" class="w-full bg-black border border-stone-900 p-2.5 text-xs font-mono text-rose-400 rounded" /></div>
+        <div class="space-y-4 border border-stone-800 p-5 rounded-2xl bg-black/50 shadow-inner">
+            <span class="text-[11px] font-mono text-rose-400 font-bold uppercase tracking-wider block border-b border-stone-800 pb-2">// MACRO POLICIES & RE-MINT CYCLE</span>
+            <div class="grid grid-cols-2 gap-3">
+                <div><label class="text-[10px] text-stone-500 font-mono block mb-1.5">MINT FEE ETH</label><input type="number" step="0.001" id="inputAdminMint" class="w-full bg-black border border-stone-800 p-3 text-xs font-mono text-amber-500 rounded-lg outline-none focus:border-amber-500" /></div>
+                <div><label class="text-[10px] text-stone-500 font-mono block mb-1.5">NOVA FEE ETH</label><input type="number" step="0.001" id="inputAdminNova" class="w-full bg-black border border-stone-800 p-3 text-xs font-mono text-rose-400 rounded-lg outline-none focus:border-rose-500" /></div>
             </div>
-            <button onclick="if(typeof executeSetParams === 'function') executeSetParams(this)" class="w-full bg-amber-700 text-black font-black font-mono text-[10px] py-2.5 rounded uppercase hover:bg-amber-600 transition-colors">RATIFY setParams</button>
-            <div class="pt-2">
-                <label class="text-[9px] text-stone-500 font-mono block">GLOBAL BASE TARGET URI</label>
-                <input type="text" id="inputBaseUri" class="w-full bg-black border border-stone-900 p-2.5 text-xs font-mono text-stone-200 rounded" />
+            <button onclick="if(typeof executeSetParams === 'function') executeSetParams(this)" class="w-full bg-amber-700 text-black font-black font-mono text-[11px] py-3 rounded-xl uppercase hover:bg-amber-600 transition-colors shadow-[0_0_15px_rgba(217,119,6,0.3)]">RATIFY setParams</button>
+            <div class="pt-3">
+                <label class="text-[10px] text-stone-500 font-mono block mb-1.5">GLOBAL BASE TARGET URI</label>
+                <input type="text" id="inputBaseUri" class="w-full bg-black border border-stone-800 p-3 text-xs font-mono text-stone-200 rounded-lg outline-none focus:border-amber-500" />
             </div>
-            <button onclick="if(typeof executeSetBaseUri === 'function') executeSetBaseUri(this)" class="w-full bg-stone-950 border border-amber-700 text-amber-400 font-black font-mono text-[10px] py-2.5 rounded uppercase hover:bg-stone-900 transition-colors">AMEND setBaseURI</button>
-            <div class="grid grid-cols-2 gap-2 pt-2">
-                <button onclick="if(typeof executeContractPause === 'function') executeContractPause(true, this)" class="bg-rose-950 border border-rose-800 text-rose-400 font-mono text-[10px] py-2.5 rounded uppercase hover:bg-rose-900 transition-colors">PAUSE</button>
-                <button onclick="if(typeof executeContractPause === 'function') executeContractPause(false, this)" class="bg-stone-950 border border-amber-800 text-amber-400 font-mono text-[10px] py-2.5 rounded uppercase hover:bg-stone-900 transition-colors">UNPAUSE</button>
+            <button onclick="if(typeof executeSetBaseUri === 'function') executeSetBaseUri(this)" class="w-full bg-stone-950 border border-amber-700 text-amber-400 font-black font-mono text-[11px] py-3 rounded-xl uppercase hover:bg-stone-900 transition-colors">AMEND setBaseURI</button>
+            <div class="grid grid-cols-2 gap-3 pt-3">
+                <button onclick="if(typeof executeContractPause === 'function') executeContractPause(true, this)" class="bg-rose-950 border border-rose-800 text-rose-400 font-mono font-bold text-[10px] py-3 rounded-xl uppercase hover:bg-rose-900 transition-colors">PAUSE</button>
+                <button onclick="if(typeof executeContractPause === 'function') executeContractPause(false, this)" class="bg-stone-950 border border-amber-800 text-amber-400 font-mono font-bold text-[10px] py-3 rounded-xl uppercase hover:bg-stone-900 transition-colors">UNPAUSE</button>
             </div>
         </div>
         
-        <div class="space-y-3 border border-stone-900 p-4 rounded-xl bg-black/40 shadow-[inset_0_0_20px_rgba(0,0,0,0.9)] mt-4">
-            <span class="text-[10px] font-mono text-emerald-600 font-bold uppercase tracking-wider block border-b border-stone-900 pb-1">// ⚜ ARCHITECT FORGE (MINT & REMINT)</span>
+        <div class="lg:col-span-3 space-y-4 border border-stone-800 p-5 md:p-6 rounded-2xl bg-black/50 shadow-[inset_0_0_30px_rgba(0,0,0,0.9)] mt-2">
+            <span class="text-[11px] font-mono text-emerald-500 font-bold uppercase tracking-wider block border-b border-stone-800 pb-2">// ⚜ ARCHITECT FORGE (MINT & REMINT)</span>
             
             <div>
-                <label class="text-[9px] text-stone-500 font-mono block mb-1 uppercase">TARGET ADDRESS (FOR FREE MINT)</label>
-                <input type="text" id="adminTargetAddress" placeholder="0x... DESTINATION EVM ADDRESS" class="w-full bg-stone-950 border border-stone-900 p-2.5 text-xs font-mono text-emerald-400 rounded outline-none focus:border-emerald-600 transition-all" />
+                <label class="text-[10px] text-stone-500 font-mono block mb-2 uppercase tracking-wider">TARGET ADDRESS (FOR FREE MINT)</label>
+                <input type="text" id="adminTargetAddress" placeholder="0x... DESTINATION EVM ADDRESS" class="w-full bg-black border border-stone-800 p-3.5 text-xs font-mono text-emerald-400 rounded-xl outline-none focus:border-emerald-500 transition-all" />
             </div>
 
-            <div class="grid grid-cols-1 gap-2 pt-1">
-                <button onclick="if(typeof executeArchitectMint === 'function') executeArchitectMint(event)" class="w-full bg-gradient-to-r from-emerald-950 to-stone-900 border border-emerald-800 text-emerald-400 font-black font-mono text-[10px] py-3 rounded-lg uppercase hover:brightness-125 transition-all shadow-[0_0_15px_rgba(52,211,153,0.15)]">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                <button onclick="if(typeof executeArchitectMint === 'function') executeArchitectMint(event)" class="w-full bg-gradient-to-r from-emerald-950 to-stone-900 border border-emerald-800 text-emerald-400 font-black font-mono text-[11px] py-4 rounded-xl uppercase hover:brightness-125 transition-all shadow-[0_0_20px_rgba(16,185,129,0.2)]">
                     ✦ EXECUTE ARCHITECT FREE MINT
                 </button>
-                <button onclick="if(typeof executeArchitectRemint === 'function') executeArchitectRemint(event)" class="w-full bg-gradient-to-r from-rose-950 to-stone-900 border border-rose-800 text-rose-400 font-black font-mono text-[10px] py-3 rounded-lg uppercase hover:brightness-125 transition-all shadow-[0_0_15px_rgba(153,27,27,0.15)]">
+                <button onclick="if(typeof executeArchitectRemint === 'function') executeArchitectRemint(event)" class="w-full bg-gradient-to-r from-rose-950 to-stone-900 border border-rose-800 text-rose-400 font-black font-mono text-[11px] py-4 rounded-xl uppercase hover:brightness-125 transition-all shadow-[0_0_20px_rgba(153,27,27,0.2)]">
                     ♺ EXECUTE ARCHITECT REMINT ♠️
                 </button>
             </div>
-            <p class="text-[8px] text-stone-600 mt-2 uppercase leading-tight font-bold">* STRICT RULE: SYSTEM EXTRACTS TOKEN ID FROM SELECTED MATRIX CELL. FRONT URI MUST BE PRE-INITIALIZED.</p>
+            <p class="text-[9px] text-stone-500 mt-3 uppercase leading-relaxed font-bold border-l-2 border-stone-800 pl-2">* STRICT RULE: SYSTEM EXTRACTS TOKEN ID FROM SELECTED MATRIX CELL. FRONT URI MUST BE PRE-INITIALIZED.</p>
         </div>
     </div>
 </section>
 
-<div id="robotPanel" class="admin-locked chiaroscuro-bg mt-6 p-4 rounded-xl border border-stone-900 font-mono text-[10px] space-y-3 hidden">
-    <span class="text-amber-500 font-bold uppercase block border-b border-stone-900 pb-1.5">// ARCHITECT COMMUNICATION CHANNELS ALIGNMENT</span>
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-3">
-        <div><label class="block text-[9px] text-stone-500 mb-1">LINKEDIN LINK</label><input type="text" id="inputLink1" class="w-full bg-black border border-stone-900 p-2.5 rounded text-stone-300" /></div>
-        <div><label class="block text-[9px] text-stone-500 mb-1">X / TWITTER LINK</label><input type="text" id="inputLink2" class="w-full bg-black border border-stone-900 p-2.5 rounded text-stone-300" /></div>
-        <div><label class="block text-[9px] text-stone-500 mb-1">DISCORD ROOM LINK</label><input type="text" id="inputLink3" class="w-full bg-black border border-stone-900 p-2.5 rounded text-stone-300" /></div>
-        <div><label class="block text-[9px] text-stone-500 mb-1">CLUB HOUSE LINK</label><input type="text" id="inputLinkClubHouse" class="w-full bg-black border border-stone-900 p-2.5 rounded text-stone-300" /></div>
+<div id="robotPanel" class="admin-locked chiaroscuro-bg mt-6 p-5 md:p-6 rounded-2xl border border-stone-800 font-mono text-[10px] space-y-4 hidden shadow-inner">
+    <span class="text-amber-500 font-bold uppercase block border-b border-stone-800 pb-2 text-[11px] tracking-wider">// ARCHITECT COMMUNICATION CHANNELS ALIGNMENT</span>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
+        <div><label class="block text-[10px] text-stone-500 mb-1.5">LINKEDIN LINK</label><input type="text" id="inputLink1" class="w-full bg-black border border-stone-800 p-3 rounded-lg text-stone-300 outline-none focus:border-amber-500" /></div>
+        <div><label class="block text-[10px] text-stone-500 mb-1.5">X / TWITTER LINK</label><input type="text" id="inputLink2" class="w-full bg-black border border-stone-800 p-3 rounded-lg text-stone-300 outline-none focus:border-amber-500" /></div>
+        <div><label class="block text-[10px] text-stone-500 mb-1.5">DISCORD ROOM LINK</label><input type="text" id="inputLink3" class="w-full bg-black border border-stone-800 p-3 rounded-lg text-stone-300 outline-none focus:border-amber-500" /></div>
+        <div><label class="block text-[10px] text-stone-500 mb-1.5">CLUB HOUSE LINK</label><input type="text" id="inputLinkClubHouse" class="w-full bg-black border border-stone-800 p-3 rounded-lg text-stone-300 outline-none focus:border-amber-500" /></div>
     </div>
-    <button onclick="if(typeof saveArchitectGateways === 'function') saveArchitectGateways(this)" class="px-5 py-2.5 bg-amber-700 text-black font-black text-[10px] rounded uppercase hover:bg-amber-600 transition-colors w-full md:w-auto mt-2">RE-ALIGN VECTORS</button>
+    <button onclick="if(typeof saveArchitectGateways === 'function') saveArchitectGateways(this)" class="px-6 py-3.5 bg-amber-700 text-black font-black text-[11px] rounded-xl uppercase hover:bg-amber-600 transition-colors w-full sm:w-auto mt-3 shadow-[0_0_15px_rgba(217,119,6,0.3)]">RE-ALIGN VECTORS</button>
 </div>
 
-<section class="chiaroscuro-bg mt-6 p-4 rounded-xl border border-slate-900">
-    <span class="text-[10px] font-mono text-slate-500 uppercase block border-b border-slate-900 pb-2">// SYSTEM EVENT REAL-TIME TELEMETRY STREAM LOG</span>
-    <div id="systemLogBox" class="mt-3 text-[10px] font-mono h-28 overflow-y-auto scroll-dark text-slate-500 space-y-1 select-text">
+<section class="chiaroscuro-bg mt-6 p-5 md:p-6 rounded-2xl border border-slate-800 shadow-inner">
+    <span class="text-[11px] font-mono text-slate-500 uppercase block border-b border-slate-800 pb-2 font-bold tracking-wider">// SYSTEM EVENT REAL-TIME TELEMETRY STREAM LOG</span>
+    <div id="systemLogBox" class="mt-4 text-[10px] md:text-[11px] font-mono h-32 overflow-y-auto scroll-dark text-slate-400 space-y-1.5 select-text bg-black/50 p-3 rounded-xl border border-stone-900">
         <div>[SYSTEM ONLINE] Ready for execution parameters entry.</div>
     </div>
 </section>
 
-<section class="chiaroscuro-bg p-4 rounded-xl my-6 border border-slate-900 bg-black/50 text-center relative z-10">
-    <h4 class="text-[10px] font-black font-cinzel text-slate-500 uppercase tracking-widest mb-2">
+<section class="chiaroscuro-bg p-6 md:p-8 rounded-2xl my-6 border border-slate-800 bg-black/60 text-center relative z-10 shadow-[inset_0_0_30px_rgba(0,0,0,0.8)]">
+    <h4 class="text-[11px] md:text-xs font-black font-cinzel text-slate-400 uppercase tracking-widest mb-3">
         ⚖ THE ARCHITECT ABDICATION & FORENSIC INTEGRITY DOCTRINE 🔱
     </h4>
-    <p class="text-[10px] font-mono text-slate-500 leading-relaxed max-w-4xl mx-auto uppercase">
+    <p class="text-[10px] md:text-[11px] font-mono text-slate-500 leading-relaxed max-w-4xl mx-auto uppercase">
         THE SOVEREIGN DEVELOPMENT AND MEMBER SUPPORT IS STRICTLY GOVERNED BY AUTONOMOUS MATHEMATICS.
     </p>
-    <div class="my-2 border-t border-slate-900/60 w-1/2 mx-auto"></div>
-    <p class="text-[10px] font-mono text-slate-500 leading-relaxed max-w-4xl mx-auto uppercase tracking-tight">
+    <div class="my-4 border-t border-slate-800/80 w-2/3 mx-auto"></div>
+    <p class="text-[10px] md:text-[11px] font-mono text-slate-500 leading-relaxed max-w-4xl mx-auto uppercase tracking-tight">
         🚨 <span class="text-amber-600/90 font-bold">REAL-WORLD INTEGRITY MANDATE:</span> ALL PROFILE MEDIA AND 4K ASSETS INSCRIBED WITH CRYPTOGRAPHIC HASH METADATA MUST BE DEPLOYED EXCLUSIVELY TO REPRESENT REAL-WORLD IDENTITY ON EXTERNAL PLATFORMS. UTILIZING UNVERIFIED MEDIA NULLIFIES IDENTITY AUTHENTICITY; NEITHER THE SMART CONTRACT NOR DASHBOARD WILL OFFER PROOF OF PROTECTION AGAINST IDENTITY SPOOFING.
     </p>
 </section>
 
-<footer class="mt-4 chiaroscuro-bg p-4 rounded-xl font-mono text-[10px] text-slate-500 relative z-10">
-    <div id="systemFooterLog" class="h-12 overflow-y-auto leading-relaxed scroll-dark">> [SYSTEM]: Integrity scan complete. Global nodes aligned. No external backend infrastructure recognized pursuant to the autarchic provisions of the Machiavellian Protocol. THE SOVEREIGN ABSOLUTE 🔱.</div>
-    <div class="mt-4 pt-4 border-t border-slate-800/50 text-center text-slate-500 uppercase tracking-widest leading-relaxed">
+<footer class="mt-6 chiaroscuro-bg p-5 md:p-6 rounded-2xl font-mono text-[10px] text-slate-500 relative z-10 border border-stone-900">
+    <div id="systemFooterLog" class="h-12 overflow-y-auto leading-relaxed scroll-dark text-slate-600">> [SYSTEM]: Integrity scan complete. Global nodes aligned. No external backend infrastructure recognized pursuant to the autarchic provisions of the Machiavellian Protocol. THE SOVEREIGN ABSOLUTE 🔱.</div>
+    <div class="mt-5 pt-5 border-t border-slate-800/60 text-center text-slate-600 uppercase tracking-widest leading-relaxed text-[9px] md:text-[10px]">
         This protocol operates an exclusive, private digital identity infrastructure accessible solely via direct curation. All proceeds represent lawful studio service fees. Reserve allocations fund software R&D and Ecosystem Infrastructure Support Grants. Minting and on-chain operations are executed 100% self-sovereignly by curated pass holders. This protocol does not offer public sales, securities, or financial returns.
     </div>
 </footer>
