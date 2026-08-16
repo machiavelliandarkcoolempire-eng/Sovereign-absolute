@@ -1,45 +1,36 @@
 import { WebUploader } from "@irys/web-upload";
-import { WebEthereum } from "@irys/web-upload-ethereum";
+import { WebBaseEth } from "@irys/web-upload-ethereum"; 
 import { EthersV6Adapter } from "@irys/web-upload-ethereum-ethers-v6";
 import { ethers } from "ethers";
 
-window.InitSovereignIrys = async function(inputSigner) {
-    if (!inputSigner) throw new Error("❌ Web3 Signer is required.");
-    
+window.InitSovereignIrys = async function(inputParam) {
     try {
-        // 🟢 WATERTIGHT AUTO-RESOLVE LOGIC: Irys strictly requires a Signer, not a Provider.
-        if (typeof inputSigner.signMessage !== 'function') {
-            throw new Error("CRITICAL: Input is not a valid Ethers v6 Signer.");
-        }
-        
-        const provider = inputSigner.provider;
-        if (!provider) {
-            throw new Error("CRITICAL: Signer is disconnected from the RPC Provider.");
-        }
-        
-        // 🛡️ [NETWORK VALIDATION STAGE]
-        const network = await provider.getNetwork();
-        if (Number(network.chainId) !== 8453) { 
-            throw new Error("⛔ SYSTEM HALTED: Please switch your wallet to Base Mainnet.");
-        }
-        
-        // 🛡️ [RPC & IRYS INITIALIZATION STAGE]
-        const DEDICATED_BASE_RPC = "https://base-mainnet.g.alchemy.com/v2/wR5UgtUrkfPjKnqfMhm8k"; 
+        const dedicatedIrisRpc = "https://base-mainnet.g.alchemy.com/v2/wR5UgtUrkfPjKnqfMhm8k";
 
-        // 🎯 [CRITICAL FIX]: Pass the Signer directly to EthersV6Adapter
-        const irysUploader = await WebUploader(WebEthereum)
-            .withAdapter(EthersV6Adapter(inputSigner))
-            .withNetwork("mainnet") 
-            .withToken("base-eth")
-            .withRpc(DEDICATED_BASE_RPC)
-            .build(); 
+        let targetProvider;
 
-        console.log("✅ [NEXUS] Irys Modular Bridge Initialized via Dedicated RPC.");
+        // 🟢 WATERTIGHT AUTO-RESOLVE LOGIC: ป้องกันการดึง Object ผิดประเภท
+        if (inputParam && typeof inputParam.getSigner === 'function') {
+            targetProvider = inputParam;
+        } else if (inputParam && inputParam.provider && typeof inputParam.provider.getSigner === 'function') {
+            targetProvider = inputParam.provider;
+        } else if (inputParam && typeof inputParam.request === 'function') {
+            targetProvider = new ethers.BrowserProvider(inputParam);
+        } else if (typeof window.ethereum !== "undefined") {
+            targetProvider = new ethers.BrowserProvider(window.ethereum);
+        } else {
+            throw new Error("CRITICAL: No valid Web3 Provider found in environment.");
+        }
+
+        const irysUploader = await WebUploader(WebBaseEth) 
+            .withAdapter(EthersV6Adapter(targetProvider)) 
+            .withRpc(dedicatedIrisRpc)
+            .mainnet() 
+            .build();               
+            
         return irysUploader;
-
     } catch (error) {
-        console.error("❌ [IRYS BRIDGE FAULT] Failed to initialize WebUploader:", error);
-        const errorMsg = error.message || "Unknown initialization error";
-        throw new Error(`Irys Bridge Initialization Failed: ${errorMsg}`);
+        console.error("[IRYS FAULT] Initialization Failed:", error);
+        throw error;
     }
 };
