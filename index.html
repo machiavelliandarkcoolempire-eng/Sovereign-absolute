@@ -1224,6 +1224,7 @@ let searchDebounceTimer = null;
 let currentAuditSession = 0;
 let isSyncingState = false;
 let pendingSyncRequest = false;
+let lastSyncTime = 0; // 🚨 [FIXED]: Added to prevent ReferenceError in syncContractStates
 
 window.SystemState = {
     globalSelectedTokenId: null,
