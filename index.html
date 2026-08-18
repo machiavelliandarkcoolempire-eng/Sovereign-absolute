@@ -2920,6 +2920,23 @@ async function initReadOnlyRPC() {
     }
 }
 
+function checkPendingNova() {
+    const pendingTxId = localStorage.getItem('pending_nova_txid');
+    const pendingToken = localStorage.getItem('pending_nova_token');
+    if (pendingTxId) {
+        const hiddenInput = document.getElementById('novaHiddenInput');
+        const tokenInput = document.getElementById('novaTokenId');
+        if (hiddenInput) hiddenInput.value = pendingTxId;
+        if (tokenInput && pendingToken) tokenInput.value = pendingToken;
+        
+        if (typeof showNotification === 'function') {
+            showNotification("RESUMING NOVA: พบข้อมูล Metadata ค้างอยู่ในระบบ กรุณายืนยันธุรกรรม On-chain ให้เสร็จสิ้น", "warning");
+        }
+        const modal = document.getElementById('novaWarnModal');
+        if (modal) modal.classList.remove('hidden');
+    }
+}
+
 async function initIrysRPC(irysAddress, irysAbi) {
     try {
         const endpoints = typeof IRYS_ENDPOINTS !== 'undefined' ? IRYS_ENDPOINTS : [];
