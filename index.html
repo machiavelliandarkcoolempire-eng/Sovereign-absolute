@@ -2802,18 +2802,20 @@ async function processIdentityDnaInspectionOnChain() {
     if(!tokenIdInput) return;
     const rawTokenId = tokenIdInput.value.trim();
     
-    const tokenId = validateTokenRange(rawTokenId);
+    const tokenId = (typeof validateTokenRange === 'function') ? validateTokenRange(rawTokenId) : rawTokenId;
     if(!tokenId) return;
 
     if (!/^\d+$/.test(tokenId)) {
-        showNotification("INVALID INPUT: Token ID must be numeric.", "error");
+        if (typeof showNotification === 'function') showNotification("INVALID INPUT: Token ID must be numeric.", "error");
         return;
     }
 
     const terminalOut = document.getElementById('dnaAnalysisTerminalOut');
     const labDisplay = document.getElementById('dnaLabDisplay');
 
-    const activeContract = secureContract || readOnlyContract;
+    const activeContract = (typeof secureContract !== 'undefined' && secureContract) 
+        ? secureContract 
+        : (typeof readOnlyContract !== 'undefined' ? readOnlyContract : null);
         
     if (!activeContract) {
         if(terminalOut) terminalOut.textContent = "❌ OFFLINE: INITIALIZE RPC CONNECTION FIRST";
@@ -2822,10 +2824,11 @@ async function processIdentityDnaInspectionOnChain() {
 
     try {
         const currentOwner = await activeContract.ownerOf(BigInt(tokenId).toString());
-        if (!currentOwner || currentOwner === ethers.ZeroAddress) {
+        if (!currentOwner || currentOwner === (typeof ethers !== 'undefined' ? ethers.ZeroAddress : "0x0000000000000000000000000000000000000000")) {
             throw new Error("NODE_DOES_NOT_EXIST");
         }
 
+        if (typeof autoMap !== 'function') throw new Error("AUTO_MAP_MISSING");
         const mappedNode = await autoMap(tokenId);
         if (!mappedNode) throw new Error("AUTO_MAPPING_INTERRUPTED");
 
@@ -2847,9 +2850,19 @@ async function processIdentityDnaInspectionOnChain() {
         const metaHidden = document.getElementById('metaHiddenProperty');
         if(metaHidden) metaHidden.textContent = mappedNode.hiddenProperty || "UNKNOWN";
 
-        await loadDeedMetadata(tokenId);
+        // 🚨 [CRITICAL FIX]: อัปเดตลิงก์วิดีโอจาก On-chain ลงใน DOM
+        const irysLinkDisplay = document.getElementById('irysLinkDisplay');
+        if (irysLinkDisplay) {
+            const videoUrl = mappedNode.video || "UNASSIGNED";
+            const videoId = (typeof extractIrysId === 'function' && videoUrl !== "UNASSIGNED") ? extractIrysId(videoUrl) : "N/A";
+            irysLinkDisplay.textContent = `LINK: ${videoUrl} | ID: ${videoId}`;
+        }
 
-        safeAppendLog(`On-chain Forensic analysis synchronized flawlessly via autoMap engine for Node #${tokenId}.`, "text-emerald-400");
+        if (typeof loadDeedMetadata === 'function') await loadDeedMetadata(tokenId);
+
+        if (typeof safeAppendLog === 'function') {
+            safeAppendLog(`On-chain Forensic analysis synchronized flawlessly via autoMap engine for Node #${tokenId}.`, "text-emerald-400");
+        }
     } catch (err) {
         const errorMessage = 
             err.message === "NODE_DOES_NOT_EXIST" ? "❌ FORENSICS EXCEPTION: NODE DOES NOT EXIST ON-CHAIN" :
@@ -2857,7 +2870,9 @@ async function processIdentityDnaInspectionOnChain() {
             "❌ BLOCKCHAIN QUERY FAILED: DEED MAY NOT EXIST OR RPC TIMEOUT";
             
         if(terminalOut) terminalOut.textContent = errorMessage;
-        safeAppendLog(`Failed to extract on-chain DNA for Node #${tokenId}. System Code: ${err.message}`, "text-red-500");
+        if (typeof safeAppendLog === 'function') {
+            safeAppendLog(`Failed to extract on-chain DNA for Node #${tokenId}. System Code: ${err.message}`, "text-red-500");
+        }
     }
 }
 
@@ -5564,15 +5579,15 @@ function autoMapMetadata(tokenId) {
 }
 
 async function auditTokenFromLedger(tokenId, pollForUpdate = false) { 
-    resetAdminInputs(); 
+    if (typeof resetAdminInputs === 'function') resetAdminInputs(); 
     const mySession = ++window.currentAuditSession;
 
     try {
         window.SystemState.selectedTokenId = tokenId;
         window.currentLoadedMediaData = window.currentLoadedMediaData || {};
 
-        autoMapMetadata(tokenId);
-        updateVideoSlotsUI();
+        if (typeof autoMapMetadata === 'function') autoMapMetadata(tokenId);
+        if (typeof updateVideoSlotsUI === 'function') updateVideoSlotsUI();
         
         const card = document.getElementById('sovereignFlipCard');
         if (card) card.classList.remove('flipped');
@@ -5580,14 +5595,41 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
         const tbaInputElem = document.getElementById('tbaAddressDisplay');
         if (tbaInputElem) tbaInputElem.value = "Calculating deterministic ERC-6551 TBA address hash...";
 
-        appendLog(`Extracting structural blueprint record for matrix cell node #${tokenId}...`, "text-purple-400");
+        if (typeof appendLog === 'function') {
+            appendLog(`Extracting structural blueprint record for matrix cell node #${tokenId}...`, "text-purple-400");
+        }
 
-        const activeContract = secureContract || readOnlyContract;
+        const activeContract = (typeof secureContract !== 'undefined' && secureContract) 
+            ? secureContract 
+            : (typeof readOnlyContract !== 'undefined' ? readOnlyContract : null);
+            
         if (!activeContract) { 
-            appendLog("Interrogating consensus network parameters...", "text-yellow-500"); 
+            if (typeof appendLog === 'function') appendLog("Interrogating consensus network parameters...", "text-yellow-500"); 
+            if (tbaInputElem) tbaInputElem.value = "RPC OFFLINE: CONNECT WALLET TO CALCULATE";
             return; 
         }
 
+        // 🚨 [CRITICAL FIX]: INDEPENDENT TBA CALCULATION BLOCK
+        // บังคับคำนวณและแสดงผล TBA ทันที โดยไม่สนว่า Node จะถูก Mint แล้วหรือไม่
+        try {
+            const onChainTBA = await activeContract.getTBA(BigInt(tokenId).toString());
+            if (mySession !== window.currentAuditSession) return; 
+            
+            const safeTBA = typeof sanitizeForDOM === 'function' ? sanitizeForDOM(onChainTBA) : onChainTBA;
+            if (tbaInputElem) tbaInputElem.value = safeTBA;
+            
+            if (typeof refreshTbaBalances === 'function') {
+                await refreshTbaBalances(onChainTBA, mySession);
+            }
+        } catch (tbaErr) {
+            if (mySession !== window.currentAuditSession) return; 
+            if (tbaInputElem) tbaInputElem.value = "CRITICAL: FAILED TO EXTRACT DETERMINISTIC ADDR PIVOT";
+            if (typeof setTbaBalanceDisplay === 'function') setTbaBalanceDisplay("0.0000", "0.0000");
+        }
+
+        // ---------------------------------------------------------
+        // ดำเนินการดึงข้อมูล Node (จะโยน Error ไปเข้า Catch หากยังไม่ Mint)
+        // ---------------------------------------------------------
         let mappedNode = null;
         let attempts = 0;
         const maxAttempts = pollForUpdate ? 10 : 1;
@@ -5595,7 +5637,7 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
 
         while (attempts < maxAttempts) {
             if (document.hidden) {
-                appendLog("System idle: Background execution suspended to preserve matrix integrity.", "text-slate-500");
+                if (typeof appendLog === 'function') appendLog("System idle: Background execution suspended to preserve matrix integrity.", "text-slate-500");
                 break;
             }
 
@@ -5616,7 +5658,9 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
                 } else {
                     attempts++;
                     if (attempts < maxAttempts) {
-                        appendLog(`[RPC SYNC] Awaiting on-chain state mutation for Node #${tokenId} (Attempt ${attempts}/${maxAttempts})...`, "text-yellow-500");
+                        if (typeof appendLog === 'function') {
+                            appendLog(`[RPC SYNC] Awaiting on-chain state mutation for Node #${tokenId} (Attempt ${attempts}/${maxAttempts})...`, "text-yellow-500");
+                        }
                         await new Promise(r => setTimeout(r, 3000));
                         continue;
                     }
@@ -5634,31 +5678,24 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
             btnBurn.disabled = !!(mappedNode.votingLockUntil && mappedNode.votingLockUntil > currentEpoch);
         }
 
-        try {
-            const onChainTBA = await activeContract.getTBA(BigInt(tokenId).toString());
-            if (mySession !== window.currentAuditSession) return; 
-            const safeTBA = sanitizeForDOM(onChainTBA);
-            if (tbaInputElem) tbaInputElem.value = safeTBA;
-            await refreshTbaBalances(onChainTBA, mySession);
-        } catch (tbaErr) {
-            if (tbaInputElem) tbaInputElem.value = "CRITICAL: FAILED TO EXTRACT DETERMINISTIC ADDR PIVOT";
-            setTbaBalanceDisplay("0.0000", "0.0000");
-        }
-
         window.currentLoadedMediaData.front = mappedNode.front;
         window.currentLoadedMediaData.back = mappedNode.back;
         window.currentLoadedMediaData.video = mappedNode.video;
         
-        loadDeedMetadata(tokenId);
+        if (typeof loadDeedMetadata === 'function') loadDeedMetadata(tokenId);
 
-        renderToViewport('previewFrontContainer', window.currentLoadedMediaData.front, "Obverse aspect currently unassigned. Engage rebirth parameters.");
+        if (typeof renderToViewport === 'function') {
+            renderToViewport('previewFrontContainer', window.currentLoadedMediaData.front, "Obverse aspect currently unassigned. Engage rebirth parameters.");
+        }
         
         const backContainer = document.getElementById('previewBackContainer');
         setTimeout(() => {
             if (mySession !== window.currentAuditSession) return; 
             
             if (mappedNode.back && mappedNode.back.trim() !== "") { 
-                renderToViewport('previewBackContainer', window.currentLoadedMediaData.back, "Reverse diagnostic data trace is currently null.");
+                if (typeof renderToViewport === 'function') {
+                    renderToViewport('previewBackContainer', window.currentLoadedMediaData.back, "Reverse diagnostic data trace is currently null.");
+                }
             } else {
                 if (backContainer) {
                     backContainer.replaceChildren();
@@ -5672,7 +5709,7 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
         
         const displayData = document.getElementById('activeDeedMetadataDisplay');
         if (displayData) {
-            const imperialRank = getImperialRankDetailed(tokenId);
+            const imperialRank = (typeof getImperialRankDetailed === 'function') ? getImperialRankDetailed(tokenId) : "UNKNOWN";
             displayData.replaceChildren(); 
             
             const line1 = document.createTextNode(`CELL NODE ID: ${tokenId} `);
@@ -5683,7 +5720,7 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
             const br = document.createElement('br');
             
             const rawOwner = mappedNode.owner || "0x0000000000000000000000000000000000000000";
-            const safeOwner = sanitizeForDOM(rawOwner);
+            const safeOwner = typeof sanitizeForDOM === 'function' ? sanitizeForDOM(rawOwner) : rawOwner;
             const line2 = document.createTextNode(`ACCREDITED ROOT: ${safeOwner.slice(0,6)}...${safeOwner.slice(-4)} // NOVA RATIFICATION: `);
             
             const sanctifiedSpan = document.createElement('span');
@@ -5697,11 +5734,11 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
         if (settleTokenInput) settleTokenInput.value = tokenId;
 
     } catch (e) { 
+        // 🚨 [CATCH BLOCK]: ทำงานเมื่อ Node ยังไม่ถูก Mint
         if (mySession !== window.currentAuditSession) return; 
         
         window.currentLoadedMediaData = window.currentLoadedMediaData || {};
         
-        // 🚨 STRICT FIX: Safe Object Extraction for Manifest
         let preMintFrontUri = "";
         if (window.IMPERIAL_MANIFEST && window.IMPERIAL_MANIFEST[String(tokenId)]) {
             const manifestData = window.IMPERIAL_MANIFEST[String(tokenId)];
@@ -5713,10 +5750,14 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
             window.currentLoadedMediaData.back = "";
             window.currentLoadedMediaData.video = "";
             
-            appendLog(`[LAZY MINT READY] Matrix cell node #${tokenId} pre-loaded from Architect Manifest. Awaiting REBIRTH.`, "text-emerald-400 font-bold");
+            if (typeof appendLog === 'function') {
+                appendLog(`[LAZY MINT READY] Matrix cell node #${tokenId} pre-loaded from Architect Manifest. Awaiting REBIRTH.`, "text-emerald-400 font-bold");
+            }
             
-            renderToViewport('previewFrontContainer', preMintFrontUri, "Obverse aspect currently unassigned.");
-            renderToViewport('previewBackContainer', "", "Void element data layer uninitialized.");
+            if (typeof renderToViewport === 'function') {
+                renderToViewport('previewFrontContainer', preMintFrontUri, "Obverse aspect currently unassigned.");
+                renderToViewport('previewBackContainer', "", "Void element data layer uninitialized.");
+            }
 
             const metaDisp = document.getElementById('activeDeedMetadataDisplay');
             if (metaDisp) {
@@ -5735,10 +5776,13 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
             window.currentLoadedMediaData.back = "";
             window.currentLoadedMediaData.video = "";
 
-            appendLog(`Matrix cell node #${tokenId} is VOID. Architect has not assigned a front payload. MINTING LOCKED.`, "text-red-500"); 
-            
-            renderToViewport('previewFrontContainer', "", "Void element data layer uninitialized.");
-            renderToViewport('previewBackContainer', "", "Void element data layer uninitialized.");
+            if (typeof appendLog === 'function') {
+                appendLog(`Matrix cell node #${tokenId} is VOID. Architect has not assigned a front payload. MINTING LOCKED.`, "text-red-500"); 
+            }
+            if (typeof renderToViewport === 'function') {
+                renderToViewport('previewFrontContainer', "", "Void element data layer uninitialized.");
+                renderToViewport('previewBackContainer', "", "Void element data layer uninitialized.");
+            }
             
             const metaDisp = document.getElementById('activeDeedMetadataDisplay');
             if (metaDisp) {
@@ -5748,7 +5792,7 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
         }
         
     } finally {
-        toggleButtonLoading(null, false);
+        if (typeof toggleButtonLoading === 'function') toggleButtonLoading(null, false);
     }
 }
 
@@ -5805,12 +5849,21 @@ function filterSovereignGrid() {
 }
 
 async function syncActiveMatrixNodes() { 
-    const activeContract = secureContract || readOnlyContract; 
+    const activeContract = (typeof secureContract !== 'undefined' && secureContract) 
+        ? secureContract 
+        : (typeof readOnlyContract !== 'undefined' ? readOnlyContract : null); 
+        
     if (!activeContract || typeof activeContract.getAllActiveTokens !== 'function') return; 
     
     try { 
         const activeTokens = await activeContract.getAllActiveTokens();
         const activeSet = new Set(activeTokens.map(t => Number(t))); 
+        
+        // 🚨 [CRITICAL FIX]: อัปเดตตัวเลข ACTIVE: X/333 ให้ตรงกับ On-chain
+        const activeCountEl = document.getElementById('matrixActiveCount');
+        if (activeCountEl) {
+            activeCountEl.textContent = activeSet.size.toString();
+        }
         
         const calls = [];
         for (let i = 1; i <= 333; i++) {
@@ -5818,7 +5871,7 @@ async function syncActiveMatrixNodes() {
             calls.push({ target: CONTRACT_ADDRESS, allowFailure: true, callData: activeContract.interface.encodeFunctionData("tokenVotingLockUntil", [i.toString()]) });
         }
         
-        const providerTarget = readOnlyProvider || provider;
+        const providerTarget = (typeof readOnlyProvider !== 'undefined' && readOnlyProvider) ? readOnlyProvider : (typeof provider !== 'undefined' ? provider : null);
         if (!providerTarget) throw new Error("[RPC] No valid provider targeting available for Multicall.");
 
         const results = await debouncedMulticall(providerTarget, calls);
@@ -5827,7 +5880,7 @@ async function syncActiveMatrixNodes() {
         const currentEpoch = Math.floor(Date.now() / 1000);
         
         for (let i = 1; i <= 333; i++) { 
-            const node = window.matrixDOMCache?.get(i); 
+            const node = typeof window.matrixDOMCache !== 'undefined' ? window.matrixDOMCache.get(i) : null; 
             if (!node) continue; 
 
             const resGen = results[(i-1)*2];
