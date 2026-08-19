@@ -889,8 +889,8 @@
                     <input type="text" id="prop1" value="" placeholder="AUTO-EXTRACTED FROM RANK DETAILED" class="w-full bg-black border border-stone-800 p-2.5 text-[11px] font-mono text-stone-200 rounded-md outline-none" />
                 </div>
                 <div class="bg-stone-950 p-3 rounded-lg border border-stone-800">
-                    <input type="text" id="propKey2" value="TRANSFER" class="w-full bg-black border border-stone-800 p-2.5 text-[10px] font-mono mb-2 text-stone-400 rounded-md outline-none" />
-                    <input type="text" id="prop2" value="TRANSFERABLE" class="w-full bg-black border border-stone-800 p-2.5 text-[11px] font-mono text-stone-200 rounded-md outline-none" />
+                    <input type="text" id="propKey2" value="IDENTITY STATUS" class="w-full bg-black border border-stone-800 p-2.5 text-[10px] font-mono mb-2 text-stone-400 rounded-md outline-none" />
+                    <input type="text" id="prop2" value="UNCOMPROMISED INTEGRITY PROTOCOL" class="w-full bg-black border border-stone-800 p-2.5 text-[11px] font-mono text-stone-200 rounded-md outline-none" />
                 </div>
             </div>
             <button onclick="if(typeof buildAndUploadMetadata === 'function') buildAndUploadMetadata(this)" class="w-full bg-gradient-to-r from-amber-900 to-amber-700 text-black font-black font-mono text-[11px] py-3.5 rounded-xl uppercase tracking-wider shadow-[0_0_15px_rgba(217,119,6,0.3)]">COMPILE & TRANSMIT MANIFEST JSON</button>
@@ -4196,140 +4196,78 @@ async function buildAndUploadMetadata(e) {
         showNotification("Operation suspended: Establish permanent settlement bridge path beforehand.", "error"); 
         return; 
     }
-    if (!secureContract || !signer) { showNotification("Action suspended: Authenticate wallet signature first.", "error"); return; }
+    if (!secureContract || !signer) { 
+        showNotification("Action suspended: Authenticate wallet signature first.", "error"); 
+        return; 
+    }
     
-    const novaTokenEl = document.getElementById('novaTokenId');
-    const targetTokenId = (novaTokenEl?.value.trim()) || (typeof globalSelectedTokenId !== 'undefined' ? globalSelectedTokenId : null);
-    
+    // 1. ระบุพิกัดเป้าหมาย
+    const targetTokenId = globalSelectedTokenId || document.getElementById('novaTokenId')?.value.trim();
     if (!targetTokenId) {
         showNotification("STRUCTURAL EXCEPTION: Please select a Token ID coordinate on the Matrix first.", "error");
-        return;
-    }
-
-    try {
-        const userAddress = await signer.getAddress();
-        const privs = await verifyUserPrivileges(userAddress);
-
-        if (!privs.isAdmin) {
-            showNotification("SECURITY ENFORCEMENT: Architect privileges required.", "error");
-            return;
-        }
-    } catch (err) {
-        showNotification("System Warning: Failed to verify privileges.", "error");
         return;
     }
 
     const btn = toggleButtonLoading(e, true);
     
     try {
-        const rootNameInput = document.getElementById('propName');
-        const rootName = (rootNameInput && rootNameInput.value.trim() !== "") 
-                         ? rootNameInput.value.trim() 
-                         : "THE IMPERIAL SOVEREIGNTY DEED";
-
-        const dynamicAttributes = []; 
-
-        for (let i = 1; i <= 7; i++) {
-            const keyInput = document.getElementById(`propKey${i}`);
-            const valInput = document.getElementById(`prop${i}`);
-            
-            const keyRaw = keyInput ? keyInput.value : "";
-            const valRaw = valInput ? valInput.value : "";
-            
-            const key = sanitizeAlphanumeric(keyRaw);
-            const val = sanitizeAlphanumeric(valRaw);
-
-            if (key !== "" && val !== "") {
-                dynamicAttributes.push({ trait_type: key, value: val });
-            }
-        }
-
-        const currentFront = (typeof currentLoadedMediaData !== 'undefined') ? (currentLoadedMediaData.front || "") : "";
-        const currentBack = (typeof currentLoadedMediaData !== 'undefined') ? (currentLoadedMediaData.back || "") : "";
-        const currentVideo = (typeof currentLoadedMediaData !== 'undefined') ? (currentLoadedMediaData.video || "") : "";
-
-        const frontUri = document.getElementById('forgeFrontUri')?.value.trim() || currentFront;
-        const backUri = document.getElementById('forgeBackUri')?.value.trim() || currentBack;
-        const videoUri = document.getElementById('novaVideoUri')?.value.trim() || currentVideo;
+        // 2. ดึงเฉพาะข้อมูลอัปโหลด Front URI อย่างเดียว (ตามคำสั่ง ไม่ดึงช่องอื่น)
+        const frontUri = document.getElementById('forgeFrontUri')?.value.trim() || "";
         
-        if (isMaliciousURI(frontUri) || isMaliciousURI(backUri) || isMaliciousURI(videoUri)) {
+        // 3. เช็กความปลอดภัยของลิงก์เดียว
+        if (isMaliciousURI(frontUri)) {
             throw new Error("Malicious Payload detected in URIs. Operation aborted.");
         }
 
-        const frontTypeElement = document.querySelector('input[name="frontType"]:checked');
-        const backTypeElement = document.querySelector('input[name="backType"]:checked');
-        
-        const frontType = frontTypeElement ? frontTypeElement.value : "image";
-        const backType = backTypeElement ? backTypeElement.value : "image";
-
+        // 4. สร้าง JSON แบบล็อคสเปก Manifest และใช้สถานะ UNCOMPROMISED
         const metadata = {
-            name: rootName,
+            name: "THE IMPERIAL SOVEREIGN DEED #" + targetTokenId,
             description: "IMPERIAL SOVEREIGN ARCHITECTURE - Absolute Immutable Autarkic Identity Manifest",
-            attributes: dynamicAttributes
+            image: frontUri ? buildIrysUrl(frontUri) : "",
+            attributes: [
+                { trait_type: "RANK", value: getImperialRankDetailed(targetTokenId).toUpperCase() },
+                { trait_type: "IDENTITY STATUS", value: "UNCOMPROMISED INTEGRITY PROTOCOL" }
+            ]
         };
-
-        if (frontUri) {
-            const finalFrontUrl = buildIrysUrl(frontUri);
-            if (frontType === "video") {
-                metadata.animation_url = finalFrontUrl;
-                metadata.image = finalFrontUrl; 
-            } else {
-                metadata.image = finalFrontUrl;
-            }
-        }
-
-        if (backUri) {
-            metadata.properties = {
-                reverse_deed: {
-                    type: backType,
-                    uri: buildIrysUrl(backUri),
-                    unlocked: true
-                }
-            };
-        }
-
-        if (videoUri) {
-            metadata.animation_url = buildIrysUrl(videoUri);
-        }
 
         const dataToUpload = JSON.stringify(metadata);
         const tags = [{ name: "Content-Type", value: "application/json" }];
         
-        updateBridgeStatus(`SEALING ARCHITECT'S MANIFEST UNTO THE Ledger...`, "warning");
         appendLog(`Dynamic metadata strictly formatted. Sealing payload...`, "text-yellow-400");
         
+        // 5. ส่งขึ้น Irys แบบจ่ายค่าแก๊สครั้งเดียว
         const receipt = await executeIrysUpload(dataToUpload, tags, false);
-        
         const irysTxId = receipt?.data?.id || receipt?.id;
         
         if (!irysTxId || typeof irysTxId !== 'string' || irysTxId.trim() === "") {
             throw new Error("CRITICAL: Irys returned an invalid/empty Transaction ID.");
         }
         
-        const sanitizedTxId = sanitizeForDOM(irysTxId);
-        
-        // 🚨 STRICT BOUNDARY ENFORCED: No DOM injection into Smart Contract fields.
-        appendLog(`Metadata JSON generated successfully (Isolated). Irys ID: ${sanitizedTxId}`, "text-emerald-400 font-bold");
-        appendLog(`Use this ID for Base URI configuration if needed.`, "text-slate-400");
-        
-        updateBridgeStatus(`METADATA SCHEMATIC ONLINE`, "success");
-        showNotification(`Manifest JSON Uploaded: ${sanitizedTxId}`, "success");
+        appendLog(`Metadata JSON generated successfully. Irys ID: ${irysTxId}`, "text-emerald-400 font-bold");
+        showNotification(`Manifest JSON Uploaded: ${irysTxId}`, "success");
+
+        // 6. เอา ID ของ JSON ไปหยอดไว้ที่ Hidden Input ทันที เพื่อให้ฟังก์ชัน Mint ดึงไปใช้ต่อ
+        const hiddenInput = document.getElementById('novaHiddenInput');
+        if (hiddenInput) {
+            hiddenInput.value = irysTxId;
+            hiddenInput.classList.add('border-emerald-500', 'bg-emerald-900/20');
+            setTimeout(() => hiddenInput.classList.remove('border-emerald-500', 'bg-emerald-900/20'), 2500);
+        }
 
     } catch(err) {
-        const errorMsg = decodeContractError(err);
-        const sanitizedMsg = sanitizeForDOM(errorMsg);
-
-        if (err.code === 4001 || sanitizedMsg === "USER_CANCELLED_TX" || err.message?.toLowerCase().includes("user rejected") || err.message?.toLowerCase().includes("denied transaction") || err.message?.toLowerCase().includes("declined")) {
+        const errorMsg = err.message || "Unknown Error";
+        if (errorMsg.toLowerCase().includes("user rejected") || errorMsg.toLowerCase().includes("cancelled")) {
             appendLog("Metadata registration funding sequence aborted by user.", "text-yellow-500");
             showNotification("Transaction cancelled by user.", "warning");
         } else {
-            appendLog(`Metadata compilation aborted: ${sanitizedMsg}`, "text-red-500");
-            showNotification(sanitizedMsg, "error");
+            appendLog(`Metadata compilation aborted: ${errorMsg}`, "text-red-500");
+            showNotification(errorMsg, "error");
         }
     } finally {
         if (btn) toggleButtonLoading(btn, false);
     }
 }
+
 
 async function executeSetParams(e) {
     if (!secureContract || !signer) { showNotification("Action suspended: Authenticate wallet signature first.", "error"); return; }
@@ -5580,32 +5518,16 @@ function getImperialRankDetailed(tokenId) {
     return "UNKNOWN ENTITY"; 
 }
 
-function autoMapMetadata(tokenId) { 
-    const properties = [ 
-        { k: "RANK", v: getImperialRankDetailed(tokenId).toUpperCase() }, 
-        { k: "TRANSFER", v: "TRANSFERABLE" } 
-    ];
-
-    for (let i = 0; i < 2; i++) {
-        const keyInput = document.getElementById(`propKey${i+1}`);
-        const valInput = document.getElementById(`prop${i+1}`);
-        if (keyInput && valInput) {
-            keyInput.value = properties[i].k;
-            valInput.value = properties[i].v;
-        }
-    }
-}
-
 async function auditTokenFromLedger(tokenId, pollForUpdate = false) { 
-    resetAdminInputs(); 
+    if (typeof resetAdminInputs === 'function') resetAdminInputs(); 
     const mySession = ++window.currentAuditSession;
 
     try {
         window.SystemState.selectedTokenId = tokenId;
         window.currentLoadedMediaData = window.currentLoadedMediaData || {};
 
-        autoMapMetadata(tokenId);
-        updateVideoSlotsUI();
+        if (typeof autoMapMetadata === 'function') autoMapMetadata(tokenId);
+        if (typeof updateVideoSlotsUI === 'function') updateVideoSlotsUI();
         
         const card = document.getElementById('sovereignFlipCard');
         if (card) card.classList.remove('flipped');
@@ -5613,14 +5535,41 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
         const tbaInputElem = document.getElementById('tbaAddressDisplay');
         if (tbaInputElem) tbaInputElem.value = "Calculating deterministic ERC-6551 TBA address hash...";
 
-        appendLog(`Extracting structural blueprint record for matrix cell node #${tokenId}...`, "text-purple-400");
+        if (typeof appendLog === 'function') {
+            appendLog(`Extracting structural blueprint record for matrix cell node #${tokenId}...`, "text-purple-400");
+        }
 
-        const activeContract = secureContract || readOnlyContract;
+        const activeContract = (typeof secureContract !== 'undefined' && secureContract) 
+            ? secureContract 
+            : (typeof readOnlyContract !== 'undefined' ? readOnlyContract : null);
+            
         if (!activeContract) { 
-            appendLog("Interrogating consensus network parameters...", "text-yellow-500"); 
+            if (typeof appendLog === 'function') appendLog("Interrogating consensus network parameters...", "text-yellow-500"); 
+            if (tbaInputElem) tbaInputElem.value = "RPC OFFLINE: CONNECT WALLET TO CALCULATE";
             return; 
         }
 
+        // 🚨 [CRITICAL FIX]: INDEPENDENT TBA CALCULATION BLOCK
+        // บังคับคำนวณและแสดงผล TBA ทันที โดยไม่สนว่า Node จะถูก Mint แล้วหรือไม่
+        try {
+            const onChainTBA = await activeContract.getTBA(BigInt(tokenId).toString());
+            if (mySession !== window.currentAuditSession) return; 
+            
+            const safeTBA = typeof sanitizeForDOM === 'function' ? sanitizeForDOM(onChainTBA) : onChainTBA;
+            if (tbaInputElem) tbaInputElem.value = safeTBA;
+            
+            if (typeof refreshTbaBalances === 'function') {
+                await refreshTbaBalances(onChainTBA, mySession);
+            }
+        } catch (tbaErr) {
+            if (mySession !== window.currentAuditSession) return; 
+            if (tbaInputElem) tbaInputElem.value = "CRITICAL: FAILED TO EXTRACT DETERMINISTIC ADDR PIVOT";
+            if (typeof setTbaBalanceDisplay === 'function') setTbaBalanceDisplay("0.0000", "0.0000");
+        }
+
+        // ---------------------------------------------------------
+        // ดำเนินการดึงข้อมูล Node (จะโยน Error ไปเข้า Catch หากยังไม่ Mint)
+        // ---------------------------------------------------------
         let mappedNode = null;
         let attempts = 0;
         const maxAttempts = pollForUpdate ? 10 : 1;
@@ -5628,7 +5577,7 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
 
         while (attempts < maxAttempts) {
             if (document.hidden) {
-                appendLog("System idle: Background execution suspended to preserve matrix integrity.", "text-slate-500");
+                if (typeof appendLog === 'function') appendLog("System idle: Background execution suspended to preserve matrix integrity.", "text-slate-500");
                 break;
             }
 
@@ -5649,7 +5598,9 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
                 } else {
                     attempts++;
                     if (attempts < maxAttempts) {
-                        appendLog(`[RPC SYNC] Awaiting on-chain state mutation for Node #${tokenId} (Attempt ${attempts}/${maxAttempts})...`, "text-yellow-500");
+                        if (typeof appendLog === 'function') {
+                            appendLog(`[RPC SYNC] Awaiting on-chain state mutation for Node #${tokenId} (Attempt ${attempts}/${maxAttempts})...`, "text-yellow-500");
+                        }
                         await new Promise(r => setTimeout(r, 3000));
                         continue;
                     }
@@ -5667,31 +5618,24 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
             btnBurn.disabled = !!(mappedNode.votingLockUntil && mappedNode.votingLockUntil > currentEpoch);
         }
 
-        try {
-            const onChainTBA = await activeContract.getTBA(BigInt(tokenId).toString());
-            if (mySession !== window.currentAuditSession) return; 
-            const safeTBA = sanitizeForDOM(onChainTBA);
-            if (tbaInputElem) tbaInputElem.value = safeTBA;
-            await refreshTbaBalances(onChainTBA, mySession);
-        } catch (tbaErr) {
-            if (tbaInputElem) tbaInputElem.value = "CRITICAL: FAILED TO EXTRACT DETERMINISTIC ADDR PIVOT";
-            setTbaBalanceDisplay("0.0000", "0.0000");
-        }
-
         window.currentLoadedMediaData.front = mappedNode.front;
         window.currentLoadedMediaData.back = mappedNode.back;
         window.currentLoadedMediaData.video = mappedNode.video;
         
-        loadDeedMetadata(tokenId);
+        if (typeof loadDeedMetadata === 'function') loadDeedMetadata(tokenId);
 
-        renderToViewport('previewFrontContainer', window.currentLoadedMediaData.front, "Obverse aspect currently unassigned. Engage rebirth parameters.");
+        if (typeof renderToViewport === 'function') {
+            renderToViewport('previewFrontContainer', window.currentLoadedMediaData.front, "Obverse aspect currently unassigned. Engage rebirth parameters.");
+        }
         
         const backContainer = document.getElementById('previewBackContainer');
         setTimeout(() => {
             if (mySession !== window.currentAuditSession) return; 
             
             if (mappedNode.back && mappedNode.back.trim() !== "") { 
-                renderToViewport('previewBackContainer', window.currentLoadedMediaData.back, "Reverse diagnostic data trace is currently null.");
+                if (typeof renderToViewport === 'function') {
+                    renderToViewport('previewBackContainer', window.currentLoadedMediaData.back, "Reverse diagnostic data trace is currently null.");
+                }
             } else {
                 if (backContainer) {
                     backContainer.replaceChildren();
@@ -5705,7 +5649,7 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
         
         const displayData = document.getElementById('activeDeedMetadataDisplay');
         if (displayData) {
-            const imperialRank = getImperialRankDetailed(tokenId);
+            const imperialRank = (typeof getImperialRankDetailed === 'function') ? getImperialRankDetailed(tokenId) : "UNKNOWN";
             displayData.replaceChildren(); 
             
             const line1 = document.createTextNode(`CELL NODE ID: ${tokenId} `);
@@ -5716,7 +5660,7 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
             const br = document.createElement('br');
             
             const rawOwner = mappedNode.owner || "0x0000000000000000000000000000000000000000";
-            const safeOwner = sanitizeForDOM(rawOwner);
+            const safeOwner = typeof sanitizeForDOM === 'function' ? sanitizeForDOM(rawOwner) : rawOwner;
             const line2 = document.createTextNode(`ACCREDITED ROOT: ${safeOwner.slice(0,6)}...${safeOwner.slice(-4)} // NOVA RATIFICATION: `);
             
             const sanctifiedSpan = document.createElement('span');
@@ -5730,11 +5674,11 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
         if (settleTokenInput) settleTokenInput.value = tokenId;
 
     } catch (e) { 
+        // 🚨 [CATCH BLOCK]: ทำงานเมื่อ Node ยังไม่ถูก Mint
         if (mySession !== window.currentAuditSession) return; 
         
         window.currentLoadedMediaData = window.currentLoadedMediaData || {};
         
-        // 🚨 STRICT FIX: Safe Object Extraction for Manifest
         let preMintFrontUri = "";
         if (window.IMPERIAL_MANIFEST && window.IMPERIAL_MANIFEST[String(tokenId)]) {
             const manifestData = window.IMPERIAL_MANIFEST[String(tokenId)];
@@ -5746,10 +5690,14 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
             window.currentLoadedMediaData.back = "";
             window.currentLoadedMediaData.video = "";
             
-            appendLog(`[LAZY MINT READY] Matrix cell node #${tokenId} pre-loaded from Architect Manifest. Awaiting REBIRTH.`, "text-emerald-400 font-bold");
+            if (typeof appendLog === 'function') {
+                appendLog(`[LAZY MINT READY] Matrix cell node #${tokenId} pre-loaded from Architect Manifest. Awaiting REBIRTH.`, "text-emerald-400 font-bold");
+            }
             
-            renderToViewport('previewFrontContainer', preMintFrontUri, "Obverse aspect currently unassigned.");
-            renderToViewport('previewBackContainer', "", "Void element data layer uninitialized.");
+            if (typeof renderToViewport === 'function') {
+                renderToViewport('previewFrontContainer', preMintFrontUri, "Obverse aspect currently unassigned.");
+                renderToViewport('previewBackContainer', "", "Void element data layer uninitialized.");
+            }
 
             const metaDisp = document.getElementById('activeDeedMetadataDisplay');
             if (metaDisp) {
@@ -5768,10 +5716,13 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
             window.currentLoadedMediaData.back = "";
             window.currentLoadedMediaData.video = "";
 
-            appendLog(`Matrix cell node #${tokenId} is VOID. Architect has not assigned a front payload. MINTING LOCKED.`, "text-red-500"); 
-            
-            renderToViewport('previewFrontContainer', "", "Void element data layer uninitialized.");
-            renderToViewport('previewBackContainer', "", "Void element data layer uninitialized.");
+            if (typeof appendLog === 'function') {
+                appendLog(`Matrix cell node #${tokenId} is VOID. Architect has not assigned a front payload. MINTING LOCKED.`, "text-red-500"); 
+            }
+            if (typeof renderToViewport === 'function') {
+                renderToViewport('previewFrontContainer', "", "Void element data layer uninitialized.");
+                renderToViewport('previewBackContainer', "", "Void element data layer uninitialized.");
+            }
             
             const metaDisp = document.getElementById('activeDeedMetadataDisplay');
             if (metaDisp) {
@@ -5781,9 +5732,11 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
         }
         
     } finally {
-        toggleButtonLoading(null, false);
+        if (typeof toggleButtonLoading === 'function') toggleButtonLoading(null, false);
     }
 }
+
+
 
 function setTbaBalanceDisplay(eth, weth) { 
     const ethElem = document.getElementById('tbaEthBalance'); 
@@ -5838,12 +5791,21 @@ function filterSovereignGrid() {
 }
 
 async function syncActiveMatrixNodes() { 
-    const activeContract = secureContract || readOnlyContract; 
+    const activeContract = (typeof secureContract !== 'undefined' && secureContract) 
+        ? secureContract 
+        : (typeof readOnlyContract !== 'undefined' ? readOnlyContract : null); 
+        
     if (!activeContract || typeof activeContract.getAllActiveTokens !== 'function') return; 
     
     try { 
         const activeTokens = await activeContract.getAllActiveTokens();
         const activeSet = new Set(activeTokens.map(t => Number(t))); 
+        
+        // 🚨 [CRITICAL FIX]: อัปเดตตัวเลข ACTIVE: X/333 ให้ตรงกับ On-chain
+        const activeCountEl = document.getElementById('matrixActiveCount');
+        if (activeCountEl) {
+            activeCountEl.textContent = activeSet.size.toString();
+        }
         
         const calls = [];
         for (let i = 1; i <= 333; i++) {
@@ -5851,7 +5813,7 @@ async function syncActiveMatrixNodes() {
             calls.push({ target: CONTRACT_ADDRESS, allowFailure: true, callData: activeContract.interface.encodeFunctionData("tokenVotingLockUntil", [i.toString()]) });
         }
         
-        const providerTarget = readOnlyProvider || provider;
+        const providerTarget = (typeof readOnlyProvider !== 'undefined' && readOnlyProvider) ? readOnlyProvider : (typeof provider !== 'undefined' ? provider : null);
         if (!providerTarget) throw new Error("[RPC] No valid provider targeting available for Multicall.");
 
         const results = await debouncedMulticall(providerTarget, calls);
@@ -5860,7 +5822,7 @@ async function syncActiveMatrixNodes() {
         const currentEpoch = Math.floor(Date.now() / 1000);
         
         for (let i = 1; i <= 333; i++) { 
-            const node = window.matrixDOMCache?.get(i); 
+            const node = typeof window.matrixDOMCache !== 'undefined' ? window.matrixDOMCache.get(i) : null; 
             if (!node) continue; 
 
             const resGen = results[(i-1)*2];
