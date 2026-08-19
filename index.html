@@ -1590,7 +1590,9 @@ async function debouncedMulticall(providerInstance, calls) {
                                     callData: call.callData
                                 }));
 
-                                const chunkResults = await multicall.aggregate3(formattedChunk);
+                                // 🚨 [CRITICAL FIX]: บังคับใช้ .staticCall ตรงนี้!
+                                const chunkResults = await multicall.aggregate3.staticCall(formattedChunk);
+                                
                                 const mappedResults = Array.from(chunkResults).map(res => ({
                                     success: Boolean(res.success),
                                     returnData: String(res.returnData)
@@ -1599,7 +1601,6 @@ async function debouncedMulticall(providerInstance, calls) {
                             } catch (chunkErr) {
                                 console.warn("[MULTICALL] Chunk failed, falling back to concurrent batches", chunkErr);
                                 
-                                // 🛡️ RPC BOTTLENECK GUARD: Concurrent micro-batching instead of sequential blocking
                                 const BATCH_SIZE = 10;
                                 for (let j = 0; j < chunk.length; j += BATCH_SIZE) {
                                     const subChunk = chunk.slice(j, j + BATCH_SIZE);
