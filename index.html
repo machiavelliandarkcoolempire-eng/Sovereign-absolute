@@ -6129,13 +6129,20 @@ function enforceSecurityConstraints() {
     if (nameInput) nameInput.setAttribute('maxlength', '128');
 }
 
-const initializeSystem = () => {
+// 1. เติม async เข้าไปที่จุดประกาศฟังก์ชัน เพื่อเปิดใช้กลไกการรอเวลา
+const initializeSystem = async () => {
     enforceSecurityConstraints();
     
     if (typeof fetchImperialManifest === 'function') {
-        fetchImperialManifest().catch(e => console.warn("[NON-BLOCKING] Manifest payload skip:", e));
+        try {
+            // 2. ล็อกคอระบบด้วย await บังคับให้โหลด Manifest ให้จบ ห้ามข้ามขั้น
+            await fetchImperialManifest();
+        } catch (e) {
+            console.warn("[NON-BLOCKING] Manifest payload skip:", e);
+        }
     }
     
+    // โค้ดด้านล่างนี้จะทำงานก็ต่อเมื่อไฟล์ JSON โหลดเสร็จแล้วเท่านั้น
     setupMatrixGrid();
     initializeAbsoluteEventDelegation();
     
@@ -6154,6 +6161,7 @@ const initializeSystem = () => {
         window.visualViewport.addEventListener("scroll", handleResize, { passive: true });
     }
 };
+
 
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
