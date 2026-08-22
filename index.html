@@ -5151,14 +5151,10 @@ async function resolveMediaUrl(urlList, signal, mimeType) {
             const localCtrl = new AbortController();
             try {
                 const testResponse = await fetch(url, { method: 'GET', signal: localCtrl.signal, headers: { Range: "bytes=0-0" } });
-                
-                if (!testResponse.ok && testResponse.status !== 206) {
-                    throw new Error('HTTP ' + testResponse.status);
-                }
-                
+                if (!testResponse.ok && testResponse.status !== 206) throw new Error('HTTP ' + testResponse.status);
                 localCtrl.abort(); 
                 const cleanUrl = url.split('?')[0]; 
-                return { url: cleanUrl, isBlob: false, sourceUrl: url };
+                return { url: cleanUrl, isBlob: false, sourceUrl: url, mimeType };
             } catch (e) { 
                 localCtrl.abort();
                 if (e.name === 'AbortError' && signal.aborted) throw e; 
@@ -5168,51 +5164,46 @@ async function resolveMediaUrl(urlList, signal, mimeType) {
         throw new Error('ALL GATEWAYS SEVERED (VIDEO STREAMING)');
     }
     
-    // IMAGE & METADATA LOGIC
+    if ('caches' in window) {
+        try {
+            const cache = await caches.open(CACHE_NAME);
+            for (const url of urlList) {
+                const cleanUrl = url.split('?')[0]; 
+                const cachedResponse = await cache.match(cleanUrl);
+                if (cachedResponse) {
+                    const blob = await cachedResponse.blob();
+                    const objUrl = URL.createObjectURL(blob);
+                    if (signal.aborted) { URL.revokeObjectURL(objUrl); throw new Error('Aborted'); }
+                    registerBlobForGc(cleanUrl, objUrl, isVideo);
+                    return { url: objUrl, isBlob: true, sourceUrl: url, mimeType };
+                }
+            }
+        } catch (e) { }
+    }
+
     for (const url of urlList) {
         if (signal.aborted) throw new Error('Aborted');
         const cleanUrl = url.split('?')[0];
         
         if (url.includes('.m3u8')) {
-            return { url: cleanUrl, isBlob: false, sourceUrl: url };
+            return { url: cleanUrl, isBlob: false, sourceUrl: url, mimeType };
         }
 
-        // 1. Try Cache First
-        if ('caches' in window) {
-            try {
-                const cache = await caches.open(CACHE_NAME);
-                const cachedResponse = await cache.match(cleanUrl);
-                
-                if (cachedResponse) {
-                    const blob = await cachedResponse.blob();
-                    const objUrl = URL.createObjectURL(blob);
-                    
-                    if (signal.aborted) { 
-                        URL.revokeObjectURL(objUrl); 
-                        throw new Error('Aborted'); 
-                    }
-                    
-                    registerBlobForGc(cleanUrl, objUrl, isVideo);
-                    return { url: objUrl, isBlob: true, sourceUrl: url };
-                }
-            } catch (e) { }
-        }
-
-        // 2. Try Fetch (For Caching & JSON Extraction)
         try {
             const response = await fetch(url, { signal, mode: 'cors' });
-            
-            // 🛡️ FIXED 4.2: Explicitly throw on non-OK responses to guarantee the catch block triggers the fallback loop.
             if (!response.ok) throw new Error('HTTP ' + response.status);
             
-            // 🛡️ JSON Auto-Extraction: If manifest points to metadata instead of raw image
             const contentType = response.headers.get('content-type') || '';
             if (contentType.includes('application/json')) {
                 const json = await response.json();
-                const actualMedia = json.image || json.animation_url || json.frontURI || json.videoURI;
+                // 🚨 FIX: ดึงไฟล์ออกมา แล้วบังคับให้ระบบ "ประเมินประเภทไฟล์ใหม่" ทันที
+                const actualMedia = json.animation_url || json.videoURI || json.image || json.frontURI;
                 if (actualMedia) {
                     const newUrls = typeof buildIrysUrls === 'function' ? buildIrysUrls(actualMedia) : [actualMedia];
-                    return resolveMediaUrl(newUrls, signal, mimeType);
+                    const newMimeType = await guessMediaTypeAdvanced(newUrls[0]); // ประเมินใหม่!
+                    const result = await resolveMediaUrl(newUrls, signal, newMimeType);
+                    result.mimeType = newMimeType; // ส่งป้ายชื่อที่ถูกต้องกลับไป
+                    return result;
                 }
             }
 
@@ -5224,24 +5215,19 @@ async function resolveMediaUrl(urlList, signal, mimeType) {
             const blob = await response.blob();
             const objUrl = URL.createObjectURL(blob);
             
-            if (signal.aborted) { 
-                URL.revokeObjectURL(objUrl); 
-                throw new Error('Aborted'); 
-            }
+            if (signal.aborted) { URL.revokeObjectURL(objUrl); throw new Error('Aborted'); }
             
             registerBlobForGc(cleanUrl, objUrl, isVideo);
-            return { url: objUrl, isBlob: true, sourceUrl: url };
+            return { url: objUrl, isBlob: true, sourceUrl: url, mimeType };
             
         } catch (e) {
             if (e.name === 'AbortError') throw e;
-            // 🛡️ CORS FAILURE FALLBACK: Bypass fetch and return direct URI for <img> tag
             console.warn(`[Media Resolver] Fetch blocked by CORS or HTTP Error for ${url}. Falling back to direct URI injection.`);
-            return { url: cleanUrl, isBlob: false, sourceUrl: url };
+            return { url: cleanUrl, isBlob: false, sourceUrl: url, mimeType };
         }
     }
     
-    // 3. Absolute Fallback
-    return { url: urlList[0].split('?')[0], isBlob: false, sourceUrl: urlList[0] };
+    return { url: urlList[0].split('?')[0], isBlob: false, sourceUrl: urlList[0], mimeType };
 }
     
 async function renderToViewport(containerId, path, defaultText, explicitMediaType = null) {
@@ -5260,8 +5246,6 @@ async function renderToViewport(containerId, path, defaultText, explicitMediaTyp
     }
 
     const safePath = path.trim();
-    
-    // 🛡️ FIXED: Expanded Base64URL length validation to accommodate 42-45 character Arweave/Irys IDs.
     const isPermittedScheme = /^https?:\/\//i.test(safePath) || 
                               safePath.startsWith('ar://') || 
                               safePath.startsWith('irys://') || 
@@ -5286,7 +5270,7 @@ async function renderToViewport(containerId, path, defaultText, explicitMediaTyp
         
         const resolvedMedia = typeof resolveMediaUrl === 'function' 
             ? await resolveMediaUrl(urlsToTry, masterController.signal, mimeType)
-            : { url: urlsToTry[0], isBlob: false, sourceUrl: urlsToTry[0] };
+            : { url: urlsToTry[0], isBlob: false, sourceUrl: urlsToTry[0], mimeType: mimeType };
         
         if (masterController.signal.aborted) {
             if (resolvedMedia && resolvedMedia.isBlob && resolvedMedia.url) {
@@ -5295,8 +5279,11 @@ async function renderToViewport(containerId, path, defaultText, explicitMediaTyp
             return;
         }
 
+        // 🚨 FIX: ใช้ป้ายชื่อ (Mime Type) ที่ถูกต้องที่สุดส่งไปให้ระบบ Render
+        const finalMimeType = resolvedMedia.mimeType || mimeType;
+
         if (typeof renderMediaToDOM === 'function') {
-            renderMediaToDOM(container, resolvedMedia, mimeType, masterController.signal);
+            renderMediaToDOM(container, resolvedMedia, finalMimeType, masterController.signal);
         }
 
     } catch (e) {
