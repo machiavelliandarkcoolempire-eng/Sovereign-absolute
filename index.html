@@ -5730,7 +5730,6 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
             }
         }
 
-        // เช็คว่าโหนดนี้ถูก Mint ไปแล้วหรือยัง?
         const isMinted = mappedNode && (mappedNode.isActivated || (mappedNode.owner && mappedNode.owner !== "0x0000000000000000000000000000000000000000"));
 
         // =================================================================
@@ -5812,19 +5811,8 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
 
             // ถ้ามีลิงก์ใน JSON (เช่น โหนด 1, 2, 3, 333) ให้ดึงมาแสดงเพื่อรอ Mint
             if (preMintFrontUri !== "") {
-                const urlArray = [preMintFrontUri];
-                if (typeof resolveMediaUrl === 'function') {
-                    const abortController = new AbortController();
-                    try {
-                        const resolvedData = await resolveMediaUrl(urlArray, abortController.signal, 'image');
-                        preMintFrontUri = (resolvedData && typeof resolvedData.url === 'string') ? resolvedData.url : urlArray[0];
-                    } catch (e) {
-                        preMintFrontUri = urlArray[0];
-                    }
-                } else {
-                    preMintFrontUri = urlArray[0];
-                }
-
+                
+                // 🚨 HOTFIX: บันทึก ID ดิบๆ ลง State ทันที ห้ามแปลงเป็น Blob เด็ดขาด
                 window.currentLoadedMediaData.front = preMintFrontUri;
                 window.currentLoadedMediaData.back = "";
                 window.currentLoadedMediaData.video = "";
@@ -5833,6 +5821,7 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
                     appendLog(`[LAZY MINT READY] Matrix cell node #${tokenId} pre-loaded from Architect Manifest. Awaiting REBIRTH.`, "text-emerald-400 font-bold");
                 }
                 
+                // 🚨 HOTFIX: ส่ง ID ดิบๆ ไปให้ renderToViewport จัดการแกะ JSON และดึงรูปเอง
                 if (typeof renderToViewport === 'function') {
                     renderToViewport('previewFrontContainer', preMintFrontUri, "Obverse aspect currently unassigned.");
                     renderToViewport('previewBackContainer', "", "Void element data layer uninitialized.");
@@ -5851,7 +5840,7 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
                 }
                 
             } else {
-                // ถ้าใน JSON เป็น "" (เช่น โหนด 4-332) ให้แสดงเป็น VOID ทันที ไม่ต้องไป Fetch ให้พัง
+                // ถ้าใน JSON เป็น "" (เช่น โหนด 4-332) ให้แสดงเป็น VOID ทันที
                 window.currentLoadedMediaData.front = "";
                 window.currentLoadedMediaData.back = "";
                 window.currentLoadedMediaData.video = "";

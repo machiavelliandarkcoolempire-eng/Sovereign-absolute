@@ -1,7 +1,7 @@
- {
-  "1": "https://gateway.irys.xyz/pdpMVdJRybRs2DK1KSL6P1TKmVpLuZ2mrK6siBZo9Jq",
-  "2": "https://gateway.irys.xyz/DVCLKB4CGnjko69Dg4WvqtUG4eU1tVWofzkYuAw37Kc8",
-  "3": "https://gateway.irys.xyz/EzCbKUpTwASCtVsC22Vs87zf3US9WiqddvKLDyFtfrjP",
+{
+  "1": "pdpMVdJRybRs2DK1KSL6P1TKmVpLuZ2mrK6siBZo9Jq",
+  "2": "DVCLKB4CGnjko69Dg4WvqtUG4eU1tVWofzkYuAw37Kc8",
+  "3": "EzCbKUpTwASCtVsC22Vs87zf3US9WiqddvKLDyFtfrjP",
   "4": "",
   "5": "",
   "6": "",
@@ -331,5 +331,5 @@
   "330": "",
   "331": "",
   "332": "",
-  "333": "https://gateway.irys.xyz/9nzXrDdPZeBkdJ7wPVcpTvRtwdssHzMiqwQGS7eiN1AK"
+  "333": "9nzXrDdPZeBkdJ7wPVcpTvRtwdssHzMiqwQGS7eiN1AK"
 }
