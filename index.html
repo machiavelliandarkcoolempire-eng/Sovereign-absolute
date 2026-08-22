@@ -5151,11 +5151,7 @@ async function resolveMediaUrl(urlList, signal, mimeType, depth = 0) {
             const localCtrl = new AbortController();
             try {
                 const testResponse = await fetch(url, { method: 'GET', signal: localCtrl.signal, headers: { Range: "bytes=0-0" } });
-                
-                if (!testResponse.ok && testResponse.status !== 206) {
-                    throw new Error('HTTP ' + testResponse.status);
-                }
-                
+                if (!testResponse.ok && testResponse.status !== 206) throw new Error('HTTP ' + testResponse.status);
                 localCtrl.abort(); 
                 const cleanUrl = url.split('?')[0]; 
                 return { url: cleanUrl, isBlob: false, sourceUrl: url };
@@ -5177,47 +5173,42 @@ async function resolveMediaUrl(urlList, signal, mimeType, depth = 0) {
             return { url: cleanUrl, isBlob: false, sourceUrl: url };
         }
 
-        // 1. Try Cache First
         if ('caches' in window) {
             try {
                 const cache = await caches.open(CACHE_NAME);
                 const cachedResponse = await cache.match(cleanUrl);
-                
                 if (cachedResponse) {
                     const blob = await cachedResponse.blob();
                     const objUrl = URL.createObjectURL(blob);
-                    
-                    if (signal.aborted) { 
-                        URL.revokeObjectURL(objUrl); 
-                        throw new Error('Aborted'); 
-                    }
-                    
+                    if (signal.aborted) { URL.revokeObjectURL(objUrl); throw new Error('Aborted'); }
                     registerBlobForGc(cleanUrl, objUrl, isVideo);
                     return { url: objUrl, isBlob: true, sourceUrl: url };
                 }
             } catch (e) { }
         }
 
-        // 2. Try Fetch (For Caching & JSON Extraction)
         try {
             const response = await fetch(url, { signal, mode: 'cors' });
-            
-            // 🛡️ FIXED 4.2: Explicitly throw on non-OK responses to guarantee the catch block triggers the fallback loop.
             if (!response.ok) throw new Error('HTTP ' + response.status);
             
-            // 🛡️ JSON Auto-Extraction: If manifest points to metadata instead of raw image
-            const contentType = response.headers.get('content-type') || '';
-            if (contentType.includes('application/json')) {
-                // 🛡️ [FIX AUDIT 2.1]: ล็อกการขุดลึกไม่เกิน 2 ชั้น ตัดความเสี่ยง Infinite Recursion
-                if (depth >= 2) throw new Error("RECURSION LIMIT EXCEEDED");
+            // 🚨 THE ARCHITECT'S COMMAND: บังคับกระชาก JSON ทันที ไม่ต้องเช็ค Header! 🚨
+            const clone = response.clone();
+            try {
+                const text = await clone.text();
+                const json = JSON.parse(text); // บังคับ Parse เลย!
 
-                const json = await response.json();
+                // ถ้า Parse ผ่าน แปลว่ามันคือ JSON ชัวร์ๆ ดึงรูปลิงก์ข้างในออกมา
+                if (depth >= 2) throw new Error("RECURSION LIMIT EXCEEDED");
                 const actualMedia = json.image || json.animation_url || json.frontURI || json.videoURI;
+
                 if (actualMedia) {
                     const newUrls = typeof buildIrysUrls === 'function' ? buildIrysUrls(actualMedia) : [actualMedia];
-                    // 🛡️ ส่งค่า depth + 1 เข้าไปในการเรียกซ้ำ
+                    // วนลูปกลับไปโหลดรูปภาพจริงๆ มาแสดง
                     return resolveMediaUrl(newUrls, signal, mimeType, depth + 1);
                 }
+            } catch (e) {
+                // ถ้า Parse JSON ไม่ผ่าน (Error) แปลว่าไฟล์นี้คือ "รูปภาพ" ตรงๆ
+                // ปล่อยให้โค้ดด้านล่างทำงานต่อเพื่อแปลงเป็น Blob แสดงผล
             }
 
             if ('caches' in window) {
@@ -5228,26 +5219,20 @@ async function resolveMediaUrl(urlList, signal, mimeType, depth = 0) {
             const blob = await response.blob();
             const objUrl = URL.createObjectURL(blob);
             
-            if (signal.aborted) { 
-                URL.revokeObjectURL(objUrl); 
-                throw new Error('Aborted'); 
-            }
+            if (signal.aborted) { URL.revokeObjectURL(objUrl); throw new Error('Aborted'); }
             
             registerBlobForGc(cleanUrl, objUrl, isVideo);
             return { url: objUrl, isBlob: true, sourceUrl: url };
             
         } catch (e) {
             if (e.name === 'AbortError') throw e;
-            // 🛡️ CORS FAILURE FALLBACK: Bypass fetch and return direct URI for <img> tag
             console.warn(`[Media Resolver] Fetch blocked by CORS or HTTP Error for ${url}. Falling back to direct URI injection.`);
             return { url: cleanUrl, isBlob: false, sourceUrl: url };
         }
     }
     
-    // 3. Absolute Fallback
     return { url: urlList[0].split('?')[0], isBlob: false, sourceUrl: urlList[0] };
 }
-
     
 async function renderToViewport(containerId, path, defaultText, explicitMediaType = null) {
     const container = document.getElementById(containerId);
