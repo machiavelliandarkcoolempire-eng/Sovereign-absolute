@@ -5731,6 +5731,11 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
 
         if (!mappedNode) throw new Error("Mapping failure"); 
 
+        // 🚨 THE ARCHITECT'S FIX: บังคับเตะเข้า Catch Block ถ้าระบบอ่านเจอว่ายังไม่ Mint (Owner เป็น 0x00)
+        if (!mappedNode.isActivated && (!mappedNode.owner || mappedNode.owner === "0x0000000000000000000000000000000000000000")) {
+            throw new Error("Node is VOID (Unminted)");
+        }
+
         const currentEpoch = Math.floor(Date.now() / 1000);
         const btnBurn = document.getElementById('btnBurnToken');
         
