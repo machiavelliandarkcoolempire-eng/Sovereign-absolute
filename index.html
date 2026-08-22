@@ -5617,7 +5617,7 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
             if (typeof manifestData === 'string') {
                 preMintFrontUri = manifestData.trim();
             } else if (typeof manifestData === 'object') {
-                preMintFrontUri = (manifestData.irys_id || "").trim();
+                preMintFrontUri = (manifestData.irys_id || manifestData.image || "").trim();
             }
         }
 
@@ -5629,14 +5629,15 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
             if (typeof appendLog === 'function') appendLog("RPC Offline: Loading visual state from local manifest...", "text-yellow-500"); 
             if (tbaInputElem) tbaInputElem.value = "RPC OFFLINE: CONNECT WALLET TO CALCULATE";
             
-            // 🚨 สั่ง Render ทันทีเมื่อ RPC Offline (Offline-First Execution)
+            // 🚨 แก้ไข: แปลง URI/JSON จาก Manifest ให้เป็น Image URL จริงผ่าน resolveMediaUrl ก่อนเรนเดอร์
             if (preMintFrontUri && preMintFrontUri !== "") {
-                window.currentLoadedMediaData.front = preMintFrontUri;
+                const resolvedFront = (typeof resolveMediaUrl === 'function') ? await resolveMediaUrl(preMintFrontUri) : preMintFrontUri;
+                window.currentLoadedMediaData.front = resolvedFront;
                 window.currentLoadedMediaData.back = "";
                 window.currentLoadedMediaData.video = "";
                 
                 if (typeof renderToViewport === 'function') {
-                    renderToViewport('previewFrontContainer', preMintFrontUri, "Obverse aspect currently unassigned.");
+                    renderToViewport('previewFrontContainer', resolvedFront, "Obverse aspect currently unassigned.");
                     renderToViewport('previewBackContainer', "", "Void element data layer uninitialized.");
                 }
 
@@ -5803,7 +5804,9 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
         if (mySession !== window.currentAuditSession) return; 
         
         if (preMintFrontUri && preMintFrontUri !== "") {
-            window.currentLoadedMediaData.front = preMintFrontUri;
+            // 🚨 แก้ไข: แปลง URI/JSON จาก Manifest ให้เป็น Image URL จริงผ่าน resolveMediaUrl ก่อนเรนเดอร์
+            const resolvedFront = (typeof resolveMediaUrl === 'function') ? await resolveMediaUrl(preMintFrontUri) : preMintFrontUri;
+            window.currentLoadedMediaData.front = resolvedFront;
             window.currentLoadedMediaData.back = "";
             window.currentLoadedMediaData.video = "";
             
@@ -5812,7 +5815,7 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
             }
             
             if (typeof renderToViewport === 'function') {
-                renderToViewport('previewFrontContainer', preMintFrontUri, "Obverse aspect currently unassigned.");
+                renderToViewport('previewFrontContainer', resolvedFront, "Obverse aspect currently unassigned.");
                 renderToViewport('previewBackContainer', "", "Void element data layer uninitialized.");
             }
 
@@ -5852,6 +5855,7 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
         if (typeof toggleButtonLoading === 'function') toggleButtonLoading(null, false);
     }
 }
+
 
 function setTbaBalanceDisplay(eth, weth) { 
     const ethElem = document.getElementById('tbaEthBalance'); 
