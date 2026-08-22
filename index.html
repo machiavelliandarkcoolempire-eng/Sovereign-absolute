@@ -207,10 +207,12 @@
     }
 
     .node-active {
-        background: radial-gradient(circle at 50% 30%, rgba(251, 191, 36, 0.6) 0%, rgba(180, 83, 9, 0.4) 100%) !important;
-        border-color: #fbbf24 !important; color: #fffbeb !important; 
-        box-shadow: 0 0 25px rgba(251, 191, 36, 0.9), inset 0 0 15px rgba(251, 191, 36, 0.6) !important;
-    }
+    background: radial-gradient(circle at 50% 30%, rgba(6, 182, 212, 0.6) 0%, rgba(8, 51, 68, 0.4) 100%) !important;
+    border-color: #06b6d4 !important; 
+    color: #cffafe !important; 
+    box-shadow: 0 0 25px rgba(6, 182, 212, 0.9), inset 0 0 15px rgba(6, 182, 212, 0.6) !important;
+}
+
 
     /* Input Fields */
     input[type="text"], input[type="number"] {
@@ -625,32 +627,57 @@
                 </div>
             </div>
         </div>
-        <div class="lg:col-span-8 w-full">
-            <span class="text-[10px] font-mono text-stone-400 uppercase tracking-widest block mb-4 font-bold">// CHRONOGRAPH PREVIEW MATRIX (READ-ONLY)</span>
-            <div class="grid grid-cols-2 gap-3 md:gap-5 max-w-2xl">
-                <div id="vSlot1" onclick="if(typeof handleSlotClick === 'function') handleSlotClick(1)" class="preview-slot aspect-[9/16] rounded-xl p-3 md:p-4 flex flex-col justify-between cursor-pointer relative overflow-hidden group">
-                    <div class="text-right text-[10px] md:text-xs font-mono text-stone-400 font-bold relative z-10 group-hover:text-amber-400 transition-colors">SLOT #01</div>
-                    <div class="flex-grow flex items-center justify-center relative z-10"><span class="text-amber-500/50 group-hover:text-amber-400 text-4xl drop-shadow-[0_0_15px_rgba(217,119,6,0.6)] transition-colors">▶</span></div>
-                    <span id="vSlotStatus1" class="text-[8px] md:text-[9px] text-stone-500 uppercase mt-2 block text-center relative z-10 font-bold group-hover:text-stone-300 transition-colors">CONTACT ARCHITECT TO DEPLOY</span>
-                </div>
-                <div id="vSlot2" onclick="if(typeof handleSlotClick === 'function') handleSlotClick(2)" class="preview-slot aspect-[9/16] rounded-xl p-3 md:p-4 flex flex-col justify-between cursor-pointer relative overflow-hidden group">
-                    <div class="text-right text-[10px] md:text-xs font-mono text-stone-400 font-bold relative z-10 group-hover:text-amber-400 transition-colors">SLOT #02</div>
-                    <div class="flex-grow flex items-center justify-center relative z-10"><span class="text-amber-500/50 group-hover:text-amber-400 text-4xl drop-shadow-[0_0_15px_rgba(217,119,6,0.6)] transition-colors">▶</span></div>
-                    <span id="vSlotStatus2" class="text-[8px] md:text-[9px] text-stone-500 uppercase mt-2 block text-center relative z-10 font-bold group-hover:text-stone-300 transition-colors">CONTACT ARCHITECT TO DEPLOY</span>
-                </div>
-                <div id="vSlot3" onclick="if(typeof handleSlotClick === 'function') handleSlotClick(3)" class="preview-slot aspect-[9/16] rounded-xl p-3 md:p-4 flex flex-col justify-between cursor-pointer relative overflow-hidden group">
-                    <div class="text-right text-[10px] md:text-xs font-mono text-stone-400 font-bold relative z-10 group-hover:text-amber-400 transition-colors">SLOT #03</div>
-                    <div class="flex-grow flex items-center justify-center relative z-10"><span class="text-amber-500/50 group-hover:text-amber-400 text-4xl drop-shadow-[0_0_15px_rgba(217,119,6,0.6)] transition-colors">▶</span></div>
-                    <span id="vSlotStatus3" class="text-[8px] md:text-[9px] text-stone-500 uppercase mt-2 block text-center relative z-10 font-bold group-hover:text-stone-300 transition-colors">CONTACT ARCHITECT TO DEPLOY</span>
-                </div>
-                <div id="vSlot4" onclick="if(typeof handleSlotClick === 'function') handleSlotClick(4)" class="preview-slot aspect-[9/16] rounded-xl p-3 md:p-4 flex flex-col justify-between cursor-pointer relative overflow-hidden group">
-                    <div class="text-right text-[10px] md:text-xs font-mono text-stone-400 font-bold relative z-10 group-hover:text-amber-400 transition-colors">SLOT #04</div>
-                    <div class="flex-grow flex items-center justify-center relative z-10"><span class="text-amber-500/50 group-hover:text-amber-400 text-4xl drop-shadow-[0_0_15px_rgba(217,119,6,0.6)] transition-colors">▶</span></div>
-                    <span id="vSlotStatus4" class="text-[8px] md:text-[9px] text-stone-500 uppercase mt-2 block text-center relative z-10 font-bold group-hover:text-stone-300 transition-colors">CONTACT ARCHITECT TO DEPLOY</span>
+       <div class="lg:col-span-8 w-full">
+    <span class="text-[10px] font-mono text-stone-400 uppercase tracking-widest block mb-4 font-bold">// CHRONOGRAPH PREVIEW MATRIX (READ-ONLY)</span>
+    
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4 max-w-2xl">
+        
+        <!-- ปุ่ม SLOT #01 (ใส่ลิงก์ที่ data-uri) -->
+        <div id="vSlot1" data-uri="ใส่ลิงก์_Arweave_หรือ_Irys_ตัวที่_1_ที่นี่" onclick="if(typeof handleSlotClick === 'function') handleSlotClick(1)" class="preview-slot w-full bg-stone-950 border border-stone-800 rounded-xl p-4 flex items-center justify-start cursor-pointer hover:border-amber-500 transition-all group text-left">
+            <div class="flex items-center gap-4">
+                <span class="text-amber-500/50 group-hover:text-amber-400 text-2xl drop-shadow-[0_0_10px_rgba(217,119,6,0.6)] transition-colors">▶</span>
+                <div>
+                    <div class="text-[11px] font-mono text-stone-300 font-bold group-hover:text-amber-400 transition-colors">SLOT #01</div>
+                    <span id="vSlotStatus1" class="text-[9px] text-stone-500 uppercase block mt-1 font-bold">CONTACT ARCHITECT TO DEPLOY</span>
                 </div>
             </div>
         </div>
-        <div class="lg:col-span-12 w-full mt-2">
+
+        <!-- ปุ่ม SLOT #02 (ใส่ลิงก์ที่ data-uri) -->
+        <div id="vSlot2" data-uri="ใส่ลิงก์_Arweave_หรือ_Irys_ตัวที่_2_ที่นี่" onclick="if(typeof handleSlotClick === 'function') handleSlotClick(2)" class="preview-slot w-full bg-stone-950 border border-stone-800 rounded-xl p-4 flex items-center justify-start cursor-pointer hover:border-amber-500 transition-all group text-left">
+            <div class="flex items-center gap-4">
+                <span class="text-amber-500/50 group-hover:text-amber-400 text-2xl drop-shadow-[0_0_10px_rgba(217,119,6,0.6)] transition-colors">▶</span>
+                <div>
+                    <div class="text-[11px] font-mono text-stone-300 font-bold group-hover:text-amber-400 transition-colors">SLOT #02</div>
+                    <span id="vSlotStatus2" class="text-[9px] text-stone-500 uppercase block mt-1 font-bold">CONTACT ARCHITECT TO DEPLOY</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ปุ่ม SLOT #03 (ใส่ลิงก์ที่ data-uri) -->
+        <div id="vSlot3" data-uri="ใส่ลิงก์_Arweave_หรือ_Irys_ตัวที่_3_ที่นี่" onclick="if(typeof handleSlotClick === 'function') handleSlotClick(3)" class="preview-slot w-full bg-stone-950 border border-stone-800 rounded-xl p-4 flex items-center justify-start cursor-pointer hover:border-amber-500 transition-all group text-left">
+            <div class="flex items-center gap-4">
+                <span class="text-amber-500/50 group-hover:text-amber-400 text-2xl drop-shadow-[0_0_10px_rgba(217,119,6,0.6)] transition-colors">▶</span>
+                <div>
+                    <div class="text-[11px] font-mono text-stone-300 font-bold group-hover:text-amber-400 transition-colors">SLOT #03</div>
+                    <span id="vSlotStatus3" class="text-[9px] text-stone-500 uppercase block mt-1 font-bold">CONTACT ARCHITECT TO DEPLOY</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ปุ่ม SLOT #04 (ใส่ลิงก์ที่ data-uri) -->
+        <div id="vSlot4" data-uri="ใส่ลิงก์_Arweave_หรือ_Irys_ตัวที่_4_ที่นี่" onclick="if(typeof handleSlotClick === 'function') handleSlotClick(4)" class="preview-slot w-full bg-stone-950 border border-stone-800 rounded-xl p-4 flex items-center justify-start cursor-pointer hover:border-amber-500 transition-all group text-left">
+            <div class="flex items-center gap-4">
+                <span class="text-amber-500/50 group-hover:text-amber-400 text-2xl drop-shadow-[0_0_10px_rgba(217,119,6,0.6)] transition-colors">▶</span>
+                <div>
+                    <div class="text-[11px] font-mono text-stone-300 font-bold group-hover:text-amber-400 transition-colors">SLOT #04</div>
+                    <span id="vSlotStatus4" class="text-[9px] text-stone-500 uppercase block mt-1 font-bold">CONTACT ARCHITECT TO DEPLOY</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+     <div class="lg:col-span-12 w-full mt-2">
             <div class="bg-stone-950 border border-rose-900/50 rounded-xl p-5 md:p-6 shadow-inner">
                 <div class="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-3 md:gap-4">
                     <a id="linkSocial1" href="#" target="_blank" rel="noopener noreferrer" class="w-full sm:w-auto px-5 py-3 bg-stone-900 border border-stone-700 rounded-lg text-[10px] md:text-xs font-mono uppercase text-stone-300 hover:border-amber-500 hover:text-amber-400 transition-colors text-center">✦ LinkedIn Gateway</a>
@@ -897,41 +924,6 @@
         </div>
 
         <div class="space-y-4 border border-stone-800 p-5 rounded-2xl bg-black/50 shadow-inner">
-            <span class="text-[11px] font-mono text-amber-600 font-bold uppercase tracking-wider block border-b border-stone-800 pb-2">// CHRONOGRAPH LINK DEPLOYMENT CONSOLE</span>
-            
-            <div class="space-y-4">
-                <div>
-                    <label class="text-[10px] text-stone-500 font-mono block mb-1.5">SLOT #01 TARGET URI</label>
-                    <div class="flex flex-col sm:flex-row gap-2">
-                        <input type="text" id="vSlotUri1" placeholder="Irys Tx ID or URL" class="flex-grow bg-black border border-stone-800 p-2.5 text-[11px] font-mono text-stone-200 rounded-lg outline-none focus:border-amber-500" />
-                        <button onclick="if(typeof applySlotToNova === 'function') applySlotToNova(1)" class="px-4 py-2.5 bg-rose-950 border border-rose-700 text-rose-300 text-[10px] rounded-lg font-bold hover:bg-rose-900 transition-colors">APPLY</button>
-                    </div>
-                </div>
-                <div>
-                    <label class="text-[10px] text-stone-500 font-mono block mb-1.5">SLOT #02 TARGET URI</label>
-                    <div class="flex flex-col sm:flex-row gap-2">
-                        <input type="text" id="vSlotUri2" placeholder="Irys Tx ID or URL" class="flex-grow bg-black border border-stone-800 p-2.5 text-[11px] font-mono text-stone-200 rounded-lg outline-none focus:border-amber-500" />
-                        <button onclick="if(typeof applySlotToNova === 'function') applySlotToNova(2)" class="px-4 py-2.5 bg-rose-950 border border-rose-700 text-rose-300 text-[10px] rounded-lg font-bold hover:bg-rose-900 transition-colors">APPLY</button>
-                    </div>
-                </div>
-                <div>
-                    <label class="text-[10px] text-stone-500 font-mono block mb-1.5">SLOT #03 TARGET URI</label>
-                    <div class="flex flex-col sm:flex-row gap-2">
-                        <input type="text" id="vSlotUri3" placeholder="Irys Tx ID or URL" class="flex-grow bg-black border border-stone-800 p-2.5 text-[11px] font-mono text-stone-200 rounded-lg outline-none focus:border-amber-500" />
-                        <button onclick="if(typeof applySlotToNova === 'function') applySlotToNova(3)" class="px-4 py-2.5 bg-rose-950 border border-rose-700 text-rose-300 text-[10px] rounded-lg font-bold hover:bg-rose-900 transition-colors">APPLY</button>
-                    </div>
-                </div>
-                <div>
-                    <label class="text-[10px] text-stone-500 font-mono block mb-1.5">SLOT #04 TARGET URI</label>
-                    <div class="flex flex-col sm:flex-row gap-2">
-                        <input type="text" id="vSlotUri4" placeholder="Irys Tx ID or URL" class="flex-grow bg-black border border-stone-800 p-2.5 text-[11px] font-mono text-stone-200 rounded-lg outline-none focus:border-amber-500" />
-                        <button onclick="if(typeof applySlotToNova === 'function') applySlotToNova(4)" class="px-4 py-2.5 bg-rose-950 border border-rose-700 text-rose-300 text-[10px] rounded-lg font-bold hover:bg-rose-900 transition-colors">APPLY</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="space-y-4 border border-stone-800 p-5 rounded-2xl bg-black/50 shadow-inner">
             <span class="text-[11px] font-mono text-rose-400 font-bold uppercase tracking-wider block border-b border-stone-800 pb-2">// MACRO POLICIES & RE-MINT CYCLE</span>
             <div class="grid grid-cols-2 gap-3">
                 <div><label class="text-[10px] text-stone-500 font-mono block mb-1.5">MINT FEE ETH</label><input type="number" step="0.001" id="inputAdminMint" class="w-full bg-black border border-stone-800 p-3 text-xs font-mono text-amber-500 rounded-lg outline-none focus:border-amber-500" /></div>
@@ -1021,7 +1013,6 @@
 // 🔱 THE IMPERIAL SOVEREIGN DEED - CORE ARCHITECTURE (ETHERS V6 & IRYS 0.0.4)
 // 🛡️ WORLD-CLASS SENIOR WEB3 FRONT-END STANDARD (ZERO-BUG POLICY ENFORCED)
 // ==============================================================================
-
 const CONTRACT_ADDRESS = "0x920c1f00EF178B3C060BD39a6a3f449BA2b230C9";
 const WETH_ADDRESS = "0x4200000000000000000000000000000000000006";
 const MULTICALL3_ADDRESS = "0xcA11bde05977b3631167028862bE2a173976CA11";
@@ -1032,6 +1023,7 @@ const ARWEAVE_GATEWAYS = [
     "https://arweave.net/",
     "https://ar-io.net/"
 ];
+
 
 const MULTICALL3_ABI = [
     "function aggregate3(tuple(address target, bool allowFailure, bytes callData)[] calls) payable returns (tuple(bool success, bytes returnData)[] returnData)"
@@ -1309,7 +1301,10 @@ function safeStorageRemove(key) {
 function clearAllTimers() {
     if (Array.isArray(activeTimers) && activeTimers.length > 0) {
         activeTimers.forEach(timerId => {
-            if (timerId !== null && timerId !== undefined) clearInterval(timerId); 
+            if (timerId !== null && timerId !== undefined) {
+                clearTimeout(timerId);
+                clearInterval(timerId);
+            }
         });
         activeTimers = [];
     }
@@ -1551,7 +1546,6 @@ function updateBridgeStatus(msg, type) {
 const _multicallCtx = new WeakMap();
 async function debouncedMulticall(providerInstance, calls) {
     return new Promise((resolve, reject) => {
-        // Guard Clause: ตรวจสอบ Type ป้องกัน WeakMap Crash
         if (!providerInstance || typeof providerInstance !== 'object') {
             return reject(new TypeError("Provider instance must be a valid object"));
         }
@@ -1587,34 +1581,49 @@ async function debouncedMulticall(providerInstance, calls) {
                         for (let i = 0; i < allCalls.length; i += 100) {
                             const chunk = allCalls.slice(i, i + 100);
                             try {
-                                // 🚨 FIX: หน่วงเวลา 150ms ระหว่าง Chunk ป้องกัน RPC Rate Limit (HTTP 429)
                                 if (i > 0) await new Promise(r => setTimeout(r, 150));
 
-                                // 🚨 CRITICAL FIX: Inject 'allowFailure' ให้ตรงตาม Call3 Struct
                                 const formattedChunk = chunk.map(call => ({
                                     target: call.target,
                                     allowFailure: call.allowFailure ?? true,
                                     callData: call.callData
                                 }));
 
-                                const chunkResults = await multicall.aggregate3(formattedChunk);
+                                // 🚨 [CRITICAL FIX]: บังคับใช้ .staticCall ตรงนี้!
+                                const chunkResults = await multicall.aggregate3.staticCall(formattedChunk);
+                                
                                 const mappedResults = Array.from(chunkResults).map(res => ({
                                     success: Boolean(res.success),
                                     returnData: String(res.returnData)
                                 }));
                                 results = results.concat(mappedResults);
                             } catch (chunkErr) {
-                                console.warn("[MULTICALL] Chunk failed, falling back to individual calls", chunkErr);
-                                for (const call of chunk) {
-                                    try {
-                                        const res = await providerInstance.call({ to: call.target, data: call.callData });
-                                        const isValidHex = typeof res === 'string' && res.startsWith('0x');
-                                        results.push({ 
-                                            success: isValidHex, 
-                                            returnData: isValidHex ? res : "0x" 
-                                        });
-                                    } catch (singleErr) {
-                                        results.push({ success: false, returnData: "0x" });
+                                console.warn("[MULTICALL] Chunk failed, falling back to concurrent batches", chunkErr);
+                                
+                                const BATCH_SIZE = 10;
+                                for (let j = 0; j < chunk.length; j += BATCH_SIZE) {
+                                    const subChunk = chunk.slice(j, j + BATCH_SIZE);
+                                    const subResults = await Promise.allSettled(
+                                        subChunk.map(async (call) => {
+                                            const res = await providerInstance.call({ to: call.target, data: call.callData });
+                                            const isValidHex = typeof res === 'string' && res.startsWith('0x');
+                                            return { 
+                                                success: isValidHex, 
+                                                returnData: isValidHex ? res : "0x" 
+                                            };
+                                        })
+                                    );
+                                    
+                                    subResults.forEach(res => {
+                                        if (res.status === 'fulfilled') {
+                                            results.push(res.value);
+                                        } else {
+                                            results.push({ success: false, returnData: "0x" });
+                                        }
+                                    });
+                                    
+                                    if (j + BATCH_SIZE < chunk.length) {
+                                        await new Promise(r => setTimeout(r, 50)); 
                                     }
                                 }
                             }
@@ -1634,7 +1643,6 @@ async function debouncedMulticall(providerInstance, calls) {
         }
     });
 }
-
 
 let gasSurgeTimeoutId = null;
 async function checkGasSurge() {
@@ -1716,29 +1724,28 @@ function decodeContractError(err) {
     return err.reason || err.message || "Transaction reverted by EVM";
 }
 
-// Helper Function: ตรวจสอบไฟล์ฉบับแก้ปัญหา OOM Crash (ป้องกัน iOS แครช 100%)
+// Helper Function: สำหรับอ่านความยาววิดีโอ (วินาที)
 function getVideoDuration(file) {
     return new Promise((resolve, reject) => {
-        if (!file) {
-            reject(new Error("No file provided."));
-            return;
-        }
-
-        // 1. กฎเหล็ก: บังคับตรวจสอบแค่ขนาดไฟล์ (Max 300 MB) 
-        const MAX_SIZE_BYTES = 300 * 1024 * 1024; 
-        if (file.size > MAX_SIZE_BYTES) {
-            reject(new Error("FILE REJECTED: ขนาดไฟล์เกินขีดจำกัดสูงสุดที่ 300 MB"));
-            return;
-        }
-
-        // 2. ปิดการใช้ URL.createObjectURL(file) อย่างเด็ดขาดเพื่อกัน RAM ทะลุ
-        // โยนค่าความยาวจำลอง (เช่น 15 วินาที) กลับไปเพื่อให้โค้ดส่วนอื่นที่รอรับค่า (then) ทำงานต่อได้โดยไม่พัง
-        resolve(15); 
+        const video = document.createElement('video');
+        video.preload = 'metadata';
+        
+        video.onloadedmetadata = () => {
+            window.URL.revokeObjectURL(video.src);
+            resolve(video.duration);
+        };
+        
+        video.onerror = () => {
+            window.URL.revokeObjectURL(video.src);
+            reject(new Error("Invalid video file or unable to read metadata."));
+        };
+        
+        video.src = window.URL.createObjectURL(file);
     });
 }
 
+// REMOVED: function getVideoDuration(file) { ... }
 
-// Main Function: อัปเกรดเพิ่มการดักจับ 300MB และ 1 นาที
 async function promptUserForFile(acceptType = 'image/*,video/*') {
     return new Promise((resolve) => {
         const fileInput = document.createElement('input');
@@ -1755,14 +1762,12 @@ async function promptUserForFile(acceptType = 'image/*,video/*') {
             window.removeEventListener('focus', handleFocusFallback);
         };
 
-        // [NEW LOGIC]: ตรวจสอบขนาดไฟล์และความยาววิดีโอก่อนส่งต่อ
         const validateAndResolve = async (file) => {
             if (!file) {
                 resolve(null);
                 return;
             }
 
-            // 1. ตรวจสอบขนาดไฟล์ (Max 300 MB)
             const MAX_SIZE_BYTES = 300 * 1024 * 1024; // 300 MB
             if (file.size > MAX_SIZE_BYTES) {
                 if (typeof showNotification === 'function') {
@@ -1772,28 +1777,8 @@ async function promptUserForFile(acceptType = 'image/*,video/*') {
                 return;
             }
 
-            // 2. ตรวจสอบความยาววิดีโอ (Max 60 วินาที)
-            if (file.type.startsWith('video/')) {
-                try {
-                    const duration = await getVideoDuration(file);
-                    if (duration > 60) {
-                        if (typeof showNotification === 'function') {
-                            showNotification("VIDEO REJECTED: ความยาววิดีโอต้องไม่เกิน 1 นาที (60 วินาที)", "error");
-                        }
-                        resolve(null);
-                        return;
-                    }
-                } catch (err) {
-                    console.warn("[SYSTEM LOG] Video duration check failed:", err);
-                    if (typeof showNotification === 'function') {
-                        showNotification("FILE ERROR: ไม่สามารถอ่านข้อมูลความยาวของวิดีโอได้ ไฟล์อาจเสียหาย", "error");
-                    }
-                    resolve(null);
-                    return;
-                }
-            }
-
-            // ผ่านทุกเงื่อนไข คืนค่าไฟล์ให้ระบบนำไปอัปโหลดต่อ
+            // 🛡️ FIXED: Client-side DOM loading for duration validation DESTROYED.
+            // Relying strictly on byte-size limits to prevent iOS WebKit OOM crashes.
             resolve(file);
         };
 
@@ -2224,6 +2209,7 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
         if (activeBtn) toggleButtonLoading(activeBtn, false);
     }
 }
+
 // ==============================================================================
 // ⚡ CORE EXECUTION: TOP-UP PROTOCOL (ASYNC NON-BLOCKING)
 // ==============================================================================
@@ -2268,24 +2254,10 @@ async function executeIrysTopUp(amountEthStr, triggerBtn = null) {
             safeAppendLog("Resuming pending funding transaction polling...", "text-yellow-400");
         } else {
             try {
-                // 🛡️ LAYER 2 FIX: Explicit UI Lock State for Wallet Interaction
-                let fundRes;
-                try {
-                    if (activeBtn) {
-                        activeBtn.innerHTML = "⏳ [ REJECT IN WALLET ]";
-                        activeBtn.classList.add('text-red-400', 'animate-pulse');
-                    }
-                    fundRes = await irys.fund(amountWei.toString());
-                } finally {
-                    if (activeBtn) {
-                        activeBtn.innerHTML = "⏳ PROCESSING...";
-                        activeBtn.classList.remove('text-red-400', 'animate-pulse');
-                    }
-                }
-
+                const fundRes = await irys.fund(amountWei.toString());
                 try { 
                     localStorage.setItem('irys_pending_fund_tx', JSON.stringify({ 
-                        id: fundRes?.id || 'pending', ts: Date.now(), amount: amountWei.toString()
+                        id: fundRes.id || 'pending', ts: Date.now(), amount: amountWei.toString()
                     })); 
                 } catch(e) {}
             } catch (fundErr) {
@@ -2336,7 +2308,7 @@ async function executeIrysTopUp(amountEthStr, triggerBtn = null) {
             showNotification(msg, "error");
         }
     } finally {
-        if (activeBtn) toggleButtonLoading(activeBtn, false);
+        toggleButtonLoading(activeBtn, false);
     }
 }
 
@@ -2356,20 +2328,21 @@ function syncMatrixIdStateUI(activeId) {
     document.querySelectorAll('[data-token-id]').forEach(el => {
         const idVal = parseInt(el.dataset.tokenId, 10);
         if (idVal === activeId) {
-            el.classList.add('border-cyan-500', 'bg-cyan-950', 'ring-2', 'ring-cyan-400', 'shadow-[0_0_15px_rgba(6,182,212,0.6)]');
-            el.classList.remove('border-slate-700', 'bg-slate-900');
+            el.classList.add('node-active');
         } else {
-            el.classList.remove('border-cyan-500', 'bg-cyan-950', 'ring-2', 'ring-cyan-400', 'shadow-[0_0_15px_rgba(6,182,212,0.6)]');
-            el.classList.add('border-slate-700', 'bg-slate-900');
+            el.classList.remove('node-active');
         }
     });
 
     const targetDisplay = document.getElementById('uploadTargetDisplay');
     if (targetDisplay) {
         targetDisplay.textContent = `LOCKED TOKEN ID: #${activeId}`;
+        // ลบเฉพาะคลาสสีเก่าออก เลย์เอาต์และคลาสอื่นๆ จะยังอยู่ครบเหมือนเดิม
+        targetDisplay.classList.remove('text-amber-500', 'text-emerald-400', 'text-slate-400');
         targetDisplay.classList.add('text-cyan-400', 'font-bold');
     }
 }
+
 
 function initializeAbsoluteEventDelegation() {
     if (document.body.dataset.delegationAttached === "true") return;
@@ -2513,6 +2486,23 @@ async function checkHolding(account) {
     } catch (err) {
         console.error("[SYS LOG] Token-Gated Logic Interrogation Failure:", err?.message || err);
         return false;
+    }
+}
+
+function checkPendingNova() {
+    const pendingTxId = localStorage.getItem('pending_nova_txid');
+    const pendingToken = localStorage.getItem('pending_nova_token');
+    if (pendingTxId) {
+        const hiddenInput = document.getElementById('novaHiddenInput');
+        const tokenInput = document.getElementById('novaTokenId');
+        if (hiddenInput) hiddenInput.value = pendingTxId;
+        if (tokenInput && pendingToken) tokenInput.value = pendingToken;
+        
+        if (typeof showNotification === 'function') {
+            showNotification("RESUMING NOVA: พบข้อมูล Metadata ค้างอยู่ในระบบ กรุณายืนยันธุรกรรม On-chain ให้เสร็จสิ้น", "warning");
+        }
+        const modal = document.getElementById('novaWarnModal');
+        if (modal) modal.classList.remove('hidden');
     }
 }
 
@@ -2826,6 +2816,7 @@ function resetAdminInputs(forceClear = false) {
     
     globalSelectedTokenId = null;
     window.SystemState.globalSelectedTokenId = null;
+    window.SystemState.selectedTokenId = null; // 🛡️ GHOST STATE GUARD: Destroy all pointers
     syncMatrixIdStateUI(null);
     
     safeAppendLog("[SYSTEM] Admin state and Matrix ID mapping globally cleared.", "text-slate-400");
@@ -2968,27 +2959,6 @@ async function initReadOnlyRPC() {
         window.readOnlyContract = null;
         safeAppendLog(`CRITICAL: General RPC Route Failed: ${err?.message}`, 'text-red-500');
         showNotification('Unable to connect General Contract to Base Mainnet.', 'error');
-    }
-}
-
-function checkPendingNova() {
-    const pendingTxId = localStorage.getItem('pending_nova_txid');
-    const pendingToken = localStorage.getItem('pending_nova_token');
-    if (pendingTxId) {
-        const hiddenInput = document.getElementById('novaHiddenInput');
-        const tokenInput = document.getElementById('novaTokenId');
-        if (hiddenInput) hiddenInput.value = pendingTxId;
-        if (tokenInput && pendingToken) tokenInput.value = pendingToken;
-        
-        // 🚨 CRITICAL FIX: ทำลาย Ghost State ทิ้งทันที ป้องกันการติดลูปและบังห้อง DNA
-        localStorage.removeItem('pending_nova_txid');
-        localStorage.removeItem('pending_nova_token');
-        
-        if (typeof showNotification === 'function') {
-            showNotification("RESUMING NOVA: พบข้อมูลค้างในระบบ กรุณาตรวจสอบช่อง DNA และ Video ให้ครบถ้วนก่อนยืนยัน", "warning");
-        }
-        const modal = document.getElementById('novaWarnModal');
-        if (modal) modal.classList.remove('hidden');
     }
 }
 
@@ -4090,15 +4060,11 @@ async function triggerIdentityNova(e) {
         return;
     }
 
-    // ... (โค้ดส่วนบนของ triggerIdentityNova เหมือนเดิม) ...
-    
     const receipt = await runTx(e, `SOVEREIGN_NOVA_#${tokenId}`, "THE_SOVEREIGN_NOVA", [id.toString(), dna, video, hidden], { value: fee.toString() });
-    
-    // 🚨 CRITICAL FIX: บังคับลบ State ทิ้งเสมอ ไม่ว่า TX จะผ่านหรือถูกยกเลิกใน MetaMask
-    localStorage.removeItem('pending_nova_txid');
-    localStorage.removeItem('pending_nova_token');
-
     if (receipt) {
+        localStorage.removeItem('pending_nova_txid');
+        localStorage.removeItem('pending_nova_token');
+        
         GLOBAL_NODE_CACHE.delete(id.toString());
         if ('caches' in window) {
             try { await caches.delete('eter-v6-asset-vault'); } catch(e) {}
@@ -4359,6 +4325,8 @@ async function buildAndUploadMetadata(e) {
     }
 }
 
+
+
 async function executeSetParams(e) {
     if (!secureContract || !signer) { showNotification("Action suspended: Authenticate wallet signature first.", "error"); return; }
     
@@ -4548,10 +4516,7 @@ async function executeCreateProposal(e) {
 
 
 async function executeCastVote(btn) {
-    if (!secureContract || !signer) { 
-        showNotification("Action suspended: Authenticate wallet signature first.", "error"); 
-        return; 
-    }
+    if (!secureContract || !signer) { showNotification("Action suspended: Authenticate wallet signature first.", "error"); return; }
     
     const rawPropId = (document.getElementById('voteProposalId')?.value || "").trim();
     const rawTokenId = (document.getElementById('voteTokenId')?.value || "").trim();
@@ -4567,14 +4532,18 @@ async function executeCastVote(btn) {
     const propId = BigInt(rawPropId);
     const tokenIdBn = BigInt(tokenId);
 
+    const primarchNodes = [1,2,3,4,5,6,7,8,9,10,50,100];
+    if (!primarchNodes.includes(Number(tokenId))) {
+        showNotification("ACCESS DENIED: Only Council Nodes possess voting rights.", "error");
+        return;
+    }
+
     try {
         const userAddress = await signer.getAddress();
         const activeOwner = await secureContract.ownerOf(tokenIdBn.toString());
         if (activeOwner.toLowerCase() !== userAddress.toLowerCase()) {
             showNotification(`ACCESS DENIED: Current wallet does not own deed node #${tokenId}`, "error");
-            if (typeof appendLog === 'function') {
-                appendLog(`Vote cast blocked: Node #${tokenId} not owned by the active wallet.`, "text-red-500 font-bold");
-            }
+            appendLog(`Vote cast blocked: Node #${tokenId} not owned by the active wallet.`, "text-red-500 font-bold");
             return;
         }
     } catch (e) {
@@ -4584,12 +4553,9 @@ async function executeCastVote(btn) {
 
     const receipt = await runTx(btn, `CAST_VOTE_#${rawPropId}`, "castVote", [propId.toString(), tokenIdBn.toString()]);
     if (receipt) {
-        if (typeof appendLog === 'function') {
-            appendLog(`Matrix key node #${tokenId} has signed ratification code for Directive #${rawPropId}.`, "text-emerald-400 font-bold");
-        }
+        appendLog(`Matrix key node #${tokenId} has signed ratification code for Directive #${rawPropId}.`, "text-emerald-400 font-bold");
     }
 }
-
 // ==============================================================================
 // ⚙️ CORE UTILITIES, OBSERVERS & DATA PARSERS (PART 2)
 // 🛡️ CROSS-CHECK 3 LAYER AUDIT APPLIED
@@ -4631,33 +4597,41 @@ const videoCullingObserver = new IntersectionObserver((entries) => {
 }, { rootMargin: "150px" });
 
 function extractIrysId(input) {
-    if (!input) return "";
+    if (!input || typeof input !== 'string') return "";
     let clean = input.trim();
     
     if (clean.startsWith('http://') || clean.startsWith('https://')) {
-        if (!clean.includes('gateway.irys.xyz/')) return clean;
+        // 🛡️ FIXED: Added support for standard Arweave gateways alongside Irys.
+        const isKnownGateway = clean.includes('gateway.irys.xyz/') || 
+                               clean.includes('arweave.net/') || 
+                               clean.includes('ar-io.net/');
+                               
+        if (!isKnownGateway) return clean;
+        
         try {
             const url = new URL(clean);
             const pathParts = url.pathname.split('/').filter(Boolean);
-            if (pathParts.length > 0 && /^[a-zA-Z0-9_-]{43}$/.test(pathParts[0])) {
+            // 🛡️ FIXED: Regex updated to support 42-45 character Base64URL IDs.
+            if (pathParts.length > 0 && /^[a-zA-Z0-9_-]{42,45}$/.test(pathParts[0])) {
                 return pathParts[0];
             }
-        } catch(e) {}
+        } catch(e) {
+            // Silent catch for invalid URL construction
+        }
         return clean;
     }
 
-    if (clean.startsWith('ar://')) clean = clean.replace('ar://', '');
-    else if (clean.startsWith('irys://')) clean = clean.replace('irys://', '');
-    else clean = clean.split('/')[0];
+    if (clean.startsWith('ar://')) {
+        clean = clean.replace('ar://', '');
+    } else if (clean.startsWith('irys://')) {
+        clean = clean.replace('irys://', '');
+    } else {
+        clean = clean.split('/')[0];
+    }
     
+    // Enforce strict Base64URL character set
     return clean.replace(/[^a-zA-Z0-9_-]/g, '');
 }
-
-const ARWEAVE_GATEWAYS = [
-    "https://gateway.irys.xyz/",
-    "https://arweave.net/",
-    "https://ar-io.net/"
-];
 
 function buildIrysUrls(txId) {
     const cleanId = extractIrysId(txId);
@@ -4711,16 +4685,21 @@ async function guessMediaTypeAdvanced(url, explicitType) {
 
 function isMaliciousURI(uri) {
     if (!uri) return false;
-    const cleanUri = uri.trim().toLowerCase();
-    if (/^(javascript|data|vbscript|file):/i.test(cleanUri)) return true;
-    if (/^[a-zA-Z0-9_-]{43}$/.test(cleanUri)) return false;
-    try {
-        const parsed = new URL(cleanUri);
-        return ['javascript:', 'vbscript:', 'data:', 'file:'].includes(parsed.protocol);
-    } catch (e) {
-        return !cleanUri.startsWith('http://') && !cleanUri.startsWith('https://') && !cleanUri.startsWith('ar://') && !cleanUri.startsWith('irys://');
-    }
+    
+    // 1. แปลงเป็น String ล้างช่องว่างและตัวอักษรล่องหนทั้งหมด
+    const cleanUri = String(uri).trim().replace(/[\x00-\x20]/g, '').toLowerCase();
+    if (!cleanUri) return false;
+
+    // 2. ดักสกัด Protocol อันตรายที่รันสคริปต์แฮ็กได้ (XSS Attack)
+    if (/^(javascript|vbscript|data|file|blob):/i.test(cleanUri)) return true;
+
+    // 3. ดักสกัดการฝังแท็กสคริปต์และคำสั่งประมวลผลแปลกปลอม
+    if (/<script|onerror=|onload=|eval\(|document\./i.test(cleanUri)) return true;
+
+    // 4. ปล่อยผ่านทั้งหมด 100% (รองรับ Irys Tx ID ทุกความยาว 42, 43, 44+ ตัว, Arweave, IPFS, Full URL)
+    return false;
 }
+
 
 function isValidSovereignInput(text) {
     if (!text) return true;
@@ -4767,78 +4746,48 @@ function registerBlobForGc(url, objectUrl, isVideo = false) {
 }
 
 let isFlippingLock = false;
-
 function toggleCardFlip() {
     if (isFlippingLock) return;
     const card = document.getElementById('sovereignFlipCard');
     if (!card) return;
 
     isFlippingLock = true;
+    const isCurrentlyFlipped = card.classList.contains('flipped');
+    const frontVideo = document.getElementById('previewFrontContainer')?.querySelector('video');
+    const backVideo = document.getElementById('previewBackContainer')?.querySelector('video');
 
-    // ⚡ 1. PRE-FLIP: ดึง DOM ณ ปัจจุบันเพื่อหยุดวิดีโอ
-    const initialFront = document.getElementById('previewFrontContainer')?.querySelector('video');
-    const initialBack = document.getElementById('previewBackContainer')?.querySelector('video');
+    if (frontVideo) frontVideo.style.transform = 'translateZ(0)';
+    if (backVideo) backVideo.style.transform = 'translateZ(0)';
 
-    if (initialFront) { initialFront.pause(); initialFront.style.transform = 'translateZ(0)'; }
-    if (initialBack) { initialBack.pause(); initialBack.style.transform = 'translateZ(0)'; }
-
-    // ⚡ 2. EXECUTE FLIP
-    card.classList.toggle('flipped');
-
-    // ⚡ 3. MID-POINT SWAP (450ms): ป้องกัน Domino Effect
-    setTimeout(() => {
-        // RE-QUERY DOM: ดึง DOM ใหม่เสมอ ป้องกันกรณี handleSlotClick ทำลาย DOM ทิ้งกลางอากาศ
-        const currentFront = document.getElementById('previewFrontContainer')?.querySelector('video');
-        const currentBack = document.getElementById('previewBackContainer')?.querySelector('video');
-        
-        // LIVE STATE CHECK: เช็คสถานะจริง ณ เวลานี้ ป้องกันกรณี auditToken ลบ class flipped ทิ้งกลางอากาศ
-        const isNowFlipped = card.classList.contains('flipped');
-
-        if (isNowFlipped) {
-            if (currentFront) { currentFront.style.visibility = 'hidden'; currentFront.style.opacity = '0'; }
-            if (currentBack) { currentBack.style.visibility = 'visible'; currentBack.style.opacity = '1'; }
+    const swapVideos = () => {
+        if (!isCurrentlyFlipped) {
+            if (frontVideo) { frontVideo.pause(); frontVideo.style.visibility = 'hidden'; frontVideo.style.opacity = '0'; }
+            if (backVideo) { backVideo.style.visibility = 'visible'; backVideo.style.opacity = '1'; backVideo.play().catch(()=>{}); }
         } else {
-            if (currentBack) { currentBack.style.visibility = 'hidden'; currentBack.style.opacity = '0'; }
-            if (currentFront) { currentFront.style.visibility = 'visible'; currentFront.style.opacity = '1'; }
+            if (backVideo) { backVideo.pause(); backVideo.style.visibility = 'hidden'; backVideo.style.opacity = '0'; }
+            if (frontVideo) { frontVideo.style.visibility = 'visible'; frontVideo.style.opacity = '1'; frontVideo.play().catch(()=>{}); }
         }
-    }, 450);
+    };
 
-    // ⚡ 4. END-POINT PLAY
     let transitionFired = false;
     const onTransitionEnd = (e) => {
         if (e && (e.target !== card || e.propertyName !== 'transform')) return;
         transitionFired = true;
         card.removeEventListener('transitionend', onTransitionEnd);
-
-        // RE-QUERY DOM & STATE ก่อนสั่ง Play
-        const currentFront = document.getElementById('previewFrontContainer')?.querySelector('video');
-        const currentBack = document.getElementById('previewBackContainer')?.querySelector('video');
-        const isNowFlipped = card.classList.contains('flipped');
-
-        if (isNowFlipped && currentBack) currentBack.play().catch(()=>{});
-        if (!isNowFlipped && currentFront) currentFront.play().catch(()=>{});
-
+        swapVideos();
         isFlippingLock = false;
     };
 
     card.addEventListener('transitionend', onTransitionEnd);
+    card.classList.toggle('flipped');
 
-    // ⚡ 5. FALLBACK (1000ms)
     setTimeout(() => {
         if (!transitionFired) {
             card.removeEventListener('transitionend', onTransitionEnd);
-            
-            // RE-QUERY DOM & STATE
-            const currentFront = document.getElementById('previewFrontContainer')?.querySelector('video');
-            const currentBack = document.getElementById('previewBackContainer')?.querySelector('video');
-            const isNowFlipped = card.classList.contains('flipped');
-
-            if (isNowFlipped && currentBack) currentBack.play().catch(()=>{});
-            if (!isNowFlipped && currentFront) currentFront.play().catch(()=>{});
-            
+            swapVideos();
             isFlippingLock = false;
         }
-    }, 1000);
+    }, 1200);
 }
 
 // ==============================================================================
@@ -5208,7 +5157,6 @@ async function resolveMediaUrl(urlList, signal, mimeType) {
                 }
                 
                 localCtrl.abort(); 
-
                 const cleanUrl = url.split('?')[0]; 
                 return { url: cleanUrl, isBlob: false, sourceUrl: url };
             } catch (e) { 
@@ -5220,11 +5168,19 @@ async function resolveMediaUrl(urlList, signal, mimeType) {
         throw new Error('ALL GATEWAYS SEVERED (VIDEO STREAMING)');
     }
     
-    if ('caches' in window) {
-        try {
-            const cache = await caches.open(CACHE_NAME);
-            for (const url of urlList) {
-                const cleanUrl = url.split('?')[0]; 
+    // IMAGE & METADATA LOGIC
+    for (const url of urlList) {
+        if (signal.aborted) throw new Error('Aborted');
+        const cleanUrl = url.split('?')[0];
+        
+        if (url.includes('.m3u8')) {
+            return { url: cleanUrl, isBlob: false, sourceUrl: url };
+        }
+
+        // 1. Try Cache First
+        if ('caches' in window) {
+            try {
+                const cache = await caches.open(CACHE_NAME);
                 const cachedResponse = await cache.match(cleanUrl);
                 
                 if (cachedResponse) {
@@ -5239,24 +5195,27 @@ async function resolveMediaUrl(urlList, signal, mimeType) {
                     registerBlobForGc(cleanUrl, objUrl, isVideo);
                     return { url: objUrl, isBlob: true, sourceUrl: url };
                 }
-            }
-        } catch (e) { }
-    }
-
-    for (const url of urlList) {
-        if (signal.aborted) throw new Error('Aborted');
-        
-        if (url.includes('.m3u8')) {
-            const cleanUrl = url.split('?')[0];
-            return { url: cleanUrl, isBlob: false, sourceUrl: url };
+            } catch (e) { }
         }
 
+        // 2. Try Fetch (For Caching & JSON Extraction)
         try {
-            const response = await fetch(url, { signal });
+            const response = await fetch(url, { signal, mode: 'cors' });
             
+            // 🛡️ FIXED 4.2: Explicitly throw on non-OK responses to guarantee the catch block triggers the fallback loop.
             if (!response.ok) throw new Error('HTTP ' + response.status);
             
-            const cleanUrl = url.split('?')[0]; 
+            // 🛡️ JSON Auto-Extraction: If manifest points to metadata instead of raw image
+            const contentType = response.headers.get('content-type') || '';
+            if (contentType.includes('application/json')) {
+                const json = await response.json();
+                const actualMedia = json.image || json.animation_url || json.frontURI || json.videoURI;
+                if (actualMedia) {
+                    const newUrls = typeof buildIrysUrls === 'function' ? buildIrysUrls(actualMedia) : [actualMedia];
+                    return resolveMediaUrl(newUrls, signal, mimeType);
+                }
+            }
+
             if ('caches' in window) {
                 const cache = await caches.open(CACHE_NAME);
                 cache.put(cleanUrl, response.clone()).catch(() => {}); 
@@ -5272,15 +5231,19 @@ async function resolveMediaUrl(urlList, signal, mimeType) {
             
             registerBlobForGc(cleanUrl, objUrl, isVideo);
             return { url: objUrl, isBlob: true, sourceUrl: url };
+            
         } catch (e) {
             if (e.name === 'AbortError') throw e;
-            continue; 
+            // 🛡️ CORS FAILURE FALLBACK: Bypass fetch and return direct URI for <img> tag
+            console.warn(`[Media Resolver] Fetch blocked by CORS or HTTP Error for ${url}. Falling back to direct URI injection.`);
+            return { url: cleanUrl, isBlob: false, sourceUrl: url };
         }
     }
     
-    throw new Error('ALL GATEWAYS SEVERED');
+    // 3. Absolute Fallback
+    return { url: urlList[0].split('?')[0], isBlob: false, sourceUrl: urlList[0] };
 }
-
+    
 async function renderToViewport(containerId, path, defaultText, explicitMediaType = null) {
     const container = document.getElementById(containerId);
     if (!container) return;
@@ -5291,15 +5254,20 @@ async function renderToViewport(containerId, path, defaultText, explicitMediaTyp
     const masterController = new AbortController();
     container._abortController = masterController;
 
-    if (!path || path.trim() === "" || path === "undefined" || path === "null") {
+    if (!path || typeof path !== 'string' || path.trim() === "" || path === "undefined" || path === "null") {
         renderEmptyState(container, defaultText || "UNALLOCATED STRUCTURAL SPACE");
         return;
     }
 
     const safePath = path.trim();
-    const isPermittedScheme = /^https?:\/\//i.test(safePath) || safePath.startsWith('ar://') || safePath.startsWith('irys://') || safePath.length === 43;
     
-    if (isMaliciousURI(safePath) || !isPermittedScheme) {
+    // 🛡️ FIXED: Expanded Base64URL length validation to accommodate 42-45 character Arweave/Irys IDs.
+    const isPermittedScheme = /^https?:\/\//i.test(safePath) || 
+                              safePath.startsWith('ar://') || 
+                              safePath.startsWith('irys://') || 
+                              (safePath.length >= 42 && safePath.length <= 45 && /^[a-zA-Z0-9_-]+$/.test(safePath));
+    
+    if ((typeof isMaliciousURI === 'function' && isMaliciousURI(safePath)) || !isPermittedScheme) {
         renderEmptyState(container, "⛔ BLOCKED: UNSAFE URI SCHEME REJECTED", "text-red-500");
         return;
     }
@@ -5307,12 +5275,18 @@ async function renderToViewport(containerId, path, defaultText, explicitMediaTyp
     renderLoadingSkeleton(container);
 
     try {
-        const urlsToTry = buildIrysUrls(safePath);
-        const mimeType = await guessMediaTypeAdvanced(urlsToTry[0], explicitMediaType);
+        const urlsToTry = typeof buildIrysUrls === 'function' ? buildIrysUrls(safePath) : [safePath];
+        if (!urlsToTry || urlsToTry.length === 0) throw new Error("URI_RESOLUTION_FAILED");
+
+        const mimeType = typeof guessMediaTypeAdvanced === 'function' 
+            ? await guessMediaTypeAdvanced(urlsToTry[0], explicitMediaType) 
+            : (explicitMediaType || 'image');
         
         if (masterController.signal.aborted) return;
         
-        const resolvedMedia = await resolveMediaUrl(urlsToTry, masterController.signal, mimeType);
+        const resolvedMedia = typeof resolveMediaUrl === 'function' 
+            ? await resolveMediaUrl(urlsToTry, masterController.signal, mimeType)
+            : { url: urlsToTry[0], isBlob: false, sourceUrl: urlsToTry[0] };
         
         if (masterController.signal.aborted) {
             if (resolvedMedia && resolvedMedia.isBlob && resolvedMedia.url) {
@@ -5321,7 +5295,9 @@ async function renderToViewport(containerId, path, defaultText, explicitMediaTyp
             return;
         }
 
-        renderMediaToDOM(container, resolvedMedia, mimeType, masterController.signal);
+        if (typeof renderMediaToDOM === 'function') {
+            renderMediaToDOM(container, resolvedMedia, mimeType, masterController.signal);
+        }
 
     } catch (e) {
         if (e.name === 'AbortError') return;
@@ -5417,7 +5393,9 @@ function renderMediaToDOM(container, resolvedMedia, mediaType, abortSignal) {
         el.muted = true; 
         el.playsInline = true; 
         el.setAttribute('webkit-playsinline', 'true');
-        el.preload = 'auto'; 
+        
+        // [FIXED] Vector 1.1: ป้องกัน iOS OOM Crash โดยโหลดแค่ข้อมูลพื้นฐาน
+        el.preload = 'metadata'; 
         el.crossOrigin = 'anonymous';
         
         const handlePlay = (videoEl) => {
@@ -5432,7 +5410,10 @@ function renderMediaToDOM(container, resolvedMedia, mediaType, abortSignal) {
                         if (!container.querySelector('.play-overlay-btn')) {
                             const playBtn = document.createElement('button');
                             playBtn.className = 'play-overlay-btn absolute inset-0 m-auto w-12 h-12 bg-black/60 border border-slate-500 rounded-full flex items-center justify-center text-white z-30 hover:bg-black/80 transition-colors cursor-pointer';
-                            playBtn.innerHTML = '▶';
+                            
+                            // [FIXED] Vector 4.1: ป้องกัน DOM-Based XSS
+                            playBtn.textContent = '▶';
+                            
                             playBtn.onclick = (e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
@@ -5522,6 +5503,7 @@ function renderMediaToDOM(container, resolvedMedia, mediaType, abortSignal) {
     }
 }
 
+
 // ==============================================================================
 // 🗺️ MATRIX ENGINE & UI CONTROLLERS (ZERO-BUG UNIFIED)
 // ==============================================================================
@@ -5539,35 +5521,22 @@ function updateVideoSlotsUI() {
 }
 
 function handleSlotClick(slotNum) {
-    if (!window.SystemState.selectedTokenId) {
-        showNotification("Sovereign exception: Isolate an archival matrix cell coordinate prior to adjusting vertical geometric orientations.", "error");
-        return;
-    }
-
-    updateVideoSlotsUI();
+    if (typeof updateVideoSlotsUI === 'function') updateVideoSlotsUI();
     
     const clickedSlot = document.getElementById(`vSlot${slotNum}`);
     const clickedStatus = document.getElementById(`vSlotStatus${slotNum}`);
+    
     if (clickedSlot && clickedStatus) {
         clickedSlot.classList.add('active');
-        clickedStatus.textContent = "FRAMEWORK INTEGRATED (STREAMING LIVE IN PREVIEW MATRIX)";
+        clickedStatus.textContent = "PLAYING TEMPLATE ON BILLBOARD";
         clickedStatus.className = "text-[9px] text-yellow-500 font-black mt-1 block";
     }
 
-    const frontContainer = document.getElementById('previewFrontContainer');
     const card = document.getElementById('sovereignFlipCard');
     if (card) card.classList.remove('flipped'); 
 
-    const versionNames = [
-        "Framework I: Alpha-State Render (Deep Neural Convergence)", 
-        "Framework II: Dark Blue Noir Motion (Silent Displacement Kinetic)", 
-        "Framework III: Sovereign Pupillary Rhythm (Ocular Cadence Metrics)", 
-        "Framework IV: Kinetic Forensic DNA (Sovereign Manifest)", 
-        "Framework V: Minimalist Power Posture (Imposing Autarchic Composure)"
-    ];
-
-    appendLog(`Target matrix cell node #${window.SystemState.selectedTokenId} re-aligned into alignment with ${versionNames[slotNum - 1]} portrait geometric space.`, "text-purple-400 font-bold");
-
+    // ระบบเคลียร์แคชและทำลายวิดีโอเก่า
+    const frontContainer = document.getElementById('previewFrontContainer');
     if (frontContainer) {
         const activeVideo = frontContainer.querySelector('video');
         if (activeVideo) {
@@ -5584,49 +5553,24 @@ function handleSlotClick(slotNum) {
             URL.revokeObjectURL(frontContainer._activeBlobUrl);
             frontContainer._activeBlobUrl = null;
         }
-        
-        frontContainer.replaceChildren();
-        
-        const divBox = document.createElement('div');
-        divBox.className = "flex flex-col items-center justify-center p-4 font-mono text-center h-full w-full bg-slate-950 z-10 relative";
-        divBox.style.willChange = "transform, opacity";
-        
-        const span1 = document.createElement('span');
-        span1.className = "text-yellow-500 text-[10px] font-black uppercase animate-pulse";
-        span1.textContent = `✨ RENDERING VERTICAL 9:16 STRUCTURAL FRAMEWORK 0${slotNum}`;
-        
-        const span2 = document.createElement('span');
-        span2.className = "text-[8px] text-slate-300 mt-2 font-bold uppercase";
-        
-        const versionName = versionNames[slotNum - 1] || "";
-        span2.textContent = versionName.includes(": ") ? versionName.split(": ")[1] : versionName;
-        
-        const p1 = document.createElement('p');
-        p1.className = "text-[6px] text-slate-500 mt-4 px-2 uppercase leading-relaxed";
-        p1.textContent = "Stream coordinates compiled and prepared for immutable execution across the Irys Datachain decentralized ecosystem.";
-        
-        divBox.appendChild(span1);
-        divBox.appendChild(span2);
-        divBox.appendChild(p1);
-        
-        frontContainer.appendChild(divBox);
+        frontContainer.replaceChildren(); 
+    }
+
+    // 🚀 ดึงลิงก์ตรงจาก HTML attribute (data-uri) ของปุ่มที่ถูกคลิก
+    const targetUri = clickedSlot ? clickedSlot.getAttribute('data-uri') : "";
+
+    if (targetUri && targetUri.trim() !== "" && !targetUri.includes("ใส่ลิงก์")) {
+        appendLog(`Loading Template Framework 0${slotNum} onto billboard...`, "text-blue-400");
+        renderToViewport('previewFrontContainer', targetUri, "Loading Template...", "video");
+    } else {
+        appendLog(`Template Framework 0${slotNum} URI is missing or invalid.`, "text-red-500");
+        if (frontContainer) {
+            renderEmptyState(frontContainer, `[ TEMPLATE 0${slotNum} NOT CONFIGURED ]`, "text-slate-500");
+        }
     }
 }
 
-function applySlotToNova(slotNum) { 
-    const uriInput = document.getElementById(`vSlotUri${slotNum}`); 
-    if (uriInput && uriInput.value) {
-        const novaVideoUri = document.getElementById('novaVideoUri'); 
-        if (novaVideoUri) {
-            const sanitizedVal = sanitizeForDOM(uriInput.value);
-            novaVideoUri.value = sanitizedVal; 
-            showNotification(`Template Framework 0${slotNum} Applied: Video URI successfully transferred to NOVA ASCENSION.`, "success"); 
-            appendLog(`Matrix Framework 0${slotNum} applied to NOVA upgrade pipeline.`, "text-blue-400 font-bold"); 
-        } 
-    } else {
-        showNotification("EXCEPTION: Please enter an Irys Tx ID or URL in the Template field before applying.", "error"); 
-    } 
-}
+
 
 function getImperialRankDetailed(tokenId) { 
     const id = parseInt(tokenId, 10); 
@@ -5642,7 +5586,7 @@ function getImperialRankDetailed(tokenId) {
 function autoMapMetadata(tokenId) { 
     const properties = [ 
         { k: "RANK", v: getImperialRankDetailed(tokenId).toUpperCase() }, 
-        { k: "TRANSFER", v: "TRANSFERABLE" } 
+        { k: "IDENTITY STATUS", v: "UNCOMPROMISED INTEGRITY PROTO" } 
     ];
 
     for (let i = 0; i < 2; i++) {
@@ -5656,15 +5600,15 @@ function autoMapMetadata(tokenId) {
 }
 
 async function auditTokenFromLedger(tokenId, pollForUpdate = false) { 
-    resetAdminInputs(); 
+    if (typeof resetAdminInputs === 'function') resetAdminInputs(); 
     const mySession = ++window.currentAuditSession;
 
     try {
         window.SystemState.selectedTokenId = tokenId;
         window.currentLoadedMediaData = window.currentLoadedMediaData || {};
 
-        autoMapMetadata(tokenId);
-        updateVideoSlotsUI();
+        if (typeof autoMapMetadata === 'function') autoMapMetadata(tokenId);
+        if (typeof updateVideoSlotsUI === 'function') updateVideoSlotsUI();
         
         const card = document.getElementById('sovereignFlipCard');
         if (card) card.classList.remove('flipped');
@@ -5672,14 +5616,41 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
         const tbaInputElem = document.getElementById('tbaAddressDisplay');
         if (tbaInputElem) tbaInputElem.value = "Calculating deterministic ERC-6551 TBA address hash...";
 
-        appendLog(`Extracting structural blueprint record for matrix cell node #${tokenId}...`, "text-purple-400");
+        if (typeof appendLog === 'function') {
+            appendLog(`Extracting structural blueprint record for matrix cell node #${tokenId}...`, "text-purple-400");
+        }
 
-        const activeContract = secureContract || readOnlyContract;
+        const activeContract = (typeof secureContract !== 'undefined' && secureContract) 
+            ? secureContract 
+            : (typeof readOnlyContract !== 'undefined' ? readOnlyContract : null);
+            
         if (!activeContract) { 
-            appendLog("Interrogating consensus network parameters...", "text-yellow-500"); 
+            if (typeof appendLog === 'function') appendLog("Interrogating consensus network parameters...", "text-yellow-500"); 
+            if (tbaInputElem) tbaInputElem.value = "RPC OFFLINE: CONNECT WALLET TO CALCULATE";
             return; 
         }
 
+        // 🚨 [CRITICAL FIX]: INDEPENDENT TBA CALCULATION BLOCK
+        // บังคับคำนวณและแสดงผล TBA ทันที โดยไม่สนว่า Node จะถูก Mint แล้วหรือไม่
+        try {
+            const onChainTBA = await activeContract.getTBA(BigInt(tokenId).toString());
+            if (mySession !== window.currentAuditSession) return; 
+            
+            const safeTBA = typeof sanitizeForDOM === 'function' ? sanitizeForDOM(onChainTBA) : onChainTBA;
+            if (tbaInputElem) tbaInputElem.value = safeTBA;
+            
+            if (typeof refreshTbaBalances === 'function') {
+                await refreshTbaBalances(onChainTBA, mySession);
+            }
+        } catch (tbaErr) {
+            if (mySession !== window.currentAuditSession) return; 
+            if (tbaInputElem) tbaInputElem.value = "CRITICAL: FAILED TO EXTRACT DETERMINISTIC ADDR PIVOT";
+            if (typeof setTbaBalanceDisplay === 'function') setTbaBalanceDisplay("0.0000", "0.0000");
+        }
+
+        // ---------------------------------------------------------
+        // ดำเนินการดึงข้อมูล Node (จะโยน Error ไปเข้า Catch หากยังไม่ Mint)
+        // ---------------------------------------------------------
         let mappedNode = null;
         let attempts = 0;
         const maxAttempts = pollForUpdate ? 10 : 1;
@@ -5687,7 +5658,7 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
 
         while (attempts < maxAttempts) {
             if (document.hidden) {
-                appendLog("System idle: Background execution suspended to preserve matrix integrity.", "text-slate-500");
+                if (typeof appendLog === 'function') appendLog("System idle: Background execution suspended to preserve matrix integrity.", "text-slate-500");
                 break;
             }
 
@@ -5708,7 +5679,9 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
                 } else {
                     attempts++;
                     if (attempts < maxAttempts) {
-                        appendLog(`[RPC SYNC] Awaiting on-chain state mutation for Node #${tokenId} (Attempt ${attempts}/${maxAttempts})...`, "text-yellow-500");
+                        if (typeof appendLog === 'function') {
+                            appendLog(`[RPC SYNC] Awaiting on-chain state mutation for Node #${tokenId} (Attempt ${attempts}/${maxAttempts})...`, "text-yellow-500");
+                        }
                         await new Promise(r => setTimeout(r, 3000));
                         continue;
                     }
@@ -5726,31 +5699,24 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
             btnBurn.disabled = !!(mappedNode.votingLockUntil && mappedNode.votingLockUntil > currentEpoch);
         }
 
-        try {
-            const onChainTBA = await activeContract.getTBA(BigInt(tokenId).toString());
-            if (mySession !== window.currentAuditSession) return; 
-            const safeTBA = sanitizeForDOM(onChainTBA);
-            if (tbaInputElem) tbaInputElem.value = safeTBA;
-            await refreshTbaBalances(onChainTBA, mySession);
-        } catch (tbaErr) {
-            if (tbaInputElem) tbaInputElem.value = "CRITICAL: FAILED TO EXTRACT DETERMINISTIC ADDR PIVOT";
-            setTbaBalanceDisplay("0.0000", "0.0000");
-        }
-
         window.currentLoadedMediaData.front = mappedNode.front;
         window.currentLoadedMediaData.back = mappedNode.back;
         window.currentLoadedMediaData.video = mappedNode.video;
         
-        loadDeedMetadata(tokenId);
+        if (typeof loadDeedMetadata === 'function') loadDeedMetadata(tokenId);
 
-        renderToViewport('previewFrontContainer', window.currentLoadedMediaData.front, "Obverse aspect currently unassigned. Engage rebirth parameters.");
+        if (typeof renderToViewport === 'function') {
+            renderToViewport('previewFrontContainer', window.currentLoadedMediaData.front, "Obverse aspect currently unassigned. Engage rebirth parameters.");
+        }
         
         const backContainer = document.getElementById('previewBackContainer');
         setTimeout(() => {
             if (mySession !== window.currentAuditSession) return; 
             
             if (mappedNode.back && mappedNode.back.trim() !== "") { 
-                renderToViewport('previewBackContainer', window.currentLoadedMediaData.back, "Reverse diagnostic data trace is currently null.");
+                if (typeof renderToViewport === 'function') {
+                    renderToViewport('previewBackContainer', window.currentLoadedMediaData.back, "Reverse diagnostic data trace is currently null.");
+                }
             } else {
                 if (backContainer) {
                     backContainer.replaceChildren();
@@ -5764,7 +5730,7 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
         
         const displayData = document.getElementById('activeDeedMetadataDisplay');
         if (displayData) {
-            const imperialRank = getImperialRankDetailed(tokenId);
+            const imperialRank = (typeof getImperialRankDetailed === 'function') ? getImperialRankDetailed(tokenId) : "UNKNOWN";
             displayData.replaceChildren(); 
             
             const line1 = document.createTextNode(`CELL NODE ID: ${tokenId} `);
@@ -5775,7 +5741,7 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
             const br = document.createElement('br');
             
             const rawOwner = mappedNode.owner || "0x0000000000000000000000000000000000000000";
-            const safeOwner = sanitizeForDOM(rawOwner);
+            const safeOwner = typeof sanitizeForDOM === 'function' ? sanitizeForDOM(rawOwner) : rawOwner;
             const line2 = document.createTextNode(`ACCREDITED ROOT: ${safeOwner.slice(0,6)}...${safeOwner.slice(-4)} // NOVA RATIFICATION: `);
             
             const sanctifiedSpan = document.createElement('span');
@@ -5789,11 +5755,11 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
         if (settleTokenInput) settleTokenInput.value = tokenId;
 
     } catch (e) { 
+        // 🚨 [CATCH BLOCK]: ทำงานเมื่อ Node ยังไม่ถูก Mint
         if (mySession !== window.currentAuditSession) return; 
         
         window.currentLoadedMediaData = window.currentLoadedMediaData || {};
         
-        // 🚨 STRICT FIX: Safe Object Extraction for Manifest
         let preMintFrontUri = "";
         if (window.IMPERIAL_MANIFEST && window.IMPERIAL_MANIFEST[String(tokenId)]) {
             const manifestData = window.IMPERIAL_MANIFEST[String(tokenId)];
@@ -5805,10 +5771,14 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
             window.currentLoadedMediaData.back = "";
             window.currentLoadedMediaData.video = "";
             
-            appendLog(`[LAZY MINT READY] Matrix cell node #${tokenId} pre-loaded from Architect Manifest. Awaiting REBIRTH.`, "text-emerald-400 font-bold");
+            if (typeof appendLog === 'function') {
+                appendLog(`[LAZY MINT READY] Matrix cell node #${tokenId} pre-loaded from Architect Manifest. Awaiting REBIRTH.`, "text-emerald-400 font-bold");
+            }
             
-            renderToViewport('previewFrontContainer', preMintFrontUri, "Obverse aspect currently unassigned.");
-            renderToViewport('previewBackContainer', "", "Void element data layer uninitialized.");
+            if (typeof renderToViewport === 'function') {
+                renderToViewport('previewFrontContainer', preMintFrontUri, "Obverse aspect currently unassigned.");
+                renderToViewport('previewBackContainer', "", "Void element data layer uninitialized.");
+            }
 
             const metaDisp = document.getElementById('activeDeedMetadataDisplay');
             if (metaDisp) {
@@ -5827,10 +5797,13 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
             window.currentLoadedMediaData.back = "";
             window.currentLoadedMediaData.video = "";
 
-            appendLog(`Matrix cell node #${tokenId} is VOID. Architect has not assigned a front payload. MINTING LOCKED.`, "text-red-500"); 
-            
-            renderToViewport('previewFrontContainer', "", "Void element data layer uninitialized.");
-            renderToViewport('previewBackContainer', "", "Void element data layer uninitialized.");
+            if (typeof appendLog === 'function') {
+                appendLog(`Matrix cell node #${tokenId} is VOID. Architect has not assigned a front payload. MINTING LOCKED.`, "text-red-500"); 
+            }
+            if (typeof renderToViewport === 'function') {
+                renderToViewport('previewFrontContainer', "", "Void element data layer uninitialized.");
+                renderToViewport('previewBackContainer', "", "Void element data layer uninitialized.");
+            }
             
             const metaDisp = document.getElementById('activeDeedMetadataDisplay');
             if (metaDisp) {
@@ -5840,9 +5813,11 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
         }
         
     } finally {
-        toggleButtonLoading(null, false);
+        if (typeof toggleButtonLoading === 'function') toggleButtonLoading(null, false);
     }
 }
+
+
 
 function setTbaBalanceDisplay(eth, weth) { 
     const ethElem = document.getElementById('tbaEthBalance'); 
