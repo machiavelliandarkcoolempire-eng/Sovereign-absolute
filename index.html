@@ -5614,10 +5614,36 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
         let preMintFrontUri = "";
         if (window.IMPERIAL_MANIFEST && window.IMPERIAL_MANIFEST[String(tokenId)]) {
             const manifestData = window.IMPERIAL_MANIFEST[String(tokenId)];
+            let rawHash = "";
+            
             if (typeof manifestData === 'string') {
-                preMintFrontUri = manifestData.trim();
+                rawHash = manifestData.trim();
             } else if (typeof manifestData === 'object') {
-                preMintFrontUri = (manifestData.irys_id || manifestData.image || "").trim();
+                rawHash = (manifestData.irys_id || "").trim();
+            }
+
+            if (rawHash) {
+                // จัดรูปแบบให้เป็น Array ของ Gateways เพื่อเตรียมส่งให้ปืน resolveMediaUrl
+                let urlArray = [rawHash];
+                if (!rawHash.startsWith('http') && !rawHash.startsWith('data:') && !rawHash.startsWith('ipfs://')) {
+                    urlArray = [
+                        "https://gateway.irys.xyz/" + rawHash,
+                        "https://arweave.net/" + rawHash
+                    ];
+                }
+
+                // 🚨 THE ARCHITECT'S FIX: ยิง resolveMediaUrl เพื่อทะลวง JSON ออกมาเป็นรูปลง preMintFrontUri ก่อนนำไปใช้
+                if (typeof resolveMediaUrl === 'function') {
+                    const abortController = new AbortController();
+                    try {
+                        const resolvedData = await resolveMediaUrl(urlArray, abortController.signal, 'image');
+                        preMintFrontUri = (resolvedData && resolvedData.url) ? resolvedData.url : urlArray[0];
+                    } catch (e) {
+                        preMintFrontUri = urlArray[0];
+                    }
+                } else {
+                    preMintFrontUri = urlArray[0];
+                }
             }
         }
 
@@ -5629,15 +5655,14 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
             if (typeof appendLog === 'function') appendLog("RPC Offline: Loading visual state from local manifest...", "text-yellow-500"); 
             if (tbaInputElem) tbaInputElem.value = "RPC OFFLINE: CONNECT WALLET TO CALCULATE";
             
-            // 🚨 แก้ไข: แปลง URI/JSON จาก Manifest ให้เป็น Image URL จริงผ่าน resolveMediaUrl ก่อนเรนเดอร์
+            // 🚨 สั่ง Render ทันทีเมื่อ RPC Offline (Offline-First Execution)
             if (preMintFrontUri && preMintFrontUri !== "") {
-                const resolvedFront = (typeof resolveMediaUrl === 'function') ? await resolveMediaUrl(preMintFrontUri) : preMintFrontUri;
-                window.currentLoadedMediaData.front = resolvedFront;
+                window.currentLoadedMediaData.front = preMintFrontUri;
                 window.currentLoadedMediaData.back = "";
                 window.currentLoadedMediaData.video = "";
                 
                 if (typeof renderToViewport === 'function') {
-                    renderToViewport('previewFrontContainer', resolvedFront, "Obverse aspect currently unassigned.");
+                    renderToViewport('previewFrontContainer', preMintFrontUri, "Obverse aspect currently unassigned.");
                     renderToViewport('previewBackContainer', "", "Void element data layer uninitialized.");
                 }
 
@@ -5804,9 +5829,7 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
         if (mySession !== window.currentAuditSession) return; 
         
         if (preMintFrontUri && preMintFrontUri !== "") {
-            // 🚨 แก้ไข: แปลง URI/JSON จาก Manifest ให้เป็น Image URL จริงผ่าน resolveMediaUrl ก่อนเรนเดอร์
-            const resolvedFront = (typeof resolveMediaUrl === 'function') ? await resolveMediaUrl(preMintFrontUri) : preMintFrontUri;
-            window.currentLoadedMediaData.front = resolvedFront;
+            window.currentLoadedMediaData.front = preMintFrontUri;
             window.currentLoadedMediaData.back = "";
             window.currentLoadedMediaData.video = "";
             
@@ -5815,7 +5838,7 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
             }
             
             if (typeof renderToViewport === 'function') {
-                renderToViewport('previewFrontContainer', resolvedFront, "Obverse aspect currently unassigned.");
+                renderToViewport('previewFrontContainer', preMintFrontUri, "Obverse aspect currently unassigned.");
                 renderToViewport('previewBackContainer', "", "Void element data layer uninitialized.");
             }
 
@@ -5855,7 +5878,6 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
         if (typeof toggleButtonLoading === 'function') toggleButtonLoading(null, false);
     }
 }
-
 
 function setTbaBalanceDisplay(eth, weth) { 
     const ethElem = document.getElementById('tbaEthBalance'); 
