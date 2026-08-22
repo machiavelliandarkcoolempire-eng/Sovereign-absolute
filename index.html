@@ -5141,7 +5141,7 @@ function renderLoadingSkeleton(container) {
     container.appendChild(skeleton);
 }
 
-async function resolveMediaUrl(urlList, signal, mimeType) {
+async function resolveMediaUrl(urlList, signal, mimeType, depth = 0) {
     const CACHE_NAME = 'eter-v6-asset-vault';
     const isVideo = mimeType === 'video';
     
@@ -5151,10 +5151,14 @@ async function resolveMediaUrl(urlList, signal, mimeType) {
             const localCtrl = new AbortController();
             try {
                 const testResponse = await fetch(url, { method: 'GET', signal: localCtrl.signal, headers: { Range: "bytes=0-0" } });
-                if (!testResponse.ok && testResponse.status !== 206) throw new Error('HTTP ' + testResponse.status);
+                
+                if (!testResponse.ok && testResponse.status !== 206) {
+                    throw new Error('HTTP ' + testResponse.status);
+                }
+                
                 localCtrl.abort(); 
                 const cleanUrl = url.split('?')[0]; 
-                return { url: cleanUrl, isBlob: false, sourceUrl: url, mimeType };
+                return { url: cleanUrl, isBlob: false, sourceUrl: url };
             } catch (e) { 
                 localCtrl.abort();
                 if (e.name === 'AbortError' && signal.aborted) throw e; 
@@ -5164,46 +5168,55 @@ async function resolveMediaUrl(urlList, signal, mimeType) {
         throw new Error('ALL GATEWAYS SEVERED (VIDEO STREAMING)');
     }
     
-    if ('caches' in window) {
-        try {
-            const cache = await caches.open(CACHE_NAME);
-            for (const url of urlList) {
-                const cleanUrl = url.split('?')[0]; 
-                const cachedResponse = await cache.match(cleanUrl);
-                if (cachedResponse) {
-                    const blob = await cachedResponse.blob();
-                    const objUrl = URL.createObjectURL(blob);
-                    if (signal.aborted) { URL.revokeObjectURL(objUrl); throw new Error('Aborted'); }
-                    registerBlobForGc(cleanUrl, objUrl, isVideo);
-                    return { url: objUrl, isBlob: true, sourceUrl: url, mimeType };
-                }
-            }
-        } catch (e) { }
-    }
-
+    // IMAGE & METADATA LOGIC
     for (const url of urlList) {
         if (signal.aborted) throw new Error('Aborted');
         const cleanUrl = url.split('?')[0];
         
         if (url.includes('.m3u8')) {
-            return { url: cleanUrl, isBlob: false, sourceUrl: url, mimeType };
+            return { url: cleanUrl, isBlob: false, sourceUrl: url };
         }
 
+        // 1. Try Cache First
+        if ('caches' in window) {
+            try {
+                const cache = await caches.open(CACHE_NAME);
+                const cachedResponse = await cache.match(cleanUrl);
+                
+                if (cachedResponse) {
+                    const blob = await cachedResponse.blob();
+                    const objUrl = URL.createObjectURL(blob);
+                    
+                    if (signal.aborted) { 
+                        URL.revokeObjectURL(objUrl); 
+                        throw new Error('Aborted'); 
+                    }
+                    
+                    registerBlobForGc(cleanUrl, objUrl, isVideo);
+                    return { url: objUrl, isBlob: true, sourceUrl: url };
+                }
+            } catch (e) { }
+        }
+
+        // 2. Try Fetch (For Caching & JSON Extraction)
         try {
             const response = await fetch(url, { signal, mode: 'cors' });
+            
+            // 🛡️ FIXED 4.2: Explicitly throw on non-OK responses to guarantee the catch block triggers the fallback loop.
             if (!response.ok) throw new Error('HTTP ' + response.status);
             
+            // 🛡️ JSON Auto-Extraction: If manifest points to metadata instead of raw image
             const contentType = response.headers.get('content-type') || '';
             if (contentType.includes('application/json')) {
+                // 🛡️ [FIX AUDIT 2.1]: ล็อกการขุดลึกไม่เกิน 2 ชั้น ตัดความเสี่ยง Infinite Recursion
+                if (depth >= 2) throw new Error("RECURSION LIMIT EXCEEDED");
+
                 const json = await response.json();
-                // 🚨 FIX: ดึงไฟล์ออกมา แล้วบังคับให้ระบบ "ประเมินประเภทไฟล์ใหม่" ทันที
-                const actualMedia = json.animation_url || json.videoURI || json.image || json.frontURI;
+                const actualMedia = json.image || json.animation_url || json.frontURI || json.videoURI;
                 if (actualMedia) {
                     const newUrls = typeof buildIrysUrls === 'function' ? buildIrysUrls(actualMedia) : [actualMedia];
-                    const newMimeType = await guessMediaTypeAdvanced(newUrls[0]); // ประเมินใหม่!
-                    const result = await resolveMediaUrl(newUrls, signal, newMimeType);
-                    result.mimeType = newMimeType; // ส่งป้ายชื่อที่ถูกต้องกลับไป
-                    return result;
+                    // 🛡️ ส่งค่า depth + 1 เข้าไปในการเรียกซ้ำ
+                    return resolveMediaUrl(newUrls, signal, mimeType, depth + 1);
                 }
             }
 
@@ -5215,20 +5228,26 @@ async function resolveMediaUrl(urlList, signal, mimeType) {
             const blob = await response.blob();
             const objUrl = URL.createObjectURL(blob);
             
-            if (signal.aborted) { URL.revokeObjectURL(objUrl); throw new Error('Aborted'); }
+            if (signal.aborted) { 
+                URL.revokeObjectURL(objUrl); 
+                throw new Error('Aborted'); 
+            }
             
             registerBlobForGc(cleanUrl, objUrl, isVideo);
-            return { url: objUrl, isBlob: true, sourceUrl: url, mimeType };
+            return { url: objUrl, isBlob: true, sourceUrl: url };
             
         } catch (e) {
             if (e.name === 'AbortError') throw e;
+            // 🛡️ CORS FAILURE FALLBACK: Bypass fetch and return direct URI for <img> tag
             console.warn(`[Media Resolver] Fetch blocked by CORS or HTTP Error for ${url}. Falling back to direct URI injection.`);
-            return { url: cleanUrl, isBlob: false, sourceUrl: url, mimeType };
+            return { url: cleanUrl, isBlob: false, sourceUrl: url };
         }
     }
     
-    return { url: urlList[0].split('?')[0], isBlob: false, sourceUrl: urlList[0], mimeType };
+    // 3. Absolute Fallback
+    return { url: urlList[0].split('?')[0], isBlob: false, sourceUrl: urlList[0] };
 }
+
     
 async function renderToViewport(containerId, path, defaultText, explicitMediaType = null) {
     const container = document.getElementById(containerId);
@@ -5246,6 +5265,8 @@ async function renderToViewport(containerId, path, defaultText, explicitMediaTyp
     }
 
     const safePath = path.trim();
+    
+    // 🛡️ FIXED: Expanded Base64URL length validation to accommodate 42-45 character Arweave/Irys IDs.
     const isPermittedScheme = /^https?:\/\//i.test(safePath) || 
                               safePath.startsWith('ar://') || 
                               safePath.startsWith('irys://') || 
@@ -5270,7 +5291,7 @@ async function renderToViewport(containerId, path, defaultText, explicitMediaTyp
         
         const resolvedMedia = typeof resolveMediaUrl === 'function' 
             ? await resolveMediaUrl(urlsToTry, masterController.signal, mimeType)
-            : { url: urlsToTry[0], isBlob: false, sourceUrl: urlsToTry[0], mimeType: mimeType };
+            : { url: urlsToTry[0], isBlob: false, sourceUrl: urlsToTry[0] };
         
         if (masterController.signal.aborted) {
             if (resolvedMedia && resolvedMedia.isBlob && resolvedMedia.url) {
@@ -5279,11 +5300,8 @@ async function renderToViewport(containerId, path, defaultText, explicitMediaTyp
             return;
         }
 
-        // 🚨 FIX: ใช้ป้ายชื่อ (Mime Type) ที่ถูกต้องที่สุดส่งไปให้ระบบ Render
-        const finalMimeType = resolvedMedia.mimeType || mimeType;
-
         if (typeof renderMediaToDOM === 'function') {
-            renderMediaToDOM(container, resolvedMedia, finalMimeType, masterController.signal);
+            renderMediaToDOM(container, resolvedMedia, mimeType, masterController.signal);
         }
 
     } catch (e) {
@@ -5607,18 +5625,67 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
             appendLog(`Extracting structural blueprint record for matrix cell node #${tokenId}...`, "text-purple-400");
         }
 
+        // 🛡️ EXTRACT MANIFEST DATA FIRST (OFFLINE-FIRST GUARD)
+        let preMintFrontUri = "";
+        if (window.IMPERIAL_MANIFEST && window.IMPERIAL_MANIFEST[String(tokenId)]) {
+            const manifestData = window.IMPERIAL_MANIFEST[String(tokenId)];
+            if (typeof manifestData === 'string') {
+                preMintFrontUri = manifestData.trim();
+            } else if (typeof manifestData === 'object') {
+                preMintFrontUri = (manifestData.irys_id || "").trim();
+            }
+        }
+
         const activeContract = (typeof secureContract !== 'undefined' && secureContract) 
             ? secureContract 
             : (typeof readOnlyContract !== 'undefined' ? readOnlyContract : null);
             
         if (!activeContract) { 
-            if (typeof appendLog === 'function') appendLog("Interrogating consensus network parameters...", "text-yellow-500"); 
+            if (typeof appendLog === 'function') appendLog("RPC Offline: Loading visual state from local manifest...", "text-yellow-500"); 
             if (tbaInputElem) tbaInputElem.value = "RPC OFFLINE: CONNECT WALLET TO CALCULATE";
+            
+            // 🚨 สั่ง Render ทันทีเมื่อ RPC Offline (Offline-First Execution)
+            if (preMintFrontUri && preMintFrontUri !== "") {
+                window.currentLoadedMediaData.front = preMintFrontUri;
+                window.currentLoadedMediaData.back = "";
+                window.currentLoadedMediaData.video = "";
+                
+                if (typeof renderToViewport === 'function') {
+                    renderToViewport('previewFrontContainer', preMintFrontUri, "Obverse aspect currently unassigned.");
+                    renderToViewport('previewBackContainer', "", "Void element data layer uninitialized.");
+                }
+
+                const metaDisp = document.getElementById('activeDeedMetadataDisplay');
+                if (metaDisp) {
+                    metaDisp.replaceChildren();
+                    metaDisp.appendChild(document.createTextNode(`CELL NODE ID: ${tokenId} `));
+                    const span = document.createElement('span');
+                    span.className = "text-emerald-400 font-bold";
+                    span.textContent = "[READY FOR MINT]";
+                    metaDisp.appendChild(span);
+                    metaDisp.appendChild(document.createElement('br'));
+                    metaDisp.appendChild(document.createTextNode("ACCREDITED ROOT: PENDING"));
+                }
+            } else {
+                window.currentLoadedMediaData.front = "";
+                window.currentLoadedMediaData.back = "";
+                window.currentLoadedMediaData.video = "";
+
+                if (typeof renderToViewport === 'function') {
+                    renderToViewport('previewFrontContainer', "", "Void element data layer uninitialized.");
+                    renderToViewport('previewBackContainer', "", "Void element data layer uninitialized.");
+                }
+                
+                const metaDisp = document.getElementById('activeDeedMetadataDisplay');
+                if (metaDisp) {
+                    metaDisp.replaceChildren();
+                    metaDisp.appendChild(document.createTextNode("VOID ELEMENT: MINTING UNAUTHORIZED"));
+                }
+            }
             return; 
         }
 
         // 🚨 [CRITICAL FIX]: INDEPENDENT TBA CALCULATION BLOCK
-        // บังคับคำนวณและแสดงผล TBA ทันที โดยไม่สนว่า Node จะถูก Mint แล้วหรือไม่
         try {
             const onChainTBA = await activeContract.getTBA(BigInt(tokenId).toString());
             if (mySession !== window.currentAuditSession) return; 
@@ -5742,18 +5809,10 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
         if (settleTokenInput) settleTokenInput.value = tokenId;
 
     } catch (e) { 
-        // 🚨 [CATCH BLOCK]: ทำงานเมื่อ Node ยังไม่ถูก Mint
+        // 🚨 [CATCH BLOCK]: ทำงานเมื่อ Node ยังไม่ถูก Mint (RPC Online แต่หาข้อมูลไม่เจอ)
         if (mySession !== window.currentAuditSession) return; 
         
-        window.currentLoadedMediaData = window.currentLoadedMediaData || {};
-        
-        let preMintFrontUri = "";
-        if (window.IMPERIAL_MANIFEST && window.IMPERIAL_MANIFEST[String(tokenId)]) {
-            const manifestData = window.IMPERIAL_MANIFEST[String(tokenId)];
-            preMintFrontUri = typeof manifestData === 'object' ? (manifestData.irys_id || "") : manifestData;
-        }
-
-        if (preMintFrontUri) {
+        if (preMintFrontUri && preMintFrontUri !== "") {
             window.currentLoadedMediaData.front = preMintFrontUri;
             window.currentLoadedMediaData.back = "";
             window.currentLoadedMediaData.video = "";
@@ -5803,8 +5862,6 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
         if (typeof toggleButtonLoading === 'function') toggleButtonLoading(null, false);
     }
 }
-
-
 
 function setTbaBalanceDisplay(eth, weth) { 
     const ethElem = document.getElementById('tbaEthBalance'); 
@@ -5869,7 +5926,6 @@ async function syncActiveMatrixNodes() {
         const activeTokens = await activeContract.getAllActiveTokens();
         const activeSet = new Set(activeTokens.map(t => Number(t))); 
         
-        // 🚨 [CRITICAL FIX]: อัปเดตตัวเลข ACTIVE: X/333 ให้ตรงกับ On-chain
         const activeCountEl = document.getElementById('matrixActiveCount');
         if (activeCountEl) {
             activeCountEl.textContent = activeSet.size.toString();
@@ -5913,7 +5969,7 @@ async function syncActiveMatrixNodes() {
 
             const isLocked = lockUntil > currentEpoch;
 
-            node.classList.remove('opacity-30', 'grayscale', 'cursor-not-allowed', 'bg-red-950/20', 'bg-amber-950/20', 'bg-slate-950', 'bg-blue-950/50');
+            node.classList.remove('opacity-30', 'grayscale', 'cursor-not-allowed', 'bg-red-950/20', 'bg-amber-950/20', 'bg-slate-950', 'bg-blue-950/50', 'bg-emerald-950/30', 'border-emerald-800/50');
             if (typeof IS_TOUCH_DEVICE !== 'undefined' && !IS_TOUCH_DEVICE) node.classList.add('hover:bg-slate-800');
 
             if (!activeSet.has(i)) { 
@@ -5924,8 +5980,22 @@ async function syncActiveMatrixNodes() {
                     node.classList.add('bg-red-950/20'); 
                     node.title = `NODE #${i} [BURNED - AWAITING REMINT]`; 
                 } else {
-                    node.classList.add('bg-amber-950/20'); 
-                    node.title = `NODE #${i} [VOID - UNMINTED]`; 
+                    // 🛡️ STRICT FIX: Check Manifest Data for Staged Nodes
+                    let hasManifestData = false;
+                    if (window.IMPERIAL_MANIFEST && window.IMPERIAL_MANIFEST[String(i)]) {
+                        const mData = window.IMPERIAL_MANIFEST[String(i)];
+                        const uri = typeof mData === 'string' ? mData : (mData.irys_id || "");
+                        if (uri && uri.trim() !== "") hasManifestData = true;
+                    }
+
+                    if (hasManifestData) {
+                        node.classList.remove('opacity-30', 'grayscale');
+                        node.classList.add('bg-emerald-950/30', 'border-emerald-800/50');
+                        node.title = `NODE #${i} [STAGED IN MANIFEST - READY TO MINT]`;
+                    } else {
+                        node.classList.add('bg-amber-950/20'); 
+                        node.title = `NODE #${i} [VOID - UNMINTED]`; 
+                    }
                 }
             } else { 
                 if (isLocked) {
