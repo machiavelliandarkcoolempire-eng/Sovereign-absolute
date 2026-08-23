@@ -5327,7 +5327,7 @@ async function resolveMediaUrl(urlList, signal, mimeType, depth = 0) {
 
     if (isVideo) {
         for (const url of urlList) {
-            if (signal.aborted) throw new Error('Aborted');
+            if (signal && signal.aborted) throw new Error('Aborted');
             const localCtrl = new AbortController();
             try {
                 const testResponse = await fetch(url, { 
@@ -5339,11 +5339,11 @@ async function resolveMediaUrl(urlList, signal, mimeType, depth = 0) {
                 });
                 if (!testResponse.ok && testResponse.status !== 206) throw new Error('HTTP ' + testResponse.status);
                 localCtrl.abort(); 
-                const cleanUrl = url.split('?')[0]; 
+                const cleanUrl = typeof url === 'string' ? url.split('?')[0] : url; 
                 return { url: cleanUrl, isBlob: false, sourceUrl: url };
             } catch (e) { 
                 localCtrl.abort();
-                if (e.name === 'AbortError' && signal.aborted) throw e; 
+                if (e.name === 'AbortError' && signal && signal.aborted) throw e; 
                 continue; 
             }
         }
@@ -5351,10 +5351,10 @@ async function resolveMediaUrl(urlList, signal, mimeType, depth = 0) {
     }
     
     for (const url of urlList) {
-        if (signal.aborted) throw new Error('Aborted');
-        const cleanUrl = url.split('?')[0];
-        
-        if (url.includes('.m3u8')) {
+        if (signal && signal.aborted) throw new Error('Aborted');
+        const cleanUrl = typeof url === 'string' ? url.split('?')[0] : url;
+
+        if (typeof url === 'string' && url.includes('.m3u8')) {
             return { url: cleanUrl, isBlob: false, sourceUrl: url };
         }
 
@@ -5365,7 +5365,7 @@ async function resolveMediaUrl(urlList, signal, mimeType, depth = 0) {
                 if (cachedResponse) {
                     const blob = await cachedResponse.blob();
                     const objUrl = URL.createObjectURL(blob);
-                    if (signal.aborted) { URL.revokeObjectURL(objUrl); throw new Error('Aborted'); }
+                    if (signal && signal.aborted) { URL.revokeObjectURL(objUrl); throw new Error('Aborted'); }
                     if (typeof registerBlobForGc === 'function') registerBlobForGc(cleanUrl, objUrl, isVideo);
                     return { url: objUrl, isBlob: true, sourceUrl: url };
                 }
@@ -5385,7 +5385,9 @@ async function resolveMediaUrl(urlList, signal, mimeType, depth = 0) {
             try {
                 if (depth >= 2) throw new Error("RECURSION LIMIT EXCEEDED");
                 
-                // 🚨 OOM CRASH PREVENTION: Read max 50KB to check for JSON
+                // 🚨 [TECHNICAL FIX]: Null Pointer Guard ป้องกันกรณี body ว่างเปล่า
+                if (!clone.body) throw new Error("NULL_RESPONSE_BODY");
+                
                 const reader = clone.body.getReader();
                 const decoder = new TextDecoder('utf-8');
                 let text = '';
@@ -5404,14 +5406,19 @@ async function resolveMediaUrl(urlList, signal, mimeType, depth = 0) {
                 }
                 
                 const json = JSON.parse(text); 
-                const actualMedia = json.image || json.animation_url || json.frontURI || json.videoURI;
+                
+                // 🚨 [TECHNICAL FIX]: ตรวจสอบชนิดข้อมูลก่อนเข้าถึง Properties เสมอ
+                if (json && typeof json === 'object' && !Array.isArray(json)) {
+                    const actualMedia = json.image || json.animation_url || json.frontURI || json.videoURI;
 
-                if (actualMedia && typeof actualMedia === 'string') {
-                    const newUrls = typeof buildIrysUrls === 'function' ? buildIrysUrls(actualMedia) : [actualMedia];
-                    return resolveMediaUrl(newUrls, signal, mimeType, depth + 1);
+                    if (actualMedia && typeof actualMedia === 'string') {
+                        const newUrls = typeof buildIrysUrls === 'function' ? buildIrysUrls(actualMedia) : [actualMedia];
+                        // 🚨 [TECHNICAL FIX]: เติม await ให้ Recursive Call
+                        return await resolveMediaUrl(newUrls, signal, mimeType, depth + 1); 
+                    }
                 }
             } catch (e) {
-                // Not JSON or payload too large, proceed to treat as binary Blob
+                // Not JSON, payload too large, or null body; proceed to treat as binary Blob
             }
 
             if ('caches' in window) {
@@ -5424,7 +5431,7 @@ async function resolveMediaUrl(urlList, signal, mimeType, depth = 0) {
             const blob = await response.blob();
             const objUrl = URL.createObjectURL(blob);
             
-            if (signal.aborted) { URL.revokeObjectURL(objUrl); throw new Error('Aborted'); }
+            if (signal && signal.aborted) { URL.revokeObjectURL(objUrl); throw new Error('Aborted'); }
             
             if (typeof registerBlobForGc === 'function') registerBlobForGc(cleanUrl, objUrl, isVideo);
             return { url: objUrl, isBlob: true, sourceUrl: url };
@@ -5436,10 +5443,13 @@ async function resolveMediaUrl(urlList, signal, mimeType, depth = 0) {
         }
     }
     
-    return { url: urlList[0].split('?')[0], isBlob: false, sourceUrl: urlList[0] };
+    return { url: typeof urlList[0] === 'string' ? urlList[0].split('?')[0] : urlList[0], isBlob: false, sourceUrl: urlList[0] };
 }
+
     
 async function renderToViewport(containerId, path, defaultText, explicitMediaType = null) {
+    // 🚨 [TECHNICAL FIX]: Strict type validation สำหรับ DOM Elements
+    if (!containerId || typeof containerId !== 'string') return;
     const container = document.getElementById(containerId);
     if (!container) return;
 
@@ -5456,11 +5466,13 @@ async function renderToViewport(containerId, path, defaultText, explicitMediaTyp
 
     const safePath = path.trim();
     
-    // 🛡️ FIXED: Expanded Base64URL length validation to accommodate 42-45 character Arweave/Irys IDs.
+    // 🛡️ [DEFENSIVE FIX]: แยกเงื่อนไข Raw Hash เพื่อใช้สร้างเส้นทาง URL
+    const isRawHash = (safePath.length >= 42 && safePath.length <= 45 && /^[a-zA-Z0-9_-]+$/.test(safePath) && !/^https?:\/\//i.test(safePath));
+    
     const isPermittedScheme = /^https?:\/\//i.test(safePath) || 
                               safePath.startsWith('ar://') || 
                               safePath.startsWith('irys://') || 
-                              (safePath.length >= 42 && safePath.length <= 45 && /^[a-zA-Z0-9_-]+$/.test(safePath));
+                              isRawHash;
     
     if ((typeof isMaliciousURI === 'function' && isMaliciousURI(safePath)) || !isPermittedScheme) {
         renderEmptyState(container, "⛔ BLOCKED: UNSAFE URI SCHEME REJECTED", "text-red-500");
@@ -5470,7 +5482,10 @@ async function renderToViewport(containerId, path, defaultText, explicitMediaTyp
     renderLoadingSkeleton(container);
 
     try {
-        const urlsToTry = typeof buildIrysUrls === 'function' ? buildIrysUrls(safePath) : [safePath];
+        // 🚨 [CRITICAL LOGIC FIX]: บังคับหุ้ม Gateway ให้ Raw Hash ก่อนส่งไป Fetch
+        const resolvedPath = isRawHash ? `https://gateway.irys.xyz/${safePath}` : safePath;
+        const urlsToTry = typeof buildIrysUrls === 'function' ? buildIrysUrls(resolvedPath) : [resolvedPath];
+        
         if (!urlsToTry || urlsToTry.length === 0) throw new Error("URI_RESOLUTION_FAILED");
 
         const mimeType = typeof guessMediaTypeAdvanced === 'function' 
@@ -5500,7 +5515,14 @@ async function renderToViewport(containerId, path, defaultText, explicitMediaTyp
     }
 }
 
+
 function renderMediaToDOM(container, resolvedMedia, mediaType, abortSignal) {
+    // 🚨 [DEFENSIVE FIX]: Strict Null Guards and Type Safety
+    if (!container || !(container instanceof HTMLElement)) return;
+    if (!resolvedMedia || typeof resolvedMedia !== 'object' || !resolvedMedia.url) {
+        renderEmptyState(container, "ARTIFACT CORRUPTED (NO URL)", "text-red-500");
+        return;
+    }
     if (abortSignal && abortSignal.aborted) return;
 
     if (container._hlsInstance) {
@@ -5551,8 +5573,6 @@ function renderMediaToDOM(container, resolvedMedia, mediaType, abortSignal) {
     const el = document.createElement(isVideo ? 'video' : 'img');
     
     el.className = 'w-full h-full object-cover p-1 rounded bg-black shadow-[0_0_15px_rgba(0,0,0,0.8)] z-10 relative opacity-0 transition-opacity duration-500';
-    
-    // 🚨 THE ARCHITECT'S FIX: ปลดล็อก CORS ให้ทั้ง Image และ Video ตั้งแต่จุดนี้ 🚨
     el.crossOrigin = 'anonymous';
     
     if (resolvedMedia.isBlob) {
@@ -5591,10 +5611,7 @@ function renderMediaToDOM(container, resolvedMedia, mediaType, abortSignal) {
         el.muted = true; 
         el.playsInline = true; 
         el.setAttribute('webkit-playsinline', 'true');
-        
-        // [FIXED] Vector 1.1: ป้องกัน iOS OOM Crash โดยโหลดแค่ข้อมูลพื้นฐาน
         el.preload = 'metadata'; 
-        // (ลบ crossOrigin ตรงนี้ออกไปแล้ว เพราะย้ายไปครอบคลุมด้านบนแทน)
         
         const handlePlay = (videoEl) => {
             if (abortSignal && abortSignal.aborted) return;
@@ -5608,8 +5625,6 @@ function renderMediaToDOM(container, resolvedMedia, mediaType, abortSignal) {
                         if (!container.querySelector('.play-overlay-btn')) {
                             const playBtn = document.createElement('button');
                             playBtn.className = 'play-overlay-btn absolute inset-0 m-auto w-12 h-12 bg-black/60 border border-slate-500 rounded-full flex items-center justify-center text-white z-30 hover:bg-black/80 transition-colors cursor-pointer';
-                            
-                            // [FIXED] Vector 4.1: ป้องกัน DOM-Based XSS
                             playBtn.textContent = '▶';
                             
                             playBtn.onclick = (e) => {
@@ -5625,7 +5640,7 @@ function renderMediaToDOM(container, resolvedMedia, mediaType, abortSignal) {
             }
         };
 
-        const isHLS = resolvedMedia.url.includes('.m3u8');
+        const isHLS = typeof resolvedMedia.url === 'string' && resolvedMedia.url.includes('.m3u8');
         const isHlsSupported = typeof Hls !== 'undefined' && Hls.isSupported();
 
         if (isHLS && isHlsSupported) {
@@ -5700,6 +5715,7 @@ function renderMediaToDOM(container, resolvedMedia, mediaType, abortSignal) {
         container.appendChild(el);
     }
 }
+
 
 
 // ==============================================================================
@@ -6291,66 +6307,84 @@ function enforceSecurityConstraints() {
     if (nameInput) nameInput.setAttribute('maxlength', '128');
 }
 
-// 1. เติม async เข้าไปที่จุดประกาศฟังก์ชัน เพื่อเปิดใช้กลไกการรอเวลา
+// ==============================================================================
+// 🛡️ CRITICAL FIX: DETERMINISTIC BOOT SEQUENCE (ป้องกัน Async Race Condition)
+// ==============================================================================
 const initializeSystem = async () => {
-    enforceSecurityConstraints();
-    
-    if (typeof fetchImperialManifest === 'function') {
-        try {
-            // 2. ล็อกคอระบบด้วย await บังคับให้โหลด Manifest ให้จบ ห้ามข้ามขั้น
-            await fetchImperialManifest();
-        } catch (e) {
-            console.warn("[NON-BLOCKING] Manifest payload skip:", e);
-        }
-    }
-    
-    // โค้ดด้านล่างนี้จะทำงานก็ต่อเมื่อไฟล์ JSON โหลดเสร็จแล้วเท่านั้น
-    setupMatrixGrid();
-    initializeAbsoluteEventDelegation();
-    
-    if (window.visualViewport) {
-        const handleResize = () => {
-            if (document.activeElement?.tagName === 'INPUT' || document.activeElement?.tagName === 'TEXTAREA') {
-                document.body.style.height = `${window.visualViewport.height}px`;
-            } else {
-                document.body.style.height = "";
-                document.body.style.overflow = "";
+    try {
+        if (typeof enforceSecurityConstraints === 'function') enforceSecurityConstraints();
+        
+        // 1. บังคับโหลด Manifest JSON ให้เสร็จสิ้นสมบูรณ์เป็น Priority แรกสุด
+        if (typeof fetchImperialManifest === 'function') {
+            try {
+                await fetchImperialManifest();
+            } catch (e) {
+                console.warn("[NON-BLOCKING] Manifest payload skip:", e);
             }
-        };
-        window.visualViewport.removeEventListener("resize", handleResize);
-        window.visualViewport.removeEventListener("scroll", handleResize);
-        window.visualViewport.addEventListener("resize", handleResize, { passive: true });
-        window.visualViewport.addEventListener("scroll", handleResize, { passive: true });
+        }
+        
+        // 2. โค้ดด้านล่างนี้จะทำงานก็ต่อเมื่อไฟล์ JSON โหลดเสร็จแล้วเท่านั้น
+        if (typeof setupMatrixGrid === 'function') setupMatrixGrid();
+        if (typeof initializeAbsoluteEventDelegation === 'function') initializeAbsoluteEventDelegation();
+        
+        if (window.visualViewport) {
+            const handleResize = () => {
+                if (document.activeElement?.tagName === 'INPUT' || document.activeElement?.tagName === 'TEXTAREA') {
+                    document.body.style.height = `${window.visualViewport.height}px`;
+                } else {
+                    document.body.style.height = "";
+                    document.body.style.overflow = "";
+                }
+            };
+            window.visualViewport.removeEventListener("resize", handleResize);
+            window.visualViewport.removeEventListener("scroll", handleResize);
+            window.visualViewport.addEventListener("resize", handleResize, { passive: true });
+            window.visualViewport.addEventListener("scroll", handleResize, { passive: true });
+        }
+
+        // 3. เชื่อมต่อ Web3 / RPC ในคิวเดียวกัน (ไม่ต้องแยกไป window.load)
+        if (typeof loadArchitectGateways === 'function') { 
+            try { loadArchitectGateways(); } catch (e) { console.warn("Gateways non-fatal skip"); } 
+        } 
+        
+        if (typeof bootSystemRPCs === 'function' && typeof CONTRACT_ADDRESS !== 'undefined' && typeof CONTRACT_ABI !== 'undefined') { 
+            try {
+                await bootSystemRPCs(CONTRACT_ADDRESS, CONTRACT_ABI);
+                // 4. มั่นใจ 100% ว่า RPC ต่อติดและ Manifest มีข้อมูล ค่อยสั่ง Sync สีของโหนด
+                if (typeof syncActiveMatrixNodes === 'function') {
+                    await syncActiveMatrixNodes();
+                }
+            } catch (e) {
+                console.warn("[NON-BLOCKING RPC] Initialization deferred:", e);
+            }
+        } else if (typeof syncActiveMatrixNodes === 'function') {
+            await syncActiveMatrixNodes();
+        }
+    } catch (fatalError) {
+        console.error("[CRITICAL ERROR] Core System Initialization Failed", fatalError);
     }
 };
 
+// [CENTRALIZED CONTROLLER] ป้องกันการรันซ้ำซ้อนระหว่าง DOMContentLoaded กับ Load
+let isSystemBooted = false;
+
+const executeMatrixBootSequence = async () => {
+    if (isSystemBooted) return;
+    isSystemBooted = true;
+    if (typeof revealApp === 'function') revealApp();
+    await initializeSystem();
+};
 
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-        revealApp();
-        initializeSystem();
-    }, { once: true }); 
+    document.addEventListener('DOMContentLoaded', executeMatrixBootSequence, { once: true }); 
 } else { 
-    revealApp(); 
-    initializeSystem();
+    executeMatrixBootSequence();
 }
 
 window.addEventListener('load', () => { 
-    revealApp(); 
-    if (typeof loadArchitectGateways === 'function') { 
-        try { loadArchitectGateways(); } catch (e) { console.warn("Gateways non-fatal skip"); } 
-    } 
-    
-    if (typeof bootSystemRPCs === 'function' && typeof CONTRACT_ADDRESS !== 'undefined' && typeof CONTRACT_ABI !== 'undefined') { 
-        bootSystemRPCs(CONTRACT_ADDRESS, CONTRACT_ABI)
-            .then(() => {
-                if (typeof syncActiveMatrixNodes === 'function') {
-                    return syncActiveMatrixNodes();
-                }
-            })
-            .catch(e => console.warn("[NON-BLOCKING RPC] Initialization deferred:", e));
-    }
+    if (!isSystemBooted) executeMatrixBootSequence();
 });
+
 
 </script>
 </body>
