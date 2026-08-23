@@ -5836,15 +5836,23 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
             while (attempts < maxAttempts) {
                 if (document.hidden) break;
                 if (pollForUpdate && typeof GLOBAL_NODE_CACHE !== 'undefined') GLOBAL_NODE_CACHE.delete(String(tokenId));
+              try {
                 
-                try {
-                    // ลองจำลองดึงค่า ถ้ายังไม่มิ้น มันจะ Error แล้วเด้งเข้า Catch เงียบๆ โดยไม่ทำให้ระบบพัง
-                    if (typeof autoMap === 'function') {
-                        mappedNode = await autoMap(tokenId);
-                    }
-                } catch (err) {
-                    mappedNode = null; 
-                }
+                if (typeof autoMap === 'function') {
+        // 🛡️ ANTI-HANG PATCH: บังคับตัดจบถ้าระบบ Blockchain (RPC) ไม่ตอบสนองใน 4 วินาที
+        mappedNode = await Promise.race([
+            autoMap(tokenId),
+            new Promise((_, reject) => setTimeout(() => reject(new Error("RPC_TIMEOUT_FORCE_SKIP")), 4000))
+        ]);
+    }
+} catch (err) {
+    mappedNode = null;
+    if (err.message === "RPC_TIMEOUT_FORCE_SKIP") {
+        if (typeof safeAppendLog === 'function') {
+            safeAppendLog("[SYSTEM] RPC Timeout. Forcing Lazy Mint display bypass.", "text-yellow-500");
+        }
+    }
+}
 
                 if (mySession !== window.currentAuditSession) return; 
                 
