@@ -4454,80 +4454,46 @@ async function executeSovereignSupport(e) {
 // ==============================================================================
 
 async function buildAndUploadMetadata(e) {
-    if (typeof irys === 'undefined' || !irys) { 
+    if (!irys) { 
         showNotification("Operation suspended: Establish permanent settlement bridge path beforehand.", "error"); 
         return; 
     }
-    if (!secureContract || !signer) { 
-        showNotification("Action suspended: Authenticate wallet signature first.", "error"); 
-        return; 
-    }
-    
-    const novaTokenEl = document.getElementById('novaTokenId');
-    const targetTokenId = (novaTokenEl?.value.trim()) || (typeof globalSelectedTokenId !== 'undefined' ? globalSelectedTokenId : null);
-    
-    if (!targetTokenId) {
-        showNotification("STRUCTURAL EXCEPTION: Please select a Token ID coordinate on the Matrix first.", "error");
-        return;
-    }
-
-    try {
-        const userAddress = await signer.getAddress();
-        const privs = await verifyUserPrivileges(userAddress);
-
-        if (!privs.isAdmin) {
-            showNotification("SECURITY ENFORCEMENT: Architect privileges required.", "error");
-            return;
-        }
-    } catch (err) {
-        showNotification("System Warning: Failed to verify privileges.", "error");
-        return;
-    }
+    if (!lockSystem()) return;
 
     const btn = toggleButtonLoading(e, true);
-    
     try {
         const rootNameInput = document.getElementById('propName');
         const rootName = (rootNameInput && rootNameInput.value.trim() !== "") 
                          ? rootNameInput.value.trim() 
-                         : "THE IMPERIAL SOVEREIGN DEED ♠️";
+                         : "THE IMPERIAL SOVEREIGNTY DEED";
 
         const dynamicAttributes = []; 
 
-        const keyInput1 = document.getElementById('propKey1');
-        const valInput1 = document.getElementById('prop1');
-        if (keyInput1 && valInput1 && keyInput1.value.trim() !== "" && valInput1.value.trim() !== "") {
-            dynamicAttributes.push({ 
-                trait_type: typeof sanitizeAlphanumeric === 'function' ? sanitizeAlphanumeric(keyInput1.value) : keyInput1.value.trim(), 
-                value: typeof sanitizeAlphanumeric === 'function' ? sanitizeAlphanumeric(valInput1.value) : valInput1.value.trim() 
-            });
+        for (let i = 1; i <= 7; i++) {
+            const keyInput = document.getElementById(`propKey${i}`);
+            const valInput = document.getElementById(`prop${i}`);
+            
+            const key = typeof sanitizeForJSON === 'function' ? sanitizeForJSON(keyInput ? keyInput.value : "") : (keyInput ? keyInput.value : "");
+            const val = typeof sanitizeForJSON === 'function' ? sanitizeForJSON(valInput ? valInput.value : "") : (valInput ? valInput.value : "");
+
+            if (key !== "" && val !== "") {
+                dynamicAttributes.push({ trait_type: key, value: val });
+            }
         }
 
-        const keyInput2 = document.getElementById('propKey2');
-        const valInput2 = document.getElementById('prop2');
-        if (keyInput2 && valInput2 && keyInput2.value.trim() !== "" && valInput2.value.trim() !== "") {
-            dynamicAttributes.push({ 
-                trait_type: typeof sanitizeAlphanumeric === 'function' ? sanitizeAlphanumeric(keyInput2.value) : keyInput2.value.trim(), 
-                value: typeof sanitizeAlphanumeric === 'function' ? sanitizeAlphanumeric(valInput2.value) : valInput2.value.trim() 
-            });
-        }
-
-        const frontUriRaw = document.getElementById('forgeFrontUri')?.value.trim() || "";
-        const currentFront = (typeof currentLoadedMediaData !== 'undefined') ? (currentLoadedMediaData.front || "") : "";
-        const frontUri = frontUriRaw || currentFront;
+        const frontUri = document.getElementById('forgeFrontUri')?.value.trim() || (currentLoadedMediaData?.front || "");
+        const backUri = document.getElementById('forgeBackUri')?.value.trim() || (currentLoadedMediaData?.back || "");
+        const videoUri = document.getElementById('novaVideoUri')?.value.trim() || (currentLoadedMediaData?.video || "");
         
-        const checkSafeURI = (uri) => {
-            if (!uri || uri === "") return true; 
-            if (uri.toLowerCase().includes("e.g. irys") || uri.includes("chars)")) return false; 
-            if (typeof isMaliciousURI === 'function') return !isMaliciousURI(uri);
-            return true;
-        };
-
-        if (!checkSafeURI(frontUri)) {
-            throw new Error("Malicious Payload detected in URI. Operation aborted.");
+        if (typeof isMaliciousURI === 'function' && (isMaliciousURI(frontUri) || isMaliciousURI(backUri) || isMaliciousURI(videoUri))) {
+            throw new Error("Malicious Payload detected in URIs. Operation aborted.");
         }
 
-        const frontType = document.querySelector('input[name="frontType"]:checked')?.value || "image";
+        const frontTypeElement = document.querySelector('input[name="frontType"]:checked');
+        const backTypeElement = document.querySelector('input[name="backType"]:checked');
+        
+        const frontType = frontTypeElement ? frontTypeElement.value : "image";
+        const backType = backTypeElement ? backTypeElement.value : "image";
 
         const metadata = {
             name: rootName,
@@ -4536,50 +4502,100 @@ async function buildAndUploadMetadata(e) {
         };
 
         if (frontUri) {
-            const finalFrontUrl = typeof buildIrysUrl === 'function' ? buildIrysUrl(frontUri) : frontUri;
             if (frontType === "video") {
-                metadata.animation_url = finalFrontUrl;
-                metadata.image = finalFrontUrl; 
+                metadata.animation_url = frontUri;
+                metadata.image = frontUri; 
             } else {
-                metadata.image = finalFrontUrl;
+                metadata.image = frontUri;
             }
         }
 
+        if (backUri) {
+            metadata.properties = {
+                reverse_deed: {
+                    type: backType,
+                    uri: backUri,
+                    unlocked: true
+                }
+            };
+        }
+
+        if (videoUri) {
+            metadata.animation_url = videoUri;
+        }
+
         const dataToUpload = JSON.stringify(metadata);
+        
+        // [SECURITY PATCH 3.1]: Replaced Blob with TextEncoder to prevent main-thread blocking
+        const payloadSize = new TextEncoder().encode(dataToUpload).length;
+        const price = await irys.getPrice(payloadSize);
+        const loadedBalance = await irys.getLoadedBalance();
+
+        const statusBox = document.getElementById('stagedBridgeStatus');
+
+        if (loadedBalance.isLessThan(price)) {
+            const diffWithBuffer = price.minus(loadedBalance).multipliedBy(115).dividedToIntegerBy(100); 
+            const costStr = typeof fmtUnits === 'function' ? fmtUnits(diffWithBuffer.toString()) : ethers.formatUnits(diffWithBuffer.toString(), 18);
+            const isConfirmed = await requestFundConfirmation(costStr);
+            if (!isConfirmed) throw new Error("Funding initialization rejected. Metadata sealing aborted.");
+            
+            try {
+                // [SECURITY PATCH 3.3]: UI Lock during funding
+                if (btn) {
+                    btn.innerHTML = "⏳ [ REJECT IN WALLET ]";
+                    btn.classList.add('text-red-400', 'animate-pulse');
+                }
+                if(statusBox) {
+                    statusBox.textContent = `⏳ AWAITING WALLET SIGNATURE...`;
+                    statusBox.className = "text-[10px] text-red-400 font-mono font-bold uppercase animate-pulse";
+                }
+                await irys.fund(diffWithBuffer);
+            } finally {
+                if (btn) {
+                    btn.innerHTML = "⏳ PROCESSING...";
+                    btn.classList.remove('text-red-400', 'animate-pulse');
+                }
+            }
+        }
+
         const tags = [{ name: "Content-Type", value: "application/json" }];
         
-        if (typeof updateBridgeStatus === 'function') updateBridgeStatus(`SEALING ARCHITECT'S MANIFEST UNTO THE Ledger...`, "warning");
-        if (typeof appendLog === 'function') appendLog(`Dynamic metadata strictly formatted. Sealing payload...`, "text-yellow-400");
-        
-        const receipt = await executeIrysUpload(dataToUpload, tags, false);
-        const irysTxId = receipt?.data?.id || receipt?.id;
-        
-        if (!irysTxId || typeof irysTxId !== 'string' || irysTxId.trim() === "") {
-            throw new Error("CRITICAL: Irys returned an invalid/empty Transaction ID.");
+        if(statusBox) {
+            statusBox.textContent = `SEALING ARCHITECT'S MANIFEST UNTO THE LEDGER...`;
+            statusBox.className = "text-[10px] text-yellow-500 font-mono font-bold uppercase animate-pulse";
         }
         
-        const sanitizedTxId = typeof sanitizeForDOM === 'function' ? sanitizeForDOM(irysTxId) : irysTxId;
+        appendLog(`Dynamic metadata strictly formatted for OpenSea compatibility. Sealing payload...`, "text-yellow-400");
         
-        if (typeof appendLog === 'function') {
-            appendLog(`Metadata JSON generated successfully (Isolated). Irys ID: ${sanitizedTxId}`, "text-emerald-400 font-bold");
-            appendLog(`Use this ID for Base URI configuration if needed.`, "text-slate-400");
+        const receipt = await irys.upload(dataToUpload, { tags });
+        const arUri = `ar://${receipt.id}`;
+        
+        appendLog(`Metadata completely sealed. Mapping pathway straight to NOVA protocol input (URI: ${sanitizeForDOM(arUri)})`, "text-emerald-400 font-bold");
+        if(statusBox) {
+            statusBox.textContent = `METADATA SCHEMATIC ONLINE`;
+            statusBox.className = "text-[10px] text-emerald-400 font-mono font-bold uppercase";
         }
-        if (typeof updateBridgeStatus === 'function') updateBridgeStatus(`METADATA SCHEMATIC ONLINE`, "success");
-        showNotification(`Manifest JSON Uploaded: ${sanitizedTxId}`, "success");
-
+        
+        const hiddenInput = document.getElementById('novaHiddenInput');
+        if(hiddenInput) {
+            hiddenInput.value = arUri;
+            hiddenInput.classList.add('border-emerald-500', 'bg-emerald-900/20');
+            setTimeout(() => hiddenInput.classList.remove('border-emerald-500', 'bg-emerald-900/20'), 2500);
+        }
     } catch(err) {
         const errorMsg = typeof decodeContractError === 'function' ? decodeContractError(err) : (err.message || "Unknown Error");
-        const sanitizedMsg = typeof sanitizeForDOM === 'function' ? sanitizeForDOM(errorMsg) : errorMsg;
+        const sanitizedMsg = sanitizeForDOM(errorMsg);
 
-        if (err.code === 4001 || sanitizedMsg === "USER_CANCELLED_TX" || err.message?.toLowerCase().includes("user rejected")) {
-            if (typeof appendLog === 'function') appendLog("Metadata registration funding sequence aborted by user.", "text-yellow-500");
-            showNotification("Transaction cancelled by user.", "warning");
+        if (err.code === 4001 || sanitizedMsg === "USER_CANCELLED_TX" || err.message?.toLowerCase().includes("user rejected") || err.message?.toLowerCase().includes("denied transaction")) {
+            appendLog("Metadata registration funding sequence aborted by user.", "text-yellow-500");
+            showNotification("การเติมเงินอัปโหลดเจตจำนงถูกยกเลิก", "warning");
         } else {
-            if (typeof appendLog === 'function') appendLog(`Metadata compilation aborted: ${sanitizedMsg}`, "text-red-500");
+            appendLog(`Metadata compilation aborted: ${sanitizedMsg}`, "text-red-500");
             showNotification(sanitizedMsg, "error");
         }
     } finally {
-        if (btn) toggleButtonLoading(btn, false);
+        unlockSystem();
+        if(btn) toggleButtonLoading(btn, false);
     }
 }
 
@@ -5443,9 +5459,12 @@ async function resolveMediaUrl(urlList, signal, mimeType, depth = 0) {
             if (!response.ok) throw new Error('HTTP ' + response.status);
             
             const clone = response.clone();
+            let isJsonObj = false;
+            let actualMedia = null;
+
+            // 🚨 [แก้ไขที่ 1]: ลองเปิดอ่านข้อมูลข้างในว่าเป็น JSON ไหม (โดยไม่กลืน Error ไปใช้ต่อ)
             try {
                 if (depth >= 2) throw new Error("RECURSION LIMIT EXCEEDED");
-                
                 if (!clone.body) throw new Error("NULL_RESPONSE_BODY");
                 
                 const reader = clone.body.getReader();
@@ -5468,16 +5487,31 @@ async function resolveMediaUrl(urlList, signal, mimeType, depth = 0) {
                 const json = JSON.parse(text); 
                 
                 if (json && typeof json === 'object' && !Array.isArray(json)) {
-                    const actualMedia = json.image || json.animation_url || json.frontURI || json.videoURI;
-
+                    actualMedia = json.image || json.animation_url || json.frontURI || json.videoURI;
                     if (actualMedia && typeof actualMedia === 'string') {
-                        const newUrls = typeof buildIrysUrls === 'function' ? buildIrysUrls(actualMedia) : [actualMedia];
-                        return await resolveMediaUrl(newUrls, signal, mimeType, depth + 1); 
+                        isJsonObj = true; // ยืนยันว่านี่คือไฟล์ JSON แน่นอน
                     }
                 }
             } catch (e) {
+                // ถ้าไม่ใช่ JSON หรืออ่านไม่ได้ ไม่ต้องทำอะไร ให้ปล่อยผ่านไปเป็นรูปปกติ
             }
 
+            // 🚨 [แก้ไขที่ 2]: ถ้าตรวจพบว่าเป็น JSON ให้ประกอบร่างลิงก์รูปภาพแล้วดึงรูปมาใช้เลย
+            if (isJsonObj && actualMedia) {
+                // เติม Gateway เข้าไป ถ้ามันเป็นแค่ ID โล้นๆ หรือติด ar://
+                if (!actualMedia.startsWith('http') && !actualMedia.startsWith('ar://')) {
+                    actualMedia = `https://gateway.irys.xyz/${actualMedia}`;
+                } else if (actualMedia.startsWith('ar://')) {
+                    actualMedia = actualMedia.replace('ar://', 'https://gateway.irys.xyz/');
+                }
+
+                const newUrls = typeof buildIrysUrls === 'function' ? buildIrysUrls(actualMedia) : [actualMedia];
+                
+                // กระโดดออกจากลูป แล้วไปดึงรูปภาพ 4K มาแสดงผลทันที (ไม่หลุดไปทำเป็น Blob ของ JSON)
+                return await resolveMediaUrl(newUrls, signal, mimeType, depth + 1); 
+            }
+
+            // ถ้าไม่ใช่ JSON มันถึงจะมาทำงานบรรทัดนี้เพื่อเรนเดอร์เป็นภาพ
             if ('caches' in window) {
                 try {
                     const cache = await caches.open(CACHE_NAME);
@@ -5502,6 +5536,7 @@ async function resolveMediaUrl(urlList, signal, mimeType, depth = 0) {
     
     return { url: typeof urlList[0] === 'string' ? urlList[0].split('?')[0] : urlList[0], isBlob: false, sourceUrl: urlList[0] };
 }
+
 
 async function renderToViewport(containerId, path, defaultText, explicitMediaType = null) {
     if (!containerId || typeof containerId !== 'string') return;
