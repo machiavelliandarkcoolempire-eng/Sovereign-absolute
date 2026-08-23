@@ -4030,11 +4030,8 @@ async function executeArchitectMint(e) {
         }
 
         const mappedNode = await autoMap(tokenId);
-        if (!mappedNode) {
-            showNotification("NETWORK EXCEPTION: Unable to verify node state from Blockchain.", "error");
-            return;
-        }
-        if (mappedNode.isActivated) {
+        // 🚨 FIX: อนุญาตให้มิ้นต์ได้ถ้า mappedNode เป็น null (แปลว่ายังไม่เคยมิ้นต์)
+        if (mappedNode && mappedNode.isActivated) {
             showNotification("STRUCTURAL EXCEPTION: Node is already active. Cannot execute Architect Mint.", "error");
             return;
         }
@@ -4051,7 +4048,7 @@ async function executeArchitectMint(e) {
             preMintFrontUri = typeof manifestData === 'object' ? (manifestData.irys_id || "") : manifestData;
         }
 
-        const existingFrontUri = (document.getElementById('forgeFrontUri')?.value || "").trim() || preMintFrontUri || currentLoadedMediaData.front || "";
+        const existingFrontUri = (document.getElementById('forgeFrontUri')?.value || "").trim() || preMintFrontUri || (currentLoadedMediaData ? currentLoadedMediaData.front : "");
         if (!existingFrontUri) {
             showNotification("METADATA EXCEPTION: Node not ready for minting (Architect has not assigned Obverse URI).", "error");
             return;
@@ -4159,11 +4156,8 @@ async function executeArchitectRemint(e) {
         }
 
         const mappedNode = await autoMap(tokenId);
-        if (!mappedNode) {
-            showNotification("NETWORK EXCEPTION: Unable to verify node state from Blockchain.", "error");
-            return;
-        }
-        if (mappedNode.isActivated) {
+        // 🚨 FIX: อนุญาตให้ Remint ได้ถ้า mappedNode เป็น null (แปลว่าถูกเผาไปแล้ว)
+        if (mappedNode && mappedNode.isActivated) {
             showNotification("STRUCTURAL EXCEPTION: Node is currently active. Must be burned before Remint.", "error");
             return;
         }
@@ -4174,7 +4168,7 @@ async function executeArchitectRemint(e) {
             preMintFrontUri = typeof manifestData === 'object' ? (manifestData.irys_id || "") : manifestData;
         }
 
-        const existingFrontUri = (document.getElementById('forgeFrontUri')?.value || "").trim() || preMintFrontUri || currentLoadedMediaData.front;
+        const existingFrontUri = (document.getElementById('forgeFrontUri')?.value || "").trim() || preMintFrontUri || (currentLoadedMediaData ? currentLoadedMediaData.front : "");
         if (!existingFrontUri) {
             showNotification("METADATA EXCEPTION: Node not ready for minting (Architect has not assigned Obverse URI).", "error");
             return;
@@ -5410,11 +5404,21 @@ async function resolveMediaUrl(urlList, signal, mimeType, depth = 0) {
                 const testResponse = await fetch(url, { 
                     method: 'GET', 
                     signal: localCtrl.signal, 
-                    headers: { Range: "bytes=0-0" },
+                    headers: { Range: "bytes=0-100" },
                     mode: 'cors',
                     referrerPolicy: 'no-referrer'
                 });
+                
                 if (!testResponse.ok && testResponse.status !== 206) throw new Error('HTTP ' + testResponse.status);
+                
+                const contentType = testResponse.headers.get('content-type') || '';
+                
+                // 🚨 FIX: ถ้าตรวจพบว่าเป็น JSON (Metadata) ให้เบรกออกจากลูปวิดีโอ เพื่อไปเข้ากระบวนการแกะ JSON ด้านล่าง
+                if (contentType.includes('application/json') || contentType.includes('text/plain')) {
+                    localCtrl.abort();
+                    break; 
+                }
+
                 localCtrl.abort(); 
                 const cleanUrl = typeof url === 'string' ? url.split('?')[0] : url; 
                 return { url: cleanUrl, isBlob: false, sourceUrl: url };
@@ -5424,7 +5428,6 @@ async function resolveMediaUrl(urlList, signal, mimeType, depth = 0) {
                 continue; 
             }
         }
-        throw new Error('ALL GATEWAYS SEVERED (VIDEO STREAMING)');
     }
     
     for (const url of urlList) {
@@ -5462,56 +5465,37 @@ async function resolveMediaUrl(urlList, signal, mimeType, depth = 0) {
             let isJsonObj = false;
             let actualMedia = null;
 
-            // 🚨 [แก้ไขที่ 1]: ลองเปิดอ่านข้อมูลข้างในว่าเป็น JSON ไหม (โดยไม่กลืน Error ไปใช้ต่อ)
             try {
                 if (depth >= 2) throw new Error("RECURSION LIMIT EXCEEDED");
-                if (!clone.body) throw new Error("NULL_RESPONSE_BODY");
+                const contentType = response.headers.get('content-type') || '';
+                const contentLength = parseInt(response.headers.get('content-length') || '0', 10);
                 
-                const reader = clone.body.getReader();
-                const decoder = new TextDecoder('utf-8');
-                let text = '';
-                let bytesRead = 0;
-                const MAX_JSON_BYTES = 51200; 
-                
-                while (true) {
-                    const { done, value } = await reader.read();
-                    if (done) break;
-                    bytesRead += value.length;
-                    text += decoder.decode(value, { stream: true });
-                    if (bytesRead > MAX_JSON_BYTES) {
-                        reader.cancel();
-                        throw new Error("PAYLOAD_TOO_LARGE_FOR_JSON");
-                    }
-                }
-                
-                const json = JSON.parse(text); 
-                
-                if (json && typeof json === 'object' && !Array.isArray(json)) {
-                    actualMedia = json.image || json.animation_url || json.frontURI || json.videoURI;
-                    if (actualMedia && typeof actualMedia === 'string') {
-                        isJsonObj = true; // ยืนยันว่านี่คือไฟล์ JSON แน่นอน
+                // 🚨 FIX: อ่านไฟล์ JSON อย่างปลอดภัยโดยใช้ .text() แทน reader loop ที่เปราะบาง
+                if (contentType.includes('json') || contentType.includes('text') || (contentLength > 0 && contentLength < 51200)) {
+                    const text = await clone.text();
+                    const json = JSON.parse(text);
+                    if (json && typeof json === 'object' && !Array.isArray(json)) {
+                        actualMedia = json.animation_url || json.videoURI || json.image || json.frontURI;
+                        if (actualMedia && typeof actualMedia === 'string') {
+                            isJsonObj = true;
+                        }
                     }
                 }
             } catch (e) {
-                // ถ้าไม่ใช่ JSON หรืออ่านไม่ได้ ไม่ต้องทำอะไร ให้ปล่อยผ่านไปเป็นรูปปกติ
+                // Not JSON, proceed to blob
             }
 
-            // 🚨 [แก้ไขที่ 2]: ถ้าตรวจพบว่าเป็น JSON ให้ประกอบร่างลิงก์รูปภาพแล้วดึงรูปมาใช้เลย
             if (isJsonObj && actualMedia) {
-                // เติม Gateway เข้าไป ถ้ามันเป็นแค่ ID โล้นๆ หรือติด ar://
                 if (!actualMedia.startsWith('http') && !actualMedia.startsWith('ar://')) {
                     actualMedia = `https://gateway.irys.xyz/${actualMedia}`;
                 } else if (actualMedia.startsWith('ar://')) {
                     actualMedia = actualMedia.replace('ar://', 'https://gateway.irys.xyz/');
                 }
-
                 const newUrls = typeof buildIrysUrls === 'function' ? buildIrysUrls(actualMedia) : [actualMedia];
-                
-                // กระโดดออกจากลูป แล้วไปดึงรูปภาพ 4K มาแสดงผลทันที (ไม่หลุดไปทำเป็น Blob ของ JSON)
-                return await resolveMediaUrl(newUrls, signal, mimeType, depth + 1); 
+                const newMimeType = typeof guessMediaTypeAdvanced === 'function' ? await guessMediaTypeAdvanced(newUrls[0]) : mimeType;
+                return await resolveMediaUrl(newUrls, signal, newMimeType, depth + 1); 
             }
 
-            // ถ้าไม่ใช่ JSON มันถึงจะมาทำงานบรรทัดนี้เพื่อเรนเดอร์เป็นภาพ
             if ('caches' in window) {
                 try {
                     const cache = await caches.open(CACHE_NAME);
@@ -5530,13 +5514,12 @@ async function resolveMediaUrl(urlList, signal, mimeType, depth = 0) {
         } catch (e) {
             if (e.name === 'AbortError') throw e;
             console.warn(`[Media Resolver] Fetch blocked by CORS or HTTP Error for ${url}. Falling back to direct URI injection.`);
-            return { url: cleanUrl, isBlob: false, sourceUrl: url };
+            continue;
         }
     }
     
     return { url: typeof urlList[0] === 'string' ? urlList[0].split('?')[0] : urlList[0], isBlob: false, sourceUrl: urlList[0] };
 }
-
 
 async function renderToViewport(containerId, path, defaultText, explicitMediaType = null) {
     if (!containerId || typeof containerId !== 'string') return;
