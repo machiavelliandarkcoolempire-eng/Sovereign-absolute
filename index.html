@@ -6321,6 +6321,33 @@ document.addEventListener("visibilitychange", () => {
     }
 });
 
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        revealApp();
+        initializeSystem();
+    }, { once: true }); 
+} else { 
+    revealApp(); 
+    initializeSystem();
+}
+
+window.addEventListener('load', () => { 
+    revealApp(); 
+    if (typeof loadArchitectGateways === 'function') { 
+        try { loadArchitectGateways(); } catch (e) { console.warn("Gateways non-fatal skip"); } 
+    } 
+    
+    if (typeof bootSystemRPCs === 'function' && typeof CONTRACT_ADDRESS !== 'undefined' && typeof CONTRACT_ABI !== 'undefined') { 
+        bootSystemRPCs(CONTRACT_ADDRESS, CONTRACT_ABI)
+            .then(() => {
+                if (typeof syncActiveMatrixNodes === 'function') {
+                    return syncActiveMatrixNodes();
+                }
+            })
+            .catch(e => console.warn("[NON-BLOCKING RPC] Initialization deferred:", e));
+    }
+});
+
 </script>
 </body>
 </html>
