@@ -5343,43 +5343,48 @@ function renderLoadingSkeleton(container) {
     container.appendChild(skeleton);
 }
 
-async function resolveMediaUrl(tokenId) {
-    // STEP 1: CHECK STATE - Is the Token Minted? (On-Chain)
-    const activeContract = window.secureContract || window.readOnlyContract;
-    
-    if (activeContract) {
-        try {
-            // Query the Smart Contract for the deed data
-            const deedData = await activeContract.getDeedData(tokenId.toString());
-            const owner = deedData[0];
-            const isActivated = deedData[1];
-            const frontURI = deedData[3];
+// ==============================================================================
+// 🛡️ 3-LAYER FORENSIC RESOLUTION (RESTORED ORIGINAL LOGIC + BUG FIX)
+// ==============================================================================
 
-            // If owner is not the zero address or isActivated is true, the token is minted
-            if (isActivated || (owner && owner !== "0x0000000000000000000000000000000000000000")) {
-                return frontURI; // Return the URI directly from the Smart Contract
+async function resolveMediaUrl(tokenId, fallbackPath, abortSignal) {
+    let targetJsonUri = fallbackPath;
+    let isMinted = false;
+
+    // STEP 1: CHECK STATE - Is the Token Minted? (On-Chain)
+    if (tokenId) {
+        const activeContract = window.secureContract || window.readOnlyContract;
+        if (activeContract) {
+            try {
+                // Query the Smart Contract for the deed data
+                const deedData = await activeContract.getDeedData(tokenId.toString());
+                const owner = deedData[0];
+                const isActivated = deedData[1];
+                const frontURI = deedData[3];
+
+                // If owner is not the zero address or isActivated is true, the token is minted
+                if (isActivated || (owner && owner !== "0x0000000000000000000000000000000000000000")) {
+                    targetJsonUri = frontURI; // Return the URI directly from the Smart Contract
+                    isMinted = true;
+                }
+            } catch (error) {
+                // Contract reverts with Custom Error (e.g., NonexistentToken) if not minted.
+                // Safely catch and proceed to Off-Chain Lazy Mint Phase.
             }
-        } catch (error) {
-            // Contract reverts with Custom Error (e.g., NonexistentToken) if not minted.
-            // Safely catch and proceed to Off-Chain Lazy Mint Phase.
+        }
+
+        // STEP 2: IF NOT MINTED (Off-Chain / Lazy Mint Phase)
+        if (!isMinted && window.IMPERIAL_MANIFEST && window.IMPERIAL_MANIFEST[String(tokenId)]) {
+            const manifestData = window.IMPERIAL_MANIFEST[String(tokenId)];
+            targetJsonUri = typeof manifestData === 'object' ? (manifestData.irys_id || "") : manifestData;
         }
     }
 
-    // STEP 2: IF NOT MINTED (Off-Chain / Lazy Mint Phase)
-    
-    // Step 2A: Lookup the Metadata URL from imperial-manifest.json using the tokenId
-    if (!window.IMPERIAL_MANIFEST || !window.IMPERIAL_MANIFEST[String(tokenId)]) {
-        throw new Error(`[LAZY MINT] No manifest entry found for Token #${tokenId}`);
+    if (!targetJsonUri || targetJsonUri.trim() === "") {
+        return { url: fallbackPath, isBlob: false, sourceUrl: fallbackPath };
     }
 
-    const manifestData = window.IMPERIAL_MANIFEST[String(tokenId)];
-    const metadataUri = typeof manifestData === 'object' ? (manifestData.irys_id || "") : manifestData;
-    
-    if (!metadataUri || metadataUri.trim() === "") {
-        throw new Error(`[LAZY MINT] Manifest entry for Token #${tokenId} is empty.`);
-    }
-
-    // Helper to ensure the URI is a fetchable HTTP gateway link
+    // Helper to ensure the URI is a fetchable HTTP gateway link (คงโค้ดเดิมของท่านไว้)
     const formatGatewayUrl = (uri) => {
         const cleanUri = uri.trim();
         if (cleanUri.startsWith('http://') || cleanUri.startsWith('https://')) return cleanUri;
@@ -5388,36 +5393,58 @@ async function resolveMediaUrl(tokenId) {
         return `https://gateway.irys.xyz/${cleanUri}`;
     };
 
-    const fetchUrl = formatGatewayUrl(metadataUri);
+    const fetchUrl = formatGatewayUrl(targetJsonUri);
 
     try {
         // Step 2B: Fetch the actual JSON payload from that URL
         const response = await fetch(fetchUrl, {
             method: 'GET',
             mode: 'cors',
-            headers: { 'Accept': 'application/json' }
+            headers: { 'Accept': 'application/json' },
+            signal: abortSignal
         });
 
         if (!response.ok) {
-            throw new Error(`HTTP Error ${response.status} fetching metadata from ${fetchUrl}`);
+            return { url: fetchUrl, isBlob: false, sourceUrl: fetchUrl };
         }
 
-        const jsonPayload = await response.json();
+        // 🚨 THE ARCHITECT'S FIX: อ่านเป็น Text ก่อนเพื่อกัน Irys ส่ง Content-Type มั่ว
+        const textData = await response.text();
+        let jsonPayload;
+        try {
+            jsonPayload = JSON.parse(textData);
+        } catch (e) {
+            // ถ้า Parse ไม่ได้ แปลว่ามันคือ Raw Media (รูป/วิดีโอ) ทะลวงสำเร็จ!
+            return { url: fetchUrl, isBlob: false, sourceUrl: fetchUrl };
+        }
 
-        // Step 2C: Extract the media URL STRICTLY from the .image property of that parsed JSON
-        if (!jsonPayload || !jsonPayload.image) {
-            throw new Error(`[LAZY MINT] JSON payload missing '.image' property at ${fetchUrl}`);
+        // Step 2C: Extract the media URL STRICTLY from the .image or .animation_url property
+        let mediaUri = jsonPayload.animation_url || jsonPayload.image || jsonPayload.media_url;
+        
+        // ทะลวงชั้นที่ 3 (เผื่อซ่อนใน attributes)
+        if (!mediaUri && jsonPayload.attributes && Array.isArray(jsonPayload.attributes)) {
+            for (const attr of jsonPayload.attributes) {
+                if (attr.value && typeof attr.value === 'string' && /^[a-zA-Z0-9_-]{42,45}$/.test(attr.value.trim())) {
+                    mediaUri = attr.value.trim();
+                    break;
+                }
+            }
+        }
+
+        if (!mediaUri) {
+            return { url: fetchUrl, isBlob: false, sourceUrl: fetchUrl };
         }
 
         // Step 2D: Return that extracted image URL so the frontend can safely inject it into the DOM
-        return jsonPayload.image;
+        const finalUrl = formatGatewayUrl(mediaUri);
+        return { url: finalUrl, isBlob: false, sourceUrl: finalUrl };
 
     } catch (fetchError) {
-        console.error(`[LAZY MINT] Failed to resolve JSON payload for Token #${tokenId}:`, fetchError);
-        throw fetchError;
+        console.error(`[LAZY MINT] Failed to resolve JSON payload:`, fetchError);
+        return { url: fetchUrl, isBlob: false, sourceUrl: fetchUrl };
     }
 }
-    
+
 async function renderToViewport(containerId, path, defaultText, explicitMediaType = null) {
     const container = document.getElementById(containerId);
     if (!container) return;
@@ -5434,13 +5461,13 @@ async function renderToViewport(containerId, path, defaultText, explicitMediaTyp
     }
 
     const safePath = path.trim();
-    
-    // 🛡️ FIXED: Expanded Base64URL length validation to accommodate 42-45 character Arweave/Irys IDs.
-    const isPermittedScheme = /^https?:\/\//i.test(safePath) || 
-                              safePath.startsWith('ar://') || 
-                              safePath.startsWith('irys://') || 
+
+    // 🛡️ FIXED: Expanded Base64URL length validation to accommodate 42-45 character Arweave/Irys IDs. (โค้ดเดิมของท่าน 100%)
+    const isPermittedScheme = /^https?:\/\//i.test(safePath) ||
+                              safePath.startsWith('ar://') ||
+                              safePath.startsWith('irys://') ||
                               (safePath.length >= 42 && safePath.length <= 45 && /^[a-zA-Z0-9_-]+$/.test(safePath));
-    
+
     if ((typeof isMaliciousURI === 'function' && isMaliciousURI(safePath)) || !isPermittedScheme) {
         renderEmptyState(container, "⛔ BLOCKED: UNSAFE URI SCHEME REJECTED", "text-red-500");
         return;
@@ -5452,22 +5479,27 @@ async function renderToViewport(containerId, path, defaultText, explicitMediaTyp
         const urlsToTry = typeof buildIrysUrls === 'function' ? buildIrysUrls(safePath) : [safePath];
         if (!urlsToTry || urlsToTry.length === 0) throw new Error("URI_RESOLUTION_FAILED");
 
-        const mimeType = typeof guessMediaTypeAdvanced === 'function' 
-            ? await guessMediaTypeAdvanced(urlsToTry[0], explicitMediaType) 
-            : (explicitMediaType || 'image');
-        
-        if (masterController.signal.aborted) return;
-        
-        const resolvedMedia = typeof resolveMediaUrl === 'function' 
-            ? await resolveMediaUrl(urlsToTry, masterController.signal, mimeType)
+        // 🚨 THE FIX: ดึง tokenId จากระบบ เพื่อส่งให้ Smart Contract อย่างถูกต้อง
+        const tokenId = window.SystemState?.selectedTokenId || window.globalSelectedTokenId || null;
+
+        // 🚨 THE FIX: ส่ง tokenId และ URL ไปให้ resolveMediaUrl (แก้บั๊ก execution reverted)
+        const resolvedMedia = typeof resolveMediaUrl === 'function'
+            ? await resolveMediaUrl(tokenId, urlsToTry[0], masterController.signal)
             : { url: urlsToTry[0], isBlob: false, sourceUrl: urlsToTry[0] };
-        
+
         if (masterController.signal.aborted) {
             if (resolvedMedia && resolvedMedia.isBlob && resolvedMedia.url) {
                 URL.revokeObjectURL(resolvedMedia.url);
             }
             return;
         }
+
+        // 🚨 THE FIX: ย้ายการเช็ค MediaType มาไว้ตรงนี้ เพื่อเช็คจาก "แก่นแท้" ที่ทะลวงมาได้แล้ว
+        const mimeType = typeof guessMediaTypeAdvanced === 'function'
+            ? await guessMediaTypeAdvanced(resolvedMedia.url, explicitMediaType)
+            : (explicitMediaType || 'image');
+
+        if (masterController.signal.aborted) return;
 
         if (typeof renderMediaToDOM === 'function') {
             renderMediaToDOM(container, resolvedMedia, mimeType, masterController.signal);
@@ -5836,23 +5868,15 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
             while (attempts < maxAttempts) {
                 if (document.hidden) break;
                 if (pollForUpdate && typeof GLOBAL_NODE_CACHE !== 'undefined') GLOBAL_NODE_CACHE.delete(String(tokenId));
-              try {
                 
-                if (typeof autoMap === 'function') {
-        // 🛡️ ANTI-HANG PATCH: บังคับตัดจบถ้าระบบ Blockchain (RPC) ไม่ตอบสนองใน 4 วินาที
-        mappedNode = await Promise.race([
-            autoMap(tokenId),
-            new Promise((_, reject) => setTimeout(() => reject(new Error("RPC_TIMEOUT_FORCE_SKIP")), 4000))
-        ]);
-    }
-} catch (err) {
-    mappedNode = null;
-    if (err.message === "RPC_TIMEOUT_FORCE_SKIP") {
-        if (typeof safeAppendLog === 'function') {
-            safeAppendLog("[SYSTEM] RPC Timeout. Forcing Lazy Mint display bypass.", "text-yellow-500");
-        }
-    }
-}
+                try {
+                    // ลองจำลองดึงค่า ถ้ายังไม่มิ้น มันจะ Error แล้วเด้งเข้า Catch เงียบๆ โดยไม่ทำให้ระบบพัง
+                    if (typeof autoMap === 'function') {
+                        mappedNode = await autoMap(tokenId);
+                    }
+                } catch (err) {
+                    mappedNode = null; 
+                }
 
                 if (mySession !== window.currentAuditSession) return; 
                 
