@@ -561,19 +561,28 @@
     </div>
     
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        
+        <!-- ========================================== -->
+        <!-- คอลัมน์ซ้าย: ปุ่มคำสั่ง -->
+        <!-- ========================================== -->
         <div class="lg:col-span-5 space-y-5">
             <span class="text-[10px] font-mono text-stone-400 uppercase tracking-wider block font-bold">// CRYPTOGRAPHIC ACTION HUB</span>
-            <div class="flex flex-col gap-4 bg-black/40 p-5 rounded-xl border border-stone-800">
-                <label class="flex items-start gap-3 cursor-pointer">
-                    <input type="checkbox" id="forgeConsentCheckbox" class="mt-0.5 accent-amber-500 w-5 h-5 flex-shrink-0" onchange="if(typeof toggleForgeButtonState === 'function') toggleForgeButtonState()" />
-                    <span class="text-[11px] font-mono text-stone-300 uppercase leading-relaxed">I confirm the metadata and media are final.</span>
-                </label>
-                <button id="executeForgeBtn" onclick="if(typeof triggerForge === 'function') triggerForge('REBIRTH', this)" class="btn-rebirth-bright text-sm py-4 rounded-xl font-black tracking-widest opacity-50 cursor-not-allowed w-full" disabled>[SOVEREIGN AWAKENING ♠️]</button>
+            
+            <div class="flex flex-col gap-4 bg-black/40 p-5 rounded-xl border border-stone-800">  
+                <!-- สลับสายชนวนสำเร็จ: เรียก Modal แทนการ Forge ทันที -->
+                <button id="executeForgeBtn" onclick="if(typeof openForgeConsentModal === 'function') openForgeConsentModal('REBIRTH', this)" class="btn-rebirth-bright text-sm py-4 rounded-xl font-black tracking-widest w-full">
+                    [SOVEREIGN AWAKENING ♠️]
+                </button>
             </div>
+            
             <p class="text-[10px] font-mono text-stone-500 uppercase mt-2 pl-2 border-l-2 border-stone-800">
-              • Limited to 333 Absolute Passes Worldwide</p>
+              • Limited to 333 Absolute Passes Worldwide
+            </p>
         </div>
         
+        <!-- ========================================== -->
+        <!-- คอลัมน์ขวา: ส่วนแสดงผลข้อมูล (TBA / Vault) -->
+        <!-- ========================================== -->
         <div class="lg:col-span-7 bg-black/60 p-5 md:p-6 rounded-2xl border border-stone-800 flex flex-col justify-between shadow-inner">
             <div>
                 <span class="text-[10px] font-mono text-amber-500 uppercase tracking-wider block mb-3 font-bold">// SPECIFIC ACTIVE DEED OWNERSHIP STATE</span>
@@ -602,6 +611,46 @@
                     <input type="text" id="tbaAddressDisplay" readonly placeholder="0x0000000000000000000000000000000000000000" class="flex-grow bg-stone-950 border border-stone-800 p-3 text-[11px] font-mono text-amber-400 rounded-lg outline-none select-all text-center sm:text-left" />
                     <button onclick="navigator.clipboard.writeText(document.getElementById('tbaAddressDisplay').value); if(typeof showNotification === 'function') showNotification('TBA Address Copied!', 'success'); else console.log('Copied');" class="px-6 py-3 bg-stone-900 border border-stone-700 text-stone-300 hover:border-amber-500 hover:text-amber-400 rounded-lg text-[10px] font-mono uppercase font-bold transition-all whitespace-nowrap">COPY TBA</button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- ⚔️ SOVEREIGN FORGE PLEDGE MODAL -->
+    <!-- ข้าพเจ้าย้ายมาไว้ท้ายสุดของ Section เพื่อไม่ให้ไปกวน Layout ของ Grid ด้านบน -->
+    <!-- ========================================== -->
+    <div id="forgeConsentModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm transition-opacity">
+        <div class="bg-zinc-900 border border-red-900/50 p-6 rounded-lg max-w-lg w-full shadow-[0_0_40px_rgba(185,28,28,0.15)] relative overflow-hidden">
+            
+            <h2 class="text-xl font-bold text-red-500 mb-4 tracking-widest border-b border-red-900/30 pb-2">
+                ⚔️ SOVEREIGN PLEDGE & DECLARATION
+            </h2>
+            
+            <div class="text-stone-300 text-sm space-y-3 mb-6 leading-relaxed max-h-60 overflow-y-auto pr-2 custom-scrollbar">
+                <p><b class="text-red-400">I. Non-Financial Asset:</b> I acknowledge that the <b>IMPERIAL SOVEREIGN DEED</b> is exclusively a digital architectural artwork and a personal cryptographic identity instrument on the blockchain. It is strictly not a security, an investment asset, or a financial instrument of any kind.</p>
+                <p><b class="text-red-400">II. Zero Expectation of Profit:</b> This system provides no valuation guarantees and promises no future financial returns. I accept that the intrinsic value of this architecture is derived solely from its artistic merit and the personal will of its sovereign holder.</p>
+                <p><b class="text-red-400">III. Immutable Sovereignty:</b> The execution of the Rebirth (Minting) ritual onto the Blockchain is absolute and irreversible. I accept the conditions of asset revocation or Immolation, and I bear sole responsibility for the genetic metadata inscribed. Protocol fees are non-refundable.</p>
+            </div>
+            
+            <!-- กล่องเช็คบ็อกซ์ยอมรับเงื่อนไข -->
+            <div class="flex items-start space-x-3 mb-6 p-3 bg-black/50 border border-stone-800 rounded hover:border-stone-700 transition-colors">
+                <div class="flex items-center h-5 mt-0.5">
+                    <input id="forgeModalCheckbox" type="checkbox" onchange="toggleForgeButtonState()" class="w-4 h-4 bg-gray-900 border-gray-700 rounded text-red-600 focus:ring-red-600 cursor-pointer">
+                </div>
+                <label for="forgeModalCheckbox" class="font-medium text-stone-300 text-sm cursor-pointer select-none">
+                    ข้าพเจ้ายอมรับพันธสัญญาสูงสุด และตระหนักว่าสิ่งนี้มิใช่สินทรัพย์เพื่อการลงทุน<br>
+                    <span class="text-stone-500 text-xs">(I explicitly accept the Sovereign Terms & Conditions above.)</span>
+                </label>
+            </div>
+
+            <!-- ปุ่มควบคุม -->
+            <div class="flex justify-end space-x-4">
+                <button onclick="closeForgeConsentModal(false)" class="px-4 py-2 bg-stone-800 hover:bg-stone-700 text-stone-300 rounded transition-colors text-sm font-bold tracking-wider">
+                    ABORT
+                </button>
+                <button id="forgeModalConfirmBtn" disabled class="px-4 py-2 bg-red-900/30 text-stone-500 border border-red-900/30 rounded cursor-not-allowed opacity-50 transition-all duration-300 text-sm font-bold uppercase tracking-wide">
+                    CONFIRM & FORGE
+                </button>
             </div>
         </div>
     </div>
@@ -2508,10 +2557,35 @@ function initializeAbsoluteEventDelegation() {
 
 async function checkHolding(account) {
     const activeContract = secureContract || readOnlyContract;
-    if (!activeContract) return false;
+    if (!activeContract || !account) return false;
+    
     try {
+        const userAddress = account.toLowerCase();
+
+        // 1. ตรวจสอบสิทธิ์ Owner (ยกเว้นการตรวจสอบ Token)
+        try {
+            const ownerAddress = await activeContract.owner();
+            if (ownerAddress && userAddress === ownerAddress.toLowerCase()) {
+                return true;
+            }
+        } catch (e) {
+            // ข้ามหากไม่มีฟังก์ชันนี้ใน Contract
+        }
+
+        // 2. ตรวจสอบสิทธิ์ Architect (ยกเว้นการตรวจสอบ Token)
+        try {
+            const architectAddress = await activeContract.architect();
+            if (architectAddress && userAddress === architectAddress.toLowerCase()) {
+                return true;
+            }
+        } catch (e) {
+            // ข้ามหากไม่มีฟังก์ชันนี้ใน Contract
+        }
+
+        // 3. ตรวจสอบสิทธิ์ Token Holder (ดึงข้อมูลตามปกติแบบที่ระบบเดิมทำ)
         const userTokens = await activeContract.walletOfOwner(account);
         return (Array.isArray(userTokens) && userTokens.length > 0);
+
     } catch (err) {
         console.error("[SYS LOG] Token-Gated Logic Interrogation Failure:", err?.message || err);
         return false;
@@ -2519,21 +2593,33 @@ async function checkHolding(account) {
 }
 
 function checkPendingNova() {
-    const pendingTxId = localStorage.getItem('pending_nova_txid');
+    // ดึงค่า Transaction Hash ที่เซ็นจ่ายไปแล้ว แต่ยังไม่คอนเฟิร์ม
+    const pendingTxHash = localStorage.getItem('pending_nova_txid'); 
     const pendingToken = localStorage.getItem('pending_nova_token');
-    if (pendingTxId) {
+    
+    if (pendingTxHash) {
+        // นำค่ากลับมาใส่ฟอร์ม เพื่อให้ระบบรู้ว่ากำลังรอ TxID ไหนอยู่
         const hiddenInput = document.getElementById('novaHiddenInput');
         const tokenInput = document.getElementById('novaTokenId');
-        if (hiddenInput) hiddenInput.value = pendingTxId;
+        
+        if (hiddenInput) hiddenInput.value = pendingTxHash;
         if (tokenInput && pendingToken) tokenInput.value = pendingToken;
         
+        // อัปเดตข้อความแจ้งเตือนให้ตรงกับบริบท "จ่ายแล้ว แต่รอเครือข่ายประมวลผล"
         if (typeof showNotification === 'function') {
-            showNotification("RESUMING NOVA: พบข้อมูล Metadata ค้างอยู่ในระบบ กรุณายืนยันธุรกรรม On-chain ให้เสร็จสิ้น", "warning");
+            showNotification(`AWAITING CONFIRMATION: ระบบกำลังรอการยืนยันธุรกรรม [Node #${pendingToken}] จากเครือข่ายบล็อกเชน`, "warning");
         }
+        
+        if (typeof safeAppendLog === 'function') {
+            safeAppendLog(`[SYSTEM] Tracking unconfirmed on-chain transaction for Node #${pendingToken}.`, "text-amber-400");
+        }
+        
+        // เด้งหน้าต่าง Modal (ในที่นี้ควรเป็นหน้าต่างแบบ Loading / รอสถานะ แทนการให้กดปุ่มจ่ายซ้ำ)
         const modal = document.getElementById('novaWarnModal');
         if (modal) modal.classList.remove('hidden');
     }
 }
+
 
 async function executeArchitectCentralizedUpload(type) {
     if (!secureContract || !signer) { 
@@ -3606,26 +3692,79 @@ async function triggerExecuteProposal(pId, e) {
 }
 
 // ==============================================================================
-// ⚔️ FORGE & MINTING ENGINES (ZERO-BUG MANIFEST PARSING)
+// ⚔️ FORGE & MINTING ENGINES (ZERO-BUG MANIFEST PARSING + PLEDGE MODAL)
 // ==============================================================================
 
+// 1. [อัปเดตใหม่] ฟังก์ชันคุมสีปุ่มและสถานะในป๊อปอัพ
 function toggleForgeButtonState() {
-    const checkbox = document.getElementById('forgeConsentCheckbox');
-    const forgeBtn = document.getElementById('executeForgeBtn');
+    const checkbox = document.getElementById('forgeModalCheckbox');
+    const confirmBtn = document.getElementById('forgeModalConfirmBtn');
     
-    if (!checkbox || !forgeBtn) return; 
+    if (!checkbox || !confirmBtn) return; 
 
     if (checkbox.checked) {
-        forgeBtn.disabled = false;
-        forgeBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-        forgeBtn.classList.add('cursor-pointer');
+        confirmBtn.disabled = false;
+        // เปลี่ยนเป็นปุ่มสีแดงสว่างเมื่อติ๊กถูก
+        confirmBtn.classList.remove('opacity-50', 'cursor-not-allowed', 'bg-red-900/30', 'text-stone-500');
+        confirmBtn.classList.add('cursor-pointer', 'bg-red-700', 'hover:bg-red-600', 'text-white', 'shadow-[0_0_15px_rgba(220,38,38,0.5)]');
     } else {
-        forgeBtn.disabled = true;
-        forgeBtn.classList.remove('cursor-pointer');
-        forgeBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        confirmBtn.disabled = true;
+        // คืนสภาพกลับเป็นปุ่มสีเทาเมื่อเอาติ๊กออก
+        confirmBtn.classList.remove('cursor-pointer', 'bg-red-700', 'hover:bg-red-600', 'text-white', 'shadow-[0_0_15px_rgba(220,38,38,0.5)]');
+        confirmBtn.classList.add('opacity-50', 'cursor-not-allowed', 'bg-red-900/30', 'text-stone-500');
     }
 }
 
+// 2. [สร้างใหม่] ฟังก์ชันสำหรับเรียกเปิดป๊อปอัพขึ้นมา
+function openForgeConsentModal(type, e) {
+    const modal = document.getElementById('forgeConsentModal');
+    if (modal) {
+        modal.classList.remove('hidden');
+        
+        // ผูกคำสั่งรอไว้ เมื่อกดปุ่ม CONFIRM ให้ไปรันขั้นตอนที่ 3
+        const confirmBtn = document.getElementById('forgeModalConfirmBtn');
+        if(confirmBtn) {
+            confirmBtn.onclick = () => closeForgeConsentModal(true, type, e);
+        }
+    }
+}
+
+// 3. [สร้างใหม่] ฟังก์ชันปิดป๊อปอัพและส่งไม้ต่อให้ระบบ Mint เดิมทำงาน
+async function closeForgeConsentModal(isConfirmed, type, e) {
+    const modal = document.getElementById('forgeConsentModal');
+    const checkbox = document.getElementById('forgeModalCheckbox');
+
+    if (isConfirmed) {
+        // ดักจับคนหัวหมอที่แอบลบ disabled ผ่าน Inspect Element ใน Browser
+        if (checkbox && !checkbox.checked) {
+            if (typeof showNotification === 'function') showNotification("EXCEPTION: You must acknowledge the Sovereign Terms.", "error");
+            return;
+        }
+        
+        // ปิดป๊อปอัพ
+        if (modal) modal.classList.add('hidden');
+        
+        // สั่งรันฟังก์ชัน Mint เดิมประดุจเครื่องจักรสงคราม!
+        if (typeof triggerForge === 'function') {
+            await triggerForge(type, e);
+        }
+        
+    } else {
+        // กรณีผู้ใช้กดปุ่ม ABORT เพื่อยกเลิก
+        if (modal) modal.classList.add('hidden');
+        if (typeof appendLog === 'function') appendLog("Sovereign Forge sequence aborted by operator.", "text-yellow-500");
+    }
+
+    // รีเซ็ตสถานะป๊อปอัพให้สะอาดพร้อมใช้งานรอบถัดไป
+    if (checkbox) {
+        checkbox.checked = false;
+        toggleForgeButtonState();
+    }
+}
+
+// ==============================================================================
+// 🎯 แกนกลางเครื่องจักรทำงาน (CORE LOGIC: คงสภาพ 100% ตามต้นฉบับของท่าน)
+// ==============================================================================
 async function triggerForge(type, e) {
     if (!secureContract) { 
         showNotification("Action suspended: Authenticate wallet signature first.", "error"); 
@@ -5685,27 +5824,32 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
             
         let mappedNode = null;
         let isRpcOnline = !!activeContract;
+        let isMinted = false;
 
         // =================================================================
-        // PHASE 1: ON-CHAIN DATA EXTRACTION (SMART CONTRACT FIRST)
+        // LAYER 1: โหลด Manifest ก่อนเป็นอันดับแรกสุด ห้ามข้ามสเตปนี้
+        // =================================================================
+        if (!window.IMPERIAL_MANIFEST) {
+            if (typeof fetchImperialManifest === 'function') {
+                await fetchImperialManifest(); // รอดึงไฟล์ให้เสร็จก่อน ถึงจะไปต่อ
+            }
+        }
+
+        // เตรียมข้อมูลจาก Manifest ล่วงหน้า
+        let preMintFrontUri = "";
+        if (window.IMPERIAL_MANIFEST && window.IMPERIAL_MANIFEST[String(tokenId)]) {
+            const manifestData = window.IMPERIAL_MANIFEST[String(tokenId)];
+            if (typeof manifestData === 'string') {
+                preMintFrontUri = manifestData.trim();
+            } else if (typeof manifestData === 'object' && manifestData !== null) {
+                preMintFrontUri = String(manifestData.irys_id || "").trim();
+            }
+        }
+
+        // =================================================================
+        // PHASE 1.5: เช็กว่า MINT ไปหรือยัง โดยไม่ให้เกิด Error Revert
         // =================================================================
         if (isRpcOnline) {
-            try {
-                const onChainTBA = await activeContract.getTBA(BigInt(tokenId).toString());
-                if (mySession !== window.currentAuditSession) return; 
-                
-                const safeTBA = typeof sanitizeForDOM === 'function' ? sanitizeForDOM(onChainTBA) : String(onChainTBA);
-                if (tbaInputElem) tbaInputElem.value = safeTBA;
-                
-                if (typeof refreshTbaBalances === 'function') {
-                    await refreshTbaBalances(onChainTBA, mySession);
-                }
-            } catch (tbaErr) {
-                if (mySession !== window.currentAuditSession) return; 
-                if (tbaInputElem) tbaInputElem.value = "CRITICAL: FAILED TO EXTRACT DETERMINISTIC ADDR PIVOT";
-                if (typeof setTbaBalanceDisplay === 'function') setTbaBalanceDisplay("0.0000", "0.0000");
-            }
-
             let attempts = 0;
             const maxAttempts = pollForUpdate ? 10 : 1;
             let previousState = (pollForUpdate && typeof GLOBAL_NODE_CACHE !== 'undefined') ? GLOBAL_NODE_CACHE.get(String(tokenId)) : null;
@@ -5714,9 +5858,15 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
                 if (document.hidden) break;
                 if (pollForUpdate && typeof GLOBAL_NODE_CACHE !== 'undefined') GLOBAL_NODE_CACHE.delete(String(tokenId));
                 
-                if (typeof autoMap === 'function') {
-                    mappedNode = await autoMap(tokenId);
+                try {
+                    // ลองจำลองดึงค่า ถ้ายังไม่มิ้น มันจะ Error แล้วเด้งเข้า Catch เงียบๆ โดยไม่ทำให้ระบบพัง
+                    if (typeof autoMap === 'function') {
+                        mappedNode = await autoMap(tokenId);
+                    }
+                } catch (err) {
+                    mappedNode = null; 
                 }
+
                 if (mySession !== window.currentAuditSession) return; 
                 
                 if (pollForUpdate && previousState && mappedNode) {
@@ -5731,15 +5881,35 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
                     break;
                 }
             }
+
+            // สรุปผลว่า Node นี้ Mint หรือยัง
+            isMinted = mappedNode && (mappedNode.isActivated || (mappedNode.owner && mappedNode.owner !== "0x0000000000000000000000000000000000000000"));
+
+            // *** สำคัญ: ถ้า Mint แล้ว ถึงจะอนุญาตให้ดึง TBA ได้ (ป้องกัน Error undefined/execution reverted) ***
+            if (isMinted) {
+                try {
+                    const onChainTBA = await activeContract.getTBA(BigInt(tokenId).toString());
+                    if (mySession !== window.currentAuditSession) return; 
+                    
+                    const safeTBA = typeof sanitizeForDOM === 'function' ? sanitizeForDOM(onChainTBA) : String(onChainTBA);
+                    if (tbaInputElem) tbaInputElem.value = safeTBA;
+                    
+                    if (typeof refreshTbaBalances === 'function') {
+                        await refreshTbaBalances(onChainTBA, mySession);
+                    }
+                } catch (tbaErr) {
+                    if (mySession !== window.currentAuditSession) return; 
+                    if (tbaInputElem) tbaInputElem.value = "CRITICAL: FAILED TO EXTRACT DETERMINISTIC ADDR PIVOT";
+                    if (typeof setTbaBalanceDisplay === 'function') setTbaBalanceDisplay("0.0000", "0.0000");
+                }
+            }
         }
 
-        const isMinted = mappedNode && (mappedNode.isActivated || (mappedNode.owner && mappedNode.owner !== "0x0000000000000000000000000000000000000000"));
-
         // =================================================================
-        // PHASE 2: LOGIC BRANCHING (MINTED vs UNMINTED)
+        // PHASE 2: LOGIC BRANCHING (แยกเลเยอร์ชัดเจน)
         // =================================================================
         if (isMinted) {
-            // 🟢 CASE A: MINTED ON-CHAIN (IGNORE MANIFEST JSON COMPLETELY)
+            // 🟢 LAYER 4: MINTED ON-CHAIN (อันไหนมีแล้ว ก็แสดงจาก Smart Contract)
             if (mySession !== window.currentAuditSession) return;
 
             const currentEpoch = Math.floor(Date.now() / 1000);
@@ -5799,23 +5969,12 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
             if (settleTokenInput) settleTokenInput.value = tokenId;
 
         } else {
-            // 🔴 CASE B: UNMINTED OR RPC OFFLINE (USE MANIFEST JSON FOR STAGING)
+            // 🔴 LAYER 2 & 3: UNMINTED (โชว์รูปจาก Manifest รอให้กด Mint)
             if (mySession !== window.currentAuditSession) return;
 
-            let preMintFrontUri = "";
-            if (window.IMPERIAL_MANIFEST && window.IMPERIAL_MANIFEST[String(tokenId)]) {
-                const manifestData = window.IMPERIAL_MANIFEST[String(tokenId)];
-                if (typeof manifestData === 'string') {
-                    preMintFrontUri = manifestData.trim();
-                } else if (typeof manifestData === 'object' && manifestData !== null) {
-                    preMintFrontUri = String(manifestData.irys_id || "").trim();
-                }
-            }
-
-            // ถ้ามีลิงก์ใน JSON (เช่น โหนด 1, 2, 3, 333) ให้ดึงมาแสดงเพื่อรอ Mint
             if (preMintFrontUri !== "") {
                 
-                // 🚨 HOTFIX: บันทึก ID ดิบๆ ลง State ทันที ห้ามแปลงเป็น Blob เด็ดขาด
+                // 🚨 บันทึก ID ดิบๆ ลง State ทันที ไม่เป็น undefined แล้วเพราะดัก Await Manifest ไว้เลเยอร์แรก
                 window.currentLoadedMediaData.front = preMintFrontUri;
                 window.currentLoadedMediaData.back = "";
                 window.currentLoadedMediaData.video = "";
@@ -5824,7 +5983,7 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
                     appendLog(`[LAZY MINT READY] Matrix cell node #${tokenId} pre-loaded from Architect Manifest. Awaiting REBIRTH.`, "text-emerald-400 font-bold");
                 }
                 
-                // 🚨 HOTFIX: ส่ง ID ดิบๆ ไปให้ renderToViewport จัดการแกะ JSON และดึงรูปเอง
+                // เลเยอร์ 3: แสดงรูปภาพด้านหน้าไว้
                 if (typeof renderToViewport === 'function') {
                     renderToViewport('previewFrontContainer', preMintFrontUri, "Obverse aspect currently unassigned.");
                     renderToViewport('previewBackContainer', "", "Void element data layer uninitialized.");
@@ -5843,7 +6002,6 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
                 }
                 
             } else {
-                // ถ้าใน JSON เป็น "" (เช่น โหนด 4-332) ให้แสดงเป็น VOID ทันที
                 window.currentLoadedMediaData.front = "";
                 window.currentLoadedMediaData.back = "";
                 window.currentLoadedMediaData.video = "";
@@ -5870,6 +6028,7 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
         if (typeof toggleButtonLoading === 'function') toggleButtonLoading(null, false);
     }
 }
+
 
 function setTbaBalanceDisplay(eth, weth) { 
     const ethElem = document.getElementById('tbaEthBalance'); 
