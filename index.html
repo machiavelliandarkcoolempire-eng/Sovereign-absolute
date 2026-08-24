@@ -5344,47 +5344,13 @@ function renderLoadingSkeleton(container) {
 }
 
 // ==============================================================================
-// 🛡️ 3-LAYER FORENSIC RESOLUTION (RESTORED ORIGINAL LOGIC + BUG FIX)
+// 🛡️ FACT-ONLY FORENSIC RESOLUTION ENGINE (V6 OVERRIDE)
 // ==============================================================================
 
-async function resolveMediaUrl(tokenId, fallbackPath, abortSignal) {
-    let targetJsonUri = fallbackPath;
-    let isMinted = false;
+async function resolveMediaUrl(metadataUrl, abortSignal) {
+    if (!metadataUrl) return { url: metadataUrl, isBlob: false, sourceUrl: metadataUrl };
 
-    // STEP 1: CHECK STATE - Is the Token Minted? (On-Chain)
-    if (tokenId) {
-        const activeContract = window.secureContract || window.readOnlyContract;
-        if (activeContract) {
-            try {
-                // Query the Smart Contract for the deed data
-                const deedData = await activeContract.getDeedData(tokenId.toString());
-                const owner = deedData[0];
-                const isActivated = deedData[1];
-                const frontURI = deedData[3];
-
-                // If owner is not the zero address or isActivated is true, the token is minted
-                if (isActivated || (owner && owner !== "0x0000000000000000000000000000000000000000")) {
-                    targetJsonUri = frontURI; // Return the URI directly from the Smart Contract
-                    isMinted = true;
-                }
-            } catch (error) {
-                // Contract reverts with Custom Error (e.g., NonexistentToken) if not minted.
-                // Safely catch and proceed to Off-Chain Lazy Mint Phase.
-            }
-        }
-
-        // STEP 2: IF NOT MINTED (Off-Chain / Lazy Mint Phase)
-        if (!isMinted && window.IMPERIAL_MANIFEST && window.IMPERIAL_MANIFEST[String(tokenId)]) {
-            const manifestData = window.IMPERIAL_MANIFEST[String(tokenId)];
-            targetJsonUri = typeof manifestData === 'object' ? (manifestData.irys_id || "") : manifestData;
-        }
-    }
-
-    if (!targetJsonUri || targetJsonUri.trim() === "") {
-        return { url: fallbackPath, isBlob: false, sourceUrl: fallbackPath };
-    }
-
-    // Helper to ensure the URI is a fetchable HTTP gateway link (คงโค้ดเดิมของท่านไว้)
+    // 1. จัดฟอร์แมตให้พร้อมยิง Request โดยไม่ต้องพึ่ง helper นอก ป้องกันระบบแคลช
     const formatGatewayUrl = (uri) => {
         const cleanUri = uri.trim();
         if (cleanUri.startsWith('http://') || cleanUri.startsWith('https://')) return cleanUri;
@@ -5393,81 +5359,72 @@ async function resolveMediaUrl(tokenId, fallbackPath, abortSignal) {
         return `https://gateway.irys.xyz/${cleanUri}`;
     };
 
-    const fetchUrl = formatGatewayUrl(targetJsonUri);
+    const fetchUrl = formatGatewayUrl(metadataUrl);
 
     try {
-        // Step 2B: Fetch the actual JSON payload from that URL
-        const response = await fetch(fetchUrl, {
-            method: 'GET',
-            mode: 'cors',
-            headers: { 'Accept': 'application/json' },
-            signal: abortSignal
-        });
+        // 2. โหลดไฟล์ JSON จาก Manifest (9nzX...)
+        const response = await fetch(fetchUrl, { method: 'GET', mode: 'cors', signal: abortSignal });
+        if (!response.ok) return { url: fetchUrl, isBlob: false, sourceUrl: fetchUrl };
 
-        if (!response.ok) {
-            return { url: fetchUrl, isBlob: false, sourceUrl: fetchUrl };
-        }
-
-        // 🚨 THE ARCHITECT'S FIX: อ่านเป็น Text ก่อนเพื่อกัน Irys ส่ง Content-Type มั่ว
         const textData = await response.text();
         let jsonPayload;
         try {
             jsonPayload = JSON.parse(textData);
         } catch (e) {
-            // ถ้า Parse ไม่ได้ แปลว่ามันคือ Raw Media (รูป/วิดีโอ) ทะลวงสำเร็จ!
             return { url: fetchUrl, isBlob: false, sourceUrl: fetchUrl };
         }
 
-        // Step 2C: Extract the media URL STRICTLY from the .image or .animation_url property
-        let mediaUri = jsonPayload.animation_url || jsonPayload.image || jsonPayload.media_url;
-        
-        // ทะลวงชั้นที่ 3 (เผื่อซ่อนใน attributes)
-        if (!mediaUri && jsonPayload.attributes && Array.isArray(jsonPayload.attributes)) {
+        let mediaUri = null;
+
+        // 3. 🎯 ล้วงไข่เจาะตรงเข้า attributes ก่อนเพื่อน! (แก้จุดตายของระบบ)
+        if (jsonPayload.attributes && Array.isArray(jsonPayload.attributes)) {
             for (const attr of jsonPayload.attributes) {
-                if (attr.value && typeof attr.value === 'string' && /^[a-zA-Z0-9_-]{42,45}$/.test(attr.value.trim())) {
-                    mediaUri = attr.value.trim();
-                    break;
+                if (attr && attr.value && typeof attr.value === 'string') {
+                    const val = attr.value.trim();
+                    // กวาดหา value ที่มีลิงก์ Irys หรือ Hash ความยาว 42-45 ตัว
+                    if (val.includes('irys.xyz') || /^[a-zA-Z0-9_-]{42,45}$/.test(val)) {
+                        mediaUri = val;
+                        break;
+                    }
                 }
             }
         }
 
-        if (!mediaUri) {
-            return { url: fetchUrl, isBlob: false, sourceUrl: fetchUrl };
+        // 4. ถ้าไม่เจอใน attributes ค่อยถอยมาเช็คคีย์ปกติ
+        if (!mediaUri) mediaUri = jsonPayload.image || jsonPayload.media_url;
+
+        // 5. ประกอบร่างลิงก์รูปภาพ (FiAN6f...) ส่งคืนให้ Render นำไปใช้
+        if (mediaUri) {
+            const finalImageUrl = formatGatewayUrl(mediaUri);
+            return { url: finalImageUrl, isBlob: false, sourceUrl: finalImageUrl };
         }
 
-        // Step 2D: Return that extracted image URL so the frontend can safely inject it into the DOM
-        const finalUrl = formatGatewayUrl(mediaUri);
-        return { url: finalUrl, isBlob: false, sourceUrl: finalUrl };
-
-    } catch (fetchError) {
-        console.error(`[LAZY MINT] Failed to resolve JSON payload:`, fetchError);
+    } catch (error) {
         return { url: fetchUrl, isBlob: false, sourceUrl: fetchUrl };
     }
+
+    return { url: fetchUrl, isBlob: false, sourceUrl: fetchUrl };
 }
 
-async function renderToViewport(containerId, path, defaultText, explicitMediaType = null) {
+async function renderToViewport(containerId, path, defaultText) {
     const container = document.getElementById(containerId);
     if (!container) return;
 
-    if (container._abortController) {
-        container._abortController.abort();
-    }
+    if (container._abortController) container._abortController.abort();
     const masterController = new AbortController();
     container._abortController = masterController;
 
-    if (!path || typeof path !== 'string' || path.trim() === "" || path === "undefined" || path === "null") {
+    if (!path || typeof path !== 'string' || path.trim() === "") {
         renderEmptyState(container, defaultText || "UNALLOCATED STRUCTURAL SPACE");
         return;
     }
 
     const safePath = path.trim();
-
-    // 🛡️ FIXED: Expanded Base64URL length validation to accommodate 42-45 character Arweave/Irys IDs. (โค้ดเดิมของท่าน 100%)
-    const isPermittedScheme = /^https?:\/\//i.test(safePath) ||
-                              safePath.startsWith('ar://') ||
-                              safePath.startsWith('irys://') ||
+    const isPermittedScheme = /^https?:\/\//i.test(safePath) || 
+                              safePath.startsWith('ar://') || 
+                              safePath.startsWith('irys://') || 
                               (safePath.length >= 42 && safePath.length <= 45 && /^[a-zA-Z0-9_-]+$/.test(safePath));
-
+    
     if ((typeof isMaliciousURI === 'function' && isMaliciousURI(safePath)) || !isPermittedScheme) {
         renderEmptyState(container, "⛔ BLOCKED: UNSAFE URI SCHEME REJECTED", "text-red-500");
         return;
@@ -5476,17 +5433,9 @@ async function renderToViewport(containerId, path, defaultText, explicitMediaTyp
     renderLoadingSkeleton(container);
 
     try {
-        const urlsToTry = typeof buildIrysUrls === 'function' ? buildIrysUrls(safePath) : [safePath];
-        if (!urlsToTry || urlsToTry.length === 0) throw new Error("URI_RESOLUTION_FAILED");
-
-        // 🚨 THE FIX: ดึง tokenId จากระบบ เพื่อส่งให้ Smart Contract อย่างถูกต้อง
-        const tokenId = window.SystemState?.selectedTokenId || window.globalSelectedTokenId || null;
-
-        // 🚨 THE FIX: ส่ง tokenId และ URL ไปให้ resolveMediaUrl (แก้บั๊ก execution reverted)
-        const resolvedMedia = typeof resolveMediaUrl === 'function'
-            ? await resolveMediaUrl(tokenId, urlsToTry[0], masterController.signal)
-            : { url: urlsToTry[0], isBlob: false, sourceUrl: urlsToTry[0] };
-
+        // 🎯 ส่ง ID ทรายเข้าไปให้ระบบมุดล้วงรูปภาพ
+        const resolvedMedia = await resolveMediaUrl(safePath, masterController.signal);
+        
         if (masterController.signal.aborted) {
             if (resolvedMedia && resolvedMedia.isBlob && resolvedMedia.url) {
                 URL.revokeObjectURL(resolvedMedia.url);
@@ -5494,15 +5443,9 @@ async function renderToViewport(containerId, path, defaultText, explicitMediaTyp
             return;
         }
 
-        // 🚨 THE FIX: ย้ายการเช็ค MediaType มาไว้ตรงนี้ เพื่อเช็คจาก "แก่นแท้" ที่ทะลวงมาได้แล้ว
-        const mimeType = typeof guessMediaTypeAdvanced === 'function'
-            ? await guessMediaTypeAdvanced(resolvedMedia.url, explicitMediaType)
-            : (explicitMediaType || 'image');
-
-        if (masterController.signal.aborted) return;
-
+        // 🎯 ส่งรูปภาพที่ล้วงได้ยัดลง DOM ทันทีในฐานะ 'image' เพียวๆ
         if (typeof renderMediaToDOM === 'function') {
-            renderMediaToDOM(container, resolvedMedia, mimeType, masterController.signal);
+            renderMediaToDOM(container, resolvedMedia, 'image', masterController.signal);
         }
 
     } catch (e) {
@@ -5510,6 +5453,7 @@ async function renderToViewport(containerId, path, defaultText, explicitMediaTyp
         renderEmptyState(container, "IRYS GATEWAY SEVERED", "text-red-500");
     }
 }
+
 
 function renderMediaToDOM(container, resolvedMedia, mediaType, abortSignal) {
     if (abortSignal && abortSignal.aborted) return;
