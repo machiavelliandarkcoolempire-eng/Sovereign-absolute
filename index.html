@@ -1818,17 +1818,15 @@ async function promptUserForFile(acceptType = 'image/*,video/*') {
                 return;
             }
 
-            const MAX_SIZE_BYTES = 300 * 1024 * 1024; // 300 MB
+            const MAX_SIZE_BYTES = 500 * 1024 * 1024; // 500 MB
             if (file.size > MAX_SIZE_BYTES) {
                 if (typeof showNotification === 'function') {
-                    showNotification("FILE REJECTED: ขนาดไฟล์เกินขีดจำกัดสูงสุดที่ 300 MB", "error");
+                    showNotification("FILE REJECTED: ขนาดไฟล์เกินขีดจำกัดสูงสุดที่ 500 MB", "error");
                 }
                 resolve(null);
                 return;
             }
 
-            // 🛡️ FIXED: Client-side DOM loading for duration validation DESTROYED.
-            // Relying strictly on byte-size limits to prevent iOS WebKit OOM crashes.
             resolve(file);
         };
 
@@ -1869,6 +1867,7 @@ async function promptUserForFile(acceptType = 'image/*,video/*') {
         });
     });
 }
+
 
 // ==============================================================================
 // ⚔️ TRANSACTION WRAPPER (NON-BLOCKING UI)
@@ -2048,7 +2047,6 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
 
         try {
             if (!isFile) {
-                // 🛡️ LAYER 1 FIX: ใช้ Native TextEncoder แทน Node.js Buffer Polyfill
                 dataToUpload = String(payload);
                 size = new TextEncoder().encode(dataToUpload).length;
                 safeAppendLog(`[IRYS TELEMETRY] String payload mapped via TextEncoder. Size: ${size} bytes.`, "text-slate-400");
@@ -2112,7 +2110,6 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
                 safeAppendLog("Resuming pending funding transaction polling...", "text-yellow-400");
             } else {
                 try {
-                    // 🛡️ LAYER 2 FIX: Explicit UI Lock State for Wallet Interaction
                     let fundRes;
                     try {
                         if (activeBtn) {
@@ -2188,8 +2185,8 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
             const maxRetries = 3;
             const threshold = 25 * 1024 * 1024; 
             const useChunking = isFile && size >= threshold;
-            const chunkSize = 5 * 1024 * 1024; 
-            const batchSize = 3; 
+            const chunkSize = 25 * 1024 * 1024; 
+            const batchSize = 1; 
 
             const onChunk = (chunkInfo) => {
                 try { if (progressCtrl) progressCtrl.set(chunkInfo?.totalUploaded ?? chunkInfo?.offset ?? 0); } catch (e) {}
@@ -2210,7 +2207,15 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
                             safeAppendLog(`[IRYS TELEMETRY] Large file detected (${(size/1024/1024).toFixed(2)} MB). Activating Chunked Uploader...`, "text-blue-400");
                             irys.uploader.chunkedUploader.setChunkSize(chunkSize);
                             irys.uploader.chunkedUploader.setBatchSize(batchSize);
-                            receipt = await irys.uploader.chunkedUploader.uploadData(dataToUpload, { tags });
+                            
+                            const uploadId = 'irys_resume_' + dataToUpload.name + '_' + dataToUpload.size;
+                            
+                            if (attempt > 0) {
+                                safeAppendLog(`[IRYS TELEMETRY] Resuming upload for ID: ${uploadId}...`, "text-amber-400");
+                                receipt = await irys.uploader.chunkedUploader.resumeUpload(uploadId);
+                            } else {
+                                receipt = await irys.uploader.chunkedUploader.uploadData(dataToUpload.stream(), { tags, uploadId });
+                            }
                         } else if (isFile && typeof irys.uploadFile === 'function') {
                             if (progressCtrl) progressCtrl.set(size / 2);
                             receipt = await irys.uploadFile(dataToUpload, { tags });
@@ -3886,14 +3891,14 @@ async function triggerForge(type, e) {
         let preMintFrontUri = "";
         if (window.IMPERIAL_MANIFEST && window.IMPERIAL_MANIFEST[String(targetTokenId)]) {
             const manifestData = window.IMPERIAL_MANIFEST[String(targetTokenId)];
-            preMintFrontUri = typeof manifestData === 'object' ? (manifestData.irys_id || "") : manifestData;
+            preMintFrontUri = typeof manifestData === 'string' ? manifestData.trim() : String(manifestData.irys_id || "").trim();
         }
 
-        const existingFrontUri = (document.getElementById('forgeFrontUri')?.value || "").trim() || preMintFrontUri || currentLoadedMediaData?.front || "";
+        const existingFrontUri = (document.getElementById('forgeFrontUri')?.value || "").trim() || preMintFrontUri || (currentLoadedMediaData ? currentLoadedMediaData.front : "");
         
         if (!existingFrontUri) {
             if (!isPrivileged) {
-                appendLog("MINT REJECTED: ไม่พบรูปหน้า (Front URI) ในระบบ ไม่อนุญาตให้ดำเนินการต่อ", "text-red-500 font-bold");
+                appendLog("MINT REJECTED: ไม่พบข้อมูล URI ในระบบ ไม่อนุญาตให้ดำเนินการต่อ", "text-red-500 font-bold");
                 showNotification("METADATA EXCEPTION: Node not ready for minting (Architect has not assigned Obverse URI).", "error");
                 return;
             } else {
@@ -3901,7 +3906,14 @@ async function triggerForge(type, e) {
             }
         }
 
-        const currentMintPriceWei = await secureContract.mintPrice();
+        let currentMintPriceWei = 0n;
+        try {
+            currentMintPriceWei = await secureContract.mintPrice();
+        } catch (rpcErr) {
+            appendLog("RPC RATE LIMIT (429) DETECTED: Retrying economic parameters fetch...", "text-yellow-500");
+            await new Promise(r => setTimeout(r, 1500));
+            currentMintPriceWei = await secureContract.mintPrice();
+        }
 
         const file = await promptUserForFile('image/*,video/*');
         if (!file) {
@@ -4007,7 +4019,6 @@ async function executeArchitectMint(e) {
         }
 
         const mappedNode = await autoMap(tokenId);
-        // 🚨 FIX: อนุญาตให้มิ้นต์ได้ถ้า mappedNode เป็น null (แปลว่ายังไม่เคยมิ้นต์)
         if (mappedNode && mappedNode.isActivated) {
             showNotification("STRUCTURAL EXCEPTION: Node is already active. Cannot execute Architect Mint.", "error");
             return;
@@ -4022,7 +4033,7 @@ async function executeArchitectMint(e) {
         let preMintFrontUri = "";
         if (window.IMPERIAL_MANIFEST && window.IMPERIAL_MANIFEST[String(tokenId)]) {
             const manifestData = window.IMPERIAL_MANIFEST[String(tokenId)];
-            preMintFrontUri = typeof manifestData === 'object' ? (manifestData.irys_id || "") : manifestData;
+            preMintFrontUri = typeof manifestData === 'string' ? manifestData.trim() : String(manifestData.irys_id || "").trim();
         }
 
         const existingFrontUri = (document.getElementById('forgeFrontUri')?.value || "").trim() || preMintFrontUri || (currentLoadedMediaData ? currentLoadedMediaData.front : "");
@@ -4133,25 +4144,27 @@ async function executeArchitectRemint(e) {
         }
 
         const mappedNode = await autoMap(tokenId);
-        // 🚨 FIX: อนุญาตให้ Remint ได้ถ้า mappedNode เป็น null (แปลว่าถูกเผาไปแล้ว)
         if (mappedNode && mappedNode.isActivated) {
             showNotification("STRUCTURAL EXCEPTION: Node is currently active. Must be burned before Remint.", "error");
             return;
         }
 
-        let preMintFrontUri = "";
-        if (window.IMPERIAL_MANIFEST && window.IMPERIAL_MANIFEST[String(tokenId)]) {
-            const manifestData = window.IMPERIAL_MANIFEST[String(tokenId)];
-            preMintFrontUri = typeof manifestData === 'object' ? (manifestData.irys_id || "") : manifestData;
-        }
-
-        const existingFrontUri = (document.getElementById('forgeFrontUri')?.value || "").trim() || preMintFrontUri || (currentLoadedMediaData ? currentLoadedMediaData.front : "");
+        // 🛡️ ตัดการดึง JSON ออก ดึงข้อมูลจาก UI Input หรือ Cache ของ Node โดยตรง
+        const existingFrontUri = (document.getElementById('forgeFrontUri')?.value || "").trim() || (currentLoadedMediaData ? currentLoadedMediaData.front : "");
         if (!existingFrontUri) {
             showNotification("METADATA EXCEPTION: Node not ready for minting (Architect has not assigned Obverse URI).", "error");
             return;
         }
 
-        const currentMintPriceWei = await secureContract.mintPrice();
+        // 🛡️ ระบบป้องกัน RPC Rate Limit (429) สำหรับการดึงค่าธรรมเนียม
+        let currentMintPriceWei = 0n;
+        try {
+            currentMintPriceWei = await secureContract.mintPrice();
+        } catch (rpcErr) {
+            appendLog("RPC RATE LIMIT (429) DETECTED: Retrying economic parameters fetch...", "text-yellow-500");
+            await new Promise(r => setTimeout(r, 1500));
+            currentMintPriceWei = await secureContract.mintPrice();
+        }
 
         const file = await promptUserForFile('image/*,video/*');
         if (!file) return;
@@ -6086,15 +6099,13 @@ function filterSovereignGrid() {
     }, 250); 
 }
 
-// Map สำหรับเก็บ AbortController ราย Element ป้องกัน Fetch ค้าง
 const activeFetchControllers = new WeakMap();
 
-// 2. ตัวช่วยโหลดรูปบนตาราง Matrix (แก้ไข unobserve ทันทีเพื่อป้องกัน Leak)
 const matrixThumbnailObserver = new IntersectionObserver((entries, observer) => {
     entries.forEach(async (entry) => {
         if (entry.isIntersecting) {
             const img = entry.target;
-            observer.unobserve(img); // unobserve ทันทีที่เข้า Viewport ป้องกันการตรวจจับซ้ำ
+            observer.unobserve(img);
 
             const jsonUrl = img.dataset.metadataUrl;
             if (jsonUrl && !img.dataset.resolved) {
@@ -6104,17 +6115,52 @@ const matrixThumbnailObserver = new IntersectionObserver((entries, observer) => 
                 activeFetchControllers.set(img, controller);
 
                 try {
-                    const resolved = await resolveMediaUrl(jsonUrl, controller.signal);
-                    if (resolved && resolved.url) {
-                        img.src = resolved.url;
+                    const res = await fetch(jsonUrl, { signal: controller.signal, mode: 'cors' });
+                    if (!res.ok) throw new Error("HTTP " + res.status);
+
+                    const reader = res.body.getReader();
+                    const decoder = new TextDecoder('utf-8');
+                    let text = '';
+                    let bytesRead = 0;
+                    const MAX_BYTES = 51200; 
+
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+                        bytesRead += value.length;
+                        if (bytesRead > MAX_BYTES) {
+                            await reader.cancel();
+                            throw new Error("OOM_PROTECT");
+                        }
+                        text += decoder.decode(value, { stream: true });
+                    }
+                    text += decoder.decode();
+                    
+                    const json = JSON.parse(text);
+                    let imageHash = json.image || json.frontURI;
+                    
+                    if (imageHash) {
+                        if (imageHash.startsWith('ar://')) {
+                            imageHash = imageHash.replace('ar://', 'https://gateway.irys.xyz/');
+                        } else if (!imageHash.startsWith('http')) {
+                            imageHash = `https://gateway.irys.xyz/${imageHash}`;
+                        }
+                        img.src = imageHash;
                         img.dataset.resolved = "true";
                     } else {
-                        throw new Error("No Image URL");
+                        throw new Error("NO_IMAGE");
                     }
                 } catch (e) {
                     if (e.name !== 'AbortError') {
                         img.dataset.resolved = "error";
-                        img.dispatchEvent(new Event('error'));
+                        const fallbackData = window.IMAGE_MANIFEST ? window.IMAGE_MANIFEST[img.closest('[data-token-id]').dataset.tokenId] : null;
+                        const fallbackHash = typeof fallbackData === 'object' ? (fallbackData.image || fallbackData.irys_id) : fallbackData;
+                        
+                        if (fallbackHash && typeof fallbackHash === 'string') {
+                            img.src = fallbackHash.startsWith('http') ? fallbackHash : `https://gateway.irys.xyz/${fallbackHash}`;
+                        } else {
+                            img.dispatchEvent(new Event('error'));
+                        }
                     }
                 } finally {
                     activeFetchControllers.delete(img);
@@ -6122,17 +6168,14 @@ const matrixThumbnailObserver = new IntersectionObserver((entries, observer) => 
             }
         }
     });
-}, { rootMargin: "500px" });
+}, { rootMargin: "250px" });
 
-// 3. ฟังก์ชันวาดโหนด (ล้าง Memory และ Unobserve รูปเก่าก่อนลบ DOM)
-// 3. ฟังก์ชันวาดโหนด (แยกสายข้อมูล Grid Display vs On-Chain)
 function renderToNodeCard(tokenId) {
     const node = window.matrixDOMCache ? window.matrixDOMCache.get(tokenId) : document.querySelector(`[data-token-id="${tokenId}"]`);
     if (!node) return;
     const state = window.NODE_STATE_MAP ? window.NODE_STATE_MAP.get(tokenId) : null;
     if (!state) return;
 
-    // 清理 Cleanup Memory & Old Observers
     const oldImg = node.querySelector('.node-media-container img');
     if (oldImg) {
         matrixThumbnailObserver.unobserve(oldImg);
@@ -6150,15 +6193,17 @@ function renderToNodeCard(tokenId) {
     if (existingBadge) existingBadge.remove();
 
     node.className = 'matrix-node-cell relative transition-all duration-200 group';
-    node.style.backgroundImage = 'none'; // Reset background
+    node.style.backgroundImage = 'none';
 
     let displayImgUrl = "";
     let hasManifestData = false;
+    let isMinted = false;
 
     if (state.status === 'UNCLAIMED') {
-        // ⚪ [BEFORE MINT - MATRIX GRID CELL] ดึง Fast-Path Direct Image จาก Local Manifest
-        const localHash = window.IMAGE_MANIFEST ? window.IMAGE_MANIFEST[String(tokenId)] : "";
-        if (localHash && localHash.trim() !== "") {
+        const localData = window.IMAGE_MANIFEST ? window.IMAGE_MANIFEST[String(tokenId)] : null;
+        const localHash = typeof localData === 'object' ? (localData.image || localData.irys_id) : localData;
+
+        if (localHash && typeof localHash === 'string' && localHash.trim() !== "") {
             hasManifestData = true;
             displayImgUrl = localHash.startsWith('http') ? localHash : `https://gateway.irys.xyz/${localHash.trim()}`;
         }
@@ -6171,15 +6216,21 @@ function renderToNodeCard(tokenId) {
     } else if (state.status === 'BURNED') {
         node.classList.add('opacity-30', 'grayscale', 'bg-red-950/20');
         node.title = `NODE #${tokenId} [BURNED - AWAITING REMINT]`;
+        
     } else if (state.status === 'ACTIVE' || state.status === 'LOCKED') {
-        // 🟢 [AFTER MINT - MATRIX GRID CELL] ดึงจาก On-Chain Contract URI
-        displayImgUrl = state.imageUrl || (state.metadataUrl ? buildIrysUrl(state.metadataUrl) : "");
+        isMinted = true;
+        let cleanUri = state.metadataUrl || "";
+        if (cleanUri.startsWith('ar://')) {
+            cleanUri = cleanUri.replace('ar://', 'https://gateway.irys.xyz/');
+        } else if (cleanUri && !cleanUri.startsWith('http')) {
+            cleanUri = `https://gateway.irys.xyz/${extractIrysId(cleanUri)}`;
+        }
+        displayImgUrl = cleanUri;
         
         node.classList.add(state.status === 'LOCKED' ? 'bg-blue-950/50' : 'bg-slate-950');
         node.title = `NODE #${tokenId} [${state.status}]`;
     }
 
-    // แปะรูปภาพลงในช่อง Matrix Node Cell
     if (displayImgUrl && (state.status === 'ACTIVE' || state.status === 'LOCKED' || state.status === 'UNCLAIMED')) {
         const mediaContainer = document.createElement('div');
         mediaContainer.className = 'node-media-container absolute inset-0 w-full h-full overflow-hidden rounded z-10 flex items-center justify-center bg-slate-950';
@@ -6190,11 +6241,9 @@ function renderToNodeCard(tokenId) {
         img.className = 'w-full h-full object-cover';
         img.crossOrigin = 'anonymous';
         
-        if (state.status === 'UNCLAIMED') {
-            // ถ้ายังไม่ Mint ใส่ URL รูปตรงๆ ได้เลย ไม่ต้องผ่าน Observer ไปแกะ JSON
+        if (!isMinted) {
             img.src = displayImgUrl;
         } else {
-            // ถ้า Mint แล้ว มันคือ JSON Hash จาก On-chain ต้องส่งให้ Observer ไปแกะ JSON ก่อน
             img.dataset.metadataUrl = displayImgUrl; 
             matrixThumbnailObserver.observe(img);
         }
