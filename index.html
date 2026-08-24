@@ -3021,40 +3021,59 @@ async function processIdentityDnaInspectionOnChain() {
 }
 
 async function loadDeedMetadata(tokenId) {
-    // 1. ดึงข้อมูลจาก Render V7 (Global) เป็นหลัก ถ้าไม่มีค่อยดึงจาก On-chain (autoMap)
-    let attributes = [];
-    if (window.currentDeedMetadata && Array.isArray(window.currentDeedMetadata.attributes)) {
-        attributes = window.currentDeedMetadata.attributes;
-    } else {
-        const mappedNode = await autoMap(tokenId);
-        if (mappedNode?.rawMetadata?.attributes && Array.isArray(mappedNode.rawMetadata.attributes)) {
-            attributes = mappedNode.rawMetadata.attributes;
-        }
-    }
-
-    if (attributes.length === 0) return;
-
-    // 2. Map ข้อมูลลงในโครงสร้าง HTML ห้อง DNA เดิม (อ้างอิงจาก propDisplay1)
     const container = document.getElementById('propDisplay1')?.parentElement;
     if (!container) return;
 
-    // ลบ Attribute เก่าที่เคยสร้างไว้ตอนกดดู Node อื่น (รีเซ็ต DOM)
+    // 1. ดึง Metadata จาก Global State หรือ autoMap
+    let metadata = null;
+    if (window.currentDeedMetadata) {
+        metadata = window.currentDeedMetadata;
+    } else {
+        const mappedNode = await autoMap(tokenId);
+        metadata = mappedNode?.rawMetadata;
+    }
+
+    if (!metadata || typeof metadata !== 'object') return;
+
+    // ล้าง DOM เก่า (Reset Attributes)
     Array.from(container.querySelectorAll('.dynamic-attr')).forEach(el => el.remove());
 
-    attributes.forEach((attr, index) => {
-        if (!attr || !attr.value) return;
-        const trait = attr.trait_type ? String(attr.trait_type).toUpperCase() : "PROPERTY";
-        const val = String(attr.value).toUpperCase();
+    // 2. สกัด Attributes (รองรับทั้งแบบ Array มาตรฐาน และ Object ธรรมดา)
+    let extractedTraits = [];
+    
+    if (Array.isArray(metadata.attributes)) {
+        extractedTraits = metadata.attributes.filter(attr => attr && attr.value).map(attr => ({
+            trait: String(attr.trait_type || "PROPERTY").toUpperCase(),
+            value: String(attr.value).toUpperCase()
+        }));
+    } else {
+        // Fallback: ขุดหา Key พื้นฐานถ้าไม่มี Array attributes
+        const safeKeys = ['rank', 'status', 'identity', 'role', 'tier'];
+        for (const key of safeKeys) {
+            if (metadata[key]) {
+                extractedTraits.push({
+                    trait: key.toUpperCase(),
+                    value: String(metadata[key]).toUpperCase()
+                });
+            }
+        }
+    }
+
+    // 3. วาดลง DOM อย่างปลอดภัย (XSS Protection)
+    extractedTraits.forEach((item, index) => {
+        const safeTrait = typeof sanitizeForDOM === 'function' ? sanitizeForDOM(item.trait) : item.trait;
+        const safeValue = typeof sanitizeForDOM === 'function' ? sanitizeForDOM(item.value) : item.value;
+        const displayText = `${safeTrait} : ${safeValue}`;
 
         if (index === 0) {
             // อัปเดตช่อง propDisplay1 ที่มีอยู่แล้วใน HTML
             const prop1 = document.getElementById('propDisplay1');
-            if (prop1) prop1.textContent = `${trait} : ${val}`;
+            if (prop1) prop1.textContent = displayText;
         } else {
-            // ถ้ามี Attribute มากกว่า 1 ให้สร้างบรรทัดใหม่แทรกในกล่องเดิม
+            // สร้างบรรทัดใหม่แทรกในกล่องเดิม
             const newSpan = document.createElement('span');
             newSpan.className = "text-amber-500 font-bold mb-1 dynamic-attr";
-            newSpan.textContent = `${trait} : ${val}`;
+            newSpan.textContent = displayText;
             
             const hiddenProp = document.getElementById('metaHiddenProperty');
             if (hiddenProp) {
@@ -3217,6 +3236,9 @@ function setupWalletEventListeners(rawProvider) {
     }
 }
 
+// ==========================================
+// 2. REFACTORED handleAccountsChangedEvent FUNCTION
+// ==========================================
 async function handleAccountsChangedEvent(accounts) {
     if (walletSessionController) {
         walletSessionController.abort();
@@ -3238,11 +3260,19 @@ async function handleAccountsChangedEvent(accounts) {
     const isDisconnected = !accounts || !Array.isArray(accounts) || accounts.length === 0;
     
     if (isDisconnected) {
+        // 🛡️ ล้างสถานะ Ownership บน Matrix ทันทีที่ตัดการเชื่อมต่อ
+        if (typeof bindNodeOwnership === 'function') {
+            bindNodeOwnership(null);
+        }
         showNotification("SECURITY PROTOCOL: Wallet disconnected. System entering Standby mode.", "error");
         appendLog("Wallet disconnected by user.", "text-yellow-400 font-bold");
     } else {
-        showNotification("IDENTITY SHIFT DETECTED: Please manually reconnect to authenticate new wallet.", "warning");
-        appendLog("Identity vector shift detected. Manual interaction required.", "text-yellow-400 font-bold");
+        // 🛡️ อัปเดตสิทธิ์ Ownership ทันทีตามบัญชีใหม่ที่สลับเข้ามา
+        if (typeof bindNodeOwnership === 'function') {
+            bindNodeOwnership(accounts[0]);
+        }
+        showNotification("IDENTITY SHIFT DETECTED: Account switched successfully.", "warning");
+        appendLog(`Identity vector shift detected to: ${accounts[0]}`, "text-yellow-400 font-bold");
     }
 
     const connectBtn = document.getElementById('btnConnect');
@@ -3307,6 +3337,10 @@ window.addEventListener("eip6963:announceProvider", (event) => {
         }
     }
 });
+
+// ==========================================
+// 3. INTEGRATED WALLET CONTROLLER
+// ==========================================
 window.dispatchEvent(new Event("eip6963:requestProvider"));
 
 async function connectWallet(e) {
@@ -3398,6 +3432,9 @@ async function connectWallet(e) {
         
         provider = new ethers.BrowserProvider(rawProvider);
         signer = await provider.getSigner();
+
+        // 🛡️ [AUTHORITY INJECTION] อัปเดต Ownership ทันทีที่เชื่อมต่อบัญชีสำเร็จ
+        bindNodeOwnership(account);
         
         if (secureContract) {
             secureContract.removeAllListeners();
@@ -6063,6 +6100,221 @@ async function refreshTbaBalances(tbaAddress, sessionRef) {
     }
 }
 
+// สร้าง Observer สำหรับ Lazy Unpacking Layer 2 -> Layer 3 (แก้ปัญหาจอดำ)
+const matrixThumbnailObserver = new IntersectionObserver((entries, observer) => {
+    entries.forEach(async (entry) => {
+        if (entry.isIntersecting) {
+            const img = entry.target;
+            const metadataUrl = img.dataset.metadataUrl;
+            
+            if (metadataUrl && !img.dataset.resolved) {
+                img.dataset.resolved = "fetching";
+                try {
+                    const resolved = await resolveMediaUrl(metadataUrl);
+                    if (resolved && resolved.url) {
+                        img.src = resolved.url;
+                        img.dataset.resolved = "true";
+                    } else {
+                        throw new Error("Unpack Failed");
+                    }
+                } catch (e) {
+                    img.dataset.resolved = "error";
+                    const errorEvent = new Event('error');
+                    img.dispatchEvent(errorEvent);
+                }
+            }
+            observer.unobserve(img);
+        }
+    });
+}, { rootMargin: "200px" });
+
+// ฟังก์ชัน renderToNodeCard แบบเต็ม 100% (ไม่มีจุดไข่ปลาแล้ว)
+function renderToNodeCard(tokenId) {
+    const node = window.matrixDOMCache 
+        ? window.matrixDOMCache.get(tokenId) 
+        : document.querySelector(`[data-token-id="${tokenId}"]`);
+    if (!node) return;
+
+    const state = window.NODE_STATE_MAP.get(tokenId);
+    if (!state) return;
+
+    destroyNodeMedia(node);
+    node.className = 'matrix-node-cell relative transition-all duration-200 group';
+
+    if (state.status === 'UNCLAIMED') {
+        let hasManifestData = false;
+        if (window.IMPERIAL_MANIFEST && window.IMPERIAL_MANIFEST[String(tokenId)]) {
+            const mData = window.IMPERIAL_MANIFEST[String(tokenId)];
+            const uri = typeof mData === 'string' ? mData : (mData.irys_id || "");
+            if (uri && uri.trim() !== "") hasManifestData = true;
+        }
+
+        node.classList.add('opacity-30', 'grayscale');
+        node.classList.add(hasManifestData ? 'bg-emerald-950/30' : 'bg-amber-950/20');
+        if (hasManifestData) node.classList.add('border-emerald-800/50');
+        node.title = `NODE #${tokenId} [${hasManifestData ? 'STAGED IN MANIFEST' : 'VOID - UNMINTED'}]`;
+    } 
+    else if (state.status === 'BURNED') {
+        node.classList.add('opacity-30', 'grayscale', 'bg-red-950/20');
+        node.title = `NODE #${tokenId} [BURNED - AWAITING REMINT]`;
+    } 
+    else if (state.status === 'ACTIVE' || state.status === 'LOCKED') {
+        node.classList.add(state.status === 'LOCKED' ? 'bg-blue-950/50' : 'bg-slate-950');
+        node.title = `NODE #${tokenId} [${state.status}]`;
+
+        const mediaContainer = document.createElement('div');
+        mediaContainer.className = 'node-media-container absolute inset-0 w-full h-full overflow-hidden rounded pointer-events-none opacity-40 mix-blend-screen flex items-center justify-center transition-opacity duration-300 group-hover:opacity-80';
+
+        const shortAddrText = state.owner ? `${state.owner.slice(0,4)}...${state.owner.slice(-4)}` : 'ERR';
+
+        if (state.metadataUrl) {
+            const img = document.createElement('img');
+            img.loading = 'lazy';
+            img.decoding = 'async';
+            img.className = 'w-full h-full object-cover';
+            img.crossOrigin = 'anonymous';
+            
+            // ฝัง Layer 2 URL ไว้ แล้วให้ Observer ทำการ Unpack เป็น Layer 3
+            img.dataset.metadataUrl = state.metadataUrl;
+            
+            img.onerror = () => {
+                img.onerror = null;
+                img.remove();
+                const shortAddr = document.createElement('span');
+                shortAddr.className = 'text-[7px] font-bold text-slate-400 bg-black/80 px-1 rounded border border-slate-700';
+                shortAddr.textContent = shortAddrText;
+                mediaContainer.appendChild(shortAddr);
+            };
+            
+            mediaContainer.appendChild(img);
+            
+            // โยนเข้า Observer
+            matrixThumbnailObserver.observe(img);
+        } else {
+            const shortAddr = document.createElement('span');
+            shortAddr.className = 'text-[7px] font-bold text-slate-400 bg-black/80 px-1 rounded border border-slate-700';
+            shortAddr.textContent = shortAddrText;
+            mediaContainer.appendChild(shortAddr);
+        }
+        
+        node.appendChild(mediaContainer);
+
+        if (state.isCurrentUser) {
+            node.classList.remove('opacity-30', 'grayscale');
+            node.classList.add('ring-2', 'ring-amber-400', 'shadow-[0_0_15px_rgba(251,191,36,0.6)]', 'z-20');
+            
+            const badge = document.createElement('div');
+            badge.className = 'node-ownership-badge absolute -top-2 -right-2 bg-gradient-to-br from-amber-400 to-amber-600 text-black text-[7px] font-black px-1.5 py-0.5 rounded shadow-[0_0_10px_rgba(217,119,6,0.8)] z-30 border border-amber-200';
+            badge.textContent = 'OWNED';
+            node.appendChild(badge);
+        }
+    }
+}
+
+// 3. REFACTORED BIND OWNERSHIP (INSTANT RE-PAINT)
+function bindNodeOwnership(walletAddress) {
+    if (!window.NODE_STATE_MAP || window.NODE_STATE_MAP.size === 0) return;
+    
+    const normalizedAddress = walletAddress ? walletAddress.toLowerCase() : null;
+
+    requestAnimationFrame(() => {
+        window.NODE_STATE_MAP.forEach((state, tokenId) => {
+            const previousOwnershipState = state.isCurrentUser;
+            
+            state.isCurrentUser = normalizedAddress && state.owner 
+                ? (state.owner.toLowerCase() === normalizedAddress) 
+                : false;
+            
+            if (previousOwnershipState !== state.isCurrentUser) {
+                renderToNodeCard(tokenId);
+            }
+        });
+    });
+}
+
+// 4. REFACTORED MULTICALL SYNC (REQUEST ANIMATION FRAME BATCHING)
+async function syncActiveMatrixNodes() { 
+    const activeContract = (typeof secureContract !== 'undefined' && secureContract) 
+        ? secureContract 
+        : (typeof readOnlyContract !== 'undefined' ? readOnlyContract : null); 
+        
+    if (!activeContract || typeof activeContract.getAllActiveTokens !== 'function') return; 
+    
+    try { 
+        const activeTokens = await activeContract.getAllActiveTokens();
+        const activeSet = new Set(activeTokens.map(t => Number(t))); 
+        
+        const activeCountEl = document.getElementById('matrixActiveCount');
+        if (activeCountEl) activeCountEl.textContent = activeSet.size.toString();
+        
+        const calls = [];
+        for (let i = 1; i <= 333; i++) {
+            calls.push({ target: CONTRACT_ADDRESS, allowFailure: true, callData: activeContract.interface.encodeFunctionData("genesisMinted", [i.toString()]) });
+            calls.push({ target: CONTRACT_ADDRESS, allowFailure: true, callData: activeContract.interface.encodeFunctionData("tokenVotingLockUntil", [i.toString()]) });
+            calls.push({ target: CONTRACT_ADDRESS, allowFailure: true, callData: activeContract.interface.encodeFunctionData("getDeedData", [i.toString()]) });
+        }
+        
+        const providerTarget = (typeof readOnlyProvider !== 'undefined' && readOnlyProvider) ? readOnlyProvider : (typeof provider !== 'undefined' ? provider : null);
+        if (!providerTarget) throw new Error("[RPC] No valid provider targeting available for Multicall.");
+
+        const results = await debouncedMulticall(providerTarget, calls);
+        if (!results || results.length === 0) throw new Error("[RPC] Multicall yielded null response.");
+
+        const currentEpoch = Math.floor(Date.now() / 1000);
+        const currentUser = (typeof signer !== 'undefined' && signer) ? (await signer.getAddress()).toLowerCase() : null;
+        
+        // Phase 1: Update In-Memory State Map Only (Zero DOM Touch inside loop)
+        for (let i = 1; i <= 333; i++) { 
+            const resGen = results[(i-1)*3];
+            const resLock = results[(i-1)*3 + 1];
+            const resDeed = results[(i-1)*3 + 2];
+            
+            let isMintedEver = false;
+            let lockUntil = 0;
+            let owner = null;
+            let frontUri = null;
+
+            try {
+                if (resGen?.success && resGen.returnData !== "0x") {
+                    isMintedEver = activeContract.interface.decodeFunctionResult("genesisMinted", resGen.returnData)[0];
+                }
+                if (resLock?.success && resLock.returnData !== "0x") {
+                    lockUntil = Number(activeContract.interface.decodeFunctionResult("tokenVotingLockUntil", resLock.returnData)[0]);
+                }
+                if (resDeed?.success && resDeed.returnData !== "0x") {
+                    const deedData = activeContract.interface.decodeFunctionResult("getDeedData", resDeed.returnData);
+                    owner = deedData[0];
+                    frontUri = deedData[3];
+                }
+            } catch (decodeErr) {
+                console.warn(`[SYNC] Decoding failed for Node #${i}`, decodeErr);
+            }
+
+            const isActive = activeSet.has(i);
+            const isLocked = lockUntil > currentEpoch;
+            const status = isActive ? (isLocked ? 'LOCKED' : 'ACTIVE') : (isMintedEver ? 'BURNED' : 'UNCLAIMED');
+
+            window.NODE_STATE_MAP.set(i, {
+                owner: owner && owner !== ethers.ZeroAddress ? owner : null,
+                isCurrentUser: currentUser && owner ? (currentUser === owner.toLowerCase()) : false,
+                metadataUrl: frontUri,
+                imageUrl: frontUri ? buildIrysUrl(frontUri) : null,
+                status: status
+            });
+        } 
+
+        // Phase 2: Batch DOM Updates inside a Single Animation Frame (Zero Thrashing)
+        requestAnimationFrame(() => {
+            for (let i = 1; i <= 333; i++) {
+                renderToNodeCard(i);
+            }
+        });
+
+    } catch (err) { 
+        console.warn("[SYSTEM EXCEPTION] Matrix sync failed/throttled. Maintaining base state.", err); 
+    } 
+}
+
 function filterSovereignGrid() { 
     clearTimeout(window.searchDebounceTimer);
     window.searchDebounceTimer = setTimeout(() => { 
@@ -6081,102 +6333,8 @@ function filterSovereignGrid() {
     }, 250); 
 }
 
-async function syncActiveMatrixNodes() { 
-    const activeContract = (typeof secureContract !== 'undefined' && secureContract) 
-        ? secureContract 
-        : (typeof readOnlyContract !== 'undefined' ? readOnlyContract : null); 
-        
-    if (!activeContract || typeof activeContract.getAllActiveTokens !== 'function') return; 
-    
-    try { 
-        const activeTokens = await activeContract.getAllActiveTokens();
-        const activeSet = new Set(activeTokens.map(t => Number(t))); 
-        
-        const activeCountEl = document.getElementById('matrixActiveCount');
-        if (activeCountEl) {
-            activeCountEl.textContent = activeSet.size.toString();
-        }
-        
-        const calls = [];
-        for (let i = 1; i <= 333; i++) {
-            calls.push({ target: CONTRACT_ADDRESS, allowFailure: true, callData: activeContract.interface.encodeFunctionData("genesisMinted", [i.toString()]) });
-            calls.push({ target: CONTRACT_ADDRESS, allowFailure: true, callData: activeContract.interface.encodeFunctionData("tokenVotingLockUntil", [i.toString()]) });
-        }
-        
-        const providerTarget = (typeof readOnlyProvider !== 'undefined' && readOnlyProvider) ? readOnlyProvider : (typeof provider !== 'undefined' ? provider : null);
-        if (!providerTarget) throw new Error("[RPC] No valid provider targeting available for Multicall.");
 
-        const results = await debouncedMulticall(providerTarget, calls);
-        if (!results || results.length === 0) throw new Error("[RPC] Multicall yielded null response.");
 
-        const currentEpoch = Math.floor(Date.now() / 1000);
-        
-        for (let i = 1; i <= 333; i++) { 
-            const node = typeof window.matrixDOMCache !== 'undefined' ? window.matrixDOMCache.get(i) : null; 
-            if (!node) continue; 
-
-            const resGen = results[(i-1)*2];
-            const resLock = results[(i-1)*2 + 1];
-            
-            let isMintedEver = false;
-            let lockUntil = 0;
-
-            try {
-                if (resGen?.success && resGen.returnData !== "0x") {
-                    isMintedEver = activeContract.interface.decodeFunctionResult("genesisMinted", resGen.returnData)[0];
-                }
-                if (resLock?.success && resLock.returnData !== "0x") {
-                    lockUntil = Number(activeContract.interface.decodeFunctionResult("tokenVotingLockUntil", resLock.returnData)[0]);
-                }
-            } catch (decodeErr) {
-                console.warn(`[SYNC] Decoding failed for Node #${i}`, decodeErr);
-                continue; 
-            }
-
-            const isLocked = lockUntil > currentEpoch;
-
-            node.classList.remove('opacity-30', 'grayscale', 'cursor-not-allowed', 'bg-red-950/20', 'bg-amber-950/20', 'bg-slate-950', 'bg-blue-950/50', 'bg-emerald-950/30', 'border-emerald-800/50');
-            if (typeof IS_TOUCH_DEVICE !== 'undefined' && !IS_TOUCH_DEVICE) node.classList.add('hover:bg-slate-800');
-
-            if (!activeSet.has(i)) { 
-                node.classList.add('opacity-30', 'grayscale'); 
-                if (typeof IS_TOUCH_DEVICE !== 'undefined' && !IS_TOUCH_DEVICE) node.classList.remove('hover:bg-slate-800');
-                
-                if (isMintedEver) {
-                    node.classList.add('bg-red-950/20'); 
-                    node.title = `NODE #${i} [BURNED - AWAITING REMINT]`; 
-                } else {
-                    // 🛡️ STRICT FIX: Check Manifest Data for Staged Nodes
-                    let hasManifestData = false;
-                    if (window.IMPERIAL_MANIFEST && window.IMPERIAL_MANIFEST[String(i)]) {
-                        const mData = window.IMPERIAL_MANIFEST[String(i)];
-                        const uri = typeof mData === 'string' ? mData : (mData.irys_id || "");
-                        if (uri && uri.trim() !== "") hasManifestData = true;
-                    }
-
-                    if (hasManifestData) {
-                        node.classList.remove('opacity-30', 'grayscale');
-                        node.classList.add('bg-emerald-950/30', 'border-emerald-800/50');
-                        node.title = `NODE #${i} [STAGED IN MANIFEST - READY TO MINT]`;
-                    } else {
-                        node.classList.add('bg-amber-950/20'); 
-                        node.title = `NODE #${i} [VOID - UNMINTED]`; 
-                    }
-                }
-            } else { 
-                if (isLocked) {
-                    node.classList.add('bg-blue-950/50');
-                    node.title = `NODE #${i} [ACTIVE - LOCKED IN VOTING]`;
-                } else {
-                    node.classList.add('bg-slate-950');
-                    node.title = `NODE #${i} [ACTIVE]`; 
-                }
-            } 
-        } 
-    } catch (err) { 
-        console.warn("[SYSTEM EXCEPTION] Matrix sync failed/throttled. Maintaining base state.", err); 
-    } 
-}
 
 function setupMatrixGrid() { 
     const grid = document.getElementById('matrixGridContainer'); 
