@@ -3021,16 +3021,49 @@ async function processIdentityDnaInspectionOnChain() {
 }
 
 async function loadDeedMetadata(tokenId) {
-    const mappedNode = await autoMap(tokenId);
-    if (!mappedNode?.rawMetadata?.attributes || !Array.isArray(mappedNode.rawMetadata.attributes)) return; 
-    
-    const attrs = mappedNode.rawMetadata.attributes;
-    for(let i = 0; i < attrs.length; i++) {
-        const targetElement = document.getElementById(`propDisplay${i+1}`); 
-        if(targetElement && attrs[i] && typeof attrs[i] === 'object' && 'value' in attrs[i]) {
-            targetElement.textContent = String(attrs[i].value);
+    // 1. ดึงข้อมูลจาก Render V7 (Global) เป็นหลัก ถ้าไม่มีค่อยดึงจาก On-chain (autoMap)
+    let attributes = [];
+    if (window.currentDeedMetadata && Array.isArray(window.currentDeedMetadata.attributes)) {
+        attributes = window.currentDeedMetadata.attributes;
+    } else {
+        const mappedNode = await autoMap(tokenId);
+        if (mappedNode?.rawMetadata?.attributes && Array.isArray(mappedNode.rawMetadata.attributes)) {
+            attributes = mappedNode.rawMetadata.attributes;
         }
     }
+
+    if (attributes.length === 0) return;
+
+    // 2. Map ข้อมูลลงในโครงสร้าง HTML ห้อง DNA เดิม (อ้างอิงจาก propDisplay1)
+    const container = document.getElementById('propDisplay1')?.parentElement;
+    if (!container) return;
+
+    // ลบ Attribute เก่าที่เคยสร้างไว้ตอนกดดู Node อื่น (รีเซ็ต DOM)
+    Array.from(container.querySelectorAll('.dynamic-attr')).forEach(el => el.remove());
+
+    attributes.forEach((attr, index) => {
+        if (!attr || !attr.value) return;
+        const trait = attr.trait_type ? String(attr.trait_type).toUpperCase() : "PROPERTY";
+        const val = String(attr.value).toUpperCase();
+
+        if (index === 0) {
+            // อัปเดตช่อง propDisplay1 ที่มีอยู่แล้วใน HTML
+            const prop1 = document.getElementById('propDisplay1');
+            if (prop1) prop1.textContent = `${trait} : ${val}`;
+        } else {
+            // ถ้ามี Attribute มากกว่า 1 ให้สร้างบรรทัดใหม่แทรกในกล่องเดิม
+            const newSpan = document.createElement('span');
+            newSpan.className = "text-amber-500 font-bold mb-1 dynamic-attr";
+            newSpan.textContent = `${trait} : ${val}`;
+            
+            const hiddenProp = document.getElementById('metaHiddenProperty');
+            if (hiddenProp) {
+                container.insertBefore(newSpan, hiddenProp);
+            } else {
+                container.appendChild(newSpan);
+            }
+        }
+    });
 }
 
 // ==============================================================================
@@ -5344,13 +5377,12 @@ function renderLoadingSkeleton(container) {
 }
 
 // ==============================================================================
-// 🛡️ FACT-ONLY FORENSIC RESOLUTION ENGINE (V6 OVERRIDE)
+// 🛡️ THE IMPERIAL FORENSIC ENGINE (V7 COMPLETE - OPENSEA STANDARD)
 // ==============================================================================
 
 async function resolveMediaUrl(metadataUrl, abortSignal) {
-    if (!metadataUrl) return { url: metadataUrl, isBlob: false, sourceUrl: metadataUrl };
+    if (!metadataUrl) return { url: metadataUrl, isBlob: false, sourceUrl: metadataUrl, metadata: null };
 
-    // 1. จัดฟอร์แมตให้พร้อมยิง Request โดยไม่ต้องพึ่ง helper นอก ป้องกันระบบแคลช
     const formatGatewayUrl = (uri) => {
         const cleanUri = uri.trim();
         if (cleanUri.startsWith('http://') || cleanUri.startsWith('https://')) return cleanUri;
@@ -5362,26 +5394,24 @@ async function resolveMediaUrl(metadataUrl, abortSignal) {
     const fetchUrl = formatGatewayUrl(metadataUrl);
 
     try {
-        // 2. โหลดไฟล์ JSON จาก Manifest (9nzX...)
         const response = await fetch(fetchUrl, { method: 'GET', mode: 'cors', signal: abortSignal });
-        if (!response.ok) return { url: fetchUrl, isBlob: false, sourceUrl: fetchUrl };
+        if (!response.ok) return { url: fetchUrl, isBlob: false, sourceUrl: fetchUrl, metadata: null };
 
         const textData = await response.text();
         let jsonPayload;
         try {
             jsonPayload = JSON.parse(textData);
         } catch (e) {
-            return { url: fetchUrl, isBlob: false, sourceUrl: fetchUrl };
+            return { url: fetchUrl, isBlob: false, sourceUrl: fetchUrl, metadata: null };
         }
 
         let mediaUri = null;
 
-        // 3. 🎯 ล้วงไข่เจาะตรงเข้า attributes ก่อนเพื่อน! (แก้จุดตายของระบบ)
+        // 1. 🎯 ล้วงลึกเข้า attributes ก่อน (V6 Override Logic)
         if (jsonPayload.attributes && Array.isArray(jsonPayload.attributes)) {
             for (const attr of jsonPayload.attributes) {
                 if (attr && attr.value && typeof attr.value === 'string') {
                     const val = attr.value.trim();
-                    // กวาดหา value ที่มีลิงก์ Irys หรือ Hash ความยาว 42-45 ตัว
                     if (val.includes('irys.xyz') || /^[a-zA-Z0-9_-]{42,45}$/.test(val)) {
                         mediaUri = val;
                         break;
@@ -5390,23 +5420,28 @@ async function resolveMediaUrl(metadataUrl, abortSignal) {
             }
         }
 
-        // 4. ถ้าไม่เจอใน attributes ค่อยถอยมาเช็คคีย์ปกติ
-        if (!mediaUri) mediaUri = jsonPayload.image || jsonPayload.media_url;
+        // 2. ถ้าไม่เจอ ค่อยหาจากคีย์มาตรฐาน
+        if (!mediaUri) mediaUri = jsonPayload.animation_url || jsonPayload.image || jsonPayload.media_url;
 
-        // 5. ประกอบร่างลิงก์รูปภาพ (FiAN6f...) ส่งคืนให้ Render นำไปใช้
+        // 3. 🎯 ประกอบร่างแล้วคืนค่า JSON กลับไปทั้งก้อน! (OpenSea Fix)
         if (mediaUri) {
             const finalImageUrl = formatGatewayUrl(mediaUri);
-            return { url: finalImageUrl, isBlob: false, sourceUrl: finalImageUrl };
+            return { 
+                url: finalImageUrl, 
+                isBlob: false, 
+                sourceUrl: finalImageUrl,
+                metadata: jsonPayload // <--- ยัด Data ทั้งหมดกลับไปให้ Dashboard ใช้โชว์ข้อมูล!
+            };
         }
 
     } catch (error) {
-        return { url: fetchUrl, isBlob: false, sourceUrl: fetchUrl };
+        return { url: fetchUrl, isBlob: false, sourceUrl: fetchUrl, metadata: null };
     }
 
-    return { url: fetchUrl, isBlob: false, sourceUrl: fetchUrl };
+    return { url: fetchUrl, isBlob: false, sourceUrl: fetchUrl, metadata: null };
 }
 
-async function renderToViewport(containerId, path, defaultText) {
+async function renderToViewport(containerId, path, defaultText, explicitMediaType = null) {
     const container = document.getElementById(containerId);
     if (!container) return;
 
@@ -5433,7 +5468,6 @@ async function renderToViewport(containerId, path, defaultText) {
     renderLoadingSkeleton(container);
 
     try {
-        // 🎯 ส่ง ID ทรายเข้าไปให้ระบบมุดล้วงรูปภาพ
         const resolvedMedia = await resolveMediaUrl(safePath, masterController.signal);
         
         if (masterController.signal.aborted) {
@@ -5443,9 +5477,28 @@ async function renderToViewport(containerId, path, defaultText) {
             return;
         }
 
-        // 🎯 ส่งรูปภาพที่ล้วงได้ยัดลง DOM ทันทีในฐานะ 'image' เพียวๆ
+        // 🎯 ดึงระบบสแกนสื่อจาก 3-Layer มาใช้ (แก้บั๊กภาพไม่ขึ้น/วิดีโอแครช)
+        // ระบบจะประเมินผลได้ทันทีว่านี่คือภาพนิ่ง หรือลูปวิดีโอจิตวิทยาจากซีรีส์ 15s CONFINEMENT
+        const mimeType = typeof guessMediaTypeAdvanced === 'function'
+            ? await guessMediaTypeAdvanced(resolvedMedia.url, explicitMediaType)
+            : (explicitMediaType || 'image');
+
+        if (masterController.signal.aborted) return;
+
+        // วาดภาพหรือวิดีโอลง Canvas
         if (typeof renderMediaToDOM === 'function') {
-            renderMediaToDOM(container, resolvedMedia, 'image', masterController.signal);
+            renderMediaToDOM(container, resolvedMedia, mimeType, masterController.signal);
+        }
+
+        // =========================================================
+        // 🎯 ส่ง Data ออกไปให้ Dashboard แสดงผล (แบบเดียวกับ OpenSea)
+        // =========================================================
+        if (resolvedMedia.metadata) {
+            // เก็บลง Global Variable เพื่อให้โค้ดส่วนอื่นหรือหน้า Dashboard ดึงไปใช้ได้ทันที
+            window.currentDeedMetadata = resolvedMedia.metadata;
+            
+            // ถ้าท่านมีฟังก์ชันสำหรับวาดกรอบข้อมูล (Attributes) ให้เรียกใช้ตรงนี้ได้เลย
+            // ตัวอย่าง: if (typeof renderDashboardStats === 'function') renderDashboardStats(resolvedMedia.metadata);
         }
 
     } catch (e) {
@@ -5453,6 +5506,7 @@ async function renderToViewport(containerId, path, defaultText) {
         renderEmptyState(container, "IRYS GATEWAY SEVERED", "text-red-500");
     }
 }
+
 
 
 function renderMediaToDOM(container, resolvedMedia, mediaType, abortSignal) {
