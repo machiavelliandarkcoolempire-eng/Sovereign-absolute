@@ -6236,9 +6236,37 @@ function enforceSecurityConstraints() {
     if (nameInput) nameInput.setAttribute('maxlength', '128');
 }
 
+// ==============================================================================
+// 🎯 STANDALONE MANIFEST PAINTER (ไม่ง้อ Blockchain)
+// ==============================================================================
+function applyManifestToGrid() {
+    if (!window.matrixDOMCache || !window.IMPERIAL_MANIFEST) return;
+    
+    for (let i = 1; i <= 333; i++) {
+        const node = window.matrixDOMCache.get(i);
+        if (!node) continue;
+        
+        // กวาดเช็คข้อมูลใน JSON
+        let hasManifestData = false;
+        const mData = window.IMPERIAL_MANIFEST[String(i)];
+        const uri = typeof mData === 'string' ? mData : (mData?.irys_id || "");
+        if (uri && uri.trim() !== "") hasManifestData = true;
+
+        // ระบายสีทันทีโดยไม่ต้องรอ RPC
+        if (hasManifestData) {
+            node.classList.remove('opacity-30', 'grayscale', 'bg-slate-950');
+            node.classList.add('bg-emerald-950/30', 'border-emerald-800/50');
+            node.title = `NODE #${i} [STAGED IN MANIFEST - READY TO MINT]`;
+        } else {
+            node.classList.add('opacity-30', 'grayscale', 'bg-amber-950/20');
+            node.title = `NODE #${i} [VOID - UNMINTED]`;
+        }
+    }
+}
+
 // 1. เติม async เข้าไปที่จุดประกาศฟังก์ชัน เพื่อเปิดใช้กลไกการรอเวลา
 const initializeSystem = async () => {
-    enforceSecurityConstraints();
+    if (typeof enforceSecurityConstraints === 'function') enforceSecurityConstraints();
     
     if (typeof fetchImperialManifest === 'function') {
         try {
@@ -6251,7 +6279,13 @@ const initializeSystem = async () => {
     
     // โค้ดด้านล่างนี้จะทำงานก็ต่อเมื่อไฟล์ JSON โหลดเสร็จแล้วเท่านั้น
     setupMatrixGrid();
-    initializeAbsoluteEventDelegation();
+    
+    // 🎯 ยัดคำสั่งระบายสีตรงนี้เลย! JSON มาปุ๊บ ระบายสีปั๊บ ไม่ง้อ RPC
+    applyManifestToGrid();
+    
+    if (typeof initializeAbsoluteEventDelegation === 'function') {
+        initializeAbsoluteEventDelegation();
+    }
     
     if (window.visualViewport) {
         const handleResize = () => {
@@ -6268,6 +6302,7 @@ const initializeSystem = async () => {
         window.visualViewport.addEventListener("scroll", handleResize, { passive: true });
     }
 };
+
 
 // [PATCH 1A: ANTI-APP-SWITCH GUARD]
 document.addEventListener("visibilitychange", () => {
