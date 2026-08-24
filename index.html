@@ -5754,7 +5754,10 @@ function autoMapMetadata(tokenId) {
 
 async function auditTokenFromLedger(tokenId, pollForUpdate = false) { 
     if (typeof resetAdminInputs === 'function') resetAdminInputs(); 
-    const mySession = ++window.currentAuditSession;
+    
+    // 🛡️ FIX 1: ป้องกันบั๊ก NaN Trap (เซ็ตค่าตั้งต้นให้เป็นตัวเลขเสมอ)
+    window.currentAuditSession = (window.currentAuditSession || 0) + 1;
+    const mySession = window.currentAuditSession;
 
     try {
         window.SystemState.selectedTokenId = tokenId;
@@ -5781,16 +5784,12 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
         let isRpcOnline = !!activeContract;
         let isMinted = false;
 
-        // =================================================================
-        // LAYER 1: โหลด Manifest ก่อนเป็นอันดับแรกสุด ห้ามข้ามสเตปนี้
-        // =================================================================
         if (!window.IMPERIAL_MANIFEST) {
             if (typeof fetchImperialManifest === 'function') {
-                await fetchImperialManifest(); // รอดึงไฟล์ให้เสร็จก่อน ถึงจะไปต่อ
+                await fetchImperialManifest();
             }
         }
 
-        // เตรียมข้อมูลจาก Manifest ล่วงหน้า
         let preMintFrontUri = "";
         if (window.IMPERIAL_MANIFEST && window.IMPERIAL_MANIFEST[String(tokenId)]) {
             const manifestData = window.IMPERIAL_MANIFEST[String(tokenId)];
@@ -5801,9 +5800,6 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
             }
         }
 
-        // =================================================================
-        // PHASE 1.5: เช็กว่า MINT ไปหรือยัง โดยไม่ให้เกิด Error Revert
-        // =================================================================
         if (isRpcOnline) {
             let attempts = 0;
             const maxAttempts = pollForUpdate ? 10 : 1;
@@ -5814,12 +5810,16 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
                 if (pollForUpdate && typeof GLOBAL_NODE_CACHE !== 'undefined') GLOBAL_NODE_CACHE.delete(String(tokenId));
                 
                 try {
-                    // ลองจำลองดึงค่า ถ้ายังไม่มิ้น มันจะ Error แล้วเด้งเข้า Catch เงียบๆ โดยไม่ทำให้ระบบพัง
                     if (typeof autoMap === 'function') {
-                        mappedNode = await autoMap(tokenId);
+                        // 🛡️ FIX 2: ป้องกันแอปช็อกตายคา RPC ด้วย Timeout 10 วินาที
+                        const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("RPC_TIMEOUT")), 10000));
+                        mappedNode = await Promise.race([autoMap(tokenId), timeoutPromise]);
                     }
                 } catch (err) {
                     mappedNode = null; 
+                    if (typeof appendLog === 'function' && err.message === "RPC_TIMEOUT") {
+                        appendLog(`[SYSTEM ALERT] RPC Timeout: Contract mapping delayed for Node #${tokenId}.`, "text-yellow-500 font-bold");
+                    }
                 }
 
                 if (mySession !== window.currentAuditSession) return; 
@@ -5837,10 +5837,8 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
                 }
             }
 
-            // สรุปผลว่า Node นี้ Mint หรือยัง
             isMinted = mappedNode && (mappedNode.isActivated || (mappedNode.owner && mappedNode.owner !== "0x0000000000000000000000000000000000000000"));
 
-            // *** สำคัญ: ถ้า Mint แล้ว ถึงจะอนุญาตให้ดึง TBA ได้ (ป้องกัน Error undefined/execution reverted) ***
             if (isMinted) {
                 try {
                     const onChainTBA = await activeContract.getTBA(BigInt(tokenId).toString());
@@ -5860,11 +5858,7 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
             }
         }
 
-        // =================================================================
-        // PHASE 2: LOGIC BRANCHING (แยกเลเยอร์ชัดเจน)
-        // =================================================================
         if (isMinted) {
-            // 🟢 LAYER 4: MINTED ON-CHAIN (อันไหนมีแล้ว ก็แสดงจาก Smart Contract)
             if (mySession !== window.currentAuditSession) return;
 
             const currentEpoch = Math.floor(Date.now() / 1000);
@@ -5924,12 +5918,9 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
             if (settleTokenInput) settleTokenInput.value = tokenId;
 
         } else {
-            // 🔴 LAYER 2 & 3: UNMINTED (โชว์รูปจาก Manifest รอให้กด Mint)
             if (mySession !== window.currentAuditSession) return;
 
             if (preMintFrontUri !== "") {
-                
-                // 🚨 บันทึก ID ดิบๆ ลง State ทันที ไม่เป็น undefined แล้วเพราะดัก Await Manifest ไว้เลเยอร์แรก
                 window.currentLoadedMediaData.front = preMintFrontUri;
                 window.currentLoadedMediaData.back = "";
                 window.currentLoadedMediaData.video = "";
@@ -5938,7 +5929,6 @@ async function auditTokenFromLedger(tokenId, pollForUpdate = false) {
                     appendLog(`[LAZY MINT READY] Matrix cell node #${tokenId} pre-loaded from Architect Manifest. Awaiting REBIRTH.`, "text-emerald-400 font-bold");
                 }
                 
-                // เลเยอร์ 3: แสดงรูปภาพด้านหน้าไว้
                 if (typeof renderToViewport === 'function') {
                     renderToViewport('previewFrontContainer', preMintFrontUri, "Obverse aspect currently unassigned.");
                     renderToViewport('previewBackContainer', "", "Void element data layer uninitialized.");
