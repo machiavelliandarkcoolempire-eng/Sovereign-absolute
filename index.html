@@ -6269,50 +6269,64 @@ const initializeSystem = async () => {
     }
 };
 
-
 // [PATCH 1A: ANTI-APP-SWITCH GUARD]
 document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "hidden") {
         if (typeof isTransactionPending !== 'undefined' && isTransactionPending) {
-            safeAppendLog("⚠️ CRITICAL WARNING: App backgrounded during active execution. Connection may drop.", "text-red-500 font-bold");
+            if (typeof safeAppendLog === 'function') safeAppendLog("⚠️ CRITICAL WARNING: App backgrounded during active execution. Connection may drop.", "text-red-500 font-bold");
+            else if (typeof appendLog === 'function') appendLog("⚠️ CRITICAL WARNING: App backgrounded during active execution. Connection may drop.", "text-red-500 font-bold");
+            
             if (typeof showNotification === 'function') {
                 showNotification("WARNING: Do not switch apps during an active upload or transaction. It will fail.", "error");
             }
         }
     } else if (document.visibilityState === "visible") {
         if (typeof isTransactionPending !== 'undefined' && isTransactionPending) {
-            safeAppendLog("🔄 App resumed. Verifying RPC and WebSocket integrity...", "text-yellow-400");
+            if (typeof safeAppendLog === 'function') safeAppendLog("🔄 App resumed. Verifying RPC and WebSocket integrity...", "text-yellow-400");
+            else if (typeof appendLog === 'function') appendLog("🔄 App resumed. Verifying RPC and WebSocket integrity...", "text-yellow-400");
+            
             if (typeof syncContractStates === 'function') syncContractStates();
         }
     }
 });
 
+// ==============================================================================
+// 🚀 THE ARCHITECT'S FIX: STRICT BOOT SEQUENCE (ล็อกคิวรันจากบนลงล่าง)
+// ==============================================================================
+const bootSequence = async () => {
+    revealApp();
+    
+    // 1. 🛡️ ล็อกคอระบบ! บังคับให้โหลด Manifest และ Setup DOM ให้เสร็จ 100%
+    await initializeSystem(); 
+
+    // 2. ปลุก Gateways
+    if (typeof loadArchitectGateways === 'function') {
+        try { loadArchitectGateways(); } catch (e) { console.warn("Gateways non-fatal skip"); }
+    }
+
+    // 3. ปลุก RPC และ Sync ข้อมูล (Ethers v6) - ทำงานต่อเมื่อ Manifest เสร็จแล้วเท่านั้น
+    if (typeof bootSystemRPCs === 'function' && typeof CONTRACT_ADDRESS !== 'undefined' && typeof CONTRACT_ABI !== 'undefined') {
+        try {
+            await bootSystemRPCs(CONTRACT_ADDRESS, CONTRACT_ABI);
+            if (typeof syncActiveMatrixNodes === 'function') {
+                await syncActiveMatrixNodes(); 
+            }
+        } catch (e) {
+            console.warn("[NON-BLOCKING RPC] Initialization deferred:", e);
+        }
+    }
+};
+
+// ==============================================================================
+// 🎯 ENTRY POINT: ทำลาย window.onload ทิ้ง ใช้ Boot Sequence คุมเกมทั้งหมด
+// ==============================================================================
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
-        revealApp();
-        initializeSystem();
+        bootSequence();
     }, { once: true }); 
 } else { 
-    revealApp(); 
-    initializeSystem();
+    bootSequence();
 }
-
-window.addEventListener('load', () => { 
-    revealApp(); 
-    if (typeof loadArchitectGateways === 'function') { 
-        try { loadArchitectGateways(); } catch (e) { console.warn("Gateways non-fatal skip"); } 
-    } 
-    
-    if (typeof bootSystemRPCs === 'function' && typeof CONTRACT_ADDRESS !== 'undefined' && typeof CONTRACT_ABI !== 'undefined') { 
-        bootSystemRPCs(CONTRACT_ADDRESS, CONTRACT_ABI)
-            .then(() => {
-                if (typeof syncActiveMatrixNodes === 'function') {
-                    return syncActiveMatrixNodes();
-                }
-            })
-            .catch(e => console.warn("[NON-BLOCKING RPC] Initialization deferred:", e));
-    }
-});
 
 </script>
 </body>
