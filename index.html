@@ -6336,6 +6336,70 @@ async function syncActiveMatrixNodes() {
     } 
 }
 
+
+function setupMatrixGrid() { 
+    const grid = document.getElementById('matrixGridContainer'); 
+    if (!grid) return;
+
+    grid.replaceChildren(); 
+    if (window.matrixDOMCache) window.matrixDOMCache.clear();
+    else window.matrixDOMCache = new Map();
+
+    const fragment = document.createDocumentFragment();
+    const isTouch = typeof IS_TOUCH_DEVICE !== 'undefined' && IS_TOUCH_DEVICE;
+
+    for (let i = 1; i <= 333; i++) {
+        let rankClass = "border-slate-800";
+        let hasCrown = false;
+
+        if ([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 50, 100].includes(i)) {
+            rankClass = "rank-prime"; hasCrown = true;
+        } else if (i >= 11 && i <= 100) { rankClass = "rank-gold"; } 
+        else if (i >= 101 && i <= 200) { rankClass = "rank-silver"; } 
+        else if (i >= 201 && i <= 332) { rankClass = "rank-red"; } 
+        else if (i === 333) { rankClass = "rank-imperial"; hasCrown = true; }
+
+        const node = document.createElement('div');
+        node.id = `node-${i}`;
+        node.setAttribute('data-token-id', i.toString());
+        
+        const hoverClass = isTouch ? "active:bg-slate-800" : "hover:bg-slate-800";
+        node.className = `matrix-node aspect-square w-full bg-slate-950 border rounded flex flex-col items-center justify-center font-mono text-[8px] sm:text-[10px] md:text-xs text-slate-500 cursor-pointer p-1 sm:p-2 transition-all duration-300 ${hoverClass} ${rankClass}`;
+        
+        node.style.contentVisibility = 'auto';
+        node.style.contain = 'strict';
+        node.style.touchAction = 'manipulation';
+        
+        const innerDiv = document.createElement('div');
+        innerDiv.className = "flex justify-center w-full items-center leading-none pointer-events-none"; 
+        
+        const numSpan = document.createElement('span');
+        numSpan.textContent = i.toString().padStart(3, '0');
+        innerDiv.appendChild(numSpan);
+
+        if (hasCrown) {
+            const crownSpan = document.createElement('span');
+            crownSpan.className = "text-[6px] sm:text-[8px] font-bold block leading-none ml-1";
+            crownSpan.textContent = "👑";
+            innerDiv.appendChild(crownSpan);
+        }
+
+        node.appendChild(innerDiv);
+        fragment.appendChild(node);
+        window.matrixDOMCache.set(i, node);
+    }
+
+    requestAnimationFrame(() => {
+        grid.appendChild(fragment);
+    });
+
+    const searchInput = document.getElementById('gridSearchInput');
+    if (searchInput && !searchInput.dataset.listenerAttached) {
+        searchInput.addEventListener('input', filterSovereignGrid, { passive: true });
+        searchInput.dataset.listenerAttached = "true";
+    }
+}
+
 function switchStation(station) { 
     const tabFront = document.getElementById("tabFront"); 
     const tabBack = document.getElementById("tabBack"); 
