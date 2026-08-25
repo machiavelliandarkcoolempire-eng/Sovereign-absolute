@@ -418,87 +418,69 @@
     </div>
 </section>
 
+<!-- 🧬 เริ่มต้น Section: ห้อง DNA STUDIO -->
 <div id="memberDnaStudio" class="hidden mb-6 relative z-10">
-    <div class="chiaroscuro-bg p-6 md:p-8 rounded-2xl border border-rose-900/50 shadow-[0_0_40px_rgba(153,27,27,0.15)]">
+    <div class="chiaroscuro-bg p-6 md:p-8 rounded-2xl border border-cyan-900/50 shadow-[0_0_40px_rgba(6,182,212,0.15)]">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-stone-800 pb-4 mb-6 gap-3">
             <div>
-                <h2 class="text-xl font-black font-cinzel text-rose-400 uppercase tracking-tight">SOVEREIGN NOVA: ON-CHAIN FORENSIC TRUTH</h2>
-                <p class="text-[10px] font-mono text-stone-500 uppercase tracking-wide mt-1">RESTRICTED SYSTEM — HOLDER IDENTITY ACCREDITED BY CRYPTOGRAPHY</p>
+                <h2 class="text-xl font-black font-cinzel text-cyan-400 uppercase tracking-tight">SOVEREIGN NOVA: ON-CHAIN FORENSIC TRUTH</h2>
+                <p class="text-[10px] font-mono text-stone-500 uppercase tracking-wide mt-1">RESTRICTED SYSTEM — 8-PARAMETER ON-CHAIN DATA & FACTORY METADATA</p>
             </div>
-            <span id="labAccessBadge" class="bg-rose-950/60 text-rose-300 border border-rose-700 text-[10px] font-black px-3 py-2 tracking-widest uppercase rounded-lg shadow-[0_0_15px_rgba(153,27,27,0.4)]">HOLDER VERIFIED</span>
+            <span id="labAccessBadge" class="bg-cyan-950/60 text-cyan-300 border border-cyan-700 text-[10px] font-black px-3 py-2 tracking-widest uppercase rounded-lg shadow-[0_0_15px_rgba(6,182,212,0.4)]">HOLDER VERIFIED</span>
         </div>
 
-        <div class="space-y-5 font-mono">
-            <div class="p-4 bg-stone-950 border border-stone-800 rounded-xl shadow-inner">
-                <label class="text-[11px] text-amber-500 font-bold block mb-2 uppercase tracking-wider">1. TOKEN ID</label>
-                <input type="number" id="dnaVerifyTokenId" min="1" max="333" placeholder="TOKEN ID (1-333)" class="w-full bg-black border border-rose-900/50 p-3 text-sm text-amber-500 rounded-lg outline-none focus:border-amber-500 transition-all" />
+        <div class="space-y-3 font-mono text-[10px] md:text-xs">
+            <!-- 8 ค่าที่ดึงตรงจาก Smart Contract (getDeedData) -->
+            <div class="bg-black/80 p-3.5 rounded-lg border border-stone-800 flex flex-col gap-1">
+                <span class="text-stone-500 font-bold uppercase">1. ACCREDITED OWNER:</span> 
+                <span id="dna-owner" class="text-cyan-300 break-all font-bold">AWAITING...</span>
             </div>
-
-            <div class="p-4 bg-stone-950 border border-stone-800 rounded-xl shadow-inner">
-                <label class="text-[11px] text-amber-500 font-bold block mb-2 uppercase tracking-wider">2. DNA = IDENTITY DNA : YOUR NAME</label>
-                <div class="p-3 bg-black/80 rounded-lg border border-rose-900/40">
-                    <span id="metaRawDna" class="text-stone-300 text-xs break-all select-all">IDENTITY DNA : YOUR NAME [3% OPACITY]</span>
+            <div class="grid grid-cols-2 gap-3">
+                <div class="bg-black/80 p-3.5 rounded-lg border border-stone-800 flex flex-col gap-1">
+                    <span class="text-stone-500 font-bold uppercase">2. ACTIVE STATUS:</span> 
+                    <span id="dna-active" class="text-cyan-300 font-bold">AWAITING...</span>
+                </div>
+                <div class="bg-black/80 p-3.5 rounded-lg border border-stone-800 flex flex-col gap-1">
+                    <span class="text-stone-500 font-bold uppercase">3. SANCTIFIED (NOVA):</span> 
+                    <span id="dna-sanctified" class="text-cyan-300 font-bold">AWAITING...</span>
                 </div>
             </div>
-
-            <div class="p-4 bg-stone-950 border border-stone-800 rounded-xl shadow-inner">
-                <label class="text-[11px] text-amber-500 font-bold block mb-2 uppercase tracking-wider">3. VIDEO : LINK , ID IRYS-XYZ</label>
-                <div class="p-3 bg-black/80 rounded-lg border border-stone-800 text-[10px] flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                    <span id="irysLinkDisplay" class="text-stone-300 break-all">LINK: https://gateway.irys.xyz/IRYS-XYZ | ID: IRYS-XYZ</span>
-                    <span class="text-rose-400 font-bold px-3 py-1.5 border border-rose-800 rounded-lg bg-rose-950/40 shrink-0 shadow-[0_0_10px_rgba(153,27,27,0.3)]">PAUSE 9S (ZOOM 5X)</span>
-                </div>
+            <div class="bg-black/80 p-3.5 rounded-lg border border-stone-800 flex flex-col gap-1">
+                <span class="text-stone-500 font-bold uppercase">4. FRONT URI:</span> 
+                <span id="dna-front" class="text-cyan-300 break-all">AWAITING...</span>
             </div>
-
-            <div class="p-4 bg-stone-950 border border-stone-800 rounded-xl space-y-4 shadow-inner">
-                <label class="text-[11px] text-amber-500 font-bold block uppercase tracking-wider">4. HIDDEN</label>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-[10px]">
-                    <div class="p-3 bg-black/80 rounded-lg border border-stone-800">
-                        <span class="text-stone-500 block uppercase font-bold mb-1">SANCTIFIED TIMESTAMPS</span>
-                        <span class="text-rose-400 font-bold">SANCTIFIED AT 9S FR 1-5 | SANCTIFIED AT 12S FR 11-15</span>
-                    </div>
-                    <div class="p-3 bg-black/80 rounded-lg border border-stone-800 flex flex-col">
-                        <span class="text-stone-500 block uppercase font-bold mb-1">PIXEL ANCHOR (ZOOM 7X)</span>
-                        <span id="propDisplay1" class="text-amber-500 font-bold mb-1">X : 1014 Y : 1754</span>
-                        <span id="metaHiddenProperty" class="text-amber-500 font-bold">AWAITING EXTRACTION...</span>
-                    </div>
-                </div>
-
-                <div class="p-3 bg-black/90 rounded-lg border border-stone-800 text-[9px] text-stone-400 flex flex-wrap justify-between gap-2">
-                    <span>BRIGHTNESS: <strong class="text-amber-400">+50</strong></span>
-                    <span>CONTRAST: <strong class="text-amber-400">+20</strong></span>
-                    <span>SHADOWS: <strong class="text-amber-400">+35</strong></span>
-                    <span>SHARPNESS: <strong class="text-amber-400">+80</strong></span>
-                    <span>DETAILS: <strong class="text-amber-400">+50</strong></span>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-[10px]">
-                    <div class="p-3 bg-black/80 rounded-lg border border-stone-800">
-                        <span class="text-rose-400 block uppercase font-bold mb-1">AI DEEP FAKE NEWS (VIDEO)</span>
-                        <span class="text-stone-300">VIDEO: 0.01 FR 4-8 = NO NEW PIXEL GENERATION AT 0.01S</span>
-                    </div>
-                    <div class="p-3 bg-black/80 rounded-lg border border-stone-800">
-                        <span class="text-rose-400 block uppercase font-bold mb-1">SOCIAL COPY CHECK (IMAGE)</span>
-                        <span class="text-stone-300">IMAGE: X:1344, Y:168 (OPACITY 3%) SOCIAL MEDIA COMPRESSION DESTROYS 3% OPACITY PIXEL DATA</span>
-                    </div>
-                </div>
+            <div class="bg-black/80 p-3.5 rounded-lg border border-stone-800 flex flex-col gap-1">
+                <span class="text-stone-500 font-bold uppercase">5. BACK URI:</span> 
+                <span id="dna-back" class="text-cyan-300 break-all">AWAITING...</span>
             </div>
-
-            <button onclick="if(typeof processIdentityDnaInspectionOnChain === 'function') processIdentityDnaInspectionOnChain()" class="w-full bg-rose-950/60 text-rose-200 border border-rose-600 text-xs font-black py-4 rounded-xl uppercase hover:bg-rose-900 transition-all tracking-widest shadow-[0_0_25px_rgba(153,27,27,0.4)] cursor-pointer mt-4">
-                EXTRACT ON-CHAIN STRUCTURAL TRACE — autoMap() 🧬
-            </button>
-
-            <div id="dnaAnalysisTerminalOut" class="p-3 bg-stone-950 border border-stone-800 rounded-xl text-center mt-3 text-[10px] text-stone-500 font-mono uppercase tracking-widest shadow-inner">
-                AWAITING FORENSIC EXTRACTION...
+            <div class="bg-black/80 p-3.5 rounded-lg border border-stone-800 flex flex-col gap-1">
+                <span class="text-stone-500 font-bold uppercase">6. VIDEO URI:</span> 
+                <span id="dna-video" class="text-cyan-300 break-all">AWAITING...</span>
             </div>
-
-            <div id="dnaLabDisplay" class="hidden p-4 bg-emerald-950/30 border border-emerald-800/50 rounded-xl text-center mt-3 shadow-[0_0_20px_rgba(16,185,129,0.15)]">
-                <span class="text-[10px] text-emerald-400 block tracking-widest uppercase font-bold mb-2">SANCTIFIED PROOF: EXECUTION SUCCESSFUL</span>
-                <span id="dnaTargetText" class="text-[9px] text-emerald-300 block break-all"></span>
+            <div class="bg-black/80 p-3.5 rounded-lg border border-rose-900/30 flex flex-col gap-1 shadow-inner">
+                <span class="text-rose-400 font-bold uppercase">7. IDENTITY DNA:</span> 
+                <span id="dna-dna" class="text-rose-200 break-all font-bold">AWAITING...</span>
+            </div>
+            <div class="bg-black/80 p-3.5 rounded-lg border border-rose-900/30 flex flex-col gap-1 shadow-inner">
+                <span class="text-rose-400 font-bold uppercase">8. HIDDEN PROPERTY:</span> 
+                <span id="dna-hidden" class="text-rose-200 break-all font-bold">AWAITING...</span>
+            </div>
+            
+            <!-- 2 ค่าที่ดึงจาก Factory Metadata (JSON) -->
+            <div class="bg-black/80 p-3.5 rounded-lg border border-amber-900/50 flex flex-col gap-2 shadow-inner mt-2">
+                <span class="text-amber-500 font-bold uppercase border-b border-stone-800 pb-1">9. FACTORY METADATA (JSON ATTRIBUTES):</span> 
+                <span id="propDisplay1" class="text-amber-300 font-bold">AWAITING EXTRACTION...</span>
+                <span id="propDisplay2" class="text-amber-300 font-bold">AWAITING EXTRACTION...</span>
             </div>
         </div>
+        
+        <!-- ปุ่มกด Refresh ข้อมูล -->
+        <button onclick="if(typeof processIdentityDnaInspectionOnChain === 'function') processIdentityDnaInspectionOnChain()" class="w-full bg-cyan-950/60 text-cyan-200 border border-cyan-600 text-xs font-black py-4 rounded-xl uppercase hover:bg-cyan-900 transition-all tracking-widest shadow-[0_0_25px_rgba(6,182,212,0.4)] cursor-pointer mt-5">
+            REFRESH ON-CHAIN STRUCTURAL TRACE 🧬
+        </button>
     </div>
 </div>
+<!-- 🧬 สิ้นสุด Section: ห้อง DNA STUDIO -->
 
 <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5 mb-6 relative z-10">
     <div class="chiaroscuro-bg p-5 rounded-2xl border-l-4 border-amber-500">
@@ -746,7 +728,7 @@
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-stone-800 pb-4 mb-6 gap-4">
         <div>
             <h2 class="text-xl font-black font-cinzel text-stone-100 uppercase tracking-tight">📡 Decentralized Media Transmission Station</h2>
-            <p class="text-[10px] font-mono text-stone-500 uppercase tracking-wide mt-1">DIRECT IRYS BRIDGING TRANSMISSION • MAXIMUM CAPACITY: 300MB</p>
+            <p class="text-[10px] font-mono text-stone-500 uppercase tracking-wide mt-1">DIRECT IRYS BRIDGING TRANSMISSION • MAXIMUM CAPACITY: 500MB</p>
             <div id="uploadTargetDisplay" class="text-[10px] font-mono text-slate-500 mt-2 uppercase font-bold">LOCKED TOKEN ID: NONE</div>
         </div>
         <div id="targetBridgeFieldLabel" class="text-[10px] font-mono font-bold text-amber-500 uppercase bg-stone-950 px-4 py-2 border border-stone-800 rounded-lg shadow-inner text-center w-full md:w-auto">
@@ -1248,6 +1230,9 @@ const WETH_ABI = [
     "function balanceOf(address account) view returns (uint256)"
 ];
 
+// ==========================================
+// SYSTEM CORE VARIABLES
+// ==========================================
 let provider = null, signer = null, secureContract = null, irys = null;
 let readOnlyProvider = null, readOnlyContract = null;
 let activeRawProvider = null; 
@@ -1286,6 +1271,8 @@ window.SystemState = {
 
 let globalSelectedTokenId = window.SystemState.globalSelectedTokenId;
 let currentLoadedMediaData = window.SystemState.currentLoadedMediaData;
+
+
 
 // ==============================================================================
 // 🛠️ UTILITY & CORE FUNCTIONS
@@ -1550,6 +1537,12 @@ function safeAppendLog(msg, colorClass = "text-slate-400") {
         if (typeof window.appendLog === 'function') window.appendLog(msg, colorClass);
         else if (typeof appendLog === 'function') appendLog(msg, colorClass);
         else console.log(`[SYS LOG]: ${msg}`);
+
+        // [FIX] อัปเดตข้อความลง Footer Log (systemFooterLog) เพิ่มเติม
+        const footerLog = document.getElementById('systemFooterLog');
+        if (footerLog) {
+            footerLog.textContent = msg;
+        }
     } catch (e) {
         console.log(`[SYS LOG FALLBACK]: ${msg}`);
     }
@@ -2149,7 +2142,7 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
             let isSynced = false;
             let attempts = 0;
             const maxAttempts = 36; 
-
+            
             while (!isSynced && attempts < maxAttempts) {
                 if (!irys || typeof signer === 'undefined' || !signer) { 
                     throw new Error("Wallet session severed during sync"); 
@@ -2208,14 +2201,16 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
                             irys.uploader.chunkedUploader.setChunkSize(chunkSize);
                             irys.uploader.chunkedUploader.setBatchSize(batchSize);
                             
-                            const uploadId = 'irys_resume_' + dataToUpload.name + '_' + dataToUpload.size;
+                            // 🟢 WAR MACHINE FIX: Create safe ID and pass raw File object
+                            const safeName = dataToUpload.name ? dataToUpload.name.replace(/[^a-zA-Z0-9_-]/g, '') : 'payload';
+                            const uploadId = `irys_resume_${safeName}_${size}`;
                             
                             if (attempt > 0) {
-                                safeAppendLog(`[IRYS TELEMETRY] Resuming upload for ID: ${uploadId}...`, "text-amber-400");
-                                receipt = await irys.uploader.chunkedUploader.resumeUpload(uploadId);
-                            } else {
-                                receipt = await irys.uploader.chunkedUploader.uploadData(dataToUpload.stream(), { tags, uploadId });
-                            }
+                                safeAppendLog(`[IRYS TELEMETRY] Resuming upload via ID: ${uploadId}...`, "text-amber-400");
+                            } 
+                            
+                            receipt = await irys.uploader.chunkedUploader.uploadData(dataToUpload, { tags, uploadId });
+                            
                         } else if (isFile && typeof irys.uploadFile === 'function') {
                             if (progressCtrl) progressCtrl.set(size / 2);
                             receipt = await irys.uploadFile(dataToUpload, { tags });
@@ -2264,6 +2259,7 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
         if (activeBtn) toggleButtonLoading(activeBtn, false);
     }
 }
+
 
 // ==============================================================================
 // ⚡ CORE EXECUTION: TOP-UP PROTOCOL (ASYNC NON-BLOCKING)
@@ -2397,6 +2393,13 @@ function syncMatrixIdStateUI(activeId) {
     }
 }
 
+// ==========================================
+// UI STATE CLASSES (MATRIX EFFECT STATE)
+// ==========================================
+const THINKING_CLASSES = ['ring-2', 'ring-purple-500', 'animate-pulse'];
+const ACTIVE_CLASSES = ['ring-2', 'ring-emerald-400', 'shadow-[0_0_15px_rgba(52,211,153,0.5)]'];
+const ERROR_CLASSES = ['ring-2', 'ring-red-500'];
+const ALL_STATE_CLASSES = [...THINKING_CLASSES, ...ACTIVE_CLASSES, ...ERROR_CLASSES];
 
 function initializeAbsoluteEventDelegation() {
     if (document.body.dataset.delegationAttached === "true") return;
@@ -2404,127 +2407,136 @@ function initializeAbsoluteEventDelegation() {
     const eventType = (typeof IS_TOUCH_DEVICE !== 'undefined' && IS_TOUCH_DEVICE) ? 'pointerup' : 'click';
 
     document.body.addEventListener(eventType, async (event) => {
+        // ดักจับเฉพาะ Matrix Node เท่านั้น (ตามที่คุณเข้าใจว่าเอาไว้เปลี่ยนสีและจัดการโหนด)
         const matrixNode = event.target.closest('[data-token-id], .matrix-node-cell, .matrix-cell, .matrix-node');
-        if (matrixNode) {
-            const rawId = matrixNode.dataset.tokenId || matrixNode.getAttribute('data-token-id');
-            const tokenId = parseInt(rawId, 10);
+        if (!matrixNode) return;
 
-            if (!isNaN(tokenId) && tokenId > 0) {
-                if (typeof isTransactionPending !== 'undefined' && isTransactionPending) {
-                    showNotification("SYSTEM ENFORCEMENT: Action locked. Await clearance.", "warning");
-                    return;
+        const rawId = matrixNode.dataset.tokenId || matrixNode.getAttribute('data-token-id');
+        const tokenId = parseInt(rawId, 10);
+
+        if (!isNaN(tokenId) && tokenId > 0) {
+            if (typeof isTransactionPending !== 'undefined' && isTransactionPending) {
+                showNotification("SYSTEM ENFORCEMENT: Action locked. Await clearance.", "warning");
+                return;
+            }
+
+            globalSelectedTokenId = tokenId;
+            window.SystemState.selectedTokenId = tokenId;
+            window.SystemState.globalSelectedTokenId = tokenId;
+
+            syncMatrixIdStateUI(tokenId);
+
+            const novaTokenEl = document.getElementById('novaTokenId');
+            if (novaTokenEl) novaTokenEl.value = tokenId;
+            const settleTokenInput = document.getElementById('settleTokenId');
+            if (settleTokenInput) settleTokenInput.value = tokenId;
+            const dnaVerifyTokenId = document.getElementById('dnaVerifyTokenId');
+            if (dnaVerifyTokenId) dnaVerifyTokenId.value = tokenId;
+
+            if (window.matrixDOMCache) {
+                window.matrixDOMCache.forEach(n => {
+                    if (typeof ALL_STATE_CLASSES !== 'undefined') n.classList.remove(...ALL_STATE_CLASSES);
+                });
+            }
+            if (typeof THINKING_CLASSES !== 'undefined') matrixNode.classList.add(...THINKING_CLASSES);
+
+            safeAppendLog(`[MATRIX] Engaging node #${tokenId}...`, "text-blue-400");
+
+            let isAdmin = false;
+            let adminRole = null;
+
+            if (signer) {
+                try {
+                    const userAddress = (await signer.getAddress()).toLowerCase();
+                    const contractsToCheck = [];
+                    if (typeof secureContract !== 'undefined' && secureContract) contractsToCheck.push(secureContract);
+                    if (window.systemContracts && Array.isArray(window.systemContracts)) {
+                        contractsToCheck.push(...window.systemContracts);
+                    }
+
+                    for (const contract of contractsToCheck) {
+                        try {
+                            if (typeof contract.owner === 'function') {
+                                const ownerAddr = await contract.owner();
+                                if (ownerAddr && ownerAddr !== ethers.ZeroAddress && userAddress === ownerAddr.toLowerCase()) {
+                                    isAdmin = true;
+                                    adminRole = 'OWNER';
+                                    break;
+                                }
+                            }
+                        } catch (e) {}
+                    }
+
+                    if (!isAdmin) {
+                        for (const contract of contractsToCheck) {
+                            try {
+                                if (typeof contract.architect === 'function') {
+                                    const archAddr = await contract.architect();
+                                    if (archAddr && archAddr !== ethers.ZeroAddress && userAddress === archAddr.toLowerCase()) {
+                                        isAdmin = true;
+                                        adminRole = 'ARCHITECT';
+                                        break;
+                                    }
+                                }
+                            } catch (e) {}
+                        }
+                    }
+                } catch (e) {
+                    safeAppendLog(`[SECURITY CHECK ERROR] Authorization audit failed: ${e.message}`, "text-red-400");
                 }
+            }
 
-                globalSelectedTokenId = tokenId;
-                window.SystemState.selectedTokenId = tokenId;
-                window.SystemState.globalSelectedTokenId = tokenId;
+            if (typeof auditTokenFromLedger === 'function') {
+                auditTokenFromLedger(tokenId)
+                    .then(() => {
+                        if (typeof THINKING_CLASSES !== 'undefined') matrixNode.classList.remove(...THINKING_CLASSES, ...(typeof ERROR_CLASSES !== 'undefined' ? ERROR_CLASSES : []));
+                        if (typeof ACTIVE_CLASSES !== 'undefined') matrixNode.classList.add(...ACTIVE_CLASSES);
 
-                syncMatrixIdStateUI(tokenId);
-
-                const novaTokenEl = document.getElementById('novaTokenId');
-                if (novaTokenEl) novaTokenEl.value = tokenId;
-                const settleTokenInput = document.getElementById('settleTokenId');
-                if (settleTokenInput) settleTokenInput.value = tokenId;
-                const dnaVerifyTokenId = document.getElementById('dnaVerifyTokenId');
-                if (dnaVerifyTokenId) dnaVerifyTokenId.value = tokenId;
-
-                if (window.matrixDOMCache) {
-                    window.matrixDOMCache.forEach(n => {
-                        if (typeof ALL_STATE_CLASSES !== 'undefined') n.classList.remove(...ALL_STATE_CLASSES);
-                    });
-                }
-                if (typeof THINKING_CLASSES !== 'undefined') matrixNode.classList.add(...THINKING_CLASSES);
-
-                safeAppendLog(`[MATRIX] Engaging node #${tokenId}...`, "text-blue-400");
-
-                let isAdmin = false;
-                if (secureContract && signer) {
-                    try {
-                        const userAddress = (await signer.getAddress()).toLowerCase();
-                        let arch = ethers.ZeroAddress, owner = ethers.ZeroAddress;
-                        try { arch = await secureContract.architect(); } catch (e) {}
-                        try { owner = await secureContract.owner(); } catch (e) {}
-                        isAdmin = (userAddress === arch.toLowerCase() || userAddress === owner.toLowerCase());
-                    } catch(e) {}
-                }
-
-                if (typeof auditTokenFromLedger === 'function') {
-                    auditTokenFromLedger(tokenId)
-                        .then(() => {
-                            if (typeof THINKING_CLASSES !== 'undefined') matrixNode.classList.remove(...THINKING_CLASSES, ...(typeof ERROR_CLASSES !== 'undefined' ? ERROR_CLASSES : []));
+                        const bridgeLabel = document.getElementById('targetBridgeFieldLabel');
+                        if (bridgeLabel) {
+                            bridgeLabel.textContent = `TARGET ASPECT: NODE #${tokenId} SELECTED`;
+                            bridgeLabel.classList.remove('text-amber-500');
+                            bridgeLabel.classList.add('text-emerald-400');
+                        }
+                    })
+                    .catch((err) => {
+                        if (typeof THINKING_CLASSES !== 'undefined') matrixNode.classList.remove(...THINKING_CLASSES);
+                        if (isAdmin) {
                             if (typeof ACTIVE_CLASSES !== 'undefined') matrixNode.classList.add(...ACTIVE_CLASSES);
+                            safeAppendLog(`[ADMIN OVERRIDE] ${adminRole} privileges engaged for Void Node #${tokenId}.`, "text-emerald-400 font-bold");
 
                             const bridgeLabel = document.getElementById('targetBridgeFieldLabel');
                             if (bridgeLabel) {
-                                bridgeLabel.textContent = `TARGET ASPECT: NODE #${tokenId} SELECTED`;
+                                bridgeLabel.textContent = `TARGET ASPECT: NODE #${tokenId} SELECTED (VOID)`;
                                 bridgeLabel.classList.remove('text-amber-500');
                                 bridgeLabel.classList.add('text-emerald-400');
                             }
-                        })
-                        .catch((err) => {
-                            if (typeof THINKING_CLASSES !== 'undefined') matrixNode.classList.remove(...THINKING_CLASSES);
-                            if (isAdmin) {
-                                if (typeof ACTIVE_CLASSES !== 'undefined') matrixNode.classList.add(...ACTIVE_CLASSES);
-                                safeAppendLog(`[ADMIN OVERRIDE] Architect privileges engaged for Void Node #${tokenId}.`, "text-emerald-400 font-bold");
+                        } else {
+                            if (typeof ERROR_CLASSES !== 'undefined') matrixNode.classList.add(...ERROR_CLASSES);
+                            globalSelectedTokenId = null;
+                            window.SystemState.selectedTokenId = null;
+                            if (novaTokenEl) novaTokenEl.value = '';
+                            if (settleTokenInput) settleTokenInput.value = '';
+                            if (dnaVerifyTokenId) dnaVerifyTokenId.value = '';
+                            showNotification("ACCESS DENIED: Selected Node is uninitialized.", "error");
 
-                                const bridgeLabel = document.getElementById('targetBridgeFieldLabel');
-                                if (bridgeLabel) {
-                                    bridgeLabel.textContent = `TARGET ASPECT: NODE #${tokenId} SELECTED (VOID)`;
-                                    bridgeLabel.classList.remove('text-amber-500');
-                                    bridgeLabel.classList.add('text-emerald-400');
-                                }
-                            } else {
-                                if (typeof ERROR_CLASSES !== 'undefined') matrixNode.classList.add(...ERROR_CLASSES);
-                                globalSelectedTokenId = null;
-                                window.SystemState.selectedTokenId = null;
-                                if (novaTokenEl) novaTokenEl.value = '';
-                                if (settleTokenInput) settleTokenInput.value = '';
-                                if (dnaVerifyTokenId) dnaVerifyTokenId.value = '';
-                                showNotification("ACCESS DENIED: Selected Node is uninitialized.", "error");
-
-                                const bridgeLabel = document.getElementById('targetBridgeFieldLabel');
-                                if (bridgeLabel) {
-                                    bridgeLabel.textContent = `TARGET ASPECT: DORMANT (CHOOSE NODES COORD)`;
-                                    bridgeLabel.classList.remove('text-emerald-400');
-                                    bridgeLabel.classList.add('text-amber-500');
-                                }
+                            const bridgeLabel = document.getElementById('targetBridgeFieldLabel');
+                            if (bridgeLabel) {
+                                bridgeLabel.textContent = `TARGET ASPECT: DORMANT (CHOOSE NODES COORD)`;
+                                bridgeLabel.classList.remove('text-emerald-400');
+                                bridgeLabel.classList.add('text-amber-500');
                             }
-                        });
-                } else {
-                    if (typeof THINKING_CLASSES !== 'undefined') matrixNode.classList.remove(...THINKING_CLASSES);
-                    if (typeof ACTIVE_CLASSES !== 'undefined') matrixNode.classList.add(...ACTIVE_CLASSES);
-                }
+                        }
+                    });
+            } else {
+                if (typeof THINKING_CLASSES !== 'undefined') matrixNode.classList.remove(...THINKING_CLASSES);
+                if (typeof ACTIVE_CLASSES !== 'undefined') matrixNode.classList.add(...ACTIVE_CLASSES);
             }
-            return;
-        }
-
-        const btnGatewayUnlock = event.target.closest('#btnGatewayUnlock');
-        if (btnGatewayUnlock && typeof executeGatewayUnlock === 'function') {
-            await executeGatewayUnlock(event);
-            return;
-        }
-
-        const btnUploadFront = event.target.closest('#btnUploadFront');
-        if (btnUploadFront && typeof executeArchitectCentralizedUpload === 'function') {
-            await executeArchitectCentralizedUpload('front');
-            return;
-        }
-
-        const btnUploadBack = event.target.closest('#btnUploadBack');
-        if (btnUploadBack && typeof executeArchitectCentralizedUpload === 'function') {
-            await executeArchitectCentralizedUpload('back');
-            return;
-        }
-
-        const btnForceClear = event.target.closest('#btnForceClear');
-        if (btnForceClear && typeof window.systemForceClearState === 'function') {
-            window.systemForceClearState();
-            return;
         }
     });
 
     document.body.dataset.delegationAttached = "true";
-    safeAppendLog("[SYSTEM] Absolute Event Delegation Router Active. ID Desync eliminated.", "text-emerald-400");
+    safeAppendLog("[SYSTEM] Matrix Node Event Delegation Active. Zero HTML Interference.", "text-emerald-400");
 }
 
 // ==============================================================================
@@ -2666,41 +2678,93 @@ async function executeGatewayUnlock(event) {
         return;
     }
 
+    const tokenId = globalSelectedTokenId;
+    if (!tokenId) {
+        showNotification("ACCESS DENIED: NO MATRIX NODE SELECTED. Please select a node from the grid first.", "error");
+        return;
+    }
+
     const btn = toggleButtonLoading(event, true);
     try {
-        const address = await signer.getAddress();
-        const privs = await verifyUserPrivileges(address);
-
-        if (privs.isHolder || privs.isAdmin) {
-            let ownedIds = "OWNER/ARCHITECT BYPASS";
-            
-            if (privs.isHolder && !privs.isAdmin) {
-                const userTokens = await secureContract.walletOfOwner(address);
-                const safeTokens = userTokens.slice(0, 100); 
-                ownedIds = safeTokens.map(t => t.toString()).join(", ") + (userTokens.length > 100 ? "...(truncated)" : "");
-                
-                const verifyTokenEl = document.getElementById('dnaVerifyTokenId');
-                if (verifyTokenEl) verifyTokenEl.value = userTokens[0].toString();
-            }
-
+        const userAddress = (await signer.getAddress()).toLowerCase();
+        
+        // 1. ดึงข้อมูล On-Chain สดๆ จาก Smart Contract
+        const deedData = await secureContract.getDeedData(tokenId.toString());
+        const ownerOnChain = String(deedData[0]).toLowerCase();
+        
+        // 2. ตรวจสอบสิทธิ์ (Token-Gating)
+        const privs = await verifyUserPrivileges(userAddress);
+        if (userAddress !== ownerOnChain && !privs.isArchitect) {
+            showNotification("ACCESS DENIED: UNAUTHORIZED ENTITY", "error");
+            safeAppendLog(`ACCESS DENIED: Wallet ${userAddress.slice(0,6)} is not the owner of Node #${tokenId}.`, "text-red-500 font-bold");
             closeIdentityAuthModal();
-            const vault = document.getElementById('memberDnaStudio');
-            if (vault) {
-                vault.classList.remove('hidden');
-                requestAnimationFrame(() => vault.scrollIntoView({ behavior: 'smooth' }));
-            }
-            safeAppendLog(`ACCESS GRANTED: Verified identity [${ownedIds}] Laboratory unlocked.`, "text-cyan-400 font-bold");
-            showNotification(`Welcome! Access granted.`, "success");
-        } else {
-            showNotification("ACCESS DENIED: Wallet does not hold a deed (1-333). Access rejected.", "error");
-            safeAppendLog(`ACCESS DENIED: Wallet ${address.slice(0,6)}... no deed found in system.`, "text-red-500 font-bold");
-            closeIdentityAuthModal();
+            return;
         }
+
+        // 3. DOM Binding (Inject ข้อมูล 8 ค่าลงใน memberDnaStudio โดยตรง)
+        document.getElementById('dna-owner').textContent = deedData[0];
+        document.getElementById('dna-active').textContent = deedData[1] ? "TRUE (ACTIVE)" : "FALSE (DORMANT)";
+        document.getElementById('dna-sanctified').textContent = deedData[2] ? "TRUE (SANCTIFIED)" : "FALSE (UNVERIFIED)";
+        document.getElementById('dna-front').textContent = deedData[3] || "UNASSIGNED";
+        document.getElementById('dna-back').textContent = deedData[4] || "UNASSIGNED";
+        document.getElementById('dna-video').textContent = deedData[5] || "UNASSIGNED";
+        document.getElementById('dna-dna').textContent = deedData[6] || "UNASSIGNED";
+        document.getElementById('dna-hidden').textContent = deedData[7] || "UNASSIGNED";
+
+        // 4. ดึงค่า Factory Metadata (RANK & IDENTITY STATUS) มาแสดงที่ propDisplay1, propDisplay2
+        if (typeof loadDeedMetadata === 'function') {
+            await loadDeedMetadata(tokenId);
+        }
+
+        // 5. สิทธิ์ผ่าน -> ปิดหน้าต่างคำแนะนำ และเปิด memberDnaStudio
+        closeIdentityAuthModal();
+        const vault = document.getElementById('memberDnaStudio');
+        if (vault) {
+            vault.classList.remove('hidden');
+            requestAnimationFrame(() => vault.scrollIntoView({ behavior: 'smooth' }));
+        }
+        
+        safeAppendLog(`ACCESS GRANTED: Node #${tokenId} Laboratory unlocked.`, "text-cyan-400 font-bold");
+        showNotification(`Welcome! Access granted.`, "success");
+
     } catch (err) {
         console.error("[SYS LOG] Blockchain Query Error:", err);
         showNotification("VALIDATION FAILED: Error retrieving data from Blockchain.", "error");
     } finally {
         if (btn) toggleButtonLoading(btn, false);
+    }
+}
+
+async function processIdentityDnaInspectionOnChain() {
+    const tokenId = globalSelectedTokenId;
+    if (!tokenId) return;
+
+    const activeContract = secureContract || readOnlyContract;
+    if (!activeContract) return;
+
+    try {
+        // ดึง 8 ค่าหลัก
+        const deedData = await activeContract.getDeedData(tokenId.toString());
+        
+        document.getElementById('dna-owner').textContent = deedData[0];
+        document.getElementById('dna-active').textContent = deedData[1] ? "TRUE (ACTIVE)" : "FALSE (DORMANT)";
+        document.getElementById('dna-sanctified').textContent = deedData[2] ? "TRUE (SANCTIFIED)" : "FALSE (UNVERIFIED)";
+        document.getElementById('dna-front').textContent = deedData[3] || "UNASSIGNED";
+        document.getElementById('dna-back').textContent = deedData[4] || "UNASSIGNED";
+        document.getElementById('dna-video').textContent = deedData[5] || "UNASSIGNED";
+        document.getElementById('dna-dna').textContent = deedData[6] || "UNASSIGNED";
+        document.getElementById('dna-hidden').textContent = deedData[7] || "UNASSIGNED";
+
+        // ดึง 2 ค่า Metadata
+        if (typeof loadDeedMetadata === 'function') {
+            await loadDeedMetadata(tokenId);
+        }
+
+        safeAppendLog(`On-chain Forensic analysis refreshed for Node #${tokenId}.`, "text-emerald-400");
+        showNotification("Data refreshed from blockchain.", "success");
+    } catch (err) {
+        safeAppendLog(`Failed to extract on-chain DNA for Node #${tokenId}.`, "text-red-500");
+        showNotification("Failed to refresh data.", "error");
     }
 }
 
@@ -2904,83 +2968,7 @@ function resetAdminInputs(forceClear = false) {
 
 window.systemForceClearState = () => resetAdminInputs(true);
 
-async function processIdentityDnaInspectionOnChain() {
-    const tokenIdInput = document.getElementById('dnaVerifyTokenId');
-    if(!tokenIdInput) return;
-    const rawTokenId = tokenIdInput.value.trim();
-    
-    const tokenId = (typeof validateTokenRange === 'function') ? validateTokenRange(rawTokenId) : rawTokenId;
-    if(!tokenId) return;
 
-    if (!/^\d+$/.test(tokenId)) {
-        if (typeof showNotification === 'function') showNotification("INVALID INPUT: Token ID must be numeric.", "error");
-        return;
-    }
-
-    const terminalOut = document.getElementById('dnaAnalysisTerminalOut');
-    const labDisplay = document.getElementById('dnaLabDisplay');
-
-    const activeContract = (typeof secureContract !== 'undefined' && secureContract) 
-        ? secureContract 
-        : (typeof readOnlyContract !== 'undefined' ? readOnlyContract : null);
-        
-    if (!activeContract) {
-        if(terminalOut) terminalOut.textContent = "❌ OFFLINE: INITIALIZE RPC CONNECTION FIRST";
-        return;
-    }
-
-    try {
-        const currentOwner = await activeContract.ownerOf(BigInt(tokenId).toString());
-        if (!currentOwner || currentOwner === (typeof ethers !== 'undefined' ? ethers.ZeroAddress : "0x0000000000000000000000000000000000000000")) {
-            throw new Error("NODE_DOES_NOT_EXIST");
-        }
-
-        if (typeof autoMap !== 'function') throw new Error("AUTO_MAP_MISSING");
-        const mappedNode = await autoMap(tokenId);
-        if (!mappedNode) throw new Error("AUTO_MAPPING_INTERRUPTED");
-
-        if (!mappedNode.isSanctified) {
-            if(terminalOut) terminalOut.textContent = `❌ NODE #${tokenId} HAS NOT ACHIEVED NOVA ASCENSION`;
-            if(labDisplay) labDisplay.style.display = 'none';
-            return;
-        }
-
-        if(terminalOut) terminalOut.style.display = 'none';
-        if(labDisplay) labDisplay.style.display = 'block';
-
-        const dnaTarget = document.getElementById('dnaTargetText');
-        if(dnaTarget) dnaTarget.textContent = mappedNode.dna?.split("")?.join(" ") || "UNKNOWN";
-        
-        const metaDna = document.getElementById('metaRawDna');
-        if(metaDna) metaDna.textContent = mappedNode.dna || "UNKNOWN";
-        
-        const metaHidden = document.getElementById('metaHiddenProperty');
-        if(metaHidden) metaHidden.textContent = mappedNode.hiddenProperty || "UNKNOWN";
-
-        const irysLinkDisplay = document.getElementById('irysLinkDisplay');
-        if (irysLinkDisplay) {
-            const videoUrl = mappedNode.video || "UNASSIGNED";
-            const videoId = (typeof extractIrysId === 'function' && videoUrl !== "UNASSIGNED") ? extractIrysId(videoUrl) : "N/A";
-            irysLinkDisplay.textContent = `LINK: ${videoUrl} | ID: ${videoId}`;
-        }
-
-        if (typeof loadDeedMetadata === 'function') await loadDeedMetadata(tokenId);
-
-        if (typeof safeAppendLog === 'function') {
-            safeAppendLog(`On-chain Forensic analysis synchronized flawlessly via autoMap engine for Node #${tokenId}.`, "text-emerald-400");
-        }
-    } catch (err) {
-        const errorMessage = 
-            err.message === "NODE_DOES_NOT_EXIST" ? "❌ FORENSICS EXCEPTION: NODE DOES NOT EXIST ON-CHAIN" :
-            (err.message === "AUTO_MAP_MISSING" || err.message === "AUTO_MAPPING_INTERRUPTED") ? "❌ FORENSICS EXCEPTION: AUTO-MAPPING INTERRUPTED" :
-            "❌ BLOCKCHAIN QUERY FAILED: DEED MAY NOT EXIST OR RPC TIMEOUT";
-            
-        if(terminalOut) terminalOut.textContent = errorMessage;
-        if (typeof safeAppendLog === 'function') {
-            safeAppendLog(`Failed to extract on-chain DNA for Node #${tokenId}. System Code: ${err.message}`, "text-red-500");
-        }
-    }
-}
 
 async function loadDeedMetadata(tokenId) {
     const mappedNode = await autoMap(tokenId);
@@ -3150,39 +3138,36 @@ function setupWalletEventListeners(rawProvider) {
 // 2. REFACTORED handleAccountsChangedEvent FUNCTION
 // ==========================================
 async function handleAccountsChangedEvent(accounts) {
-    if (walletSessionController) {
-        walletSessionController.abort();
-    }
+    if (walletSessionController) walletSessionController.abort();
     walletSessionController = new AbortController();
 
-    try {
-        if (secureContract?.removeAllListeners) {
-            secureContract.removeAllListeners();
-        }
-    } catch (err) {}
-
-    if (typeof GLOBAL_NODE_CACHE !== 'undefined' && GLOBAL_NODE_CACHE?.clear) {
-        GLOBAL_NODE_CACHE.clear();
-    }
+    try { if (secureContract?.removeAllListeners) secureContract.removeAllListeners(); } catch (err) {}
+    if (typeof GLOBAL_NODE_CACHE !== 'undefined' && GLOBAL_NODE_CACHE?.clear) GLOBAL_NODE_CACHE.clear();
     
     currentLoadedMediaData = { front: "", frontType: "image", back: "", backType: "image", video: "", videoType: "video" };
     
     const isDisconnected = !accounts || !Array.isArray(accounts) || accounts.length === 0;
     
+    // [UI OVERRIDE]: Target Header Elements
+    const walletInfo = document.getElementById('walletInfo');
+    const hdrAddress = document.getElementById('hdrAddress');
+    
     if (isDisconnected) {
-        // 🛡️ ล้างสถานะ Ownership บน Matrix ทันทีที่ตัดการเชื่อมต่อ
-        if (typeof bindNodeOwnership === 'function') {
-            bindNodeOwnership(null);
-        }
+        if (typeof bindNodeOwnership === 'function') bindNodeOwnership(null);
         showNotification("SECURITY PROTOCOL: Wallet disconnected. System entering Standby mode.", "error");
         appendLog("Wallet disconnected by user.", "text-yellow-400 font-bold");
+        
+        // 🔴 ปิด Wallet Info เมื่อหลุดการเชื่อมต่อ
+        if (walletInfo) walletInfo.classList.add('hidden');
+        if (hdrAddress) hdrAddress.textContent = "—";
     } else {
-        // 🛡️ อัปเดตสิทธิ์ Ownership ทันทีตามบัญชีใหม่ที่สลับเข้ามา
-        if (typeof bindNodeOwnership === 'function') {
-            bindNodeOwnership(accounts[0]);
-        }
+        if (typeof bindNodeOwnership === 'function') bindNodeOwnership(accounts[0]);
         showNotification("IDENTITY SHIFT DETECTED: Account switched successfully.", "warning");
         appendLog(`Identity vector shift detected to: ${accounts[0]}`, "text-yellow-400 font-bold");
+        
+        // 🟢 เปิด Wallet Info และแสดง Address ย่อ
+        if (walletInfo) walletInfo.classList.remove('hidden');
+        if (hdrAddress) hdrAddress.textContent = `${accounts[0].slice(0, 6)}...${accounts[0].slice(-4)}`;
     }
 
     const connectBtn = document.getElementById('btnConnect');
@@ -3195,7 +3180,6 @@ async function handleAccountsChangedEvent(accounts) {
     
     document.getElementById('adminSector')?.classList.add('hidden');
     document.getElementById('robotPanel')?.classList.add('hidden');
-    
     if (typeof clearAllTimers === 'function') clearAllTimers();
     
     window.provider = null;
@@ -3203,6 +3187,7 @@ async function handleAccountsChangedEvent(accounts) {
     window.secureContract = null;
     window.irys = null; 
 }
+
 
 function setNetworkHardLock(locked, observedChainId = '') {
     const overlay = document.getElementById('securityHardLockOverlay');
@@ -3230,12 +3215,18 @@ function handleChainChangedEvent(newChainId) {
     let parsedChainId;
     try { parsedChainId = BigInt(newChainId); } catch (_) { parsedChainId = 0n; }
     const wrongNetwork = parsedChainId !== 8453n;
+    
+    // [UI OVERRIDE]: อัปเดต Network Text
+    const hdrNetwork = document.getElementById('hdrNetwork');
+    if (hdrNetwork) hdrNetwork.textContent = wrongNetwork ? `CHAIN: ${parsedChainId}` : "BASE MAINNET";
+
     setNetworkHardLock(wrongNetwork, newChainId);
     if (!wrongNetwork) {
         appendLog('Network telemetries fully realigned over Base Mainnet.', 'text-emerald-400');
         syncContractStates();
     }
 }
+
 
 const eip6963Providers = [];
 window.addEventListener("eip6963:announceProvider", (event) => {
@@ -4453,7 +4444,7 @@ async function buildAndUploadMetadata(e) {
 
         const dynamicAttributes = []; 
 
-        for (let i = 1; i <= 7; i++) {
+        for (let i = 1; i <= 2; i++) {
             const keyInput = document.getElementById(`propKey${i}`);
             const valInput = document.getElementById(`prop${i}`);
             
@@ -4692,160 +4683,6 @@ async function executeContractPause(status, e) {
         appendLog(status ? "Global circuit break triggered (SYSTEM ENFORCED PAUSED)." : "Global functionality restored (SYSTEM UNPAUSED REINSTATED).", "text-emerald-400");
     }
 }
-
-async function executeCreateProposal(e) {
-    if (!secureContract || !signer) { 
-        showNotification("Action suspended: Sovereign council credentials needed.", "error"); 
-        return; 
-    }
-
-    const btn = toggleButtonLoading(e, true);
-    try {
-        const userAddress = await signer.getAddress();
-        const userTokens = await secureContract.walletOfOwner(userAddress);
-        const primarchNodes = [1,2,3,4,5,6,7,8,9,10,50,100];
-        
-        let eligibleTokenId = 0;
-        let hasCouncil = false;
-        const currentEpoch = Math.floor(Date.now() / 1000);
-
-        for (let i = 0; i < userTokens.length; i++) {
-            const tid = Number(userTokens[i]);
-            if (primarchNodes.includes(tid)) {
-                hasCouncil = true;
-                const lastTime = await secureContract.lastProposalTime(BigInt(tid).toString());
-                const cooldownPeriod = await secureContract.PROPOSAL_COOLDOWN().catch(() => 604800n); 
-                
-                if (currentEpoch >= Number(lastTime) + Number(cooldownPeriod)) { 
-                    eligibleTokenId = tid;
-                    break; 
-                }
-            }
-        }
-
-        if (!hasCouncil) {
-            showNotification("ACCESS DENIED: Proposal rights restricted to the 12 Golden Sovereign Council members.", "error");
-            return;
-        }
-        
-        if (eligibleTokenId === 0) {
-            showNotification("COOLDOWN ACTIVE: All your Council nodes are currently on cooldown. Please wait.", "warning");
-            return;
-        }
-
-        const rawAmount = (document.getElementById('propAmountInput')?.value || "").trim();
-        const target = (document.getElementById('propTargetInput')?.value || "").trim();
-        const rawDuration = (document.getElementById('propDurationInput')?.value || "").trim();
-
-        if(!rawAmount || !target || !rawDuration || isNaN(Number(rawAmount)) || isNaN(Number(rawDuration))) {
-            showNotification("Legislation formatting incomplete. Verify data accuracy inputs.", "error");
-            return;
-        }
-
-        if (!ethers.isAddress(target)) {
-            showNotification("STRUCTURAL EXCEPTION: Target must be a valid EVM Address.", "error");
-            return;
-        }
-        
-        const daysInt = parseInt(rawDuration, 10);
-        if (daysInt < 1 || daysInt > 30) {
-            showNotification("Legislation constraint violation: Duration must be between 1 and 30 days.", "error");
-            return;
-        }
-
-        const amount = ethers.parseEther(rawAmount);
-        const durationSeconds = BigInt(daysInt) * 86400n; 
-
-        const receipt = await runTx(btn, "CREATE_PROPOSAL", "createProposal", [amount.toString(), target, durationSeconds.toString()], {}, { manageButton: false });
-        if (receipt) {
-            appendLog("Executive financial directive introduced to the chamber for voting weight collection.", "text-emerald-400 font-bold");
-            document.getElementById('propAmountInput').value = '';
-            document.getElementById('propTargetInput').value = '';
-            document.getElementById('propDurationInput').value = '';
-        }
-    } catch (err) {
-        showNotification("System Warning: Failed to verify on-chain identity rights.", "error");
-    } finally {
-        if (btn) toggleButtonLoading(btn, false);
-    }
-}
-
-async function executeCastVote(btn) {
-    if (!secureContract || !signer) { showNotification("Action suspended: Authenticate wallet signature first.", "error"); return; }
-    
-    const rawPropId = (document.getElementById('voteProposalId')?.value || "").trim();
-    const rawTokenId = (document.getElementById('voteTokenId')?.value || "").trim();
-    
-    if (!rawPropId || !/^\d+$/.test(rawPropId)) {
-        showNotification("STRUCTURAL EXCEPTION: Invalid Proposal ID format.", "error");
-        return;
-    }
-    
-    const tokenId = validateTokenRange(rawTokenId);
-    if (!tokenId) return;
-
-    const propId = BigInt(rawPropId);
-    const tokenIdBn = BigInt(tokenId);
-
-    const primarchNodes = [1,2,3,4,5,6,7,8,9,10,50,100];
-    if (!primarchNodes.includes(Number(tokenId))) {
-        showNotification("ACCESS DENIED: Only Council Nodes possess voting rights.", "error");
-        return;
-    }
-
-    try {
-        const userAddress = await signer.getAddress();
-        const activeOwner = await secureContract.ownerOf(tokenIdBn.toString());
-        if (activeOwner.toLowerCase() !== userAddress.toLowerCase()) {
-            showNotification(`ACCESS DENIED: Current wallet does not own deed node #${tokenId}`, "error");
-            appendLog(`Vote cast blocked: Node #${tokenId} not owned by the active wallet.`, "text-red-500 font-bold");
-            return;
-        }
-    } catch (e) {
-        showNotification("System Warning: Failed to verify deed ownership. Node may not exist.", "error");
-        return;
-    }
-
-    const receipt = await runTx(btn, `CAST_VOTE_#${rawPropId}`, "castVote", [propId.toString(), tokenIdBn.toString()]);
-    if (receipt) {
-        appendLog(`Matrix key node #${tokenId} has signed ratification code for Directive #${rawPropId}.`, "text-emerald-400 font-bold");
-    }
-}
-
-const videoCullingObserver = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        const video = entry.target;
-        if (entry.isIntersecting) {
-            video.style.visibility = 'visible';
-            video.style.opacity = '1';
-            if (video.dataset.cullSrc) {
-                video.src = video.dataset.cullSrc;
-                video.removeAttribute('data-cull-src');
-                try { video.load(); } catch (e) {}
-            }
-            if (video._hlsInstance && typeof video._hlsInstance.startLoad === 'function') {
-                video._hlsInstance.startLoad();
-            }
-            const playPromise = video.play();
-            if (playPromise !== undefined) {
-                playPromise.catch(() => {}); 
-            }
-        } else {
-            video.pause();
-            video.style.visibility = 'hidden';
-            video.style.opacity = '0';
-            if (video._hlsInstance && typeof video._hlsInstance.stopLoad === 'function') {
-                video._hlsInstance.stopLoad();
-            } else if (video.src && !video.src.startsWith('blob:')) {
-                video.dataset.cullSrc = video.src;
-                video.removeAttribute('src');
-                if (!video.getAttribute('src')) {
-                    try { video.load(); } catch (e) {}
-                }
-            }
-        }
-    });
-}, { rootMargin: "150px" });
 
 function extractIrysId(input) {
     if (!input || typeof input !== 'string') return "";
@@ -5265,7 +5102,10 @@ async function syncContractStates() {
     }
     
     try {
-        let tStatus, rMint, rNova, accRewardPerNode;
+        let tStatus = null;
+        let rMint = 0n;
+        let rNova = 0n;
+        let accRewardPerNode = 0n;
 
         try {
             const calls = [
@@ -5276,11 +5116,20 @@ async function syncContractStates() {
             ];
             const results = await debouncedMulticall(readOnlyProvider || provider, calls);
             
-            if (results[0].success) tStatus = activeContract.interface.decodeFunctionResult("treasuryStatus", results[0].returnData);
-            if (results[1].success) rMint = activeContract.interface.decodeFunctionResult("mintPrice", results[1].returnData)[0];
-            if (results[2].success) rNova = activeContract.interface.decodeFunctionResult("novaFee", results[2].returnData)[0];
-            if (results[3].success) accRewardPerNode = activeContract.interface.decodeFunctionResult("accCouncilRewardPerNode", results[3].returnData)[0];
-            
+            if (Array.isArray(results) && results.length >= 4) {
+                if (results[0]?.success && results[0]?.returnData) {
+                    tStatus = activeContract.interface.decodeFunctionResult("treasuryStatus", results[0].returnData);
+                }
+                if (results[1]?.success && results[1]?.returnData) {
+                    rMint = activeContract.interface.decodeFunctionResult("mintPrice", results[1].returnData)[0] ?? 0n;
+                }
+                if (results[2]?.success && results[2]?.returnData) {
+                    rNova = activeContract.interface.decodeFunctionResult("novaFee", results[2].returnData)[0] ?? 0n;
+                }
+                if (results[3]?.success && results[3]?.returnData) {
+                    accRewardPerNode = activeContract.interface.decodeFunctionResult("accCouncilRewardPerNode", results[3].returnData)[0] ?? 0n;
+                }
+            }
         } catch (mcErr) {
             console.warn("[MULTICALL FALLBACK] syncContractStates:", mcErr);
             tStatus = await activeContract.treasuryStatus().catch(() => null);
@@ -5291,17 +5140,53 @@ async function syncContractStates() {
 
         if (!tStatus) throw new Error("INVALID_STATE_PAYLOAD");
 
-        const activeSupply = tStatus[2] || 0n;
-        const historicalMint = tStatus[3] || 0n;
-        const reservePerNFT = tStatus[4] || 0n;
-        const reserve = tStatus[0] || 0n;
+        const activeSupply = tStatus[2] ?? 0n;
+        const historicalMint = tStatus[3] ?? 0n;
+        const reservePerNFT = tStatus[4] ?? 0n;
+        const reserve = tStatus[0] ?? 0n;
+
+        // Sync Wallet ETH Balance & Network Telemetry
+        const activeProvider = window.provider || readOnlyProvider;
+        const currentHdrAddress = document.getElementById('hdrAddress')?.textContent;
+        
+        if (activeProvider && currentHdrAddress && currentHdrAddress !== "—") {
+            try {
+                const activeSigner = await activeProvider.getSigner().catch(() => null);
+                const targetAddress = activeSigner ? await activeSigner.getAddress().catch(() => null) : null;
+                
+                if (targetAddress) {
+                    const rawBalance = await activeProvider.getBalance(targetAddress);
+                    const formattedBalance = parseFloat(ethers.formatEther(rawBalance)).toFixed(4) + " ETH";
+                    
+                    requestAnimationFrame(() => {
+                        const hdrBalance = document.getElementById('hdrBalance');
+                        if (hdrBalance && hdrBalance.textContent !== formattedBalance) {
+                            hdrBalance.textContent = formattedBalance;
+                        }
+                        const rpcStatus = document.getElementById('rpcStatus');
+                        if (rpcStatus) {
+                            rpcStatus.textContent = "🟢 RPC SYNC";
+                            rpcStatus.className = "text-xs font-mono font-bold tracking-widest text-emerald-400";
+                        }
+                    });
+                }
+            } catch (balErr) {
+                requestAnimationFrame(() => {
+                    const rpcStatus = document.getElementById('rpcStatus');
+                    if (rpcStatus) {
+                        rpcStatus.textContent = "🔴 RPC DESYNC";
+                        rpcStatus.className = "text-xs font-mono font-bold tracking-widest text-red-500";
+                    }
+                });
+            }
+        }
 
         requestAnimationFrame(() => {
             window._domStateCache = window._domStateCache || {};
             const updateText = (id, val) => {
                 if (window._domStateCache[id] === val) return;
                 const el = document.getElementById(id);
-                if(el) {
+                if (el) {
                     el.textContent = val;
                     window._domStateCache[id] = val;
                 }
@@ -5316,7 +5201,14 @@ async function syncContractStates() {
             const exitResVal = fmtUnits(reservePerNFT) + " ETH";
             updateText('exitResPerNft', exitResVal);
 
-            const refundWei = (BigInt(reservePerNFT) * 85n) / 100n;
+            let safeReservePerNFT = 0n;
+            try {
+                safeReservePerNFT = BigInt(reservePerNFT);
+            } catch (_) {
+                safeReservePerNFT = 0n;
+            }
+
+            const refundWei = (safeReservePerNFT * 85n) / 100n;
             const exitRefundVal = fmtUnits(refundWei) + " ETH";
             updateText('exitRefund', exitRefundVal);
 
@@ -5347,15 +5239,20 @@ async function syncContractStates() {
             }
         });
 
-        await fetchAndDisplayProposals();
+        if (typeof fetchAndDisplayProposals === 'function') {
+            await fetchAndDisplayProposals();
+        }
         
     } catch (err) { 
         console.error("[STATE SYNC ERROR]", err);
-        appendLog("Unable to query state properties from smart contract registry. Re-index recommended.", "text-red-500"); 
+        if (typeof appendLog === 'function') {
+            appendLog("Unable to query state properties from smart contract registry. Re-index recommended.", "text-red-500");
+        }
     } finally {
         isSyncingState = false;
     }
 }
+
 
 function renderEmptyState(container, text, colorClass = "text-slate-500") {
     container.replaceChildren();
@@ -5892,26 +5789,12 @@ async function auditTokenFromLedger(tokenId) {
 
         const currentEpoch = Math.floor(Date.now() / 1000);
         const btnBurn = document.getElementById('btnBurnToken');
-        const btnTransfer = document.getElementById('btnTransferToken');
 
+        // ควบคุมเฉพาะสถานะของปุ่ม Burn เท่านั้น
         if (mappedNode.votingLockUntil && mappedNode.votingLockUntil > currentEpoch) {
             if (btnBurn) btnBurn.disabled = true;
-            if (btnTransfer) btnTransfer.disabled = true;
         } else {
             if (btnBurn) btnBurn.disabled = false;
-            if (btnTransfer) btnTransfer.disabled = false;
-        }
-
-        const claimBtn = document.getElementById('executeClaimRewardBtn');
-        const warningTxt = document.getElementById('rewardExclusionWarning');
-        const numericTokenId = Number(tokenId);
-
-        if (numericTokenId === 50 || numericTokenId === 100) {
-            if (claimBtn) claimBtn.classList.add('hidden');
-            if (warningTxt) warningTxt.classList.remove('hidden');
-        } else {
-            if (claimBtn) claimBtn.classList.remove('hidden');
-            if (warningTxt) warningTxt.classList.add('hidden');
         }
 
         try {
@@ -6010,7 +5893,6 @@ async function auditTokenFromLedger(tokenId) {
 
             if (typeof renderToViewport === 'function') {
                 // 🛡️ [UI RENDER] บังคับใช้ Direct Image Manifest (IMAGE_MANIFEST) สำหรับ UI Rendering เท่านั้น
-                // 🚨 CRITICAL FIX: ตัด Fallback ไปหา preMintFrontUri ทิ้ง เพื่อป้องกัน Dual-Manifest Contamination
                 const finalRenderUrl = displayImageUri ? displayImageUri : "";
                 renderToViewport('previewFrontContainer', finalRenderUrl, "Obverse aspect currently unassigned.");
                 renderToViewport('previewBackContainer', "", "Void element data layer uninitialized.");
