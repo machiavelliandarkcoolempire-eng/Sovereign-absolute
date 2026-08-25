@@ -6115,8 +6115,22 @@ const matrixThumbnailObserver = new IntersectionObserver((entries, observer) => 
                 activeFetchControllers.set(img, controller);
 
                 try {
-                    const res = await fetch(jsonUrl, { signal: controller.signal, mode: 'cors' });
-                    if (!res.ok) throw new Error("HTTP " + res.status);
+                    let res;
+                    let targetUrl = jsonUrl;
+                    
+                    // [ADD FEATURE: JSON Fallback] ลองดึง Irys ก่อน ถ้าล่มให้สลับไป Arweave
+                    try {
+                        res = await fetch(targetUrl, { signal: controller.signal, mode: 'cors' });
+                        if (!res.ok) throw new Error("HTTP " + res.status);
+                    } catch (fetchErr) {
+                        if (fetchErr.name !== 'AbortError' && targetUrl.includes('gateway.irys.xyz')) {
+                            targetUrl = targetUrl.replace('gateway.irys.xyz', 'arweave.net');
+                            res = await fetch(targetUrl, { signal: controller.signal, mode: 'cors' });
+                            if (!res.ok) throw new Error("HTTP_FALLBACK " + res.status);
+                        } else {
+                            throw fetchErr;
+                        }
+                    }
 
                     const reader = res.body.getReader();
                     const decoder = new TextDecoder('utf-8');
@@ -6157,7 +6171,11 @@ const matrixThumbnailObserver = new IntersectionObserver((entries, observer) => 
                         const fallbackHash = typeof fallbackData === 'object' ? (fallbackData.image || fallbackData.irys_id) : fallbackData;
                         
                         if (fallbackHash && typeof fallbackHash === 'string') {
-                            img.src = fallbackHash.startsWith('http') ? fallbackHash : `https://gateway.irys.xyz/${fallbackHash}`;
+                            if (fallbackHash.startsWith('ar://')) {
+                                img.src = fallbackHash.replace('ar://', 'https://gateway.irys.xyz/');
+                            } else {
+                                img.src = fallbackHash.startsWith('http') ? fallbackHash : `https://gateway.irys.xyz/${fallbackHash}`;
+                            }
                         } else {
                             img.dispatchEvent(new Event('error'));
                         }
@@ -6205,7 +6223,11 @@ function renderToNodeCard(tokenId) {
 
         if (localHash && typeof localHash === 'string' && localHash.trim() !== "") {
             hasManifestData = true;
-            displayImgUrl = localHash.startsWith('http') ? localHash : `https://gateway.irys.xyz/${localHash.trim()}`;
+            if (localHash.startsWith('ar://')) {
+                displayImgUrl = localHash.replace('ar://', 'https://gateway.irys.xyz/');
+            } else {
+                displayImgUrl = localHash.startsWith('http') ? localHash : `https://gateway.irys.xyz/${localHash.trim()}`;
+            }
         }
         
         node.classList.add('opacity-30', 'grayscale');
@@ -6239,7 +6261,6 @@ function renderToNodeCard(tokenId) {
         img.loading = 'lazy';
         img.decoding = 'async';
         img.className = 'w-full h-full object-cover';
-        img.crossOrigin = 'anonymous';
         
         if (!isMinted) {
             img.src = displayImgUrl;
@@ -6250,13 +6271,19 @@ function renderToNodeCard(tokenId) {
 
         const shortAddrText = state.owner ? `${state.owner.slice(0,4)}...${state.owner.slice(-4)}` : (state.status === 'UNCLAIMED' ? 'STAGED' : 'ERR');
 
+        // [ADD FEATURE: Image Fallback] จับตาดูรูปภาพ ถ้า Irys โหลดไม่ขึ้น ให้เปลี่ยนเป็น Arweave อัตโนมัติ
         img.onerror = () => {
-            img.onerror = null; 
-            img.remove();
-            const shortAddr = document.createElement('span');
-            shortAddr.className = 'text-[7px] font-bold text-slate-400 bg-black/80 px-1 rounded border border-slate-700';
-            shortAddr.textContent = shortAddrText;
-            mediaContainer.appendChild(shortAddr);
+            const currentSrc = img.src || "";
+            if (currentSrc.includes('gateway.irys.xyz')) {
+                img.src = currentSrc.replace('gateway.irys.xyz', 'arweave.net');
+            } else {
+                img.onerror = null; 
+                img.remove();
+                const shortAddr = document.createElement('span');
+                shortAddr.className = 'text-[7px] font-bold text-slate-400 bg-black/80 px-1 rounded border border-slate-700';
+                shortAddr.textContent = shortAddrText;
+                mediaContainer.appendChild(shortAddr);
+            }
         };
         
         mediaContainer.appendChild(img);
@@ -6280,6 +6307,7 @@ function renderToNodeCard(tokenId) {
         node.appendChild(badge);
     }
 }
+
 
 // 3. REFACTORED BIND OWNERSHIP (INSTANT RE-PAINT)
 function bindNodeOwnership(walletAddress) {
