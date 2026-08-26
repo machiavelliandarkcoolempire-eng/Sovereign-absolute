@@ -2401,62 +2401,66 @@ const ACTIVE_CLASSES = ['ring-2', 'ring-emerald-400', 'shadow-[0_0_15px_rgba(52,
 const ERROR_CLASSES = ['ring-2', 'ring-red-500'];
 const ALL_STATE_CLASSES = [...THINKING_CLASSES, ...ACTIVE_CLASSES, ...ERROR_CLASSES];
 
+
+let isNodeProcessing = false; // ⚡ ANTI-SPAM LOCK
+
 function initializeAbsoluteEventDelegation() {
     if (document.body.dataset.delegationAttached === "true") return;
 
-    const eventType = (typeof IS_TOUCH_DEVICE !== 'undefined' && IS_TOUCH_DEVICE) ? 'pointerup' : 'click';
+    const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+    const eventType = isTouchDevice ? 'pointerup' : 'click';
 
     document.body.addEventListener(eventType, async (event) => {
-        // ดักจับเฉพาะ Matrix Node เท่านั้น (ตามที่คุณเข้าใจว่าเอาไว้เปลี่ยนสีและจัดการโหนด)
         const matrixNode = event.target.closest('[data-token-id], .matrix-node-cell, .matrix-cell, .matrix-node');
         if (!matrixNode) return;
+
+        // ⚡ FIX: ป้องกันการสแปมคลิก (Race Condition)
+        if (isNodeProcessing) return; 
 
         const rawId = matrixNode.dataset.tokenId || matrixNode.getAttribute('data-token-id');
         const tokenId = parseInt(rawId, 10);
 
         if (!isNaN(tokenId) && tokenId > 0) {
-            if (typeof isTransactionPending !== 'undefined' && isTransactionPending) {
+            if (isTransactionPending) {
                 showNotification("SYSTEM ENFORCEMENT: Action locked. Await clearance.", "warning");
                 return;
             }
 
-            globalSelectedTokenId = tokenId;
-            window.SystemState.selectedTokenId = tokenId;
-            window.SystemState.globalSelectedTokenId = tokenId;
+            isNodeProcessing = true; // ⚡ LOCK ENGAGED
 
-            syncMatrixIdStateUI(tokenId);
+            try {
+                globalSelectedTokenId = tokenId;
+                window.SystemState.selectedTokenId = tokenId;
+                window.SystemState.globalSelectedTokenId = tokenId;
 
-            const novaTokenEl = document.getElementById('novaTokenId');
-            if (novaTokenEl) novaTokenEl.value = tokenId;
-            const settleTokenInput = document.getElementById('settleTokenId');
-            if (settleTokenInput) settleTokenInput.value = tokenId;
-            const dnaVerifyTokenId = document.getElementById('dnaVerifyTokenId');
-            if (dnaVerifyTokenId) dnaVerifyTokenId.value = tokenId;
+                syncMatrixIdStateUI(tokenId);
 
-            if (window.matrixDOMCache) {
-                window.matrixDOMCache.forEach(n => {
-                    if (typeof ALL_STATE_CLASSES !== 'undefined') n.classList.remove(...ALL_STATE_CLASSES);
-                });
-            }
-            if (typeof THINKING_CLASSES !== 'undefined') matrixNode.classList.add(...THINKING_CLASSES);
+                const novaTokenEl = document.getElementById('novaTokenId');
+                if (novaTokenEl) novaTokenEl.value = tokenId;
+                const settleTokenInput = document.getElementById('settleTokenId');
+                if (settleTokenInput) settleTokenInput.value = tokenId;
 
-            safeAppendLog(`[MATRIX] Engaging node #${tokenId}...`, "text-blue-400");
+                if (window.matrixDOMCache) {
+                    window.matrixDOMCache.forEach(n => {
+                        n.classList.remove(...ALL_STATE_CLASSES);
+                    });
+                }
+                matrixNode.classList.add(...THINKING_CLASSES);
 
-            let isAdmin = false;
-            let adminRole = null;
+                safeAppendLog(`[MATRIX] Engaging node #${tokenId}...`, "text-blue-400"); // ⚡ Direct Call
 
-            if (signer) {
-                try {
+                let isAdmin = false;
+                let adminRole = null;
+
+                if (signer) {
                     const userAddress = (await signer.getAddress()).toLowerCase();
                     const contractsToCheck = [];
-                    if (typeof secureContract !== 'undefined' && secureContract) contractsToCheck.push(secureContract);
-                    if (window.systemContracts && Array.isArray(window.systemContracts)) {
-                        contractsToCheck.push(...window.systemContracts);
-                    }
+                    if (secureContract) contractsToCheck.push(secureContract);
+                    if (Array.isArray(window.systemContracts)) contractsToCheck.push(...window.systemContracts);
 
                     for (const contract of contractsToCheck) {
                         try {
-                            if (typeof contract.owner === 'function') {
+                            if (contract.owner) {
                                 const ownerAddr = await contract.owner();
                                 if (ownerAddr && ownerAddr !== ethers.ZeroAddress && userAddress === ownerAddr.toLowerCase()) {
                                     isAdmin = true;
@@ -2470,7 +2474,7 @@ function initializeAbsoluteEventDelegation() {
                     if (!isAdmin) {
                         for (const contract of contractsToCheck) {
                             try {
-                                if (typeof contract.architect === 'function') {
+                                if (contract.architect) {
                                     const archAddr = await contract.architect();
                                     if (archAddr && archAddr !== ethers.ZeroAddress && userAddress === archAddr.toLowerCase()) {
                                         isAdmin = true;
@@ -2481,62 +2485,55 @@ function initializeAbsoluteEventDelegation() {
                             } catch (e) {}
                         }
                     }
-                } catch (e) {
-                    safeAppendLog(`[SECURITY CHECK ERROR] Authorization audit failed: ${e.message}`, "text-red-400");
                 }
-            }
 
-            if (typeof auditTokenFromLedger === 'function') {
-                auditTokenFromLedger(tokenId)
-                    .then(() => {
-                        if (typeof THINKING_CLASSES !== 'undefined') matrixNode.classList.remove(...THINKING_CLASSES, ...(typeof ERROR_CLASSES !== 'undefined' ? ERROR_CLASSES : []));
-                        if (typeof ACTIVE_CLASSES !== 'undefined') matrixNode.classList.add(...ACTIVE_CLASSES);
+                try {
+                    await auditTokenFromLedger(tokenId); // ⚡ Direct Call
+                    matrixNode.classList.remove(...THINKING_CLASSES, ...ERROR_CLASSES);
+                    matrixNode.classList.add(...ACTIVE_CLASSES);
+
+                    const bridgeLabel = document.getElementById('targetBridgeFieldLabel');
+                    if (bridgeLabel) {
+                        bridgeLabel.textContent = `TARGET ASPECT: NODE #${tokenId} SELECTED`;
+                        bridgeLabel.classList.remove('text-amber-500');
+                        bridgeLabel.classList.add('text-emerald-400');
+                    }
+                } catch (err) {
+                    matrixNode.classList.remove(...THINKING_CLASSES);
+                    if (isAdmin) {
+                        matrixNode.classList.add(...ACTIVE_CLASSES);
+                        safeAppendLog(`[ADMIN OVERRIDE] ${adminRole} privileges engaged for Void Node #${tokenId}.`, "text-emerald-400 font-bold");
 
                         const bridgeLabel = document.getElementById('targetBridgeFieldLabel');
                         if (bridgeLabel) {
-                            bridgeLabel.textContent = `TARGET ASPECT: NODE #${tokenId} SELECTED`;
+                            bridgeLabel.textContent = `TARGET ASPECT: NODE #${tokenId} SELECTED (VOID)`;
                             bridgeLabel.classList.remove('text-amber-500');
                             bridgeLabel.classList.add('text-emerald-400');
                         }
-                    })
-                    .catch((err) => {
-                        if (typeof THINKING_CLASSES !== 'undefined') matrixNode.classList.remove(...THINKING_CLASSES);
-                        if (isAdmin) {
-                            if (typeof ACTIVE_CLASSES !== 'undefined') matrixNode.classList.add(...ACTIVE_CLASSES);
-                            safeAppendLog(`[ADMIN OVERRIDE] ${adminRole} privileges engaged for Void Node #${tokenId}.`, "text-emerald-400 font-bold");
+                    } else {
+                        matrixNode.classList.add(...ERROR_CLASSES);
+                        globalSelectedTokenId = null;
+                        window.SystemState.selectedTokenId = null;
+                        if (novaTokenEl) novaTokenEl.value = '';
+                        if (settleTokenInput) settleTokenInput.value = '';
+                        showNotification("ACCESS DENIED: Selected Node is uninitialized.", "error");
 
-                            const bridgeLabel = document.getElementById('targetBridgeFieldLabel');
-                            if (bridgeLabel) {
-                                bridgeLabel.textContent = `TARGET ASPECT: NODE #${tokenId} SELECTED (VOID)`;
-                                bridgeLabel.classList.remove('text-amber-500');
-                                bridgeLabel.classList.add('text-emerald-400');
-                            }
-                        } else {
-                            if (typeof ERROR_CLASSES !== 'undefined') matrixNode.classList.add(...ERROR_CLASSES);
-                            globalSelectedTokenId = null;
-                            window.SystemState.selectedTokenId = null;
-                            if (novaTokenEl) novaTokenEl.value = '';
-                            if (settleTokenInput) settleTokenInput.value = '';
-                            if (dnaVerifyTokenId) dnaVerifyTokenId.value = '';
-                            showNotification("ACCESS DENIED: Selected Node is uninitialized.", "error");
-
-                            const bridgeLabel = document.getElementById('targetBridgeFieldLabel');
-                            if (bridgeLabel) {
-                                bridgeLabel.textContent = `TARGET ASPECT: DORMANT (CHOOSE NODES COORD)`;
-                                bridgeLabel.classList.remove('text-emerald-400');
-                                bridgeLabel.classList.add('text-amber-500');
-                            }
+                        const bridgeLabel = document.getElementById('targetBridgeFieldLabel');
+                        if (bridgeLabel) {
+                            bridgeLabel.textContent = `TARGET ASPECT: DORMANT (CHOOSE NODES COORD)`;
+                            bridgeLabel.classList.remove('text-emerald-400');
+                            bridgeLabel.classList.add('text-amber-500');
                         }
-                    });
-            } else {
-                if (typeof THINKING_CLASSES !== 'undefined') matrixNode.classList.remove(...THINKING_CLASSES);
-                if (typeof ACTIVE_CLASSES !== 'undefined') matrixNode.classList.add(...ACTIVE_CLASSES);
+                    }
+                }
+            } finally {
+                isNodeProcessing = false; // ⚡ RELEASE LOCK
             }
         }
     });
 
     document.body.dataset.delegationAttached = "true";
-    safeAppendLog("[SYSTEM] Matrix Node Event Delegation Active. Zero HTML Interference.", "text-emerald-400");
+    safeAppendLog("[SYSTEM] Matrix Node Event Delegation Active.", "text-emerald-400");
 }
 
 // ==============================================================================
@@ -3142,9 +3139,26 @@ async function handleAccountsChangedEvent(accounts) {
     walletSessionController = new AbortController();
 
     try { if (secureContract?.removeAllListeners) secureContract.removeAllListeners(); } catch (err) {}
-    if (typeof GLOBAL_NODE_CACHE !== 'undefined' && GLOBAL_NODE_CACHE?.clear) GLOBAL_NODE_CACHE.clear();
     
-    currentLoadedMediaData = { front: "", frontType: "image", back: "", backType: "image", video: "", videoType: "video" };
+    // เคลียร์แคชระบบทั้งหมด
+    if (typeof GLOBAL_NODE_CACHE !== 'undefined' && GLOBAL_NODE_CACHE?.clear) GLOBAL_NODE_CACHE.clear();
+    if (typeof window.NODE_STATE_MAP !== 'undefined' && window.NODE_STATE_MAP?.clear) window.NODE_STATE_MAP.clear();
+    window._domStateCache = {}; 
+    
+    // [แก้บั๊กตาม Fact]: ซิงค์ State กลับไปที่ Window เพื่ออุดรอยรั่ว Reference ฉีกขาด
+    if (window.SystemState && window.SystemState.currentLoadedMediaData) {
+        Object.assign(window.SystemState.currentLoadedMediaData, { 
+            front: "", frontType: "image", back: "", backType: "image", video: "", videoType: "video" 
+        });
+    }
+    if (window.SystemState) window.SystemState.globalSelectedTokenId = null;
+
+    // [แก้บั๊กตาม Fact]: ล้าง LocalStorage ป้องกัน Transaction ผีหลอก
+    localStorage.removeItem('irys_pending_fund_tx');
+    localStorage.removeItem('pending_nova_txid');
+    localStorage.removeItem('pending_nova_token');
+    
+    if (typeof resetAdminInputs === 'function') resetAdminInputs(true);
     
     const isDisconnected = !accounts || !Array.isArray(accounts) || accounts.length === 0;
     
@@ -3155,17 +3169,19 @@ async function handleAccountsChangedEvent(accounts) {
     if (isDisconnected) {
         if (typeof bindNodeOwnership === 'function') bindNodeOwnership(null);
         showNotification("SECURITY PROTOCOL: Wallet disconnected. System entering Standby mode.", "error");
+        
+        // เอา Log พี่กลับมา!
         appendLog("Wallet disconnected by user.", "text-yellow-400 font-bold");
         
-        // 🔴 ปิด Wallet Info เมื่อหลุดการเชื่อมต่อ
         if (walletInfo) walletInfo.classList.add('hidden');
         if (hdrAddress) hdrAddress.textContent = "—";
     } else {
         if (typeof bindNodeOwnership === 'function') bindNodeOwnership(accounts[0]);
         showNotification("IDENTITY SHIFT DETECTED: Account switched successfully.", "warning");
+        
+        // เอา Log พี่กลับมา!
         appendLog(`Identity vector shift detected to: ${accounts[0]}`, "text-yellow-400 font-bold");
         
-        // 🟢 เปิด Wallet Info และแสดง Address ย่อ
         if (walletInfo) walletInfo.classList.remove('hidden');
         if (hdrAddress) hdrAddress.textContent = `${accounts[0].slice(0, 6)}...${accounts[0].slice(-4)}`;
     }
@@ -6417,22 +6433,26 @@ window.addEventListener('load', async () => {
     if (isSystemBooted) return;
     isSystemBooted = true;
 
-    if (typeof enforceSecurityConstraints === 'function') enforceSecurityConstraints();
-
-    if (typeof revealApp === 'function') revealApp(); 
+    // ⚡ DIRECT CALLS: ไม่มี Defensive Garbage อีกต่อไป
+    enforceSecurityConstraints();
+    revealApp(); 
     
     try { 
-        if (typeof setupMatrixGrid === 'function') setupMatrixGrid(); 
+        setupMatrixGrid(); 
     } catch (e) { 
         console.error('[BOOT] setupMatrixGrid failed:', e); 
     }
 
-    if (typeof initializeAbsoluteEventDelegation === 'function') {
-        initializeAbsoluteEventDelegation();
-    }
+    initializeAbsoluteEventDelegation();
 
     if (window.visualViewport) {
-        const handleResize = () => {
+        // ⚡ FIX: Binding Event ให้ถูกต้องตาม Lifecycle
+        if (window._sovereignResizeHandler) {
+            window.visualViewport.removeEventListener("resize", window._sovereignResizeHandler);
+            window.visualViewport.removeEventListener("scroll", window._sovereignResizeHandler);
+        }
+
+        window._sovereignResizeHandler = () => {
             if (document.activeElement?.tagName === 'INPUT' || document.activeElement?.tagName === 'TEXTAREA') {
                 document.body.style.height = `${window.visualViewport.height}px`;
             } else {
@@ -6440,41 +6460,20 @@ window.addEventListener('load', async () => {
                 document.body.style.overflow = "";
             }
         };
-        window.visualViewport.removeEventListener("resize", handleResize);
-        window.visualViewport.removeEventListener("scroll", handleResize);
-        window.visualViewport.addEventListener("resize", handleResize, { passive: true });
-        window.visualViewport.addEventListener("scroll", handleResize, { passive: true });
-    }
-    
-    if (typeof loadArchitectGateways === 'function') {
-        try { loadArchitectGateways(); } catch (e) { console.warn("[BOOT] Gateways non-fatal skip:", e); }
-    }
-    
-    if (typeof fetchImperialManifest === 'function') {
-        try {
-            await fetchImperialManifest();
-        } catch (e) {
-            console.warn("[BOOT] Manifest payload skip:", e);
-        }
-    }
 
-    if (typeof bootSystemRPCs === 'function' && typeof CONTRACT_ADDRESS !== 'undefined' && typeof CONTRACT_ABI !== 'undefined') { 
+        window.visualViewport.addEventListener("resize", window._sovereignResizeHandler, { passive: true });
+        window.visualViewport.addEventListener("scroll", window._sovereignResizeHandler, { passive: true });
+    }
+    
+    try { loadArchitectGateways(); } catch (e) { console.warn("[BOOT] Gateways skip:", e); }
+    try { await fetchImperialManifest(); } catch (e) { console.warn("[BOOT] Manifest skip:", e); }
+
+    if (CONTRACT_ADDRESS && CONTRACT_ABI) { 
         try {
             await bootSystemRPCs(CONTRACT_ADDRESS, CONTRACT_ABI);
-            if (typeof syncActiveMatrixNodes === 'function') {
-                await syncActiveMatrixNodes();
-            }
+            await syncActiveMatrixNodes();
         } catch (e) {
-            console.warn("[BOOT] RPC Initialization deferred:", e);
-        }
-    } else if (typeof initReadOnlyRPC === 'function') {
-        try { 
-            await initReadOnlyRPC(); 
-            if (typeof syncActiveMatrixNodes === 'function') {
-                await syncActiveMatrixNodes();
-            }
-        } catch (e) { 
-            console.error('[BOOT] initReadOnlyRPC failed:', e); 
+            console.warn("[BOOT] RPC Init deferred:", e);
         }
     }
 });
