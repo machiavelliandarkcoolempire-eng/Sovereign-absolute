@@ -3901,7 +3901,8 @@ async function triggerForge(type, e) {
             preMintFrontUri = typeof manifestData === 'string' ? manifestData.trim() : String(manifestData.irys_id || "").trim();
         }
 
-        const existingFrontUri = (document.getElementById('forgeFrontUri')?.value || "").trim() || preMintFrontUri || (currentLoadedMediaData ? currentLoadedMediaData.front : "");
+        // [FIX APPLIED]: Strictly prioritize JSON Manifest over UI Input
+        const existingFrontUri = preMintFrontUri || (document.getElementById('forgeFrontUri')?.value || "").trim() || (currentLoadedMediaData ? currentLoadedMediaData.front : "");
         
         if (!existingFrontUri) {
             if (!isPrivileged) {
@@ -4017,13 +4018,14 @@ async function executeArchitectMint(e) {
 
         await checkGasSurge();
 
+        // [FIX APPLIED]: Strictly enforce globalSelectedTokenId, remove cross-context contamination
         const targetTokenId = globalSelectedTokenId;
-        const rawId = (document.getElementById('novaTokenId')?.value || "").trim() || targetTokenId;
-        const tokenId = validateTokenRange(rawId);
-        if (!tokenId) {
+        if (!targetTokenId) {
             showNotification("STRUCTURAL EXCEPTION: Please select a Token ID coordinate on the Matrix first.", "error");
             return;
         }
+        const tokenId = validateTokenRange(targetTokenId);
+        if (!tokenId) return;
 
         const mappedNode = await autoMap(tokenId);
         if (mappedNode && mappedNode.isActivated) {
@@ -4043,7 +4045,8 @@ async function executeArchitectMint(e) {
             preMintFrontUri = typeof manifestData === 'string' ? manifestData.trim() : String(manifestData.irys_id || "").trim();
         }
 
-        const existingFrontUri = (document.getElementById('forgeFrontUri')?.value || "").trim() || preMintFrontUri || (currentLoadedMediaData ? currentLoadedMediaData.front : "");
+        // [FIX APPLIED]: Strictly prioritize JSON Manifest over UI Input
+        const existingFrontUri = preMintFrontUri || (document.getElementById('forgeFrontUri')?.value || "").trim() || (currentLoadedMediaData ? currentLoadedMediaData.front : "");
         if (!existingFrontUri) {
             showNotification("METADATA EXCEPTION: Node not ready for minting (Architect has not assigned Obverse URI).", "error");
             return;
@@ -4142,13 +4145,14 @@ async function executeArchitectRemint(e) {
 
         await checkGasSurge();
         
+        // [FIX APPLIED]: Strictly enforce globalSelectedTokenId, remove cross-context contamination
         const targetTokenId = globalSelectedTokenId;
-        const rawId = (document.getElementById('novaTokenId')?.value || "").trim() || targetTokenId;
-        const tokenId = validateTokenRange(rawId);
-        if (!tokenId) {
+        if (!targetTokenId) {
             showNotification("STRUCTURAL EXCEPTION: Please select a Token ID coordinate on the Matrix first.", "error");
             return;
         }
+        const tokenId = validateTokenRange(targetTokenId);
+        if (!tokenId) return;
 
         const mappedNode = await autoMap(tokenId);
         if (mappedNode && mappedNode.isActivated) {
@@ -4156,14 +4160,20 @@ async function executeArchitectRemint(e) {
             return;
         }
 
-        // 🛡️ ตัดการดึง JSON ออก ดึงข้อมูลจาก UI Input หรือ Cache ของ Node โดยตรง
-        const existingFrontUri = (document.getElementById('forgeFrontUri')?.value || "").trim() || (currentLoadedMediaData ? currentLoadedMediaData.front : "");
+        // [FIX APPLIED]: Re-integrate JSON Manifest lookup for Remint
+        let preMintFrontUri = "";
+        if (window.IMPERIAL_MANIFEST && window.IMPERIAL_MANIFEST[String(tokenId)]) {
+            const manifestData = window.IMPERIAL_MANIFEST[String(tokenId)];
+            preMintFrontUri = typeof manifestData === 'string' ? manifestData.trim() : String(manifestData.irys_id || "").trim();
+        }
+
+        // [FIX APPLIED]: Strictly prioritize JSON Manifest over UI Input
+        const existingFrontUri = preMintFrontUri || (document.getElementById('forgeFrontUri')?.value || "").trim() || (currentLoadedMediaData ? currentLoadedMediaData.front : "");
         if (!existingFrontUri) {
             showNotification("METADATA EXCEPTION: Node not ready for minting (Architect has not assigned Obverse URI).", "error");
             return;
         }
 
-        // 🛡️ ระบบป้องกัน RPC Rate Limit (429) สำหรับการดึงค่าธรรมเนียม
         let currentMintPriceWei = 0n;
         try {
             currentMintPriceWei = await secureContract.mintPrice();
