@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IRYS BATCH UPLOADER (333 ASSETS)</title>
+    <title>IRYS BATCH UPLOADER (MOBILE OPTIMIZED)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js"></script>
     <script src="./irys-bundle.js"></script>
@@ -17,7 +17,7 @@
 
     <div class="max-w-3xl w-full bg-[#111] border border-stone-800 rounded-xl p-6 shadow-2xl">
         <h1 class="text-2xl font-bold text-amber-500 mb-2">⚡ IRYS 333 BATCH UPLOADER</h1>
-        <p class="text-xs text-stone-400 mb-6 border-b border-stone-800 pb-4">เครื่องมืออัปโหลด 1 โฟลเดอร์ (ไฟล์ 1.png ถึง 333.png)</p>
+        <p class="text-xs text-stone-400 mb-6 border-b border-stone-800 pb-4">Mobile Bypass Edition (รองรับการ Select All 333 ไฟล์)</p>
 
         <!-- STEP 1: Connect Wallet -->
         <div class="mb-6 bg-black p-4 rounded border border-stone-800">
@@ -28,13 +28,14 @@
             <p id="walletStatus" class="mt-2 text-xs text-stone-500">Status: Disconnected</p>
         </div>
 
-        <!-- STEP 2: Select Folder -->
+        <!-- STEP 2: Select Files -->
         <div class="mb-6 bg-black p-4 rounded border border-stone-800">
-            <h2 class="text-sm font-bold text-emerald-400 mb-3">STEP 2: SELECT FOLDER</h2>
+            <h2 class="text-sm font-bold text-emerald-400 mb-3">STEP 2: SELECT 333 ASSETS</h2>
             <label class="block w-full border-2 border-dashed border-stone-700 hover:border-amber-500 p-8 text-center cursor-pointer transition-colors rounded">
-                <input type="file" id="folderInput" webkitdirectory directory multiple class="hidden" onchange="handleFolderSelect(event)">
-                <span class="text-3xl block mb-2">📁</span>
-                <span class="text-sm text-stone-300 font-bold block">เลือกโฟลเดอร์ที่มีไฟล์ 1.png ถึง 333.png</span>
+                <!-- เจาะจุดตาย: ถอด webkitdirectory ออก บังคับใช้ multiple คู่กับ accept=".png" -->
+                <input type="file" id="folderInput" multiple accept="image/png" class="hidden" onchange="handleFolderSelect(event)">
+                <span class="text-3xl block mb-2">📸</span>
+                <span class="text-sm text-stone-300 font-bold block">กดตรงนี้ -> เลือกไฟล์แรกค้างไว้ -> กด Select All ให้ครบ 333 ไฟล์</span>
             </label>
             <div class="mt-4 flex justify-between text-xs">
                 <span id="fileCount" class="text-amber-500 font-bold">0 / 333 FILES</span>
@@ -56,7 +57,7 @@
             </div>
         </div>
 
-        <!-- RESULT SECTION: EXTRACTION OF FOLDER ID -->
+        <!-- RESULT SECTION -->
         <div id="resultContainer" class="hidden mb-6 bg-emerald-950/40 p-5 rounded border border-emerald-600 space-y-4">
             <h2 class="text-sm font-bold text-emerald-400">🎉 UPLOAD SUCCESSFUL</h2>
             
@@ -73,7 +74,7 @@
 
         <!-- SYSTEM LOG -->
         <div class="bg-black p-3 rounded border border-stone-800 h-40 overflow-y-auto log-box text-[10px] text-stone-400 space-y-1" id="logBox">
-            <div>[SYSTEM] Ready...</div>
+            <div>[SYSTEM] Mobile Engine Ready...</div>
         </div>
     </div>
 
@@ -115,7 +116,7 @@
             document.getElementById("walletStatus").textContent = `Connected: ${address}`;
             document.getElementById("walletStatus").className = "mt-2 text-xs text-emerald-500 font-bold";
             
-            log("Initializing Irys...", "text-yellow-400");
+            log("Initializing Irys Bridge...", "text-yellow-400");
             irys = await window.InitSovereignIrys(signer);
             log("Irys initialized successfully", "text-emerald-400");
         } catch (err) {
@@ -127,6 +128,7 @@
         const rawFiles = event.target.files;
         if (!rawFiles || rawFiles.length === 0) return;
 
+        // คัดกรองและเรียงลำดับเฉพาะ 1.png ถึง 333.png
         const validFiles = Array.from(rawFiles).filter(f => {
             return f.name.match(/^([1-9]|[1-9][0-9]|[1-2][0-9]{2}|3[0-2][0-9]|33[0-3])\.png$/i) !== null;
         }).sort((a, b) => parseInt(a.name) - parseInt(b.name));
@@ -136,10 +138,10 @@
         document.getElementById("fileSize").textContent = `${mbSize} MB`;
 
         if (validFiles.length !== 333) {
-            log(`พบไฟล์เพียง ${validFiles.length} รูป (ต้องการ 1.png ถึง 333.png ครบถ้วน)`, "text-red-500 font-bold");
+            log(`พบไฟล์ที่ถูกต้องเพียง ${validFiles.length} รูป (ต้องการ 1.png - 333.png)`, "text-red-500 font-bold");
             document.getElementById("btnUpload").disabled = true;
         } else {
-            log(`พบไฟล์ครบ 333 รูป พร้อมอัปโหลด`, "text-emerald-400 font-bold");
+            log(`ตรวจสอบโครงสร้าง 333 รูป ผ่าน! พร้อมยิงขึ้น Base/Irys`, "text-emerald-400 font-bold");
             document.getElementById("btnUpload").disabled = false;
             document.getElementById("btnUpload").classList.remove("cursor-not-allowed");
         }
@@ -151,18 +153,19 @@
 
         const btn = document.getElementById("btnUpload");
         btn.disabled = true;
-        btn.textContent = "PROCESSING...";
+        btn.textContent = "DEPLOYING... (DO NOT CLOSE APP)";
 
         try {
             const totalBytes = selectedFiles.reduce((acc, f) => acc + f.size, 0);
             const aggregateSize = totalBytes + 50000;
 
+            log("Calculating Network Fees...", "text-yellow-400");
             const price = BigInt((await irys.getPrice(aggregateSize)).toString());
             const balance = BigInt((await irys.getLoadedBalance()).toString());
 
             if (balance < price) {
                 const diffWithBuffer = ((price - balance) * 120n) / 100n;
-                log(`Funding ${ethers.formatEther(diffWithBuffer)} ETH to Irys...`, "text-yellow-400");
+                log(`Funding ${ethers.formatEther(diffWithBuffer)} ETH to Irys Node...`, "text-yellow-400");
                 const fundRes = await irys.fund(diffWithBuffer.toString());
                 
                 let synced = false;
@@ -171,16 +174,20 @@
                     if (BigInt((await irys.getLoadedBalance()).toString()) >= price) { synced = true; break; }
                 }
                 if (!synced) throw new Error("Irys node sync timeout");
+                log("Node funding synchronized.", "text-emerald-400");
             }
 
-            log("Uploading 333 assets...", "text-yellow-400");
+            log("Uploading 333 assets via Mobile Optimized Pipeline...", "text-yellow-400");
             const paths = {};
             let completed = 0;
-            const CONCURRENCY = 5;
+            
+            // เจาะจุดตาย: ลด Concurrency เหลือ 2 เพื่อลดโหลด RAM และป้องกันเบราว์เซอร์ตัดการเชื่อมต่อ
+            const CONCURRENCY = 2; 
 
             for (let i = 0; i < selectedFiles.length; i += CONCURRENCY) {
                 const chunk = selectedFiles.slice(i, i + CONCURRENCY);
                 await Promise.all(chunk.map(async (file) => {
+                    // โหลดเข้า RAM เฉพาะจังหวะอัปโหลดทีละไฟล์
                     const receipt = await irys.upload(file, { tags: [{ name: "Content-Type", value: "image/png" }] });
                     paths[file.name] = { id: receipt.id };
                     completed++;
@@ -188,9 +195,11 @@
                     document.getElementById("progressBar").style.width = `${pct}%`;
                     document.getElementById("progressText").textContent = `${Math.round(pct)}%`;
                 }));
+                // พักหายใจให้ Event Loop 0.5 วินาที เพื่อไม่ให้จอค้าง (Mobile optimization)
+                await new Promise(r => setTimeout(r, 500));
             }
 
-            log("Generating Folder Manifest...", "text-yellow-400");
+            log("Compiling Final Vault Manifest...", "text-yellow-400");
             const manifestPayload = { manifest: "arweave/paths", version: "0.1.0", index: { path: "1.png" }, paths };
             const manifestReceipt = await irys.upload(JSON.stringify(manifestPayload), {
                 tags: [{ name: "Content-Type", value: "application/x.arweave-manifest+json" }]
@@ -199,18 +208,17 @@
             document.getElementById("progressBar").style.width = `100%`;
             document.getElementById("progressText").textContent = `100%`;
 
-            // ดึง Folder ID (Manifest ID)
             const folderId = manifestReceipt.id;
             const manifestUrl = `https://gateway.irys.xyz/${folderId}/`;
 
-            log(`SUCCESS! Folder ID: ${folderId}`, "text-emerald-500 font-bold");
+            log(`SOVEREIGN DEED ASSETS SECURED. ID: ${folderId}`, "text-emerald-500 font-bold");
 
             document.getElementById("resultContainer").classList.remove("hidden");
             document.getElementById("folderIdOutput").value = folderId;
             document.getElementById("manifestOutput").value = manifestUrl;
 
         } catch (err) {
-            log(`ERROR: ${err.message}`, "text-red-500 font-bold");
+            log(`FAULT DETECTED: ${err.message}`, "text-red-500 font-bold");
         } finally {
             btn.textContent = "DEPLOY 333 ASSETS TO IRYS";
             btn.disabled = false;
