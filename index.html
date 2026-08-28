@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IRYS METADATA BATCH UPLOADER</title>
+    <title>IRYS METADATA BUILDER (333 ASSETS)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js"></script>
     <script src="./irys-bundle.js"></script>
@@ -16,8 +16,8 @@
 <body class="min-h-screen p-8 flex flex-col items-center">
 
     <div class="max-w-3xl w-full bg-[#111] border border-stone-800 rounded-xl p-6 shadow-2xl">
-        <h1 class="text-2xl font-bold text-amber-500 mb-2">⚡ METADATA UPLOADER (JSON ONLY)</h1>
-        <p class="text-xs text-stone-400 mb-6 border-b border-stone-800 pb-4">เครื่องมือสร้างและอัปโหลด Metadata 333 รายการ (เซ็น Wallet 1 ครั้ง)</p>
+        <h1 class="text-2xl font-bold text-amber-500 mb-2">⚡ THE IMPERIAL SOVEREIGN DEED</h1>
+        <p class="text-xs text-stone-400 mb-6 border-b border-stone-800 pb-4">PHASE 2: METADATA MANIFEST BATCH UPLOADER (333 ASSETS)</p>
 
         <!-- STEP 1: Connect Wallet -->
         <div class="mb-6 bg-black p-4 rounded border border-stone-800">
@@ -28,27 +28,34 @@
             <p id="walletStatus" class="mt-2 text-xs text-stone-500">Status: Disconnected</p>
         </div>
 
-        <!-- STEP 2: Configuration -->
+        <!-- STEP 2: Metadata Configuration -->
         <div class="mb-6 bg-black p-4 rounded border border-stone-800 space-y-4">
-            <h2 class="text-sm font-bold text-emerald-400">STEP 2: METADATA CONFIGURATION</h2>
+            <h2 class="text-sm font-bold text-emerald-400 mb-2">STEP 2: METADATA CONFIGURATION</h2>
             
             <div>
-                <label class="block text-xs text-stone-400 mb-1">PROJECT NAME:</label>
-                <input type="text" id="propName" value="THE IMPERIAL SOVEREIGN DEED ♠️" class="w-full bg-[#1a1a1a] border border-stone-700 p-2 text-sm text-white rounded outline-none focus:border-amber-500">
+                <label class="block text-xs text-stone-300 font-bold mb-1">IMAGE MANIFEST ID (จากขั้นตอนอัปโหลดรูป):</label>
+                <!-- ใส่ค่า Default ที่คุณส่งมาให้แล้ว -->
+                <input type="text" id="forgeFrontUri" value="93sypkJHHKctWTb9YpeEfEMDRBD6oUgKk68RAjEUh7SX" class="w-full bg-[#1a1a1a] border border-stone-700 p-2 text-sm text-amber-400 rounded outline-none focus:border-amber-500 transition-colors">
             </div>
 
             <div>
-                <label class="block text-xs text-stone-400 mb-1">IMAGE MANIFEST ID (โฟลเดอร์รูปภาพที่อัปโหลดไว้แล้ว):</label>
-                <input type="text" id="imageManifestId" value="93sypkJHHKctWTb9YpeEfEMDRBD6oUgKk68RAjEUh7SX" class="w-full bg-[#1a1a1a] border border-emerald-700 p-2 text-sm text-emerald-400 font-mono rounded outline-none focus:border-emerald-500">
+                <label class="block text-xs text-stone-300 font-bold mb-1">ROOT NAME:</label>
+                <input type="text" id="propName" value="THE IMPERIAL SOVEREIGN DEED ♠️" class="w-full bg-[#1a1a1a] border border-stone-700 p-2 text-sm text-stone-300 rounded outline-none focus:border-amber-500 transition-colors">
             </div>
         </div>
 
         <!-- STEP 3: Execute Upload -->
         <div class="mb-6 bg-black p-4 rounded border border-stone-800">
-            <h2 class="text-sm font-bold text-emerald-400 mb-3">STEP 3: GENERATE & UPLOAD</h2>
-            <button id="btnUpload" onclick="executeMetadataUpload()" class="w-full bg-amber-700 hover:bg-amber-600 disabled:bg-stone-800 disabled:text-stone-600 text-white font-bold py-3 rounded text-sm transition-colors">
-                DEPLOY 333 METADATA TO IRYS
+            <h2 class="text-sm font-bold text-emerald-400 mb-3">STEP 3: EXECUTE METADATA DEPLOYMENT</h2>
+            <button id="btnUpload" onclick="buildAndUploadMetadata()" disabled class="w-full bg-amber-700 hover:bg-amber-600 disabled:bg-stone-800 disabled:text-stone-600 text-white font-bold py-3 rounded text-sm transition-colors cursor-not-allowed">
+                DEPLOY 333 METADATA JSONS
             </button>
+            <div class="mt-4">
+                <div class="w-full bg-stone-900 rounded-full h-2">
+                    <div id="progressBar" class="bg-emerald-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                </div>
+                <div class="text-right text-xs mt-1 text-emerald-400 font-bold" id="progressText">0%</div>
+            </div>
         </div>
 
         <!-- RESULT SECTION -->
@@ -56,35 +63,19 @@
             <h2 class="text-sm font-bold text-emerald-400">🎉 METADATA DEPLOYMENT SUCCESSFUL</h2>
             
             <div>
-                <label class="block text-xs text-stone-300 font-bold mb-1">🔑 FINAL BASE URI (นำไปใช้ใน Smart Contract):</label>
-                <input type="text" id="manifestOutput" readonly class="w-full bg-black border border-emerald-500 p-3 text-sm font-mono text-amber-400 rounded outline-none select-all" onclick="this.select()">
-            </div>
-            
-            <div>
-                <label class="block text-xs text-stone-300 mb-1">FOLDER ID:</label>
-                <input type="text" id="folderIdOutput" readonly class="w-full bg-black border border-stone-700 p-2 text-xs text-emerald-300 rounded outline-none select-all" onclick="this.select()">
+                <label class="block text-xs text-stone-300 font-bold mb-1">👑 FINAL BASE URI (นำไปใส่ใน Smart Contract):</label>
+                <input type="text" id="inputBaseUri" readonly class="w-full bg-black border border-emerald-500 p-2 text-sm font-mono text-amber-400 rounded outline-none select-all" onclick="this.select()">
             </div>
         </div>
 
         <!-- SYSTEM LOG -->
         <div class="bg-black p-3 rounded border border-stone-800 h-48 overflow-y-auto log-box text-[10px] text-stone-400 space-y-1" id="logBox">
-            <div>[SYSTEM] Ready for Metadata Compilation...</div>
+            <div>[SYSTEM] Ready... Waiting for wallet connection.</div>
         </div>
     </div>
 
 <script>
     let provider, signer, irys;
-
-    function getImperialRankDetailed(tokenId) { 
-        const id = parseInt(tokenId, 10); 
-        if (isNaN(id)) return "UNKNOWN ENTITY"; 
-        if ([1,2,3,4,5,6,7,8,9,10,50,100].includes(id)) return "THE COUNCIL PRIME"; 
-        if (id >= 11 && id <= 99 && id !== 50) return "THE GOLDEN COUNCIL"; 
-        if (id >= 101 && id <= 200 && id !== 100) return "THE SILVER CYPHER COUNCIL"; 
-        if (id >= 201 && id <= 332) return "THE RED MACHINE COUNCIL"; 
-        if (id === 333) return "SOVEREIGN IMMORTAL 333"; 
-        return "UNKNOWN ENTITY"; 
-    }
 
     function log(msg, color = "text-stone-400") {
         const box = document.getElementById("logBox");
@@ -122,94 +113,149 @@
             
             log("Initializing Irys...", "text-yellow-400");
             irys = await window.InitSovereignIrys(signer);
-            log("Irys initialized successfully", "text-emerald-400");
+            log("Irys initialized successfully. Ready to deploy.", "text-emerald-400");
+            
+            // Enable Upload Button
+            const btnUpload = document.getElementById("btnUpload");
+            btnUpload.disabled = false;
+            btnUpload.classList.remove("cursor-not-allowed");
+
         } catch (err) {
             log(`Wallet Error: ${err.message}`, "text-red-500");
         }
     }
 
-    async function executeMetadataUpload() {
-        if (!irys) {
-            log("ERROR: Please connect wallet first.", "text-red-500 font-bold");
-            return;
+    function getImperialRankDetailed(tokenId) { 
+        const id = parseInt(tokenId, 10); 
+        if (isNaN(id)) return "UNKNOWN ENTITY"; 
+        if ([1,2,3,4,5,6,7,8,9,10,50,100].includes(id)) return "THE COUNCIL PRIME"; 
+        if (id >= 11 && id <= 99 && id !== 50) return "THE GOLDEN COUNCIL"; 
+        if (id >= 101 && id <= 200 && id !== 100) return "THE SILVER CYPHER COUNCIL"; 
+        if (id >= 201 && id <= 332) return "THE RED MACHINE COUNCIL"; 
+        if (id === 333) return "SOVEREIGN IMMORTAL 333"; 
+        return "UNKNOWN ENTITY"; 
+    }
+
+    async function buildAndUploadMetadata() {
+        if (!irys) { 
+            log("Operation suspended: Initialize Irys first.", "text-red-500 font-bold"); 
+            return; 
         }
 
         const btn = document.getElementById("btnUpload");
         btn.disabled = true;
-        btn.textContent = "PROCESSING...";
+        btn.textContent = "COMPILING & UPLOADING...";
 
         try {
             const rootName = document.getElementById('propName').value.trim() || "THE IMPERIAL SOVEREIGN DEED ♠️";
-            const imageManifestId = document.getElementById('imageManifestId').value.trim();
+            const frontUriRaw = document.getElementById('forgeFrontUri').value.trim();
             
-            if (!imageManifestId) {
-                throw new Error("CRITICAL: Image Manifest ID is required.");
+            if (!frontUriRaw) {
+                throw new Error("CRITICAL: กรุณาใส่ Image Manifest ID ในช่อง FRONT URI");
             }
 
-            const baseImageUri = `https://gateway.irys.xyz/${imageManifestId}`;
-            
-            log("1. Generating 333 JSON Metadata files in memory...", "text-yellow-400");
-            const metadataFiles = [];
-            let totalSize = 0;
+            // รองรับทั้งแบบใส่แค่ ID และแบบใส่ Full URL
+            let baseImageUri = frontUriRaw.includes("gateway.irys.xyz") ? frontUriRaw : `https://gateway.irys.xyz/${frontUriRaw}`;
+            if (baseImageUri.endsWith('/')) baseImageUri = baseImageUri.slice(0, -1);
 
-            // ปั้นไฟล์ 1.json ถึง 333.json เก็บไว้ใน Array
-            for (let i = 1; i <= 333; i++) {
-                const rank = getImperialRankDetailed(i);
-                const metadata = {
-                    name: `${rootName} #${i}`,
-                    description: "IMPERIAL SOVEREIGN ARCHITECTURE - Absolute Immutable Autarkic Identity Manifest",
-                    image: `${baseImageUri}/${i}.png`,
-                    attributes: [
-                        { trait_type: "RANK", value: rank },
-                        { trait_type: "IDENTITY STATUS", value: "UNCOMPROMISED INTEGRITY PROTOCOL" }
-                    ]
-                };
+            log(`เริ่มกระบวนการปั้น JSON 333 รายการ (Concurrent Batching)...`, "text-yellow-400");
+            log(`อ้างอิง Image Base URI: ${baseImageUri}`, "text-stone-400");
 
-                const jsonString = JSON.stringify(metadata, null, 2);
-                const jsonBlob = new Blob([jsonString], { type: "application/json" });
-                const file = new File([jsonBlob], `${i}.json`, { type: "application/json" });
-                
-                metadataFiles.push(file);
-                totalSize += file.size;
-            }
-
-            log(`Metadata Objects Created. Total Size: ~${(totalSize / 1024).toFixed(2)} KB`, "text-stone-400");
-
-            // เช็ค Balance และเติมเงินถ้าไม่พอ (บวก Buffer ค่าธรรมเนียม Folder Manifest)
-            const aggregateSize = totalSize + 50000; 
-            const price = BigInt((await irys.getPrice(aggregateSize)).toString());
+            // ประเมินขนาดไฟล์และเติมเงินเผื่อ (สมมติ JSON ละ 500 bytes * 333 = ~166KB + Manifest)
+            const estimatedBytes = 200000;
+            const price = BigInt((await irys.getPrice(estimatedBytes)).toString());
             const balance = BigInt((await irys.getLoadedBalance()).toString());
 
             if (balance < price) {
-                const diffWithBuffer = ((price - balance) * 120n) / 100n;
-                log(`2. Funding ${ethers.formatEther(diffWithBuffer)} ETH to Irys...`, "text-yellow-400");
+                const diffWithBuffer = ((price - balance) * 150n) / 100n;
+                log(`Funding ${ethers.formatEther(diffWithBuffer)} ETH to Irys for metadata...`, "text-yellow-400");
                 await irys.fund(diffWithBuffer.toString());
-                
-                let synced = false;
-                for (let i = 0; i < 15; i++) {
-                    await new Promise(r => setTimeout(r, 4000));
-                    if (BigInt((await irys.getLoadedBalance()).toString()) >= price) { synced = true; break; }
-                }
-                if (!synced) throw new Error("Irys node sync timeout");
+                log(`Funding success. Waiting for node sync...`, "text-emerald-400");
+                await new Promise(r => setTimeout(r, 4000));
             }
 
-            log("3. Uploading 333 Metadata files via uploadFolder (Single Signature Request)...", "text-yellow-400 font-bold");
+            const manifestPaths = {}; 
+            const totalItems = 333;
+            const batchSize = 10; // ป้องกัน Rate Limit
+            let completedCount = 0;
+
+            for (let i = 1; i <= totalItems; i += batchSize) {
+                const batchPromises = [];
+                const currentBatchEnd = Math.min(i + batchSize - 1, totalItems);
+                
+                for (let j = i; j <= currentBatchEnd; j++) {
+                    batchPromises.push((async () => {
+                        const rank = getImperialRankDetailed(j);
+                        const metadata = {
+                            name: `${rootName} #${j}`,
+                            description: "IMPERIAL SOVEREIGN ARCHITECTURE - Absolute Immutable Autarkic Identity Manifest",
+                            image: `${baseImageUri}/${j}.png`,
+                            attributes: [
+                                { trait_type: "RANK", value: rank },
+                                { trait_type: "IDENTITY STATUS", value: "UNCOMPROMISED INTEGRITY PROTOCOL" }
+                            ]
+                        };
+
+                        const dataToUpload = JSON.stringify(metadata);
+                        const tags = [{ name: "Content-Type", value: "application/json" }];
+                        
+                        let receipt;
+                        let attempt = 1;
+                        while(attempt <= 3) {
+                            try {
+                                receipt = await irys.upload(dataToUpload, { tags });
+                                break;
+                            } catch (uploadErr) {
+                                if (attempt === 3) throw uploadErr;
+                                await new Promise(r => setTimeout(r, 1000 * attempt));
+                                attempt++;
+                            }
+                        }
+                        
+                        completedCount++;
+                        const pct = (completedCount / totalItems) * 90;
+                        document.getElementById("progressBar").style.width = `${pct}%`;
+                        document.getElementById("progressText").textContent = `${Math.round(pct)}%`;
+                        
+                        return { id: j, receiptId: receipt.id };
+                    })());
+                }
+
+                const batchResults = await Promise.all(batchPromises);
+                for (const res of batchResults) {
+                    manifestPaths[`${res.id}.json`] = { id: res.receiptId };
+                }
+                log(`✅ อัปโหลด JSON สำเร็จแล้ว [${currentBatchEnd}/${totalItems}]`, "text-blue-400");
+            }
+
+            log(`กำลังรวมร่าง JSON ทั้งหมดเป็น Manifest ตัวแม่...`, "text-purple-400");
             
-            // ยิงมัดรวมไฟล์ขึ้น Irys เซ็นชื่อแค่ครั้งเดียว
-            const response = await irys.uploadFolder(metadataFiles);
-            const folderId = response.id;
-            const finalBaseURI = `https://gateway.irys.xyz/${folderId}/`;
+            const manifestJSON = {
+                manifest: "arweave/paths",
+                version: "0.1.0",
+                index: { path: "1.json" },
+                paths: manifestPaths
+            };
 
-            log(`🎉 SUCCESS! Metadata Manifest ID: ${folderId}`, "text-emerald-500 font-bold");
+            const manifestString = JSON.stringify(manifestJSON);
+            const manifestTags = [{ name: "Content-Type", value: "application/x.arweave-manifest+json" }];
 
+            const manifestReceipt = await irys.upload(manifestString, { tags: manifestTags });
+            const finalBaseURI = `https://gateway.irys.xyz/${manifestReceipt.id}/`;
+            
+            document.getElementById("progressBar").style.width = `100%`;
+            document.getElementById("progressText").textContent = `100%`;
+
+            log(`🎉 METADATA MANIFEST สร้างสำเร็จสมบูรณ์!`, "text-emerald-400 font-bold");
+            log(`👑 FINAL BASE URI: ${finalBaseURI}`, "text-amber-400 font-bold");
+            
             document.getElementById("resultContainer").classList.remove("hidden");
-            document.getElementById("folderIdOutput").value = folderId;
-            document.getElementById("manifestOutput").value = finalBaseURI;
+            document.getElementById("inputBaseUri").value = finalBaseURI;
 
-        } catch (err) {
+        } catch(err) {
             log(`ERROR: ${err.message}`, "text-red-500 font-bold");
         } finally {
-            btn.textContent = "DEPLOY 333 METADATA TO IRYS";
+            btn.textContent = "DEPLOY 333 METADATA JSONS";
             btn.disabled = false;
         }
     }
