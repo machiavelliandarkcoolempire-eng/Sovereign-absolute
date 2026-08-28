@@ -146,22 +146,6 @@
         selectedFiles = validFiles;
     }
 
-    // ฟังก์ชันติดเกราะ ป้องกันการหลุดระหว่างทาง
-    async function uploadWithRetry(file, maxRetries = 3) {
-        for (let attempt = 1; attempt <= maxRetries; attempt++) {
-            try {
-                // สำหรับ Browser SDK ต้องแปลงเป็น ArrayBuffer เพื่อความเสถียรของ Memory เมื่อไฟล์มีจำนวนมาก
-                const arrayBuffer = await file.arrayBuffer();
-                const receipt = await irys.upload(arrayBuffer, { tags: [{ name: "Content-Type", value: "image/png" }] });
-                return receipt;
-            } catch (error) {
-                if (attempt === maxRetries) throw error;
-                log(`[RETRY] ขัดข้องที่ไฟล์ ${file.name} (รอบ ${attempt}/${maxRetries}) กำลังพยายามใหม่...`, "text-yellow-500 font-bold");
-                await new Promise(r => setTimeout(r, 2000 * attempt));
-            }
-        }
-    }
-
     async function executeUpload() {
         if (!irys || selectedFiles.length !== 333) return;
 
@@ -179,7 +163,7 @@
             if (balance < price) {
                 const diffWithBuffer = ((price - balance) * 120n) / 100n;
                 log(`Funding ${ethers.formatEther(diffWithBuffer)} ETH to Irys...`, "text-yellow-400");
-                await irys.fund(diffWithBuffer.toString());
+                const fundRes = await irys.fund(diffWithBuffer.toString());
                 
                 let synced = false;
                 for (let i = 0; i < 20; i++) {
@@ -192,12 +176,12 @@
             log("Uploading 333 assets...", "text-yellow-400");
             const paths = {};
             let completed = 0;
-            const CONCURRENCY = 3; // ปรับลงเหลือ 3 เพื่อรักษาสมดุล Memory Browser
+            const CONCURRENCY = 5;
 
             for (let i = 0; i < selectedFiles.length; i += CONCURRENCY) {
                 const chunk = selectedFiles.slice(i, i + CONCURRENCY);
                 await Promise.all(chunk.map(async (file) => {
-                    const receipt = await uploadWithRetry(file);
+                    const receipt = await irys.upload(file, { tags: [{ name: "Content-Type", value: "image/png" }] });
                     paths[file.name] = { id: receipt.id };
                     completed++;
                     const pct = (completed / 333) * 90;
@@ -207,17 +191,15 @@
             }
 
             log("Generating Folder Manifest...", "text-yellow-400");
-            const manifestPayload = JSON.stringify({ manifest: "arweave/paths", version: "0.1.0", index: { path: "1.png" }, paths });
-            const manifestBlob = new Blob([manifestPayload], { type: "application/json" });
-            const manifestBuffer = await manifestBlob.arrayBuffer();
-            
-            const manifestReceipt = await irys.upload(manifestBuffer, {
+            const manifestPayload = { manifest: "arweave/paths", version: "0.1.0", index: { path: "1.png" }, paths };
+            const manifestReceipt = await irys.upload(JSON.stringify(manifestPayload), {
                 tags: [{ name: "Content-Type", value: "application/x.arweave-manifest+json" }]
             });
 
             document.getElementById("progressBar").style.width = `100%`;
             document.getElementById("progressText").textContent = `100%`;
 
+            // ดึง Folder ID (Manifest ID)
             const folderId = manifestReceipt.id;
             const manifestUrl = `https://gateway.irys.xyz/${folderId}/`;
 
@@ -234,7 +216,6 @@
             btn.disabled = false;
         }
     }
-
 </script>
 </body>
 </html>
