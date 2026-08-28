@@ -181,7 +181,8 @@
             for (let i = 0; i < selectedFiles.length; i += CONCURRENCY) {
                 const chunk = selectedFiles.slice(i, i + CONCURRENCY);
                 await Promise.all(chunk.map(async (file) => {
-                    const receipt = await irys.upload(file, { tags: [{ name: "Content-Type", value: "image/png" }] });
+                    const fileBuffer = Buffer.from(await file.arrayBuffer());
+                    const receipt = await irys.upload(fileBuffer, { tags: [{ name: "Content-Type", value: "image/png" }] });
                     paths[file.name] = { id: receipt.id };
                     completed++;
                     const pct = (completed / 333) * 90;
