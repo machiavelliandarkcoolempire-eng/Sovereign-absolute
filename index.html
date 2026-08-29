@@ -4674,38 +4674,37 @@ async function executeContractPause(status, e) {
     }
 }
 
+/**
+ * Single Production-Ready Function: extractIrysId
+ * ดึง Path ทั้งหมด (เช่น "HASH/5.png", "HASH/333.png") ตรงๆ ไม่ตัดชื่อไฟล์ ไม่ค้าง CDN
+ */
 function extractIrysId(input) {
     if (!input || typeof input !== 'string') return "";
     let clean = input.trim();
-    
-    // กรณีเป็น URL เต็ม (http/https)
-    if (clean.startsWith('http://') || clean.startsWith('https://')) {
-        const isKnownGateway = clean.includes('gateway.irys.xyz/') || 
-                               clean.includes('arweave.net/') || 
-                               clean.includes('ar-io.net/');
-                               
-        if (!isKnownGateway) return clean;
-        
+    if (!clean) return "";
+
+    // 1. ถ้าเป็น HTTP/HTTPS ให้เอาเฉพาะ Pathname ทั้งหมด (ไม่ว่าจะเป็น CDN หรือ Gateway อะไรก็ตาม)
+    if (/^https?:\/\//i.test(clean)) {
         try {
-            const url = new URL(clean);
-            // 🛡️ CRITICAL FIX: ดึง Pathname มาทั้งหมด (เช่น /HASH/2.png) แล้วตัด / ตัวหน้าสุดออก
-            let path = url.pathname;
-            if (path.startsWith('/')) path = path.substring(1);
-            return path; 
-        } catch(e) {}
-        return clean;
+            clean = new URL(clean).pathname;
+        } catch (e) {
+            return "";
+        }
     }
 
-    // กรณีเป็น Custom Protocol
-    if (clean.startsWith('ar://')) {
-        clean = clean.replace('ar://', '');
-    } else if (clean.startsWith('irys://')) {
-        clean = clean.replace('irys://', '');
-    }
-    
-    // 🛡️ CRITICAL FIX: อนุญาตให้มีเครื่องหมาย . (dot) และ / (slash) สำหรับชื่อไฟล์
-    return clean.replace(/[^a-zA-Z0-9_-\.\/]/g, '');
+    // 2. ตัด Protocol (ar://, irys://)
+    clean = clean.replace(/^(ar|irys):\/\//i, '');
+
+    // 3. ตัด Query String (?...) และ Hash (#...) ออก
+    clean = clean.split(/[?#]/)[0];
+
+    // 4. ตัด / หน้าสุดออกทั้งหมด
+    clean = clean.replace(/^\/+/, '');
+
+    // 5. Safe Regex: สแกนผ่าน 100% อนุญาตให้มี / และ . ไม่ตัดเลขไฟล์ 5.png / 333.png ออกแน่นอน
+    return clean.replace(/[^a-zA-Z0-9_\-\.\/]/g, '');
 }
+
 
 function buildIrysUrls(txId) {
     const cleanId = extractIrysId(txId);
