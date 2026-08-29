@@ -1047,7 +1047,7 @@
 // 🔱 THE IMPERIAL SOVEREIGN DEED - CORE ARCHITECTURE (ETHERS V6 & IRYS 0.0.4)
 // 🛡️ WORLD-CLASS SENIOR WEB3 FRONT-END STANDARD (ZERO-BUG POLICY ENFORCED)
 // ==============================================================================
-const CONTRACT_ADDRESS = "0x920c1f00EF178B3C060BD39a6a3f449BA2b230C9";
+const CONTRACT_ADDRESS = "0x76600A9cA18B329FbB29Ae0b75cc7676Ce0Dd97e";
 const WETH_ADDRESS = "0x4200000000000000000000000000000000000006";
 const MULTICALL3_ADDRESS = "0xcA11bde05977b3631167028862bE2a173976CA11";
 
@@ -2833,7 +2833,6 @@ function requestMediaConfirmation(uri, dnaString, mediaTypeHint = "") {
     return new Promise((resolve) => {
         if (window._mediaConfirmActive) return resolve(false); 
         window._mediaConfirmActive = true;
-        window._actionSettled = false;
         
         const modal = document.getElementById('mediaConfirmModal');
         const container = document.getElementById('mediaConfirmationPreviewContainer');
@@ -2871,9 +2870,11 @@ function requestMediaConfirmation(uri, dnaString, mediaTypeHint = "") {
         document.body.appendChild(modal);
         modal.classList.remove('hidden');
 
+        let isSettled = false;
+
         const cleanupAndResolve = (approved) => {
-            if (window._actionSettled) return;
-            window._actionSettled = true;
+            if (isSettled) return;
+            isSettled = true;
             window._mediaConfirmActive = false;
             
             document.removeEventListener('keydown', escListener);
@@ -2890,6 +2891,11 @@ function requestMediaConfirmation(uri, dnaString, mediaTypeHint = "") {
                 }
             } catch (e) {}
             container.replaceChildren(); 
+            
+            if (window.resolveMediaConfirm === cleanupAndResolve) {
+                window.resolveMediaConfirm = null;
+            }
+            
             resolve(approved);
         };
 
@@ -3881,6 +3887,11 @@ async function triggerForge(type, e) {
         return; 
     }
 
+    // 🛡️ [PRODUCTION PATCH 1]: Temporal State Lock - ล็อกระบบทันทีที่หน้าประตู
+    if (typeof lockSystem === 'function') lockSystem();
+    const btn = toggleButtonLoading(e, true);
+    let progress = null;
+
     try {
         await checkGasSurge();
         
@@ -3951,70 +3962,65 @@ async function triggerForge(type, e) {
         
         if (!isConfirmed) return; 
 
-        const btn = toggleButtonLoading(e, true);
-        // 🚨 [CRITICAL FIX]: ล็อกระบบทันทีก่อนเริ่มอัปโหลด Irys ป้องกัน User กดปุ่มอื่นแทรก
-        if (typeof lockSystem === 'function') lockSystem();
-        let progress = null;
+        if (!irys) throw new Error("Irys SDK Bridge is offline. Establish wallet connection first.");
 
-        try {
-            if (!irys) throw new Error("Irys SDK Bridge is offline. Establish wallet connection first.");
+        if (typeof appendLog === 'function') appendLog(`Inscribing back-end media onto permanent Irys Datachain...`, "text-blue-400");
+        const tags = [{ name: "Content-Type", value: file.type }];
+        
+        progress = createProgressController(file.size);
+        if (progress) progress.show(); 
+        
+        const response = await executeIrysUpload(file, tags, true, progress); 
+        const backMediaTxId = response?.data ? response.data.id : response?.id; 
+        
+        if (!backMediaTxId) throw new Error("Irys payload generation failed: null TxID.");
 
-            if (typeof appendLog === 'function') appendLog(`Inscribing back-end media onto permanent Irys Datachain...`, "text-blue-400");
-            const tags = [{ name: "Content-Type", value: file.type }];
-            
-            progress = createProgressController(file.size);
-            if (progress) progress.show(); 
-            
-            const response = await executeIrysUpload(file, tags, true, progress); 
-            const backMediaTxId = response?.data ? response.data.id : response?.id; 
-            
-            if (!backMediaTxId) throw new Error("Irys payload generation failed: null TxID.");
+        const sanitizedTxId = sanitizeForDOM(backMediaTxId);
+        if (typeof appendLog === 'function') appendLog(`Back-end media successfully anchored: ${sanitizedTxId}`, "text-emerald-400 font-bold");
 
-            const sanitizedTxId = sanitizeForDOM(backMediaTxId);
-            if (typeof appendLog === 'function') appendLog(`Back-end media successfully anchored: ${sanitizedTxId}`, "text-emerald-400 font-bold");
+        const backUriField = document.getElementById('forgeBackUri');
+        if (backUriField) backUriField.value = backMediaTxId;
 
-            const backUriField = document.getElementById('forgeBackUri');
-            if (backUriField) backUriField.value = backMediaTxId;
+        if (typeof appendLog === 'function') appendLog(`Initiating THE SOVEREIGN AWAKENING sequence on-chain at ${ethers.formatEther(currentMintPriceWei)} ETH...`, "text-yellow-400");
+        
+        const tokenIdBn = BigInt(targetTokenId);
 
-            if (typeof appendLog === 'function') appendLog(`Initiating THE SOVEREIGN AWAKENING sequence on-chain at ${ethers.formatEther(currentMintPriceWei)} ETH...`, "text-yellow-400");
-            
-            const tokenIdBn = BigInt(targetTokenId);
-
-            const receipt = await runTx(
-                e, `SOVEREIGN_REBIRTH_#${targetTokenId}`, "SOVEREIGN_REBIRTH",
-                [tokenIdBn.toString(), strictFrontUri, backMediaTxId], { value: currentMintPriceWei.toString() },
-                { manageLock: false, manageButton: false } 
-            );
-
-            if (receipt) {
-                if (typeof GLOBAL_NODE_CACHE !== 'undefined' && GLOBAL_NODE_CACHE?.clear) GLOBAL_NODE_CACHE.clear();
-                if (typeof syncActiveMatrixNodes === 'function') await syncActiveMatrixNodes();
-                if (typeof auditTokenFromLedger === 'function') await auditTokenFromLedger(targetTokenId);
-                if (typeof appendLog === 'function') appendLog(`Sovereign REBIRTH executed flawlessly on-chain.`, "text-emerald-400 font-bold");
-                showNotification("THE SOVEREIGN AWAKENING complete. Dual-identity anchored.", "success");
-            }
-        } catch (err) {
-            const errorMsg = decodeContractError(err);
-            const sanitizedMsg = sanitizeForDOM(errorMsg);
-
-            if (err?.code === 4001 || sanitizedMsg === "USER_CANCELLED_TX" || err?.message?.toLowerCase().includes("user rejected") || err?.message?.toLowerCase().includes("declined")) {
-                if (typeof appendLog === 'function') appendLog("Forge execution cancelled by operator signature denial.", "text-yellow-500");
-                showNotification("Transaction cancelled by user.", "warning");
-            } else if (err?.code === "UNPREDICTABLE_GAS_LIMIT" || err?.message?.toLowerCase().includes("cannot estimate gas")) {
-                if (typeof appendLog === 'function') appendLog("Network rejected estimateGas: Execution will likely fail on-chain.", "text-red-500 font-bold");
-                showNotification("Gas estimation failed (Contract Revert Risk).", "error");
-            } else {
-                if (typeof appendLog === 'function') appendLog(`Execution aborted: ${sanitizedMsg}`, "text-red-500");
-                showNotification("Transaction failed. Check console/logs for details.", "error");
-            }
-        } finally {
-            if (progress) progress.hide();
-            if (btn) toggleButtonLoading(btn, false);
-            // 🚨 [CRITICAL FIX]: ปลดล็อกระบบเสมอเมื่อจบการทำงาน
-            if (typeof unlockSystem === 'function') unlockSystem();
+        // 🛡️ [PRODUCTION PATCH 2]: Pre-emptive Cache Invalidation - เคลียร์แคชก่อนยิง TX ปิดตาย Race Condition
+        if (typeof GLOBAL_NODE_CACHE !== 'undefined' && GLOBAL_NODE_CACHE?.delete) {
+            GLOBAL_NODE_CACHE.delete(String(targetTokenId));
         }
-    } catch (criticalErr) {
-        if (typeof appendLog === 'function') appendLog(`Critical Error in triggerForge: ${criticalErr?.message || criticalErr}`, "text-red-500");
+
+        const receipt = await runTx(
+            e, `SOVEREIGN_REBIRTH_#${targetTokenId}`, "SOVEREIGN_REBIRTH",
+            [tokenIdBn.toString(), strictFrontUri, backMediaTxId], { value: currentMintPriceWei.toString() },
+            { manageLock: false, manageButton: false } // ปิดการจัดการ Lock อัตโนมัติ เพราะเราคุมเองที่ระดับบนสุดแล้ว
+        );
+
+        if (receipt) {
+            if (typeof syncActiveMatrixNodes === 'function') await syncActiveMatrixNodes();
+            if (typeof auditTokenFromLedger === 'function') await auditTokenFromLedger(targetTokenId);
+            if (typeof appendLog === 'function') appendLog(`Sovereign REBIRTH executed flawlessly on-chain.`, "text-emerald-400 font-bold");
+            showNotification("THE SOVEREIGN AWAKENING complete. Dual-identity anchored.", "success");
+        }
+    } catch (err) {
+        const errorMsg = decodeContractError(err);
+        const sanitizedMsg = sanitizeForDOM(errorMsg);
+
+        if (err?.code === 4001 || sanitizedMsg === "USER_CANCELLED_TX" || err?.message?.toLowerCase().includes("user rejected") || err?.message?.toLowerCase().includes("declined")) {
+            if (typeof appendLog === 'function') appendLog("Forge execution cancelled by operator signature denial.", "text-yellow-500");
+            showNotification("Transaction cancelled by user.", "warning");
+        } else if (err?.code === "UNPREDICTABLE_GAS_LIMIT" || err?.message?.toLowerCase().includes("cannot estimate gas")) {
+            if (typeof appendLog === 'function') appendLog("Network rejected estimateGas: Execution will likely fail on-chain.", "text-red-500 font-bold");
+            showNotification("Gas estimation failed (Contract Revert Risk).", "error");
+        } else {
+            if (typeof appendLog === 'function') appendLog(`Execution aborted: ${sanitizedMsg}`, "text-red-500");
+            showNotification("Transaction failed. Check console/logs for details.", "error");
+        }
+    } finally {
+        if (progress) progress.hide();
+        if (btn) toggleButtonLoading(btn, false);
+        // 🛡️ [PRODUCTION PATCH 3]: ปลดล็อกระบบเสมอเมื่อจบการทำงาน (ไม่ว่าจะสำเร็จหรือ Error)
+        if (typeof unlockSystem === 'function') unlockSystem();
     }
 }
 
@@ -5003,20 +5009,34 @@ async function autoMap(tokenId) {
                     }
                     
                     if (metaResponse.ok) {
-                        const contentLength = metaResponse.headers.get('content-length');
-                        if (contentLength && parseInt(contentLength, 10) > 51200) {
-                            console.warn(`[autoMap] Payload exceeds 50KB limit. Rejected.`);
-                        } else {
-                            const text = await metaResponse.text();
-                            if (text.length > 51200) { 
-                                console.warn(`[autoMap] Payload text exceeds 50KB limit. Rejected.`);
-                            } else {
-                                try {
-                                    metadata = JSON.parse(text);
-                                } catch (parseErr) {
-                                    console.warn(`[autoMap] Invalid JSON payload at ${targetUrl}`);
+                        // 🛡️ [PRODUCTION PATCH]: Stream Reader with Hard Byte Limit (OOM Protection)
+                        const reader = metaResponse.body.getReader();
+                        const decoder = new TextDecoder('utf-8');
+                        let text = '';
+                        let bytesRead = 0;
+                        const MAX_BYTES = 51200; // 50KB Hard Limit
+
+                        try {
+                            while (true) {
+                                const { done, value } = await reader.read();
+                                if (done) break;
+                                bytesRead += value.length;
+                                
+                                if (bytesRead > MAX_BYTES) {
+                                    await reader.cancel(); // ตัดการเชื่อมต่อทันที
+                                    throw new Error("OOM_PROTECT_PAYLOAD_TOO_LARGE");
                                 }
+                                text += decoder.decode(value, { stream: true });
                             }
+                            text += decoder.decode(); // Flush remaining buffer
+                            
+                            try {
+                                metadata = JSON.parse(text);
+                            } catch (parseErr) {
+                                console.warn(`[autoMap] Invalid JSON payload at ${targetUrl}`);
+                            }
+                        } catch (streamErr) {
+                            console.warn(`[autoMap] Stream aborted: ${streamErr.message}`);
                         }
                     }
                 } catch (e) {
@@ -5357,7 +5377,6 @@ async function resolveMediaUrl(urlList, signal, mimeType, depth = 0) {
                 
                 const contentType = testResponse.headers.get('content-type') || '';
                 
-                // 🚨 FIX: ถ้าตรวจพบว่าเป็น JSON (Metadata) ให้เบรกออกจากลูปวิดีโอ เพื่อไปเข้ากระบวนการแกะ JSON ด้านล่าง
                 if (contentType.includes('application/json') || contentType.includes('text/plain')) {
                     localCtrl.abort();
                     break; 
@@ -5414,15 +5433,35 @@ async function resolveMediaUrl(urlList, signal, mimeType, depth = 0) {
                 const contentType = response.headers.get('content-type') || '';
                 const contentLength = parseInt(response.headers.get('content-length') || '0', 10);
                 
-                // 🚨 FIX: อ่านไฟล์ JSON อย่างปลอดภัยโดยใช้ .text() แทน reader loop ที่เปราะบาง
                 if (contentType.includes('json') || contentType.includes('text') || (contentLength > 0 && contentLength < 51200)) {
-                    const text = await clone.text();
-                    const json = JSON.parse(text);
-                    if (json && typeof json === 'object' && !Array.isArray(json)) {
-                        actualMedia = json.animation_url || json.videoURI || json.image || json.frontURI;
-                        if (actualMedia && typeof actualMedia === 'string') {
-                            isJsonObj = true;
+                    const reader = clone.body.getReader();
+                    const decoder = new TextDecoder('utf-8');
+                    let text = '';
+                    let bytesRead = 0;
+                    const MAX_BYTES = 51200; 
+
+                    try {
+                        while (true) {
+                            const { done, value } = await reader.read();
+                            if (done) break;
+                            bytesRead += value.length;
+                            if (bytesRead > MAX_BYTES) {
+                                await reader.cancel();
+                                throw new Error("OOM_PROTECT_PAYLOAD_TOO_LARGE");
+                            }
+                            text += decoder.decode(value, { stream: true });
                         }
+                        text += decoder.decode(); 
+                        
+                        const json = JSON.parse(text);
+                        if (json && typeof json === 'object' && !Array.isArray(json)) {
+                            actualMedia = json.animation_url || json.videoURI || json.image || json.frontURI;
+                            if (actualMedia && typeof actualMedia === 'string') {
+                                isJsonObj = true;
+                            }
+                        }
+                    } catch (streamErr) {
+                        console.warn("[Media Resolver] Stream aborted or size exceeded:", streamErr.message);
                     }
                 }
             } catch (e) {
@@ -5538,6 +5577,20 @@ function renderMediaToDOM(container, resolvedMedia, mediaType, abortSignal) {
     }
     if (abortSignal && abortSignal.aborted) return;
 
+    if (typeof window.videoCullingObserver === 'undefined') {
+        window.videoCullingObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.target.tagName === 'VIDEO') {
+                    if (entry.isIntersecting) {
+                        entry.target.play().catch(() => {});
+                    } else {
+                        entry.target.pause();
+                    }
+                }
+            });
+        }, { threshold: 0.1, rootMargin: "100px" });
+    }
+
     if (container._hlsInstance) {
         if (typeof container._hlsInstance.detachMedia === 'function') {
             container._hlsInstance.detachMedia();
@@ -5560,8 +5613,8 @@ function renderMediaToDOM(container, resolvedMedia, mediaType, abortSignal) {
         child.onclick = null;
 
         if (child.tagName === 'VIDEO' || child.tagName === 'IMG') {
-            if (typeof videoCullingObserver !== 'undefined' && videoCullingObserver) {
-                videoCullingObserver.unobserve(child);
+            if (window.videoCullingObserver) {
+                window.videoCullingObserver.unobserve(child);
             }
             
             if (child.tagName === 'VIDEO') {
@@ -5705,8 +5758,8 @@ function renderMediaToDOM(container, resolvedMedia, mediaType, abortSignal) {
             }
         };
         
-        if (typeof videoCullingObserver !== 'undefined' && videoCullingObserver) {
-            videoCullingObserver.observe(el);
+        if (window.videoCullingObserver) {
+            window.videoCullingObserver.observe(el);
         }
     } else {
         el.src = resolvedMedia.url;
@@ -6057,7 +6110,6 @@ const matrixThumbnailObserver = new IntersectionObserver((entries, observer) => 
                     let res;
                     let targetUrl = jsonUrl;
                     
-                    // [ADD FEATURE: JSON Fallback] ลองดึง Irys ก่อน ถ้าล่มให้สลับไป Arweave
                     try {
                         res = await fetch(targetUrl, { signal: controller.signal, mode: 'cors' });
                         if (!res.ok) throw new Error("HTTP " + res.status);
@@ -6071,6 +6123,18 @@ const matrixThumbnailObserver = new IntersectionObserver((entries, observer) => 
                         }
                     }
 
+                    const contentType = res.headers.get('content-type') || '';
+                    
+                    // 🛡️ ARCHITECTURE FIX: Dynamic Media Type Resolution
+                    // หาก URL ที่ดึงมาเป็นรูปภาพหรือวิดีโอโดยตรง (เกิดจากการที่ผู้ใช้อัปเดต Identity ใหม่)
+                    // ให้แสดงผลทันทีโดยไม่ต้องนำไป Parse เป็น JSON
+                    if (contentType.includes('image/') || contentType.includes('video/')) {
+                        img.src = targetUrl;
+                        img.dataset.resolved = "true";
+                        return;
+                    }
+
+                    // 🛡️ ORIGINAL LOGIC: Stream Reader for JSON Parsing
                     const reader = res.body.getReader();
                     const decoder = new TextDecoder('utf-8');
                     let text = '';
@@ -6155,6 +6219,7 @@ function renderToNodeCard(tokenId) {
     let displayImgUrl = "";
     let hasManifestData = false;
     let isMinted = false;
+    let needsObserver = false;
 
     if (state.status === 'UNCLAIMED') {
         const localData = window.IMAGE_MANIFEST ? window.IMAGE_MANIFEST[String(tokenId)] : null;
@@ -6180,13 +6245,31 @@ function renderToNodeCard(tokenId) {
         
     } else if (state.status === 'ACTIVE' || state.status === 'LOCKED') {
         isMinted = true;
-        let cleanUri = state.metadataUrl || "";
-        if (cleanUri.startsWith('ar://')) {
-            cleanUri = cleanUri.replace('ar://', 'https://gateway.irys.xyz/');
-        } else if (cleanUri && !cleanUri.startsWith('http')) {
-            cleanUri = `https://gateway.irys.xyz/${extractIrysId(cleanUri)}`;
+        const contractFrontUri = state.metadataUrl || "";
+        const genesisJsonUri = window.IMPERIAL_MANIFEST ? window.IMPERIAL_MANIFEST[String(tokenId)] : null;
+        
+        const cleanContractUri = typeof extractIrysId === 'function' ? extractIrysId(contractFrontUri) : contractFrontUri;
+        const cleanGenesisUri = typeof extractIrysId === 'function' ? extractIrysId(genesisJsonUri) : genesisJsonUri;
+
+        // 🛡️ ARCHITECTURE FIX: Fast-Path UI Rendering (Zero Network Request)
+        // หาก URI บน Smart Contract ตรงกับ Genesis JSON URI แปลว่าโหนดยังไม่เคยถูกอัปเดต
+        // ให้ดึงรูปภาพจาก IMAGE_MANIFEST ใน Memory มาแสดงผลทันที!
+        if (cleanContractUri && cleanGenesisUri && cleanContractUri === cleanGenesisUri) {
+            const localData = window.IMAGE_MANIFEST ? window.IMAGE_MANIFEST[String(tokenId)] : null;
+            const localHash = typeof localData === 'object' ? (localData.image || localData.irys_id) : localData;
+            
+            if (localHash && typeof localHash === 'string' && localHash.trim() !== "") {
+                displayImgUrl = localHash.startsWith('http') ? localHash : `https://gateway.irys.xyz/${localHash.replace('ar://', '')}`;
+                needsObserver = false; // ⚡ Fast path! ไม่ต้องใช้ Observer ไป Fetch JSON
+            } else {
+                displayImgUrl = `https://gateway.irys.xyz/${cleanContractUri}`;
+                needsObserver = true; // Fallback
+            }
+        } else {
+            // โหนดถูกอัปเดตโดยผู้ใช้ (URI ไม่ตรงกับ Genesis) ต้องส่งให้ Observer ไปตรวจสอบว่าเป็นรูปหรือ JSON
+            displayImgUrl = cleanContractUri.startsWith('http') ? cleanContractUri : `https://gateway.irys.xyz/${cleanContractUri}`;
+            needsObserver = true;
         }
-        displayImgUrl = cleanUri;
         
         node.classList.add(state.status === 'LOCKED' ? 'bg-blue-950/50' : 'bg-slate-950');
         node.title = `NODE #${tokenId} [${state.status}]`;
@@ -6201,16 +6284,15 @@ function renderToNodeCard(tokenId) {
         img.decoding = 'async';
         img.className = 'w-full h-full object-cover';
         
-        if (!isMinted) {
-            img.src = displayImgUrl;
-        } else {
+        if (needsObserver) {
             img.dataset.metadataUrl = displayImgUrl; 
             matrixThumbnailObserver.observe(img);
+        } else {
+            img.src = displayImgUrl; // ⚡ ยิงรูปขึ้นจอทันที ไม่ต้องรอ Network
         }
 
         const shortAddrText = state.owner ? `${state.owner.slice(0,4)}...${state.owner.slice(-4)}` : (state.status === 'UNCLAIMED' ? 'STAGED' : 'ERR');
 
-        // [ADD FEATURE: Image Fallback] จับตาดูรูปภาพ ถ้า Irys โหลดไม่ขึ้น ให้เปลี่ยนเป็น Arweave อัตโนมัติ
         img.onerror = () => {
             const currentSrc = img.src || "";
             if (currentSrc.includes('gateway.irys.xyz')) {
@@ -6247,7 +6329,6 @@ function renderToNodeCard(tokenId) {
     }
 }
 
-
 // 3. REFACTORED BIND OWNERSHIP (INSTANT RE-PAINT)
 function bindNodeOwnership(walletAddress) {
     if (!window.NODE_STATE_MAP || window.NODE_STATE_MAP.size === 0) return;
@@ -6269,7 +6350,6 @@ function bindNodeOwnership(walletAddress) {
     });
 }
 
-// 4. REFACTORED MULTICALL SYNC (REQUEST ANIMATION FRAME BATCHING)
 async function syncActiveMatrixNodes() { 
     const activeContract = (typeof secureContract !== 'undefined' && secureContract) 
         ? secureContract 
@@ -6300,7 +6380,6 @@ async function syncActiveMatrixNodes() {
         const currentEpoch = Math.floor(Date.now() / 1000);
         const currentUser = (typeof signer !== 'undefined' && signer) ? (await signer.getAddress()).toLowerCase() : null;
         
-        // Phase 1: Update In-Memory State Map Only (Zero DOM Touch inside loop)
         for (let i = 1; i <= 333; i++) { 
             const resGen = results[(i-1)*3];
             const resLock = results[(i-1)*3 + 1];
@@ -6340,18 +6419,27 @@ async function syncActiveMatrixNodes() {
             });
         } 
 
-        // Phase 2: Batch DOM Updates inside a Single Animation Frame (Zero Thrashing)
-        requestAnimationFrame(() => {
-            for (let i = 1; i <= 333; i++) {
+        const totalNodes = 333;
+        const chunkSize = 40;
+        let currentIndex = 1;
+
+        function renderChunk() {
+            const end = Math.min(currentIndex + chunkSize - 1, totalNodes);
+            for (let i = currentIndex; i <= end; i++) {
                 renderToNodeCard(i);
             }
-        });
+            currentIndex += chunkSize;
+            if (currentIndex <= totalNodes) {
+                requestAnimationFrame(renderChunk);
+            }
+        }
+        
+        requestAnimationFrame(renderChunk);
 
     } catch (err) { 
         console.warn("[SYSTEM EXCEPTION] Matrix sync failed/throttled. Maintaining base state.", err); 
     } 
 }
-
 
 function setupMatrixGrid() { 
     const grid = document.getElementById('matrixGridContainer'); 
