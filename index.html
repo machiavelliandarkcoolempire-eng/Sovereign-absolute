@@ -2069,9 +2069,13 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
                 if (!(payload instanceof File) && !(payload instanceof Blob)) {
                     throw new TypeError("Payload must be a File or Blob when isFile is true.");
                 }
-                dataToUpload = payload;
-                size = payload.size;
-                safeAppendLog(`[IRYS TELEMETRY] File payload mapped for streaming. Size: ${size} bytes.`, "text-slate-400");
+                
+                // 🟢 THE FIX: แปลง File/Blob เป็น Buffer ผ่าน web3-polyfill.js เพื่อตัดปัญหา .pipe ที่ Irys SDK ตามหา
+                const arrayBuf = await payload.arrayBuffer();
+                dataToUpload = Buffer.from(arrayBuf);
+                size = dataToUpload.length;
+                
+                safeAppendLog(`[IRYS TELEMETRY] File payload converted to Buffer. Size: ${size} bytes.`, "text-slate-400");
             }
         } catch (conversionErr) {
             safeAppendLog(`[IRYS TELEMETRY] Payload mapping failed: ${conversionErr?.message}`, "text-red-500");
@@ -2190,7 +2194,7 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
         }
 
         updateBridgeStatus("STREAMING PAYLOAD...", "warning");
-        safeAppendLog(isFile ? "[IRYS TELEMETRY] Streaming File to Irys Datachain..." : "[IRYS TELEMETRY] Transmitting String Buffer to Irys Datachain...", "text-blue-400");
+        safeAppendLog(isFile ? "[IRYS TELEMETRY] Streaming File Buffer to Irys Datachain..." : "[IRYS TELEMETRY] Transmitting String Buffer to Irys Datachain...", "text-blue-400");
 
         let receipt;
         try {
@@ -2223,8 +2227,7 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
                             irys.uploader.chunkedUploader.setChunkSize(chunkSize);
                             irys.uploader.chunkedUploader.setBatchSize(batchSize);
                             
-                            // 🟢 WAR MACHINE FIX: Create safe ID and pass raw File object
-                            const safeName = dataToUpload.name ? dataToUpload.name.replace(/[^a-zA-Z0-9_-]/g, '') : 'payload';
+                            const safeName = 'payload';
                             const uploadId = `irys_resume_${safeName}_${size}`;
                             
                             if (attempt > 0) {
@@ -2233,10 +2236,8 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
                             
                             receipt = await irys.uploader.chunkedUploader.uploadData(dataToUpload, { tags, uploadId });
                             
-                        } else if (isFile && typeof irys.uploadFile === 'function') {
-                            if (progressCtrl) progressCtrl.set(size / 2);
-                            receipt = await irys.uploadFile(dataToUpload, { tags });
                         } else {
+                            // ส่งข้อมูลแบบ Buffer ตรงเข้า upload() ของ Irys ได้เลย ปลอดภัยและเสถียรที่สุด
                             if (progressCtrl) progressCtrl.set(size / 2);
                             receipt = await irys.upload(dataToUpload, { tags });
                         }
@@ -2281,6 +2282,7 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
         if (activeBtn) toggleButtonLoading(activeBtn, false);
     }
 }
+
 
 
 // ==============================================================================
@@ -3970,7 +3972,11 @@ async function triggerForge(type, e) {
         progress = createProgressController(file.size);
         if (progress) progress.show(); 
         
-        const response = await executeIrysUpload(file, tags, true, progress); 
+        // 🛠️ [BUG FIX]: แปลง File Object เป็น Buffer ก่อนส่งให้ Irys
+        const arrayBuffer = await file.arrayBuffer();
+        const dataBuffer = Buffer.from(arrayBuffer);
+        const response = await executeIrysUpload(dataBuffer, tags, true, progress); 
+        
         const backMediaTxId = response?.data ? response.data.id : response?.id; 
         
         if (!backMediaTxId) throw new Error("Irys payload generation failed: null TxID.");
@@ -4103,7 +4109,11 @@ async function executeArchitectMint(e) {
             progress = createProgressController(file.size);
             if (progress) progress.show();
             
-            const response = await executeIrysUpload(file, tags, true, progress); 
+            // 🛠️ [BUG FIX]: แปลง File Object เป็น Buffer ก่อนส่งให้ Irys
+            const arrayBuffer = await file.arrayBuffer();
+            const dataBuffer = Buffer.from(arrayBuffer);
+            const response = await executeIrysUpload(dataBuffer, tags, true, progress); 
+            
             const backMediaTxId = response?.data ? response.data.id : response?.id; 
             
             if (!backMediaTxId) throw new Error("Irys payload generation failed: null TxID.");
@@ -4232,7 +4242,11 @@ async function executeArchitectRemint(e) {
             progress = createProgressController(file.size);
             if (progress) progress.show();
             
-            const response = await executeIrysUpload(file, tags, true, progress); 
+            // 🛠️ [BUG FIX]: แปลง File Object เป็น Buffer ก่อนส่งให้ Irys
+            const arrayBuffer = await file.arrayBuffer();
+            const dataBuffer = Buffer.from(arrayBuffer);
+            const response = await executeIrysUpload(dataBuffer, tags, true, progress); 
+            
             const backMediaTxId = response?.data ? response.data.id : response?.id; 
             
             if (!backMediaTxId) throw new Error("Irys payload generation failed: null TxID.");
@@ -4281,6 +4295,7 @@ async function executeArchitectRemint(e) {
         if (typeof appendLog === 'function') appendLog(`Critical Error: ${criticalErr?.message || criticalErr}`, "text-red-500");
     }
 }
+
 
 // ==============================================================================
 // 🧬 NOVA ASCENSION & IDENTITY UPDATES
