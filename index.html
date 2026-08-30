@@ -1038,7 +1038,9 @@
 
 
 
+
 <script>
+
 "use strict";
 
 // ==============================================================================
@@ -1049,21 +1051,25 @@ const CONTRACT_ADDRESS = "0x76600A9cA18B329FbB29Ae0b75cc7676Ce0Dd97e";
 const WETH_ADDRESS = "0x4200000000000000000000000000000000000006";
 const MULTICALL3_ADDRESS = "0xcA11bde05977b3631167028862bE2a173976CA11";
 
+// 👉 วางตรงนี้เลยครับ
 const ARWEAVE_GATEWAYS = [
     "https://gateway.irys.xyz/",
     "https://arweave.net/",
     "https://ar-io.net/"
 ];
 
+
 const MULTICALL3_ABI = [
     "function aggregate3(tuple(address target, bool allowFailure, bytes callData)[] calls) payable returns (tuple(bool success, bytes returnData)[] returnData)"
 ];
 
 // ==============================================================================
-// 📱 MOBILE OPTIMIZATION & UI STATE VARIABLES
+// 📱 MOBILE OPTIMIZATION & UI STATE VARIABLES (HOTFIX)
 // ==============================================================================
+// 1. ตรวจจับหน้าจอสัมผัส (Mobile/Tablet) เพื่อลด Delay และแก้ปัญหา Hover ค้าง
 const IS_TOUCH_DEVICE = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (window.matchMedia && window.matchMedia("(pointer: coarse)").matches);
 
+// 2. ตัวแปรคุมสถานะ UI (Visual Feedback) ให้ตอบสนองนิ้วสัมผัสทันทีแบบ 60FPS
 const THINKING_CLASSES = ['animate-pulse', 'bg-amber-900/50', 'border-amber-500'];
 const ACTIVE_CLASSES = ['bg-emerald-900/50', 'border-emerald-500', 'shadow-[0_0_15px_rgba(16,185,129,0.4)]'];
 const ERROR_CLASSES = ['bg-red-900/50', 'border-red-500'];
@@ -1250,8 +1256,7 @@ let irysContract = null;
 let isTransactionPending = false;
 let walletSessionController = new AbortController();
 
-window.IMPERIAL_MANIFEST = null;
-window.IMAGE_MANIFEST = null;
+window.IMPERIAL_MANIFEST = {};
 window._mediaConfirmActive = false;
 window._actionConfirmActive = false;
 window._actionSettled = false;
@@ -1267,7 +1272,7 @@ let searchDebounceTimer = null;
 let currentAuditSession = 0;
 let isSyncingState = false;
 let pendingSyncRequest = false;
-let lastSyncTime = 0; 
+let lastSyncTime = 0; // 🚨 [FIXED]: Added to prevent ReferenceError in syncContractStates
 
 window.SystemState = {
     globalSelectedTokenId: null,
@@ -1278,6 +1283,8 @@ window.SystemState = {
 
 let globalSelectedTokenId = window.SystemState.globalSelectedTokenId;
 let currentLoadedMediaData = window.SystemState.currentLoadedMediaData;
+
+
 
 // ==============================================================================
 // 🛠️ UTILITY & CORE FUNCTIONS
@@ -1354,11 +1361,16 @@ function clearAllTimers() {
     }
 }
 
+// [INJECT THIS AT THE TOP OF YOUR SCRIPT TAG, JUST BELOW "use strict";]
+window.IMPERIAL_MANIFEST = null;
+window.IMAGE_MANIFEST = null; // 👈 เพิ่มตัวแปรเก็บ Direct Image Hash
+
 async function fetchImperialManifest() {
     try {
+        // 🛡️ ดึงทั้ง 2 ไฟล์พร้อมกัน: JSON Metadata และ Direct Image
         const [manifestRes, imageRes] = await Promise.allSettled([
             fetch(`./imperial-manifest.json?t=${Date.now()}`),
-            fetch(`./image_imperial-manifest.json?t=${Date.now()}`)
+            fetch(`./image_imperial-manifest.json?t=${Date.now()}`) // 👈 ไฟล์รูปภาพตรงๆ
         ]);
         
         if (manifestRes.status === 'fulfilled' && manifestRes.value.ok) {
@@ -1387,13 +1399,14 @@ async function fetchImperialManifest() {
 }
 
 // ==============================================================================
-// 🛡️ ANTI-LOCKING STATE MANAGEMENT
+// 🛡️ ANTI-LOCKING STATE MANAGEMENT (NO BLACK SCREEN OVERLAYS)
 // ==============================================================================
 
 function lockSystem() {
     isTransactionPending = true;
     safeStorageSet('tx_pending', 'true');
     safeStorageSet('tx_pending_ts', String(Date.now()));
+    // 🚨 STRICT RULE ENFORCED: No full-screen black overlays. Users can scroll freely.
     return true;
 }
 
@@ -1452,6 +1465,7 @@ function toggleButtonLoading(targetInput, isLoading) {
         btn.appendChild(document.createTextNode("PROCESSING..."));
         
         btn.disabled = true;
+        // 🚨 STRICT RULE ENFORCED: Button turns gray, disabled, but UI remains interactive.
         btn.classList.add('btn-processing', 'cursor-not-allowed', 'opacity-60', 'pointer-events-none', 'scale-95', 'grayscale', 'shadow-inner');
     } else {
         if (typeof btn.dataset.originalText !== 'undefined') {
@@ -1466,7 +1480,7 @@ function toggleButtonLoading(targetInput, isLoading) {
 }
 
 // ==============================================================================
-// 🛡️ CENTRALIZED PRIVILEGE VERIFICATION
+// 🛡️ CENTRALIZED PRIVILEGE VERIFICATION (OWNER -> ARCHITECT -> HOLDER)
 // ==============================================================================
 
 async function verifyUserPrivileges(userAddress) {
@@ -1536,6 +1550,7 @@ function safeAppendLog(msg, colorClass = "text-slate-400") {
         else if (typeof appendLog === 'function') appendLog(msg, colorClass);
         else console.log(`[SYS LOG]: ${msg}`);
 
+        // [FIX] อัปเดตข้อความลง Footer Log (systemFooterLog) เพิ่มเติม
         const footerLog = document.getElementById('systemFooterLog');
         if (footerLog) {
             footerLog.textContent = msg;
@@ -1544,6 +1559,7 @@ function safeAppendLog(msg, colorClass = "text-slate-400") {
         console.log(`[SYS LOG FALLBACK]: ${msg}`);
     }
 }
+
 
 function showNotification(msg, type = 'error') {
     try {
@@ -1600,7 +1616,7 @@ function updateBridgeStatus(msg, type) {
 }
 
 // ==============================================================================
-// ⚡ RPC & MULTICALL ENGINE
+// ⚡ RPC & MULTICALL ENGINE (ZERO-BUG HEX VALIDATION)
 // ==============================================================================
 
 const _multicallCtx = new WeakMap();
@@ -1649,6 +1665,7 @@ async function debouncedMulticall(providerInstance, calls) {
                                     callData: call.callData
                                 }));
 
+                                // 🚨 [CRITICAL FIX]: บังคับใช้ .staticCall ตรงนี้!
                                 const chunkResults = await multicall.aggregate3.staticCall(formattedChunk);
                                 
                                 const mappedResults = Array.from(chunkResults).map(res => ({
@@ -1783,6 +1800,7 @@ function decodeContractError(err) {
     return err.reason || err.message || "Transaction reverted by EVM";
 }
 
+
 async function promptUserForFile(acceptType = 'image/*,video/*') {
     return new Promise((resolve) => {
         const fileInput = document.createElement('input');
@@ -1855,8 +1873,9 @@ async function promptUserForFile(acceptType = 'image/*,video/*') {
     });
 }
 
+
 // ==============================================================================
-// ⚔️ TRANSACTION WRAPPER
+// ⚔️ TRANSACTION WRAPPER (NON-BLOCKING UI)
 // ==============================================================================
 
 async function runTx(btnInput, label, methodName, args = [], overrides = {}, options = {}) {
@@ -1875,6 +1894,7 @@ async function runTx(btnInput, label, methodName, args = [], overrides = {}, opt
     const btn = (manageButton) ? toggleButtonLoading(btnInput, true) : null;
     let timeoutId;
 
+    // 🚨 [FIX]: ล็อกระบบทันทีถ้า manageLock เป็น true
     if (manageLock && typeof lockSystem === 'function') lockSystem();
 
     try {
@@ -1931,6 +1951,7 @@ async function runTx(btnInput, label, methodName, args = [], overrides = {}, opt
         if (err?.code === 'UNPREDICTABLE_GAS_LIMIT') {
             showNotification(`Transaction Failed: ${err.message}`, "error");
         } else {
+            // 🚨 [CRITICAL FIX]: บังคับแปลงเป็น String เสมอ ป้องกัน Null Pointer Crash ตอนเรียก .toLowerCase()
             const msg = String(typeof decodeContractError === 'function' ? decodeContractError(err) : (err?.message || err || "Unknown Error"));
             const lowerMsg = msg.toLowerCase();
             
@@ -2202,6 +2223,7 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
                             irys.uploader.chunkedUploader.setChunkSize(chunkSize);
                             irys.uploader.chunkedUploader.setBatchSize(batchSize);
                             
+                            // 🟢 WAR MACHINE FIX: Create safe ID and pass raw File object
                             const safeName = dataToUpload.name ? dataToUpload.name.replace(/[^a-zA-Z0-9_-]/g, '') : 'payload';
                             const uploadId = `irys_resume_${safeName}_${size}`;
                             
@@ -2259,6 +2281,11 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
         if (activeBtn) toggleButtonLoading(activeBtn, false);
     }
 }
+
+
+// ==============================================================================
+// ⚡ CORE EXECUTION: TOP-UP PROTOCOL (ASYNC NON-BLOCKING)
+// ==============================================================================
 
 async function executeIrysTopUp(amountEthStr, triggerBtn = null) { 
     const activeBtn = toggleButtonLoading(triggerBtn, true);
@@ -2359,7 +2386,7 @@ async function executeIrysTopUp(amountEthStr, triggerBtn = null) {
 }
 
 // ==============================================================================
-// 🛡️ ABSOLUTE EVENT DELEGATION & UI ROUTING
+// 🛡️ ABSOLUTE EVENT DELEGATION & UI ROUTING (ZERO-BUG UNIFIED)
 // ==============================================================================
 
 function openIdentityAuthModal() {
@@ -2388,7 +2415,9 @@ function syncMatrixIdStateUI(activeId) {
     }
 }
 
-let isNodeProcessing = false; 
+
+
+let isNodeProcessing = false; // ⚡ ANTI-SPAM LOCK
 
 function initializeAbsoluteEventDelegation() {
     if (document.body.dataset.delegationAttached === "true") return;
@@ -2400,6 +2429,7 @@ function initializeAbsoluteEventDelegation() {
         const matrixNode = event.target.closest('[data-token-id], .matrix-node-cell, .matrix-cell, .matrix-node');
         if (!matrixNode) return;
 
+        // ⚡ FIX: ป้องกันการสแปมคลิก (Race Condition)
         if (isNodeProcessing) return; 
 
         const rawId = matrixNode.dataset.tokenId || matrixNode.getAttribute('data-token-id');
@@ -2411,7 +2441,7 @@ function initializeAbsoluteEventDelegation() {
                 return;
             }
 
-            isNodeProcessing = true; 
+            isNodeProcessing = true; // ⚡ LOCK ENGAGED
 
             try {
                 globalSelectedTokenId = tokenId;
@@ -2432,7 +2462,7 @@ function initializeAbsoluteEventDelegation() {
                 }
                 matrixNode.classList.add(...THINKING_CLASSES);
 
-                safeAppendLog(`[MATRIX] Engaging node #${tokenId}...`, "text-blue-400"); 
+                safeAppendLog(`[MATRIX] Engaging node #${tokenId}...`, "text-blue-400"); // ⚡ Direct Call
 
                 let isAdmin = false;
                 let adminRole = null;
@@ -2473,7 +2503,7 @@ function initializeAbsoluteEventDelegation() {
                 }
 
                 try {
-                    await auditTokenFromLedger(tokenId); 
+                    await auditTokenFromLedger(tokenId); // ⚡ Direct Call
                     matrixNode.classList.remove(...THINKING_CLASSES, ...ERROR_CLASSES);
                     matrixNode.classList.add(...ACTIVE_CLASSES);
 
@@ -2512,7 +2542,7 @@ function initializeAbsoluteEventDelegation() {
                     }
                 }
             } finally {
-                isNodeProcessing = false; 
+                isNodeProcessing = false; // ⚡ RELEASE LOCK
             }
         }
     });
@@ -2578,6 +2608,7 @@ function checkPendingNova() {
         if (modal) modal.classList.remove('hidden');
     }
 }
+
 
 async function executeArchitectCentralizedUpload(type) {
     if (!secureContract || !signer) { 
@@ -2669,9 +2700,11 @@ async function executeGatewayUnlock(event) {
     try {
         const userAddress = (await signer.getAddress()).toLowerCase();
         
+        // 1. ดึงข้อมูล On-Chain สดๆ จาก Smart Contract
         const deedData = await secureContract.getDeedData(tokenId.toString());
         const ownerOnChain = String(deedData[0]).toLowerCase();
         
+        // 2. ตรวจสอบสิทธิ์ (Token-Gating)
         const privs = await verifyUserPrivileges(userAddress);
         if (userAddress !== ownerOnChain && !privs.isArchitect) {
             showNotification("ACCESS DENIED: UNAUTHORIZED ENTITY", "error");
@@ -2680,6 +2713,7 @@ async function executeGatewayUnlock(event) {
             return;
         }
 
+        // 3. DOM Binding (Inject ข้อมูล 8 ค่าลงใน memberDnaStudio โดยตรง)
         document.getElementById('dna-owner').textContent = deedData[0];
         document.getElementById('dna-active').textContent = deedData[1] ? "TRUE (ACTIVE)" : "FALSE (DORMANT)";
         document.getElementById('dna-sanctified').textContent = deedData[2] ? "TRUE (SANCTIFIED)" : "FALSE (UNVERIFIED)";
@@ -2689,10 +2723,12 @@ async function executeGatewayUnlock(event) {
         document.getElementById('dna-dna').textContent = deedData[6] || "UNASSIGNED";
         document.getElementById('dna-hidden').textContent = deedData[7] || "UNASSIGNED";
 
+        // 4. ดึงค่า Factory Metadata (RANK & IDENTITY STATUS) มาแสดงที่ propDisplay1, propDisplay2
         if (typeof loadDeedMetadata === 'function') {
             await loadDeedMetadata(tokenId);
         }
 
+        // 5. สิทธิ์ผ่าน -> ปิดหน้าต่างคำแนะนำ และเปิด memberDnaStudio
         closeIdentityAuthModal();
         const vault = document.getElementById('memberDnaStudio');
         if (vault) {
@@ -2719,6 +2755,7 @@ async function processIdentityDnaInspectionOnChain() {
     if (!activeContract) return;
 
     try {
+        // ดึง 8 ค่าหลัก
         const deedData = await activeContract.getDeedData(tokenId.toString());
         
         document.getElementById('dna-owner').textContent = deedData[0];
@@ -2730,6 +2767,7 @@ async function processIdentityDnaInspectionOnChain() {
         document.getElementById('dna-dna').textContent = deedData[6] || "UNASSIGNED";
         document.getElementById('dna-hidden').textContent = deedData[7] || "UNASSIGNED";
 
+        // ดึง 2 ค่า Metadata
         if (typeof loadDeedMetadata === 'function') {
             await loadDeedMetadata(tokenId);
         }
@@ -2743,7 +2781,7 @@ async function processIdentityDnaInspectionOnChain() {
 }
 
 // ==============================================================================
-// 🛡️ MODAL CONFIRMATION ENGINES
+// 🛡️ MODAL CONFIRMATION ENGINES (NON-BLOCKING)
 // ==============================================================================
 
 function requestFundConfirmation(amountEth) {
@@ -2790,7 +2828,6 @@ function requestFundConfirmation(amountEth) {
         modal.addEventListener('click', handleBackdropClick);
     });
 }
-
 
 function requestMediaConfirmation(uri, dnaString, mediaTypeHint = "") {
     return new Promise((resolve) => {
@@ -2948,6 +2985,8 @@ function resetAdminInputs(forceClear = false) {
 }
 
 window.systemForceClearState = () => resetAdminInputs(true);
+
+
 
 async function loadDeedMetadata(tokenId) {
     const mappedNode = await autoMap(tokenId);
@@ -3113,16 +3152,21 @@ function setupWalletEventListeners(rawProvider) {
     }
 }
 
+// ==========================================
+// 2. REFACTORED handleAccountsChangedEvent FUNCTION
+// ==========================================
 async function handleAccountsChangedEvent(accounts) {
     if (walletSessionController) walletSessionController.abort();
     walletSessionController = new AbortController();
 
     try { if (secureContract?.removeAllListeners) secureContract.removeAllListeners(); } catch (err) {}
     
+    // เคลียร์แคชระบบทั้งหมด
     if (typeof GLOBAL_NODE_CACHE !== 'undefined' && GLOBAL_NODE_CACHE?.clear) GLOBAL_NODE_CACHE.clear();
     if (typeof window.NODE_STATE_MAP !== 'undefined' && window.NODE_STATE_MAP?.clear) window.NODE_STATE_MAP.clear();
     window._domStateCache = {}; 
     
+    // [แก้บั๊กตาม Fact]: ซิงค์ State กลับไปที่ Window เพื่ออุดรอยรั่ว Reference ฉีกขาด
     if (window.SystemState && window.SystemState.currentLoadedMediaData) {
         Object.assign(window.SystemState.currentLoadedMediaData, { 
             front: "", frontType: "image", back: "", backType: "image", video: "", videoType: "video" 
@@ -3130,6 +3174,7 @@ async function handleAccountsChangedEvent(accounts) {
     }
     if (window.SystemState) window.SystemState.globalSelectedTokenId = null;
 
+    // [แก้บั๊กตาม Fact]: ล้าง LocalStorage ป้องกัน Transaction ผีหลอก
     localStorage.removeItem('irys_pending_fund_tx');
     localStorage.removeItem('pending_nova_txid');
     localStorage.removeItem('pending_nova_token');
@@ -3138,12 +3183,15 @@ async function handleAccountsChangedEvent(accounts) {
     
     const isDisconnected = !accounts || !Array.isArray(accounts) || accounts.length === 0;
     
+    // [UI OVERRIDE]: Target Header Elements
     const walletInfo = document.getElementById('walletInfo');
     const hdrAddress = document.getElementById('hdrAddress');
     
     if (isDisconnected) {
         if (typeof bindNodeOwnership === 'function') bindNodeOwnership(null);
         showNotification("SECURITY PROTOCOL: Wallet disconnected. System entering Standby mode.", "error");
+        
+        // เอา Log พี่กลับมา!
         appendLog("Wallet disconnected by user.", "text-yellow-400 font-bold");
         
         if (walletInfo) walletInfo.classList.add('hidden');
@@ -3151,6 +3199,8 @@ async function handleAccountsChangedEvent(accounts) {
     } else {
         if (typeof bindNodeOwnership === 'function') bindNodeOwnership(accounts[0]);
         showNotification("IDENTITY SHIFT DETECTED: Account switched successfully.", "warning");
+        
+        // เอา Log พี่กลับมา!
         appendLog(`Identity vector shift detected to: ${accounts[0]}`, "text-yellow-400 font-bold");
         
         if (walletInfo) walletInfo.classList.remove('hidden');
@@ -3174,6 +3224,7 @@ async function handleAccountsChangedEvent(accounts) {
     window.secureContract = null;
     window.irys = null; 
 }
+
 
 function setNetworkHardLock(locked, observedChainId = '') {
     const overlay = document.getElementById('securityHardLockOverlay');
@@ -3202,6 +3253,7 @@ function handleChainChangedEvent(newChainId) {
     try { parsedChainId = BigInt(newChainId); } catch (_) { parsedChainId = 0n; }
     const wrongNetwork = parsedChainId !== 8453n;
     
+    // [UI OVERRIDE]: อัปเดต Network Text
     const hdrNetwork = document.getElementById('hdrNetwork');
     if (hdrNetwork) hdrNetwork.textContent = wrongNetwork ? `CHAIN: ${parsedChainId}` : "BASE MAINNET";
 
@@ -3212,6 +3264,7 @@ function handleChainChangedEvent(newChainId) {
     }
 }
 
+
 const eip6963Providers = [];
 window.addEventListener("eip6963:announceProvider", (event) => {
     if (event.detail && event.detail.provider && event.detail.info) {
@@ -3221,7 +3274,9 @@ window.addEventListener("eip6963:announceProvider", (event) => {
         }
     }
 });
-
+// ==========================================
+// 3. INTEGRATED WALLET CONTROLLER
+// ==========================================
 window.dispatchEvent(new Event("eip6963:requestProvider"));
 
 async function connectWallet(e) {
@@ -3269,6 +3324,7 @@ async function connectWallet(e) {
         else {
             appendLog("Secondary Route Engaged: Initializing WalletConnect V2.", "text-yellow-400");
             
+            // 🛡️ อัปเกรดจุดนี้ให้ค้นหา Provider ได้ครอบคลุมขึ้น ป้องกันโค้ดพัง
             const EthereumProviderCtor = window.EthereumProvider || window.WalletConnectProvider?.EthereumProvider;
             if (!EthereumProviderCtor) throw new Error("WalletConnect V2 Runtime Bundle unresolved or blocked by client.");
 
@@ -3315,6 +3371,7 @@ async function connectWallet(e) {
         provider = new ethers.BrowserProvider(rawProvider);
         signer = await provider.getSigner();
 
+        // 🛡️ [AUTHORITY INJECTION] อัปเดต Ownership ทันทีที่เชื่อมต่อบัญชีสำเร็จ (คงไว้ตามเดิม 100%)
         bindNodeOwnership(account);
         
         if (secureContract) {
@@ -3369,6 +3426,7 @@ async function connectWallet(e) {
         if (btn) toggleButtonLoading(btn, false);
     }
 }
+
 
 // ==============================================================================
 // 🏛️ GOVERNANCE & PROPOSAL ENGINE
@@ -3764,7 +3822,7 @@ async function executeCastVote(btn) {
 }
 
 // ==============================================================================
-// ⚔️ FORGE & MINTING ENGINES
+// ⚔️ FORGE & MINTING ENGINES (ZERO-BUG MANIFEST PARSING + PLEDGE MODAL)
 // ==============================================================================
 
 function toggleForgeButtonState() {
@@ -3829,6 +3887,7 @@ async function triggerForge(type, e) {
         return; 
     }
 
+    // 🛡️ [PRODUCTION PATCH 1]: Temporal State Lock - ล็อกระบบทันทีที่หน้าประตู
     if (typeof lockSystem === 'function') lockSystem();
     const btn = toggleButtonLoading(e, true);
     let progress = null;
@@ -3926,6 +3985,7 @@ async function triggerForge(type, e) {
         
         const tokenIdBn = BigInt(targetTokenId);
 
+        // 🛡️ [PRODUCTION PATCH 2]: Pre-emptive Cache Invalidation - เคลียร์แคชก่อนยิง TX ปิดตาย Race Condition
         if (typeof GLOBAL_NODE_CACHE !== 'undefined' && GLOBAL_NODE_CACHE?.delete) {
             GLOBAL_NODE_CACHE.delete(String(targetTokenId));
         }
@@ -3933,7 +3993,7 @@ async function triggerForge(type, e) {
         const receipt = await runTx(
             e, `SOVEREIGN_REBIRTH_#${targetTokenId}`, "SOVEREIGN_REBIRTH",
             [tokenIdBn.toString(), strictFrontUri, backMediaTxId], { value: currentMintPriceWei.toString() },
-            { manageLock: false, manageButton: false } 
+            { manageLock: false, manageButton: false } // ปิดการจัดการ Lock อัตโนมัติ เพราะเราคุมเองที่ระดับบนสุดแล้ว
         );
 
         if (receipt) {
@@ -3959,6 +4019,7 @@ async function triggerForge(type, e) {
     } finally {
         if (progress) progress.hide();
         if (btn) toggleButtonLoading(btn, false);
+        // 🛡️ [PRODUCTION PATCH 3]: ปลดล็อกระบบเสมอเมื่อจบการทำงาน (ไม่ว่าจะสำเร็จหรือ Error)
         if (typeof unlockSystem === 'function') unlockSystem();
     }
 }
@@ -3997,6 +4058,7 @@ async function executeArchitectMint(e) {
             return;
         }
 
+        // 🚨 [CRITICAL FIX]: บังคับดึง Front URI จาก JSON Manifest 100%
         let strictFrontUri = "";
         if (window.IMPERIAL_MANIFEST && window.IMPERIAL_MANIFEST[String(tokenId)]) {
             const manifestData = window.IMPERIAL_MANIFEST[String(tokenId)];
@@ -4028,6 +4090,7 @@ async function executeArchitectMint(e) {
         if (!isConfirmed) return; 
 
         const btn = toggleButtonLoading(e, true);
+        // 🚨 [CRITICAL FIX]: ล็อกระบบทันทีก่อนเริ่มอัปโหลด Irys
         if (typeof lockSystem === 'function') lockSystem();
         let progress = null;
         
@@ -4083,6 +4146,7 @@ async function executeArchitectMint(e) {
         } finally {
             if (progress) progress.hide();
             if (btn) toggleButtonLoading(btn, false);
+            // 🚨 [CRITICAL FIX]: ปลดล็อกระบบเสมอเมื่อจบการทำงาน
             if (typeof unlockSystem === 'function') unlockSystem();
         }
     } catch (criticalErr) {
@@ -4118,6 +4182,7 @@ async function executeArchitectRemint(e) {
             return;
         }
 
+        // 🚨 [CRITICAL FIX]: บังคับดึง Front URI จาก JSON Manifest 100%
         let strictFrontUri = "";
         if (window.IMPERIAL_MANIFEST && window.IMPERIAL_MANIFEST[String(tokenId)]) {
             const manifestData = window.IMPERIAL_MANIFEST[String(tokenId)];
@@ -4154,6 +4219,7 @@ async function executeArchitectRemint(e) {
         if (!isConfirmed) return;
 
         const btn = toggleButtonLoading(e, true);
+        // 🚨 [CRITICAL FIX]: ล็อกระบบทันทีก่อนเริ่มอัปโหลด Irys
         if (typeof lockSystem === 'function') lockSystem();
         let progress = null;
         
@@ -4208,6 +4274,7 @@ async function executeArchitectRemint(e) {
         } finally {
             if (progress) progress.hide();
             if (btn) toggleButtonLoading(btn, false);
+            // 🚨 [CRITICAL FIX]: ปลดล็อกระบบเสมอเมื่อจบการทำงาน
             if (typeof unlockSystem === 'function') unlockSystem();
         }
     } catch (criticalErr) {
@@ -4250,6 +4317,7 @@ async function triggerIdentityNova(e) {
         const userAddress = await signer.getAddress();
         const privs = await verifyUserPrivileges(userAddress);
         
+        // 🚨 [CRITICAL FIX]: บังคับใช้ ID จาก Node ที่คลิกบนจอเท่านั้น
         const targetTokenId = globalSelectedTokenId;
         if (!targetTokenId) {
             showNotification("STRUCTURAL EXCEPTION: Please select a Token ID coordinate on the Matrix first.", "error");
@@ -4292,9 +4360,7 @@ async function triggerIdentityNova(e) {
         return;
     }
 
-    // 🛡️ STRICT ORDER ENFORCED: [Token ID, DNA, Video URI, Hidden Property]
     const receipt = await runTx(e, `SOVEREIGN_NOVA_#${tokenId}`, "THE_SOVEREIGN_NOVA", [id.toString(), dna, video, hidden], { value: fee.toString() });
-    
     if (receipt) {
         localStorage.removeItem('pending_nova_txid');
         localStorage.removeItem('pending_nova_token');
@@ -4319,6 +4385,7 @@ async function executeUpdateIdentity(e) {
         const userAddress = await signer.getAddress();
         const privs = await verifyUserPrivileges(userAddress);
 
+        // 🚨 [CRITICAL FIX]: บังคับใช้ ID จาก Node ที่คลิกบนจอเท่านั้น ห้ามดึงจากช่องกรอกตัวเลข
         const targetTokenId = globalSelectedTokenId;
         if (!targetTokenId) {
             showNotification("STRUCTURAL EXCEPTION: Please select a Token ID coordinate on the Matrix first.", "error");
@@ -4351,6 +4418,7 @@ async function executeUpdateIdentity(e) {
             }
         }
 
+        // 🚨 [CRITICAL FIX]: ข้อมูลภาพจะตรงกับ Node ที่คลิก 100% ไม่มีทางสลับมั่ว
         frontUri = (document.getElementById('forgeFrontUri')?.value || "").trim() || currentLoadedMediaData.front || "";
         backUri = (document.getElementById('forgeBackUri')?.value || "").trim() || currentLoadedMediaData.back || "";
         videoUri = (document.getElementById('novaVideoUri')?.value || "").trim() || currentLoadedMediaData.video || "";
@@ -4380,6 +4448,7 @@ async function executeUpdateIdentity(e) {
 async function executeSovereignSupport(e) {
     if (!secureContract || !signer) { showNotification("Action suspended: Authenticate wallet signature first.", "error"); return; }
     
+    // 🚨 [CRITICAL FIX]: บังคับใช้ ID จาก Node ที่คลิกบนจอเท่านั้น ป้องกันการพิมพ์เลขผิดแล้วไปเผาเหรียญอื่นทิ้ง
     const targetTokenId = globalSelectedTokenId;
     if (!targetTokenId) {
         showNotification("STRUCTURAL EXCEPTION: Please select a Token ID coordinate on the Matrix first.", "error");
@@ -4423,7 +4492,7 @@ async function executeSovereignSupport(e) {
 }
 
 // ==============================================================================
-// 👑 ARCHITECT OVERRIDE CONSOLE
+// 👑 ARCHITECT OVERRIDE CONSOLE (ZERO-BUG BOUNDARY ENFORCED)
 // ==============================================================================
 
 async function buildAndUploadMetadata(e) {
@@ -4470,8 +4539,9 @@ async function buildAndUploadMetadata(e) {
 
         const manifestPaths = {}; 
         const totalItems = 333;
-        const batchSize = 10; 
+        const batchSize = 10; // 🛡️ OPTIMIZED BATCH SIZE: ป้องกัน HTTP 429 Rate Limit
 
+        // --- OPTIMIZED BATCH UPLOAD ENGINE ---
         for (let i = 1; i <= totalItems; i += batchSize) {
             const batchPromises = [];
             const currentBatchEnd = Math.min(i + batchSize - 1, totalItems);
@@ -4508,6 +4578,7 @@ async function buildAndUploadMetadata(e) {
                 })());
             }
 
+            // รอให้ Batch ปัจจุบันเสร็จสมบูรณ์ก่อนขึ้น Batch ถัดไป
             const batchResults = await Promise.all(batchPromises);
             
             for (const res of batchResults) {
@@ -4519,6 +4590,7 @@ async function buildAndUploadMetadata(e) {
             }
         }
 
+        // 3. สร้าง Manifest ตัวแม่ (Arweave Path Manifest) คลุม JSON ทั้ง 333 ไฟล์
         if (typeof appendLog === 'function') appendLog(`กำลังรวมร่าง JSON ทั้งหมดเป็น Manifest ตัวแม่...`, "text-purple-400");
         
         const manifestJSON = {
@@ -4542,6 +4614,7 @@ async function buildAndUploadMetadata(e) {
         if (typeof updateBridgeStatus === 'function') updateBridgeStatus(`METADATA SCHEMATIC ONLINE`, "success");
         showNotification(`สร้างและอัปโหลด Metadata 333 รายการสำเร็จ!`, "success");
 
+        // 4. เอา Final Base URI ไปหยอดใส่ช่อง setBaseURI ให้ท่านอัตโนมัติ
         const baseUriInput = document.getElementById('inputBaseUri');
         if (baseUriInput) {
             baseUriInput.value = finalBaseURI;
@@ -4674,10 +4747,6 @@ async function executeContractPause(status, e) {
     }
 }
 
-/**
- * Single Production-Ready Function: extractIrysId
- * ดึง Path ทั้งหมด (เช่น "HASH/5.png", "HASH/333.png") ตรงๆ ไม่ตัดชื่อไฟล์ ไม่ค้าง CDN
- */
 function extractIrysId(input) {
     if (!input || typeof input !== 'string') return "";
     let clean = input.trim();
@@ -4704,7 +4773,6 @@ function extractIrysId(input) {
     // 5. Safe Regex: สแกนผ่าน 100% อนุญาตให้มี / และ . ไม่ตัดเลขไฟล์ 5.png / 333.png ออกแน่นอน
     return clean.replace(/[^a-zA-Z0-9_\-\.\/]/g, '');
 }
-
 
 function buildIrysUrls(txId) {
     const cleanId = extractIrysId(txId);
@@ -4936,11 +5004,12 @@ async function autoMap(tokenId) {
                     }
                     
                     if (metaResponse.ok) {
+                        // 🛡️ [PRODUCTION PATCH]: Stream Reader with Hard Byte Limit (OOM Protection)
                         const reader = metaResponse.body.getReader();
                         const decoder = new TextDecoder('utf-8');
                         let text = '';
                         let bytesRead = 0;
-                        const MAX_BYTES = 51200; 
+                        const MAX_BYTES = 51200; // 50KB Hard Limit
 
                         try {
                             while (true) {
@@ -4949,12 +5018,12 @@ async function autoMap(tokenId) {
                                 bytesRead += value.length;
                                 
                                 if (bytesRead > MAX_BYTES) {
-                                    await reader.cancel(); 
+                                    await reader.cancel(); // ตัดการเชื่อมต่อทันที
                                     throw new Error("OOM_PROTECT_PAYLOAD_TOO_LARGE");
                                 }
                                 text += decoder.decode(value, { stream: true });
                             }
-                            text += decoder.decode(); 
+                            text += decoder.decode(); // Flush remaining buffer
                             
                             try {
                                 metadata = JSON.parse(text);
@@ -5148,6 +5217,7 @@ async function syncContractStates() {
         const reservePerNFT = tStatus[4] ?? 0n;
         const reserve = tStatus[0] ?? 0n;
 
+        // Sync Wallet ETH Balance & Network Telemetry
         const activeProvider = window.provider || readOnlyProvider;
         const currentHdrAddress = document.getElementById('hdrAddress')?.textContent;
         
@@ -5254,6 +5324,7 @@ async function syncContractStates() {
         isSyncingState = false;
     }
 }
+
 
 function renderEmptyState(container, text, colorClass = "text-slate-500") {
     container.replaceChildren();
@@ -5389,6 +5460,7 @@ async function resolveMediaUrl(urlList, signal, mimeType, depth = 0) {
                     }
                 }
             } catch (e) {
+                // Not JSON, proceed to blob
             }
 
             if (isJsonObj && actualMedia) {
@@ -5823,6 +5895,7 @@ async function auditTokenFromLedger(tokenId) {
         const currentEpoch = Math.floor(Date.now() / 1000);
         const btnBurn = document.getElementById('btnBurnToken');
 
+        // ควบคุมเฉพาะสถานะของปุ่ม Burn เท่านั้น
         if (mappedNode.votingLockUntil && mappedNode.votingLockUntil > currentEpoch) {
             if (btnBurn) btnBurn.disabled = true;
         } else {
@@ -5896,12 +5969,14 @@ async function auditTokenFromLedger(tokenId) {
     } catch (e) {
         if (mySession !== currentAuditSession) return;
 
+        // 1. ดึง Metadata JSON Hash สำหรับส่งเข้า Smart Contract ตอน Mint (On-Chain Payload)
         let preMintFrontUri = "";
         if (window.IMPERIAL_MANIFEST && window.IMPERIAL_MANIFEST[String(tokenId)]) {
             const manifestData = window.IMPERIAL_MANIFEST[String(tokenId)];
             preMintFrontUri = typeof manifestData === 'string' ? manifestData.trim() : String(manifestData.irys_id || "").trim();
         }
 
+        // 2. ดึง Direct Image Hash สำหรับแสดงผลบน Viewport ให้เร็วที่สุด (Fast-Path UI)
         let displayImageUri = "";
         const imgManifest = window.IMAGE_MANIFEST || window.IMPERIAL_MANIFEST_IMAGE;
         if (imgManifest && imgManifest[String(tokenId)]) {
@@ -5912,6 +5987,7 @@ async function auditTokenFromLedger(tokenId) {
         }
 
         if (preMintFrontUri !== "") {
+            // 🛡️ [MINT PAYLOAD] ล็อก Metadata JSON Hash ลง State สำหรับส่งเข้า Smart Contract ตอนกด Mint
             currentLoadedMediaData.front = preMintFrontUri; 
             currentLoadedMediaData.back = "";
             currentLoadedMediaData.video = "";
@@ -5921,6 +5997,7 @@ async function auditTokenFromLedger(tokenId) {
             }
 
             if (typeof renderToViewport === 'function') {
+                // 🛡️ [UI RENDER] บังคับใช้ Direct Image Manifest (IMAGE_MANIFEST) สำหรับ UI Rendering เท่านั้น
                 const finalRenderUrl = displayImageUri ? displayImageUri : "";
                 renderToViewport('previewFrontContainer', finalRenderUrl, "Obverse aspect currently unassigned.");
                 renderToViewport('previewBackContainer', "", "Void element data layer uninitialized.");
@@ -5938,6 +6015,7 @@ async function auditTokenFromLedger(tokenId) {
                 metaDisp.append(line1, readySpan, br, line2);
             }
         } else {
+            // 🔴 [VOID ELEMENT] กรณีไม่พบข้อมูลใน Manifest
             if (typeof appendLog === 'function') {
                 appendLog(`Matrix cell node #${tokenId} contains no structural allocation details (Void Element).`, "text-yellow-500");
             }
@@ -5954,6 +6032,7 @@ async function auditTokenFromLedger(tokenId) {
         if (typeof unlockSystem === 'function') unlockSystem();
     }
 }
+
 
 function setTbaBalanceDisplay(eth, weth) { 
     const ethElem = document.getElementById('tbaEthBalance'); 
@@ -6041,12 +6120,16 @@ const matrixThumbnailObserver = new IntersectionObserver((entries, observer) => 
 
                     const contentType = res.headers.get('content-type') || '';
                     
+                    // 🛡️ ARCHITECTURE FIX: Dynamic Media Type Resolution
+                    // หาก URL ที่ดึงมาเป็นรูปภาพหรือวิดีโอโดยตรง (เกิดจากการที่ผู้ใช้อัปเดต Identity ใหม่)
+                    // ให้แสดงผลทันทีโดยไม่ต้องนำไป Parse เป็น JSON
                     if (contentType.includes('image/') || contentType.includes('video/')) {
                         img.src = targetUrl;
                         img.dataset.resolved = "true";
                         return;
                     }
 
+                    // 🛡️ ORIGINAL LOGIC: Stream Reader for JSON Parsing
                     const reader = res.body.getReader();
                     const decoder = new TextDecoder('utf-8');
                     let text = '';
@@ -6163,18 +6246,22 @@ function renderToNodeCard(tokenId) {
         const cleanContractUri = typeof extractIrysId === 'function' ? extractIrysId(contractFrontUri) : contractFrontUri;
         const cleanGenesisUri = typeof extractIrysId === 'function' ? extractIrysId(genesisJsonUri) : genesisJsonUri;
 
+        // 🛡️ ARCHITECTURE FIX: Fast-Path UI Rendering (Zero Network Request)
+        // หาก URI บน Smart Contract ตรงกับ Genesis JSON URI แปลว่าโหนดยังไม่เคยถูกอัปเดต
+        // ให้ดึงรูปภาพจาก IMAGE_MANIFEST ใน Memory มาแสดงผลทันที!
         if (cleanContractUri && cleanGenesisUri && cleanContractUri === cleanGenesisUri) {
             const localData = window.IMAGE_MANIFEST ? window.IMAGE_MANIFEST[String(tokenId)] : null;
             const localHash = typeof localData === 'object' ? (localData.image || localData.irys_id) : localData;
             
             if (localHash && typeof localHash === 'string' && localHash.trim() !== "") {
                 displayImgUrl = localHash.startsWith('http') ? localHash : `https://gateway.irys.xyz/${localHash.replace('ar://', '')}`;
-                needsObserver = false; 
+                needsObserver = false; // ⚡ Fast path! ไม่ต้องใช้ Observer ไป Fetch JSON
             } else {
                 displayImgUrl = `https://gateway.irys.xyz/${cleanContractUri}`;
-                needsObserver = true; 
+                needsObserver = true; // Fallback
             }
         } else {
+            // โหนดถูกอัปเดตโดยผู้ใช้ (URI ไม่ตรงกับ Genesis) ต้องส่งให้ Observer ไปตรวจสอบว่าเป็นรูปหรือ JSON
             displayImgUrl = cleanContractUri.startsWith('http') ? cleanContractUri : `https://gateway.irys.xyz/${cleanContractUri}`;
             needsObserver = true;
         }
@@ -6196,7 +6283,7 @@ function renderToNodeCard(tokenId) {
             img.dataset.metadataUrl = displayImgUrl; 
             matrixThumbnailObserver.observe(img);
         } else {
-            img.src = displayImgUrl; 
+            img.src = displayImgUrl; // ⚡ ยิงรูปขึ้นจอทันที ไม่ต้องรอ Network
         }
 
         const shortAddrText = state.owner ? `${state.owner.slice(0,4)}...${state.owner.slice(-4)}` : (state.status === 'UNCLAIMED' ? 'STAGED' : 'ERR');
@@ -6237,6 +6324,7 @@ function renderToNodeCard(tokenId) {
     }
 }
 
+// 3. REFACTORED BIND OWNERSHIP (INSTANT RE-PAINT)
 function bindNodeOwnership(walletAddress) {
     if (!window.NODE_STATE_MAP || window.NODE_STATE_MAP.size === 0) return;
     
@@ -6461,7 +6549,7 @@ function enforceSecurityConstraints() {
 }
 
 // ==============================================================================
-// 🛡️ CRITICAL FIX: DETERMINISTIC BOOT SEQUENCE
+// 🛡️ CRITICAL FIX: DETERMINISTIC BOOT SEQUENCE (SINGLE SOURCE OF TRUTH)
 // ==============================================================================
 let isSystemBooted = false;
 
@@ -6469,6 +6557,7 @@ window.addEventListener('load', async () => {
     if (isSystemBooted) return;
     isSystemBooted = true;
 
+    // ⚡ DIRECT CALLS: ไม่มี Defensive Garbage อีกต่อไป
     enforceSecurityConstraints();
     revealApp(); 
     
@@ -6481,6 +6570,7 @@ window.addEventListener('load', async () => {
     initializeAbsoluteEventDelegation();
 
     if (window.visualViewport) {
+        // ⚡ FIX: Binding Event ให้ถูกต้องตาม Lifecycle
         if (window._sovereignResizeHandler) {
             window.visualViewport.removeEventListener("resize", window._sovereignResizeHandler);
             window.visualViewport.removeEventListener("scroll", window._sovereignResizeHandler);
