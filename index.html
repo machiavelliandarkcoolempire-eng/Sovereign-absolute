@@ -1036,11 +1036,7 @@
 
 
 
-
-
-
 <script>
-
 "use strict";
 
 // ==============================================================================
@@ -1051,13 +1047,11 @@ const CONTRACT_ADDRESS = "0x76600A9cA18B329FbB29Ae0b75cc7676Ce0Dd97e";
 const WETH_ADDRESS = "0x4200000000000000000000000000000000000006";
 const MULTICALL3_ADDRESS = "0xcA11bde05977b3631167028862bE2a173976CA11";
 
-// 👉 วางตรงนี้เลยครับ
 const ARWEAVE_GATEWAYS = [
     "https://gateway.irys.xyz/",
     "https://arweave.net/",
     "https://ar-io.net/"
 ];
-
 
 const MULTICALL3_ABI = [
     "function aggregate3(tuple(address target, bool allowFailure, bytes callData)[] calls) payable returns (tuple(bool success, bytes returnData)[] returnData)"
@@ -1066,10 +1060,8 @@ const MULTICALL3_ABI = [
 // ==============================================================================
 // 📱 MOBILE OPTIMIZATION & UI STATE VARIABLES (HOTFIX)
 // ==============================================================================
-// 1. ตรวจจับหน้าจอสัมผัส (Mobile/Tablet) เพื่อลด Delay และแก้ปัญหา Hover ค้าง
 const IS_TOUCH_DEVICE = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (window.matchMedia && window.matchMedia("(pointer: coarse)").matches);
 
-// 2. ตัวแปรคุมสถานะ UI (Visual Feedback) ให้ตอบสนองนิ้วสัมผัสทันทีแบบ 60FPS
 const THINKING_CLASSES = ['animate-pulse', 'bg-amber-900/50', 'border-amber-500'];
 const ACTIVE_CLASSES = ['bg-emerald-900/50', 'border-emerald-500', 'shadow-[0_0_15px_rgba(16,185,129,0.4)]'];
 const ERROR_CLASSES = ['bg-red-900/50', 'border-red-500'];
@@ -1103,139 +1095,148 @@ const IRYS_ENDPOINTS = [
 window.IRYS_ENDPOINTS = IRYS_ENDPOINTS;
 window.GENERAL_ENDPOINTS = GENERAL_ENDPOINTS;
 
+// ==============================================================================
+// 🛡️ CONTRACT ABI (UPGRADED TO FULL SECURE JSON STANDARD)
+// ==============================================================================
 const CONTRACT_ABI = [
-    "constructor(address _architect, address _weth)",
-    "error AgendaSetterOnly()",
-    "error AlreadyActive()",
-    "error AlreadyQueued()",
-    "error AlreadyVoted()",
-    "error ArchitectMintLimitExceeded()",
-    "error ERC2981InvalidDefaultRoyalty(uint256 numerator, uint256 denominator)",
-    "error ERC2981InvalidDefaultRoyaltyReceiver(address receiver)",
-    "error ERC2981InvalidTokenRoyalty(uint256 tokenId, uint256 numerator, uint256 denominator)",
-    "error ERC2981InvalidTokenRoyaltyReceiver(uint256 tokenId, address receiver)",
-    "error ERC721IncorrectOwner(address sender, uint256 tokenId, address owner)",
-    "error ERC721InsufficientApproval(address operator, uint256 tokenId)",
-    "error ERC721InvalidApprover(address approver)",
-    "error ERC721InvalidOperator(address operator)",
-    "error ERC721InvalidOwner(address owner)",
-    "error ERC721InvalidReceiver(address receiver)",
-    "error ERC721InvalidSender(address sender)",
-    "error ERC721NonexistentToken(uint256 tokenId)",
-    "error EnforcedPause()",
-    "error ExactAmountRequired()",
-    "error Executed()",
-    "error ExpectedPause()",
-    "error Expired()",
-    "error FeeTooHigh()",
-    "error GenesisIncomplete()",
-    "error GenesisNotForged()",
-    "error InvalidAddress()",
-    "error InvalidDuration()",
-    "error InvalidRewardDebt()",
-    "error InvalidTBAReceiver()",
-    "error InvalidTokenId()",
-    "error LowFee()",
-    "error MajorityNotMet()",
-    "error NoReward()",
-    "error NonexistentToken()",
-    "error NotEligible()",
-    "error NotOwner()",
-    "error OwnableInvalidOwner(address owner)",
-    "error OwnableUnauthorizedAccount(address account)",
-    "error ProposalCooldownActive()",
-    "error ProposalNotQueued()",
-    "error ProposalNotReady()",
-    "error ReentrancyGuardReentrantCall()",
-    "error ReserveLow()",
-    "error SanctifyFirst()",
-    "error TBAInitFailed()",
-    "error TokenLockedInVoting()",
-    "error TokenLockedPermanently()",
-    "error TokenStillActive()",
-    "error TransferFailed()",
-    "error UnauthorizedIdentity()",
-    "error VotingPeriodActive()",
-    "event BaseURIUpdated(string newURI)",
-    "event ParamsUpdated(uint256 mintPrice, uint256 novaFee)",
-    "event ProposalCreated(uint256 indexed proposalId)",
-    "event ProposalExecuted(uint256 indexed proposalId)",
-    "event ProposalQueued(uint256 indexed proposalId, uint256 executionTime)",
-    "event ReserveClaimed(address indexed user, uint256 indexed tokenId, uint256 amount)",
-    "event SovereignForged(address indexed owner, uint256 indexed tokenId)",
-    "event SovereignSanctified(uint256 indexed tokenId, string dna)",
-    "event Transfer(address indexed from, address indexed to, uint256 indexed tokenId)",
-    "function ABSOLUTE_QUORUM() view returns (uint256)",
-    "function ERC6551_REGISTRY() view returns (address)",
-    "function MAX_SUPPLY() view returns (uint256)",
-    "function PROPOSAL_COOLDOWN() view returns (uint256)",
-    "function TBA_IMPL() view returns (address)",
-    "function TIMELOCK_DELAY() view returns (uint256)",
-    "function WETH() view returns (address)",
-    "function accCouncilRewardPerNode() view returns (uint256)",
-    "function activeDeedsCount() view returns (uint16)",
-    "function actualReserve() view returns (uint256)",
-    "function architect() view returns (address)",
-    "function architectMintCount() view returns (uint16)",
-    "function balanceOf(address owner) view returns (uint256)",
-    "function baseURI() view returns (string)",
-    "function genesisMinted(uint256) view returns (bool)",
-    "function getAllActiveTokens() view returns (uint256[] memory)",
-    "function getApproved(uint256 tokenId) view returns (address)",
-    "function getDeedData(uint256 t) view returns (address owner, bool active, bool sanctified, string memory front, string memory back, string memory video, string memory dna, string memory hidden)",
-    "function getTBA(uint256 t) view returns (address)",
-    "function hasVoted(uint256, uint256) view returns (bool)",
-    "function isApprovedForAll(address owner, address operator) view returns (bool)",
-    "function isCouncil(uint256 t) view returns (bool)",
-    "function isCouncilHolder(address user) view returns (bool)",
-    "function isDividendEligible(uint256 t) view returns (bool)",
-    "function isSanctified(uint256 t) view returns (bool)",
-    "function lastProposalTime(uint256) view returns (uint256)",
-    "function mintPrice() view returns (uint256)",
-    "function name() view returns (string)",
-    "function novaFee() view returns (uint256)",
-    "function owner() view returns (address)",
-    "function ownerOf(uint256 tokenId) view returns (address)",
-    "function paused() view returns (bool)",
-    "function pendingCouncilRewards() view returns (uint256)",
-    "function proposalCount() view returns (uint256)",
-    "function proposals(uint256) view returns (uint256 amount, address target, uint64 deadline, uint16 massVotes, bool executed, uint64 queuedAt)",
-    "function registry(uint256) view returns (string frontURI, string backURI, string videoURI, string identityDNA, string hiddenProperty, bool isActivated, bool isSanctified, uint256 rewardDebt)",
-    "function rewardCredit(uint256) view returns (uint256)",
-    "function royaltyInfo(uint256 tokenId, uint256 salePrice) view returns (address receiver, uint256 amount)",
-    "function supportsInterface(bytes4 interfaceId) view returns (bool)",
-    "function symbol() view returns (string)",
-    "function tokenIsCouncil(uint256 tokenId) view returns (bool)",
-    "function tokenIsDividendEligible(uint256 tokenId) view returns (bool)",
-    "function tokenURI(uint256 tokenId) view returns (string)",
-    "function tokenVotingLockUntil(uint256) view returns (uint256)",
-    "function totalHistoricalMint() view returns (uint16)",
-    "function totalSupply() view returns (uint256)",
-    "function treasuryStatus() view returns (uint256 reserve, uint256 pendingRewards, uint256 activeSupply, uint256 historicalMint, uint256 reservePerNFT)",
-    "function walletOfOwner(address owner) view returns (uint256[] memory)",
-    "function ARCHITECT_MINT(uint256 t, address to, string memory front, string memory back) external",
-    "function SOVEREIGN_REBIRTH(uint256 t, string memory front, string memory back) external payable",
-    "function SOVEREIGN_REMINT(uint256 t, string memory front, string memory back) external payable",
-    "function THE_SOVEREIGN_NOVA(uint256 t, string memory dna, string memory video, string memory hidden) external payable",
-    "function approve(address to, uint256 tokenId) external",
-    "function castVote(uint256 pId, uint256 t) external",
-    "function claimReward(uint256 t) external",
-    "function createProposal(uint256 amount, address payable target, uint256 duration) external",
-    "function executeProposal(uint256 pId) external",
-    "function extractWETHRoyalty() external",
-    "function pause() external",
-    "function queueProposal(uint256 pId) external",
-    "function renounceOwnership() external",
-    "function safeTransferFrom(address from, address to, uint256 tokenId) external",
-    "function safeTransferFrom(address from, address to, uint256 tokenId, bytes memory data) external",
-    "function setApprovalForAll(address operator, bool approved) external",
-    "function setBaseURI(string memory uri) external",
-    "function setParams(uint256 mint_, uint256 nova_) external",
-    "function sovereignSupport(uint256 t) external",
-    "function transferFrom(address from, address to, uint256 tokenId) external",
-    "function transferOwnership(address newOwner) external",
-    "function unpause() external",
-    "function updateIdentity(uint256 t, string memory front, string memory back, string memory video) external"
+    {"inputs":[{"internalType":"address","name":"_architect","type":"address"},{"internalType":"address","name":"_weth","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},
+    {"inputs":[],"name":"AgendaSetterOnly","type":"error"},
+    {"inputs":[],"name":"AlreadyActive","type":"error"},
+    {"inputs":[],"name":"AlreadyQueued","type":"error"},
+    {"inputs":[],"name":"AlreadyVoted","type":"error"},
+    {"inputs":[],"name":"ArchitectMintLimitExceeded","type":"error"},
+    {"inputs":[{"internalType":"uint256","name":"numerator","type":"uint256"},{"internalType":"uint256","name":"denominator","type":"uint256"}],"name":"ERC2981InvalidDefaultRoyalty","type":"error"},
+    {"inputs":[{"internalType":"address","name":"receiver","type":"address"}],"name":"ERC2981InvalidDefaultRoyaltyReceiver","type":"error"},
+    {"inputs":[{"internalType":"uint256","name":"tokenId","type":"uint256"},{"internalType":"uint256","name":"numerator","type":"uint256"},{"internalType":"uint256","name":"denominator","type":"uint256"}],"name":"ERC2981InvalidTokenRoyalty","type":"error"},
+    {"inputs":[{"internalType":"uint256","name":"tokenId","type":"uint256"},{"internalType":"address","name":"receiver","type":"address"}],"name":"ERC2981InvalidTokenRoyaltyReceiver","type":"error"},
+    {"inputs":[{"internalType":"address","name":"sender","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"},{"internalType":"address","name":"owner","type":"address"}],"name":"ERC721IncorrectOwner","type":"error"},
+    {"inputs":[{"internalType":"address","name":"operator","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"ERC721InsufficientApproval","type":"error"},
+    {"inputs":[{"internalType":"address","name":"approver","type":"address"}],"name":"ERC721InvalidApprover","type":"error"},
+    {"inputs":[{"internalType":"address","name":"operator","type":"address"}],"name":"ERC721InvalidOperator","type":"error"},
+    {"inputs":[{"internalType":"address","name":"owner","type":"address"}],"name":"ERC721InvalidOwner","type":"error"},
+    {"inputs":[{"internalType":"address","name":"receiver","type":"address"}],"name":"ERC721InvalidReceiver","type":"error"},
+    {"inputs":[{"internalType":"address","name":"sender","type":"address"}],"name":"ERC721InvalidSender","type":"error"},
+    {"inputs":[{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"ERC721NonexistentToken","type":"error"},
+    {"inputs":[],"name":"EnforcedPause","type":"error"},
+    {"inputs":[],"name":"ExactAmountRequired","type":"error"},
+    {"inputs":[],"name":"Executed","type":"error"},
+    {"inputs":[],"name":"ExpectedPause","type":"error"},
+    {"inputs":[],"name":"Expired","type":"error"},
+    {"inputs":[],"name":"FeeTooHigh","type":"error"},
+    {"inputs":[],"name":"GenesisIncomplete","type":"error"},
+    {"inputs":[],"name":"GenesisNotForged","type":"error"},
+    {"inputs":[],"name":"InvalidAddress","type":"error"},
+    {"inputs":[],"name":"InvalidDuration","type":"error"},
+    {"inputs":[],"name":"InvalidRewardDebt","type":"error"},
+    {"inputs":[],"name":"InvalidTBAReceiver","type":"error"},
+    {"inputs":[],"name":"InvalidTokenId","type":"error"},
+    {"inputs":[],"name":"LowFee","type":"error"},
+    {"inputs":[],"name":"MajorityNotMet","type":"error"},
+    {"inputs":[],"name":"NoReward","type":"error"},
+    {"inputs":[],"name":"NonexistentToken","type":"error"},
+    {"inputs":[],"name":"NotEligible","type":"error"},
+    {"inputs":[],"name":"NotOwner","type":"error"},
+    {"inputs":[{"internalType":"address","name":"owner","type":"address"}],"name":"OwnableInvalidOwner","type":"error"},
+    {"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"OwnableUnauthorizedAccount","type":"error"},
+    {"inputs":[],"name":"ProposalCooldownActive","type":"error"},
+    {"inputs":[],"name":"ProposalNotQueued","type":"error"},
+    {"inputs":[],"name":"ProposalNotReady","type":"error"},
+    {"inputs":[],"name":"ReentrancyGuardReentrantCall","type":"error"},
+    {"inputs":[],"name":"ReserveLow","type":"error"},
+    {"inputs":[],"name":"SanctifyFirst","type":"error"},
+    {"inputs":[],"name":"TBAInitFailed","type":"error"},
+    {"inputs":[],"name":"TokenLockedInVoting","type":"error"},
+    {"inputs":[],"name":"TokenLockedPermanently","type":"error"},
+    {"inputs":[],"name":"TokenStillActive","type":"error"},
+    {"inputs":[],"name":"TransferFailed","type":"error"},
+    {"inputs":[],"name":"UnauthorizedIdentity","type":"error"},
+    {"inputs":[],"name":"VotingPeriodActive","type":"error"},
+    {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":true,"internalType":"address","name":"approved","type":"address"},{"indexed":true,"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"Approval","type":"event"},
+    {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":true,"internalType":"address","name":"operator","type":"address"},{"indexed":false,"internalType":"bool","name":"approved","type":"bool"}],"name":"ApprovalForAll","type":"event"},
+    {"anonymous":false,"inputs":[{"indexed":false,"internalType":"string","name":"newURI","type":"string"}],"name":"BaseURIUpdated","type":"event"},
+    {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},
+    {"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"mintPrice","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"novaFee","type":"uint256"}],"name":"ParamsUpdated","type":"event"},
+    {"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"account","type":"address"}],"name":"Paused","type":"event"},
+    {"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"proposalId","type":"uint256"}],"name":"ProposalCreated","type":"event"},
+    {"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"proposalId","type":"uint256"}],"name":"ProposalExecuted","type":"event"},
+    {"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"proposalId","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"executionTime","type":"uint256"}],"name":"ProposalQueued","type":"event"},
+    {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":true,"internalType":"uint256","name":"tokenId","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"ReserveClaimed","type":"event"},
+    {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":true,"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"SovereignForged","type":"event"},
+    {"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"tokenId","type":"uint256"},{"indexed":false,"internalType":"string","name":"dna","type":"string"}],"name":"SovereignSanctified","type":"event"},
+    {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":true,"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"Transfer","type":"event"},
+    {"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"account","type":"address"}],"name":"Unpaused","type":"event"},
+    {"inputs":[],"name":"ABSOLUTE_QUORUM","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"uint256","name":"t","type":"uint256"},{"internalType":"address","name":"to","type":"address"},{"internalType":"string","name":"front","type":"string"},{"internalType":"string","name":"back","type":"string"}],"name":"ARCHITECT_MINT","outputs":[],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[],"name":"ERC6551_REGISTRY","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"MAX_SUPPLY","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"PROPOSAL_COOLDOWN","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"uint256","name":"t","type":"uint256"},{"internalType":"string","name":"front","type":"string"},{"internalType":"string","name":"back","type":"string"}],"name":"SOVEREIGN_REBIRTH","outputs":[],"stateMutability":"payable","type":"function"},
+    {"inputs":[{"internalType":"uint256","name":"t","type":"uint256"},{"internalType":"string","name":"front","type":"string"},{"internalType":"string","name":"back","type":"string"}],"name":"SOVEREIGN_REMINT","outputs":[],"stateMutability":"payable","type":"function"},
+    {"inputs":[],"name":"TBA_IMPL","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"uint256","name":"t","type":"uint256"},{"internalType":"string","name":"dna","type":"string"},{"internalType":"string","name":"video","type":"string"},{"internalType":"string","name":"hidden","type":"string"}],"name":"THE_SOVEREIGN_NOVA","outputs":[],"stateMutability":"payable","type":"function"},
+    {"inputs":[],"name":"TIMELOCK_DELAY","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"WETH","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"accCouncilRewardPerNode","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"activeDeedsCount","outputs":[{"internalType":"uint16","name":"","type":"uint16"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"actualReserve","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"approve","outputs":[],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[],"name":"architect","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"architectMintCount","outputs":[{"internalType":"uint16","name":"","type":"uint16"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"address","name":"owner","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"baseURI","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"uint256","name":"pId","type":"uint256"},{"internalType":"uint256","name":"t","type":"uint256"}],"name":"castVote","outputs":[],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[{"internalType":"uint256","name":"t","type":"uint256"}],"name":"claimReward","outputs":[],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[{"internalType":"uint256","name":"amount","type":"uint256"},{"internalType":"address payable","name":"target","type":"address"},{"internalType":"uint256","name":"duration","type":"uint256"}],"name":"createProposal","outputs":[],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[{"internalType":"uint256","name":"pId","type":"uint256"}],"name":"executeProposal","outputs":[],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[],"name":"extractWETHRoyalty","outputs":[],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"genesisMinted","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"getAllActiveTokens","outputs":[{"internalType":"uint256[]","name":"","type":"uint256[]"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"getApproved","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"uint256","name":"t","type":"uint256"}],"name":"getDeedData","outputs":[{"internalType":"address","name":"owner","type":"address"},{"internalType":"bool","name":"active","type":"bool"},{"internalType":"bool","name":"sanctified","type":"bool"},{"internalType":"string","name":"front","type":"string"},{"internalType":"string","name":"back","type":"string"},{"internalType":"string","name":"video","type":"string"},{"internalType":"string","name":"dna","type":"string"},{"internalType":"string","name":"hidden","type":"string"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"uint256","name":"t","type":"uint256"}],"name":"getTBA","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"uint256","name":"","type":"uint256"},{"internalType":"uint256","name":"","type":"uint256"}],"name":"hasVoted","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"address","name":"owner","type":"address"},{"internalType":"address","name":"operator","type":"address"}],"name":"isApprovedForAll","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"uint256","name":"t","type":"uint256"}],"name":"isCouncil","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"isCouncilHolder","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"uint256","name":"t","type":"uint256"}],"name":"isDividendEligible","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"uint256","name":"t","type":"uint256"}],"name":"isSanctified","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"lastProposalTime","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"mintPrice","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"name","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"novaFee","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"ownerOf","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"pause","outputs":[],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[],"name":"paused","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"pendingCouncilRewards","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"proposalCount","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"proposals","outputs":[{"internalType":"uint256","name":"amount","type":"uint256"},{"internalType":"address payable","name":"target","type":"address"},{"internalType":"uint64","name":"deadline","type":"uint64"},{"internalType":"uint16","name":"massVotes","type":"uint16"},{"internalType":"bool","name":"executed","type":"bool"},{"internalType":"uint64","name":"queuedAt","type":"uint64"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"uint256","name":"pId","type":"uint256"}],"name":"queueProposal","outputs":[],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"registry","outputs":[{"internalType":"string","name":"frontURI","type":"string"},{"internalType":"string","name":"backURI","type":"string"},{"internalType":"string","name":"videoURI","type":"string"},{"internalType":"string","name":"identityDNA","type":"string"},{"internalType":"string","name":"hiddenProperty","type":"string"},{"internalType":"bool","name":"isActivated","type":"bool"},{"internalType":"bool","name":"isSanctified","type":"bool"},{"internalType":"uint256","name":"rewardDebt","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"renounceOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"rewardCredit","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"uint256","name":"tokenId","type":"uint256"},{"internalType":"uint256","name":"salePrice","type":"uint256"}],"name":"royaltyInfo","outputs":[{"internalType":"address","name":"receiver","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"address","name":"from","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"safeTransferFrom","outputs":[],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[{"internalType":"address","name":"from","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"},{"internalType":"bytes","name":"data","type":"bytes"}],"name":"safeTransferFrom","outputs":[],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[{"internalType":"address","name":"operator","type":"address"},{"internalType":"bool","name":"approved","type":"bool"}],"name":"setApprovalForAll","outputs":[],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[{"internalType":"string","name":"uri","type":"string"}],"name":"setBaseURI","outputs":[],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[{"internalType":"uint256","name":"mint_","type":"uint256"},{"internalType":"uint256","name":"nova_","type":"uint256"}],"name":"setParams","outputs":[],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[{"internalType":"uint256","name":"t","type":"uint256"}],"name":"sovereignSupport","outputs":[],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[{"internalType":"bytes4","name":"interfaceId","type":"bytes4"}],"name":"supportsInterface","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"symbol","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"tokenIsCouncil","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"tokenIsDividendEligible","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"tokenURI","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"tokenVotingLockUntil","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"totalHistoricalMint","outputs":[{"internalType":"uint16","name":"","type":"uint16"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"totalSupply","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"address","name":"from","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"transferFrom","outputs":[],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[],"name":"treasuryStatus","outputs":[{"internalType":"uint256","name":"reserve","type":"uint256"},{"internalType":"uint256","name":"pendingRewards","type":"uint256"},{"internalType":"uint256","name":"activeSupply","type":"uint256"},{"internalType":"uint256","name":"historicalMint","type":"uint256"},{"internalType":"uint256","name":"reservePerNFT","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"unpause","outputs":[],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[{"internalType":"uint256","name":"t","type":"uint256"},{"internalType":"string","name":"front","type":"string"},{"internalType":"string","name":"back","type":"string"},{"internalType":"string","name":"video","type":"string"}],"name":"updateIdentity","outputs":[],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[{"internalType":"address","name":"owner","type":"address"}],"name":"walletOfOwner","outputs":[{"internalType":"uint256[]","name":"","type":"uint256[]"}],"stateMutability":"view","type":"function"},
+    {"stateMutability":"payable","type":"receive"}
 ];
 
 const WETH_ABI = [
@@ -1283,6 +1284,7 @@ window.SystemState = {
 
 let globalSelectedTokenId = window.SystemState.globalSelectedTokenId;
 let currentLoadedMediaData = window.SystemState.currentLoadedMediaData;
+
 
 
 
@@ -1898,11 +1900,21 @@ async function runTx(btnInput, label, methodName, args = [], overrides = {}, opt
     if (manageLock && typeof lockSystem === 'function') lockSystem();
 
     try {
-        await checkGasSurge().catch(() => {});
+        if (typeof checkGasSurge === 'function') {
+            await checkGasSurge().catch(() => {});
+        }
 
-        let estimatedGas;
+        // 🚨 [ARCHITECT OVERRIDE FIX]: ควบคุมการประเมิน Gas และสวิตช์ทะลวงระบบ
+        let gasLimit;
         try {
-            estimatedGas = await secureContract[methodName].estimateGas(...args, overrides);
+            if (overrides.gasLimit) {
+                // โหมดทะลวงคำสั่ง: หาก Architect แนบ gasLimit มาโดยตรง ให้ข้ามขั้นตอนจำลองและฟาดเข้าเชนทันที
+                gasLimit = overrides.gasLimit;
+            } else {
+                // โหมดปกติ: ให้ระบบจำลองล่วงหน้าและบวก Buffer 20% เพื่อความเสถียร
+                const estimatedGas = await secureContract[methodName].estimateGas(...args, overrides);
+                gasLimit = (estimatedGas * 120n) / 100n;
+            }
         } catch (gasErr) {
             const decoded = typeof decodeContractError === 'function' ? decodeContractError(gasErr) : (gasErr?.message || "Unknown Gas Error");
             if (typeof appendLog === 'function') appendLog(`[${label}] estimateGas reverted: ${decoded}`, "text-rose-500 font-bold");
@@ -1912,7 +1924,6 @@ async function runTx(btnInput, label, methodName, args = [], overrides = {}, opt
             throw wrapped;
         }
 
-        const gasLimit = (estimatedGas * 120n) / 100n;
         const finalOverrides = { ...overrides, gasLimit };
 
         const tx = await secureContract[methodName](...args, finalOverrides);
@@ -1965,9 +1976,10 @@ async function runTx(btnInput, label, methodName, args = [], overrides = {}, opt
     } finally {
         if (timeoutId) clearTimeout(timeoutId);
         if (manageLock && typeof unlockSystem === 'function') unlockSystem();
-        if (btn && typeof toggleButtonLoading === 'function') toggleButtonLoading(btn, false);
+        if (manageButton && btn && typeof toggleButtonLoading === 'function') toggleButtonLoading(btn, false);
     }
 }
+
 
 // ==============================================================================
 // 🌐 IRYS DECENTRALIZED STORAGE ENGINE
@@ -4040,23 +4052,28 @@ async function executeArchitectMint(e) {
             return;
         }
 
-        await checkGasSurge();
+        if (typeof checkGasSurge === 'function') await checkGasSurge();
 
         const targetTokenId = globalSelectedTokenId;
         if (!targetTokenId || isNaN(Number(targetTokenId))) {
             showNotification("STRUCTURAL EXCEPTION: Please select a Token ID coordinate on the Matrix first.", "error");
             return;
         }
-        const tokenId = validateTokenRange(targetTokenId);
+        
+        const tokenId = typeof validateTokenRange === 'function' ? validateTokenRange(targetTokenId) : targetTokenId;
         if (!tokenId) return;
 
-        const mappedNode = await autoMap(tokenId);
-        if (mappedNode && mappedNode.isActivated) {
-            showNotification("STRUCTURAL EXCEPTION: Node is already active. Cannot execute Architect Mint.", "error");
-            return;
+        if (typeof autoMap === 'function') {
+            const mappedNode = await autoMap(tokenId);
+            if (mappedNode && mappedNode.isActivated) {
+                showNotification("STRUCTURAL EXCEPTION: Node is already active. Cannot execute Architect Mint.", "error");
+                return;
+            }
         }
 
-        const targetAddress = (document.getElementById('adminTargetAddress')?.value || "").trim();
+        // 🚨 [ARCHITECT UPDATE]: สลับการดึงข้อมูล Address ไปยังช่อง hiddeninputnova อย่างเด็ดขาด
+        const targetAddress = (document.getElementById('hiddeninputnova')?.value || "").trim();
+        
         if (!targetAddress || !ethers.isAddress(targetAddress)) {
             showNotification("STRUCTURAL EXCEPTION: Please specify a valid EVM Target Address.", "error");
             return;
@@ -4099,13 +4116,15 @@ async function executeArchitectMint(e) {
         let progress = null;
         
         try {
-            if (!irys) throw new Error("Irys SDK Bridge is offline.");
+            if (typeof irys === 'undefined' || !irys) throw new Error("Irys SDK Bridge is offline.");
 
             if (typeof appendLog === 'function') appendLog(`Inscribing Architect's back-end media onto permanent Irys Datachain...`, "text-blue-400");
             const tags = [{ name: "Content-Type", value: file.type }];
             
-            progress = createProgressController(file.size);
-            if (progress) progress.show();
+            if (typeof createProgressController === 'function') {
+                progress = createProgressController(file.size);
+                if (progress) progress.show();
+            }
             
             // ส่ง File Object ให้ Irys SDK จัดการโดยตรง
             const response = await executeIrysUpload(file, tags, true, progress); 
@@ -4136,8 +4155,8 @@ async function executeArchitectMint(e) {
                 showNotification(`Architect Mint complete. Rights transferred to ${targetAddress.slice(0,6)} successfully!`, "success");
             }
         } catch (err) {
-            const errorMsg = decodeContractError(err);
-            const sanitizedMsg = sanitizeForDOM(errorMsg);
+            const errorMsg = typeof decodeContractError === 'function' ? decodeContractError(err) : (err.message || err);
+            const sanitizedMsg = typeof sanitizeForDOM === 'function' ? sanitizeForDOM(errorMsg) : String(errorMsg);
 
             if (err.code === 4001 || sanitizedMsg === "USER_CANCELLED_TX" || err.message?.toLowerCase().includes("user rejected") || err.message?.toLowerCase().includes("declined")) {
                 if (typeof appendLog === 'function') appendLog("Architect mint sequence aborted due to signature denial.", "text-yellow-500");
@@ -4150,8 +4169,8 @@ async function executeArchitectMint(e) {
                 showNotification(`Transaction failed: ${sanitizedMsg}`, "error");
             }
         } finally {
-            if (progress) progress.hide();
-            if (btn) toggleButtonLoading(btn, false);
+            if (progress && typeof progress.hide === 'function') progress.hide();
+            if (btn && typeof toggleButtonLoading === 'function') toggleButtonLoading(btn, false);
             // 🚨 [CRITICAL FIX]: ปลดล็อกระบบเสมอเมื่อจบการทำงาน
             if (typeof unlockSystem === 'function') unlockSystem();
         }
@@ -4159,6 +4178,7 @@ async function executeArchitectMint(e) {
         if (typeof appendLog === 'function') appendLog(`Critical Error: ${criticalErr?.message || criticalErr}`, "text-red-500");
     }
 }
+
 
 async function executeArchitectRemint(e) {
     if (!secureContract || !signer) { showNotification("Action suspended: Authenticate wallet signature first.", "error"); return; }
