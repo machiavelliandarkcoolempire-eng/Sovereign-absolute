@@ -1039,7 +1039,6 @@
 
 
 
-
 <script>
 "use strict";
 
@@ -1372,21 +1371,30 @@ window.IMPERIAL_MANIFEST = null;
 window.IMAGE_MANIFEST = null; // 👈 เพิ่มตัวแปรเก็บ Direct Image Hash
 
 async function fetchImperialManifest() {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10-second strict timeout
+
     try {
-        // 🛡️ ดึงทั้ง 2 ไฟล์พร้อมกัน: JSON Metadata และ Direct Image
+        // 🛡️ Fetch both JSON Metadata and Direct Image with AbortSignal
         const [manifestRes, imageRes] = await Promise.allSettled([
-            fetch(`./imperial-manifest.json?t=${Date.now()}`),
-            fetch(`./image_imperial-manifest.json?t=${Date.now()}`) // 👈 ไฟล์รูปภาพตรงๆ
+            fetch(`./imperial-manifest.json?t=${Date.now()}`, { signal: controller.signal }),
+            fetch(`./image_imperial-manifest.json?t=${Date.now()}`, { signal: controller.signal })
         ]);
         
+        clearTimeout(timeoutId);
+
         if (manifestRes.status === 'fulfilled' && manifestRes.value.ok) {
             const rawData = await manifestRes.value.json();
             window.IMPERIAL_MANIFEST = (rawData && typeof rawData === 'object' && rawData.data) ? rawData.data : rawData;
+        } else {
+            window.IMPERIAL_MANIFEST = {};
         }
 
         if (imageRes.status === 'fulfilled' && imageRes.value.ok) {
             const rawImgData = await imageRes.value.json();
             window.IMAGE_MANIFEST = (rawImgData && typeof rawImgData === 'object' && rawImgData.data) ? rawImgData.data : rawImgData;
+        } else {
+            window.IMAGE_MANIFEST = {};
         }
 
         if (typeof appendLog === 'function') {
@@ -1395,6 +1403,7 @@ async function fetchImperialManifest() {
         }
         return true;
     } catch (err) {
+        clearTimeout(timeoutId);
         window.IMPERIAL_MANIFEST = {}; 
         window.IMAGE_MANIFEST = {};
         if (typeof appendLog === 'function') {
@@ -1883,7 +1892,58 @@ async function promptUserForFile(acceptType = 'image/*,video/*') {
 // ==============================================================================
 // ⚔️ TRANSACTION WRAPPER (NON-BLOCKING UI)
 // ==============================================================================
+async function runTx(eventOrBtn, actionName, methodName, args = [], overrides = {}, options = { manageLock: true, manageButton: true }) {
+    if (!secureContract || !signer) {
+        if (typeof showNotification === 'function') showNotification("Wallet not connected or contract uninitialized.", "error");
+        return null;
+    }
 
+    let btn = null;
+    if (options.manageButton && typeof toggleButtonLoading === 'function') {
+        btn = toggleButtonLoading(eventOrBtn, true);
+    }
+    if (options.manageLock && typeof lockSystem === 'function') {
+        lockSystem();
+    }
+
+    try {
+        if (typeof safeAppendLog === 'function') safeAppendLog(`[TX] Initiating ${actionName}...`, "text-yellow-400");
+        
+        // Execute Ethers v6 Contract Method
+        const tx = await secureContract[methodName](...args, overrides);
+        
+        if (typeof safeAppendLog === 'function') safeAppendLog(`[TX] Broadcasted. Hash: ${tx.hash.slice(0,12)}... Awaiting confirmation.`, "text-blue-400");
+        
+        // Wait for 1 block confirmation
+        const receipt = await tx.wait();
+        
+        if (receipt && receipt.status === 1) {
+            if (typeof safeAppendLog === 'function') safeAppendLog(`[TX] ${actionName} confirmed in block ${receipt.blockNumber}.`, "text-emerald-400 font-bold");
+            return receipt;
+        } else {
+            throw new Error("Transaction reverted by EVM during execution.");
+        }
+    } catch (err) {
+        const errorMsg = typeof decodeContractError === 'function' ? decodeContractError(err) : (err.message || "Unknown Error");
+        const sanitizedMsg = typeof sanitizeForDOM === 'function' ? sanitizeForDOM(errorMsg) : errorMsg;
+        
+        if (err.code === 4001 || sanitizedMsg === "USER_CANCELLED_TX" || (err.message && err.message.toLowerCase().includes("user rejected"))) {
+            if (typeof safeAppendLog === 'function') safeAppendLog(`[TX] ${actionName} cancelled by user signature denial.`, "text-yellow-500");
+            if (typeof showNotification === 'function') showNotification("Transaction cancelled by user.", "warning");
+        } else {
+            if (typeof safeAppendLog === 'function') safeAppendLog(`[TX] ${actionName} failed: ${sanitizedMsg}`, "text-red-500");
+            if (typeof showNotification === 'function') showNotification(`Transaction failed: ${sanitizedMsg}`, "error");
+        }
+        return null;
+    } finally {
+        if (options.manageButton && btn && typeof toggleButtonLoading === 'function') {
+            toggleButtonLoading(btn, false);
+        }
+        if (options.manageLock && typeof unlockSystem === 'function') {
+            unlockSystem();
+        }
+    }
+}
 // ==============================================================================
 // ⚔️ FORGE & MINTING ENGINES (ZERO-BUG MANIFEST PARSING + PLEDGE MODAL)
 // ==============================================================================
@@ -2351,119 +2411,11 @@ async function executeArchitectRemint(e) {
         } finally {
             if (progress) progress.hide();
             if (btn) toggleButtonLoading(btn, false);
-            // 🚨 [CRITICAL FIX]: ปลดล็อกระบบเสมอเมื่อจบการทำงาน
+            // 🚨 [CRITICAL FIX]: ปลดล็อกระบบเสมอเมือจบ
             if (typeof unlockSystem === 'function') unlockSystem();
         }
     } catch (criticalErr) {
         if (typeof appendLog === 'function') appendLog(`Critical Error: ${criticalErr?.message || criticalErr}`, "text-red-500");
-    }
-}
-
-// ==============================================================================
-// ⚔️ TRANSACTION EXECUTION ENGINE (ZERO-BUG & STRICT LOCKING ENFORCED)
-// ==============================================================================
-
-async function runTx(btnInput, label, methodName, args = [], overrides = {}, options = {}) {
-    const { manageLock = true, manageButton = true, sync = true } = options;
-
-    // 🛡️ STRICT STATE GUARD: ป้องกันการยิงคำสั่งซ้อนทุกกรณี
-    if ((manageLock && typeof isTransactionPending !== 'undefined' && isTransactionPending) || window.SystemState?._sysLocked) {
-        console.warn(`[TX BLOCKED] System locked. Dropping request for: ${label}`);
-        return false;
-    }
-
-    if (!secureContract || !signer) {
-        showNotification("SYSTEM ENFORCEMENT: Please connect your wallet first.", "error");
-        return false;
-    }
-
-    if (typeof secureContract[methodName] !== "function") {
-        showNotification(`STRUCTURAL EXCEPTION: Function '${methodName}' not found in ABI.`, "error");
-        return false;
-    }
-
-    const btn = (manageButton && typeof toggleButtonLoading === 'function') ? toggleButtonLoading(btnInput, true) : null;
-    let timeoutId;
-
-    if (manageLock) {
-        isTransactionPending = true;
-        if (typeof lockSystem === 'function') lockSystem();
-    }
-
-    try {
-        if (typeof checkGasSurge === 'function') {
-            await checkGasSurge().catch(() => {});
-        }
-
-        let gasLimit;
-        try {
-            if (overrides.gasLimit) {
-                gasLimit = overrides.gasLimit;
-            } else {
-                const estimatedGas = await secureContract[methodName].estimateGas(...args, overrides);
-                gasLimit = (estimatedGas * 120n) / 100n;
-            }
-        } catch (gasErr) {
-            const decoded = typeof decodeContractError === 'function' ? decodeContractError(gasErr) : (gasErr?.message || "Unknown Gas Error");
-            if (typeof appendLog === 'function') appendLog(`[${label}] estimateGas reverted: ${decoded}`, "text-rose-500 font-bold");
-            const wrapped = new Error(decoded);
-            wrapped.original = gasErr;
-            wrapped.code = 'UNPREDICTABLE_GAS_LIMIT';
-            throw wrapped;
-        }
-
-        const finalOverrides = { ...overrides, gasLimit };
-        const tx = await secureContract[methodName](...args, finalOverrides);
-
-        if (typeof appendLog === 'function') {
-            appendLog(`Transaction [${label}] initiated: ${tx.hash}`, "text-blue-400");
-            appendLog(`Awaiting network consensus... Please do not close the window.`, "text-yellow-500");
-        }
-
-        const timeoutPromise = new Promise((_, reject) => {
-            timeoutId = setTimeout(() => {
-                const err = new Error("RPC_SYNC_TIMEOUT");
-                err.txHash = tx.hash;
-                reject(err);
-            }, 120000);
-        });
-
-        const receipt = await Promise.race([ tx.wait(1), timeoutPromise ]);
-
-        if (!receipt) throw new Error("Transaction receipt returned null or was dropped by network.");
-
-        if (typeof appendLog === 'function') appendLog(`Transaction confirmed in block ${receipt.blockNumber}`, "text-emerald-400");
-        
-        if (sync && typeof syncContractStates === 'function') await syncContractStates();
-        return receipt;
-
-    } catch (err) {
-        if (err?.message === "RPC_SYNC_TIMEOUT") {
-            if (typeof appendLog === 'function') appendLog(`⚠️ NETWORK CONGESTION: TX ${err.txHash} verification timed out.`, "text-yellow-400 font-bold");
-            showNotification("Network timeout. Please check Block Explorer before retrying.", "warning");
-            return false;
-        }
-
-        if (err?.code === 'UNPREDICTABLE_GAS_LIMIT') {
-            showNotification(`Transaction Failed: ${err.message}`, "error");
-        } else {
-            const msg = String(typeof decodeContractError === 'function' ? decodeContractError(err) : (err?.message || err || "Unknown Error"));
-            const lowerMsg = msg.toLowerCase();
-            
-            if (msg === "USER_CANCELLED_TX" || err?.code === 4001 || lowerMsg.includes("rejected") || lowerMsg.includes("denied")) {
-                showNotification("Transaction cancelled by user.", "warning");
-            } else {
-                showNotification(`Transaction Failed: ${msg}`, "error");
-            }
-        }
-        return false;
-    } finally {
-        if (timeoutId) clearTimeout(timeoutId);
-        if (manageLock) {
-            isTransactionPending = false;
-            if (typeof unlockSystem === 'function') unlockSystem();
-        }
-        if (btn && typeof toggleButtonLoading === 'function') toggleButtonLoading(btn, false);
     }
 }
 
