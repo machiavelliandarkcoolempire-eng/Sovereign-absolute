@@ -1036,6 +1036,10 @@
 
 
 
+
+
+
+
 <script>
 "use strict";
 
@@ -1880,8 +1884,493 @@ async function promptUserForFile(acceptType = 'image/*,video/*') {
 // ⚔️ TRANSACTION WRAPPER (NON-BLOCKING UI)
 // ==============================================================================
 
+// ==============================================================================
+// ⚔️ FORGE & MINTING ENGINES (ZERO-BUG MANIFEST PARSING + PLEDGE MODAL)
+// ==============================================================================
+
+function toggleForgeButtonState() {
+    const checkbox = document.getElementById('forgeModalCheckbox');
+    const confirmBtn = document.getElementById('forgeModalConfirmBtn');
+    
+    if (!checkbox || !confirmBtn) return; 
+
+    if (checkbox.checked) {
+        confirmBtn.disabled = false;
+        confirmBtn.classList.remove('opacity-50', 'cursor-not-allowed', 'bg-red-900/30', 'text-stone-500');
+        confirmBtn.classList.add('cursor-pointer', 'bg-red-700', 'hover:bg-red-600', 'text-white', 'shadow-[0_0_15px_rgba(220,38,38,0.5)]');
+    } else {
+        confirmBtn.disabled = true;
+        confirmBtn.classList.remove('cursor-pointer', 'bg-red-700', 'hover:bg-red-600', 'text-white', 'shadow-[0_0_15px_rgba(220,38,38,0.5)]');
+        confirmBtn.classList.add('opacity-50', 'cursor-not-allowed', 'bg-red-900/30', 'text-stone-500');
+    }
+}
+
+function openForgeConsentModal(type, e) {
+    const modal = document.getElementById('forgeConsentModal');
+    if (modal) {
+        modal.classList.remove('hidden');
+        
+        const confirmBtn = document.getElementById('forgeModalConfirmBtn');
+        if(confirmBtn) {
+            confirmBtn.onclick = () => closeForgeConsentModal(true, type, e);
+        }
+    }
+}
+
+async function closeForgeConsentModal(isConfirmed, type, e) {
+    const modal = document.getElementById('forgeConsentModal');
+    const checkbox = document.getElementById('forgeModalCheckbox');
+
+    if (isConfirmed) {
+        if (checkbox && !checkbox.checked) {
+            if (typeof showNotification === 'function') showNotification("EXCEPTION: You must acknowledge the Sovereign Terms.", "error");
+            return;
+        }
+        
+        if (modal) modal.classList.add('hidden');
+        
+        if (typeof triggerForge === 'function') {
+            await triggerForge(type, e);
+        }
+        
+    } else {
+        if (modal) modal.classList.add('hidden');
+        if (typeof appendLog === 'function') appendLog("Sovereign Forge sequence aborted by operator.", "text-yellow-500");
+    }
+
+    if (checkbox) {
+        checkbox.checked = false;
+        toggleForgeButtonState();
+    }
+}
+
+async function triggerForge(type, e) {
+    if (!secureContract) { 
+        showNotification("Action suspended: Authenticate wallet signature first.", "error"); 
+        return; 
+    }
+
+    // 🛡️ [PRODUCTION PATCH 1]: Temporal State Lock - ล็อกระบบทันทีที่หน้าประตู
+    if (typeof lockSystem === 'function') lockSystem();
+    const btn = toggleButtonLoading(e, true);
+    let progress = null;
+
+    try {
+        await checkGasSurge();
+        
+        const targetTokenId = globalSelectedTokenId;
+        if (!targetTokenId || isNaN(Number(targetTokenId))) {
+            showNotification("STRUCTURAL EXCEPTION: Please select a Token ID coordinate on the Matrix first.", "error");
+            return;
+        }
+
+        let isPrivileged = false;
+        if (signer && secureContract) {
+            try {
+                const userAddress = await signer.getAddress();
+                const privs = await verifyUserPrivileges(userAddress);
+                isPrivileged = privs.isAdmin;
+            } catch (err) {
+                isPrivileged = false; 
+            }
+        }
+
+        const mappedNode = typeof autoMap === 'function' ? await autoMap(targetTokenId) : null;
+        
+        if (mappedNode && mappedNode.isActivated) {
+            if (!isPrivileged) {
+                showNotification("STRUCTURAL EXCEPTION: Node is already active. Cannot execute Rebirth.", "error");
+                return;
+            } else {
+                if (typeof appendLog === 'function') appendLog("ARCHITECT OVERRIDE: Bypassing active node restriction.", "text-yellow-400 font-bold");
+            }
+        }
+
+        let strictFrontUri = "";
+        if (window.IMPERIAL_MANIFEST && window.IMPERIAL_MANIFEST[String(targetTokenId)]) {
+            const manifestData = window.IMPERIAL_MANIFEST[String(targetTokenId)];
+            strictFrontUri = typeof manifestData === 'string' ? manifestData.trim() : String(manifestData.irys_id || "").trim();
+        }
+        
+        if (!strictFrontUri) {
+            if (typeof appendLog === 'function') appendLog(`MINT REJECTED: ไม่พบข้อมูล Front URI สำหรับ Node #${targetTokenId} ใน JSON Manifest`, "text-red-500 font-bold");
+            showNotification("METADATA EXCEPTION: Node not ready for minting (Architect has not assigned Obverse URI in Manifest).", "error");
+            return;
+        }
+
+        let currentMintPriceWei = 0n;
+        try {
+            currentMintPriceWei = await secureContract.mintPrice();
+        } catch (rpcErr) {
+            if (typeof appendLog === 'function') appendLog("RPC RATE LIMIT (429) DETECTED: Retrying economic parameters fetch...", "text-yellow-500");
+            await new Promise(r => setTimeout(r, 1500));
+            currentMintPriceWei = await secureContract.mintPrice();
+        }
+
+        const file = await promptUserForFile('image/*,video/*');
+        if (!file) {
+            if (typeof appendLog === 'function') appendLog("[SYSTEM] File selection aborted by user.", "text-yellow-500");
+            return;
+        }
+
+        const previewObjectUrl = URL.createObjectURL(file);
+        const dnaField = (document.getElementById('novaDnaInput')?.value || "").trim() || "N/A";
+        let isConfirmed = false;
+        
+        try {
+            isConfirmed = await requestMediaConfirmation(previewObjectUrl, dnaField, file.type);
+        } finally {
+            URL.revokeObjectURL(previewObjectUrl); 
+        }
+        
+        if (!isConfirmed) return; 
+
+        if (!irys) throw new Error("Irys SDK Bridge is offline. Establish wallet connection first.");
+
+        if (typeof appendLog === 'function') appendLog(`Inscribing back-end media onto permanent Irys Datachain...`, "text-blue-400");
+        const tags = [{ name: "Content-Type", value: file.type }];
+        
+        progress = createProgressController(file.size);
+        if (progress) progress.show(); 
+        
+        // ส่ง File Object ให้ Irys SDK จัดการโดยตรง
+        const response = await executeIrysUpload(file, tags, true, progress); 
+        
+        const backMediaTxId = response?.data ? response.data.id : response?.id; 
+        
+        if (!backMediaTxId) throw new Error("Irys payload generation failed: null TxID.");
+
+        const sanitizedTxId = sanitizeForDOM(backMediaTxId);
+        if (typeof appendLog === 'function') appendLog(`Back-end media successfully anchored: ${sanitizedTxId}`, "text-emerald-400 font-bold");
+
+        const backUriField = document.getElementById('forgeBackUri');
+        if (backUriField) backUriField.value = backMediaTxId;
+
+        if (typeof appendLog === 'function') appendLog(`Initiating THE SOVEREIGN AWAKENING sequence on-chain at ${ethers.formatEther(currentMintPriceWei)} ETH...`, "text-yellow-400");
+        
+        const tokenIdBn = BigInt(targetTokenId);
+
+        // 🛡️ [PRODUCTION PATCH 2]: Pre-emptive Cache Invalidation - เคลียร์แคชก่อนยิง TX ปิดตาย Race Condition
+        if (typeof GLOBAL_NODE_CACHE !== 'undefined' && GLOBAL_NODE_CACHE?.delete) {
+            GLOBAL_NODE_CACHE.delete(String(targetTokenId));
+        }
+
+        const receipt = await runTx(
+            e, `SOVEREIGN_REBIRTH_#${targetTokenId}`, "SOVEREIGN_REBIRTH",
+            [tokenIdBn.toString(), strictFrontUri, backMediaTxId], { value: currentMintPriceWei.toString() },
+            { manageLock: false, manageButton: false } 
+        );
+
+        if (receipt) {
+            if (typeof syncActiveMatrixNodes === 'function') await syncActiveMatrixNodes();
+            if (typeof auditTokenFromLedger === 'function') await auditTokenFromLedger(targetTokenId);
+            if (typeof appendLog === 'function') appendLog(`Sovereign REBIRTH executed flawlessly on-chain.`, "text-emerald-400 font-bold");
+            showNotification("THE SOVEREIGN AWAKENING complete. Dual-identity anchored.", "success");
+        }
+    } catch (err) {
+        const errorMsg = decodeContractError(err);
+        const sanitizedMsg = sanitizeForDOM(errorMsg);
+
+        if (err?.code === 4001 || sanitizedMsg === "USER_CANCELLED_TX" || err?.message?.toLowerCase().includes("user rejected") || err?.message?.toLowerCase().includes("declined")) {
+            if (typeof appendLog === 'function') appendLog("Forge execution cancelled by operator signature denial.", "text-yellow-500");
+            showNotification("Transaction cancelled by user.", "warning");
+        } else if (err?.code === "UNPREDICTABLE_GAS_LIMIT" || err?.message?.toLowerCase().includes("cannot estimate gas")) {
+            if (typeof appendLog === 'function') appendLog("Network rejected estimateGas: Execution will likely fail on-chain.", "text-red-500 font-bold");
+            showNotification("Gas estimation failed (Contract Revert Risk).", "error");
+        } else {
+            if (typeof appendLog === 'function') appendLog(`Execution aborted: ${sanitizedMsg}`, "text-red-500");
+            showNotification("Transaction failed. Check console/logs for details.", "error");
+        }
+    } finally {
+        if (progress) progress.hide();
+        if (btn) toggleButtonLoading(btn, false);
+        // 🛡️ [PRODUCTION PATCH 3]: ปลดล็อกระบบเสมอเมื่อจบการทำงาน
+        if (typeof unlockSystem === 'function') unlockSystem();
+    }
+}
+
+async function executeArchitectMint(e) {
+    if (!secureContract || !signer) { showNotification("Action suspended: Authenticate wallet signature first.", "error"); return; }
+
+    try {
+        const userAddress = await signer.getAddress();
+        const privs = await verifyUserPrivileges(userAddress);
+
+        if (!privs.isAdmin) {
+            showNotification("SECURITY ENFORCEMENT: Architect privileges required.", "error");
+            return;
+        }
+
+        if (typeof checkGasSurge === 'function') await checkGasSurge();
+
+        const targetTokenId = globalSelectedTokenId;
+        if (!targetTokenId || isNaN(Number(targetTokenId))) {
+            showNotification("STRUCTURAL EXCEPTION: Please select a Token ID coordinate on the Matrix first.", "error");
+            return;
+        }
+        
+        const tokenId = typeof validateTokenRange === 'function' ? validateTokenRange(targetTokenId) : targetTokenId;
+        if (!tokenId) return;
+
+        if (typeof autoMap === 'function') {
+            const mappedNode = await autoMap(tokenId);
+            if (mappedNode && mappedNode.isActivated) {
+                showNotification("STRUCTURAL EXCEPTION: Node is already active. Cannot execute Architect Mint.", "error");
+                return;
+            }
+        }
+
+        // 🚨 [ARCHITECT UPDATE]: สลับการดึงข้อมูล Address ไปยังช่อง hiddeninputnova อย่างเด็ดขาด
+        const targetAddress = (document.getElementById('hiddeninputnova')?.value || "").trim();
+        
+        if (!targetAddress || !ethers.isAddress(targetAddress)) {
+            showNotification("STRUCTURAL EXCEPTION: Please specify a valid EVM Target Address.", "error");
+            return;
+        }
+
+        // 🚨 [CRITICAL FIX]: บังคับดึง Front URI จาก JSON Manifest 100%
+        let strictFrontUri = "";
+        if (window.IMPERIAL_MANIFEST && window.IMPERIAL_MANIFEST[String(tokenId)]) {
+            const manifestData = window.IMPERIAL_MANIFEST[String(tokenId)];
+            strictFrontUri = typeof manifestData === 'string' ? manifestData.trim() : String(manifestData.irys_id || "").trim();
+        }
+
+        if (!strictFrontUri) {
+            if (typeof appendLog === 'function') appendLog(`MINT REJECTED: ไม่พบข้อมูล Front URI สำหรับ Node #${tokenId} ใน JSON Manifest`, "text-red-500 font-bold");
+            showNotification("METADATA EXCEPTION: Node not ready for minting (Architect has not assigned Obverse URI in Manifest).", "error");
+            return;
+        }
+
+        const file = await promptUserForFile('image/*,video/*');
+        if (!file) {
+            if (typeof appendLog === 'function') appendLog("[SYSTEM] File selection cancelled. Architect system unlocked.", "text-yellow-500");
+            return;
+        }
+
+        const previewObjectUrl = URL.createObjectURL(file);
+        const dnaField = "ARCHITECT MINT OVERRIDE";
+        let isConfirmed = false;
+        
+        try {
+            isConfirmed = await requestMediaConfirmation(previewObjectUrl, dnaField, file.type);
+        } finally {
+            URL.revokeObjectURL(previewObjectUrl);
+        }
+        
+        if (!isConfirmed) return; 
+
+        const btn = toggleButtonLoading(e, true);
+        // 🚨 [CRITICAL FIX]: ล็อกระบบทันทีก่อนเริ่มอัปโหลด Irys
+        if (typeof lockSystem === 'function') lockSystem();
+        let progress = null;
+        
+        try {
+            if (typeof irys === 'undefined' || !irys) throw new Error("Irys SDK Bridge is offline.");
+
+            if (typeof appendLog === 'function') appendLog(`Inscribing Architect's back-end media onto permanent Irys Datachain...`, "text-blue-400");
+            const tags = [{ name: "Content-Type", value: file.type }];
+            
+            if (typeof createProgressController === 'function') {
+                progress = createProgressController(file.size);
+                if (progress) progress.show();
+            }
+            
+            // ส่ง File Object ให้ Irys SDK จัดการโดยตรง
+            const response = await executeIrysUpload(file, tags, true, progress); 
+            
+            const backMediaTxId = response?.data ? response.data.id : response?.id; 
+            
+            if (!backMediaTxId) throw new Error("Irys payload generation failed: null TxID.");
+
+            if (typeof appendLog === 'function') appendLog(`Back-end media successfully anchored: ${sanitizeForDOM(backMediaTxId)}`, "text-emerald-400 font-bold");
+            
+            const backUriField = document.getElementById('forgeBackUri');
+            if (backUriField) backUriField.value = backMediaTxId;
+
+            if (typeof appendLog === 'function') appendLog(`Initiating ARCHITECT_MINT for Node #${tokenId} to ${targetAddress.slice(0,6)}...`, "text-yellow-400");
+            const tokenIdBn = BigInt(tokenId);
+
+            const receipt = await runTx(
+                e, `ARCHITECT_MINT_#${tokenId}`, "ARCHITECT_MINT",
+                [tokenIdBn.toString(), targetAddress, strictFrontUri, backMediaTxId], {},
+                { manageLock: false, manageButton: false }
+            );
+
+            if (receipt) {
+                if (typeof GLOBAL_NODE_CACHE !== 'undefined' && GLOBAL_NODE_CACHE?.clear) GLOBAL_NODE_CACHE.clear();
+                if (typeof syncActiveMatrixNodes === 'function') await syncActiveMatrixNodes();
+                if (typeof auditTokenFromLedger === 'function') await auditTokenFromLedger(tokenId);
+                if (typeof appendLog === 'function') appendLog(`ARCHITECT MINT EXECUTED FLAWLESSLY ON-CHAIN.`, "text-emerald-400 font-bold");
+                showNotification(`Architect Mint complete. Rights transferred to ${targetAddress.slice(0,6)} successfully!`, "success");
+            }
+        } catch (err) {
+            const errorMsg = typeof decodeContractError === 'function' ? decodeContractError(err) : (err.message || err);
+            const sanitizedMsg = typeof sanitizeForDOM === 'function' ? sanitizeForDOM(errorMsg) : String(errorMsg);
+
+            if (err.code === 4001 || sanitizedMsg === "USER_CANCELLED_TX" || err.message?.toLowerCase().includes("user rejected") || err.message?.toLowerCase().includes("declined")) {
+                if (typeof appendLog === 'function') appendLog("Architect mint sequence aborted due to signature denial.", "text-yellow-500");
+                showNotification("Transaction cancelled by user.", "warning");
+            } else if (err.code === "UNPREDICTABLE_GAS_LIMIT" || err.message?.toLowerCase().includes("cannot estimate gas")) {
+                if (typeof appendLog === 'function') appendLog("Network rejected estimateGas: Execution will likely fail on-chain.", "text-red-500 font-bold");
+                showNotification("Gas estimation failed (Contract Revert Risk).", "error");
+            } else {
+                if (typeof appendLog === 'function') appendLog(`Execution aborted: ${sanitizedMsg}`, "text-red-500");
+                showNotification(`Transaction failed: ${sanitizedMsg}`, "error");
+            }
+        } finally {
+            if (progress && typeof progress.hide === 'function') progress.hide();
+            if (btn && typeof toggleButtonLoading === 'function') toggleButtonLoading(btn, false);
+            // 🚨 [CRITICAL FIX]: ปลดล็อกระบบเสมอเมื่อจบการทำงาน
+            if (typeof unlockSystem === 'function') unlockSystem();
+        }
+    } catch (criticalErr) {
+        if (typeof appendLog === 'function') appendLog(`Critical Error: ${criticalErr?.message || criticalErr}`, "text-red-500");
+    }
+}
+
+
+async function executeArchitectRemint(e) {
+    if (!secureContract || !signer) { showNotification("Action suspended: Authenticate wallet signature first.", "error"); return; }
+
+    try {
+        const userAddress = await signer.getAddress();
+        const privs = await verifyUserPrivileges(userAddress);
+
+        if (!privs.isAdmin) {
+            showNotification("SECURITY ENFORCEMENT: Architect privileges required.", "error");
+            return;
+        }
+
+        await checkGasSurge();
+        
+        const targetTokenId = globalSelectedTokenId;
+        if (!targetTokenId || isNaN(Number(targetTokenId))) {
+            showNotification("STRUCTURAL EXCEPTION: Please select a Token ID coordinate on the Matrix first.", "error");
+            return;
+        }
+        const tokenId = validateTokenRange(targetTokenId);
+        if (!tokenId) return;
+
+        const mappedNode = await autoMap(tokenId);
+        if (mappedNode && mappedNode.isActivated) {
+            showNotification("STRUCTURAL EXCEPTION: Node is currently active. Must be burned before Remint.", "error");
+            return;
+        }
+
+        // 🚨 [CRITICAL FIX]: บังคับดึง Front URI จาก JSON Manifest 100%
+        let strictFrontUri = "";
+        if (window.IMPERIAL_MANIFEST && window.IMPERIAL_MANIFEST[String(tokenId)]) {
+            const manifestData = window.IMPERIAL_MANIFEST[String(tokenId)];
+            strictFrontUri = typeof manifestData === 'string' ? manifestData.trim() : String(manifestData.irys_id || "").trim();
+        }
+
+        if (!strictFrontUri) {
+            if (typeof appendLog === 'function') appendLog(`MINT REJECTED: ไม่พบข้อมูล Front URI สำหรับ Node #${tokenId} ใน JSON Manifest`, "text-red-500 font-bold");
+            showNotification("METADATA EXCEPTION: Node not ready for minting (Architect has not assigned Obverse URI in Manifest).", "error");
+            return;
+        }
+
+        let currentMintPriceWei = 0n;
+        try {
+            currentMintPriceWei = await secureContract.mintPrice();
+        } catch (rpcErr) {
+            if (typeof appendLog === 'function') appendLog("RPC RATE LIMIT (429) DETECTED: Retrying economic parameters fetch...", "text-yellow-500");
+            await new Promise(r => setTimeout(r, 1500));
+            currentMintPriceWei = await secureContract.mintPrice();
+        }
+
+        const file = await promptUserForFile('image/*,video/*');
+        if (!file) return;
+
+        const previewObjectUrl = URL.createObjectURL(file);
+        let isConfirmed = false;
+        
+        try {
+            isConfirmed = await requestMediaConfirmation(previewObjectUrl, "SOVEREIGN REMINT OVERRIDE", file.type);
+        } finally {
+            URL.revokeObjectURL(previewObjectUrl);
+        }
+        
+        if (!isConfirmed) return;
+
+        const btn = toggleButtonLoading(e, true);
+        // 🚨 [CRITICAL FIX]: ล็อกระบบทันทีก่อนเริ่มอัปโหลด Irys
+        if (typeof lockSystem === 'function') lockSystem();
+        let progress = null;
+        
+        try {
+            if (!irys) throw new Error("Irys SDK Bridge is offline.");
+
+            if (typeof appendLog === 'function') appendLog(`Inscribing back-end media onto permanent Irys Datachain...`, "text-blue-400");
+            const tags = [{ name: "Content-Type", value: file.type }];
+            
+            progress = createProgressController(file.size);
+            if (progress) progress.show();
+            
+            // ส่ง File Object ให้ Irys SDK จัดการโดยตรง
+            const response = await executeIrysUpload(file, tags, true, progress); 
+            
+            const backMediaTxId = response?.data ? response.data.id : response?.id; 
+            
+            if (!backMediaTxId) throw new Error("Irys payload generation failed: null TxID.");
+
+            const backUriField = document.getElementById('forgeBackUri');
+            if (backUriField) backUriField.value = backMediaTxId;
+
+            if (typeof appendLog === 'function') appendLog(`Initiating SOVEREIGN_REMINT on Smart Contract at ${ethers.formatEther(currentMintPriceWei)} ETH...`, "text-yellow-400");
+            
+            const tokenIdBn = BigInt(tokenId);
+
+            const receipt = await runTx(
+                e, `SOVEREIGN_REMINT_#${tokenId}`, "SOVEREIGN_REMINT",
+                [tokenIdBn.toString(), strictFrontUri, backMediaTxId], { value: currentMintPriceWei.toString() },
+                { manageLock: false, manageButton: false }
+            );
+
+            if (receipt) {
+                if (typeof GLOBAL_NODE_CACHE !== 'undefined' && GLOBAL_NODE_CACHE?.clear) GLOBAL_NODE_CACHE.clear();
+                if (typeof auditTokenFromLedger === 'function') await auditTokenFromLedger(tokenId);
+                if (typeof syncActiveMatrixNodes === 'function') await syncActiveMatrixNodes(); 
+                if (typeof appendLog === 'function') appendLog(`Sovereign REMINT executed flawlessly on-chain.`, "text-emerald-400 font-bold");
+                showNotification("Reminting complete. Deed reconstructed and pulled back into the system!", "success");
+            }
+        } catch (err) {
+            const errorMsg = decodeContractError(err);
+            const sanitizedMsg = sanitizeForDOM(errorMsg);
+
+            if (err.code === 4001 || sanitizedMsg === "USER_CANCELLED_TX" || err.message?.toLowerCase().includes("user rejected") || err.message?.toLowerCase().includes("declined")) {
+                if (typeof appendLog === 'function') appendLog("Architect Remint aborted by signature denial.", "text-yellow-500");
+                showNotification("Transaction cancelled by user.", "warning");
+            } else if (err.code === "UNPREDICTABLE_GAS_LIMIT" || err.message?.toLowerCase().includes("cannot estimate gas")) {
+                if (typeof appendLog === 'function') appendLog("Network rejected estimateGas: Execution will likely fail on-chain.", "text-red-500 font-bold");
+                showNotification("Gas estimation failed (Contract Revert Risk).", "error");
+            } else {
+                if (typeof appendLog === 'function') appendLog(`Execution aborted: ${sanitizedMsg}`, "text-red-500");
+                showNotification(`Transaction failed: ${sanitizedMsg}`, "error");
+            }
+        } finally {
+            if (progress) progress.hide();
+            if (btn) toggleButtonLoading(btn, false);
+            // 🚨 [CRITICAL FIX]: ปลดล็อกระบบเสมอเมื่อจบการทำงาน
+            if (typeof unlockSystem === 'function') unlockSystem();
+        }
+    } catch (criticalErr) {
+        if (typeof appendLog === 'function') appendLog(`Critical Error: ${criticalErr?.message || criticalErr}`, "text-red-500");
+    }
+}
+
+// ==============================================================================
+// ⚔️ TRANSACTION EXECUTION ENGINE (ZERO-BUG & STRICT LOCKING ENFORCED)
+// ==============================================================================
+
 async function runTx(btnInput, label, methodName, args = [], overrides = {}, options = {}) {
     const { manageLock = true, manageButton = true, sync = true } = options;
+
+    // 🛡️ STRICT STATE GUARD: ป้องกันการยิงคำสั่งซ้อนทุกกรณี
+    if ((manageLock && typeof isTransactionPending !== 'undefined' && isTransactionPending) || window.SystemState?._sysLocked) {
+        console.warn(`[TX BLOCKED] System locked. Dropping request for: ${label}`);
+        return false;
+    }
 
     if (!secureContract || !signer) {
         showNotification("SYSTEM ENFORCEMENT: Please connect your wallet first.", "error");
@@ -1893,25 +2382,24 @@ async function runTx(btnInput, label, methodName, args = [], overrides = {}, opt
         return false;
     }
 
-    const btn = (manageButton) ? toggleButtonLoading(btnInput, true) : null;
+    const btn = (manageButton && typeof toggleButtonLoading === 'function') ? toggleButtonLoading(btnInput, true) : null;
     let timeoutId;
 
-    // 🚨 [FIX]: ล็อกระบบทันทีถ้า manageLock เป็น true
-    if (manageLock && typeof lockSystem === 'function') lockSystem();
+    if (manageLock) {
+        isTransactionPending = true;
+        if (typeof lockSystem === 'function') lockSystem();
+    }
 
     try {
         if (typeof checkGasSurge === 'function') {
             await checkGasSurge().catch(() => {});
         }
 
-        // 🚨 [ARCHITECT OVERRIDE FIX]: ควบคุมการประเมิน Gas และสวิตช์ทะลวงระบบ
         let gasLimit;
         try {
             if (overrides.gasLimit) {
-                // โหมดทะลวงคำสั่ง: หาก Architect แนบ gasLimit มาโดยตรง ให้ข้ามขั้นตอนจำลองและฟาดเข้าเชนทันที
                 gasLimit = overrides.gasLimit;
             } else {
-                // โหมดปกติ: ให้ระบบจำลองล่วงหน้าและบวก Buffer 20% เพื่อความเสถียร
                 const estimatedGas = await secureContract[methodName].estimateGas(...args, overrides);
                 gasLimit = (estimatedGas * 120n) / 100n;
             }
@@ -1925,7 +2413,6 @@ async function runTx(btnInput, label, methodName, args = [], overrides = {}, opt
         }
 
         const finalOverrides = { ...overrides, gasLimit };
-
         const tx = await secureContract[methodName](...args, finalOverrides);
 
         if (typeof appendLog === 'function') {
@@ -1943,9 +2430,7 @@ async function runTx(btnInput, label, methodName, args = [], overrides = {}, opt
 
         const receipt = await Promise.race([ tx.wait(1), timeoutPromise ]);
 
-        if (!receipt) {
-            throw new Error("Transaction receipt is null. The transaction might have been dropped or replaced by the network.");
-        }
+        if (!receipt) throw new Error("Transaction receipt returned null or was dropped by network.");
 
         if (typeof appendLog === 'function') appendLog(`Transaction confirmed in block ${receipt.blockNumber}`, "text-emerald-400");
         
@@ -1954,15 +2439,14 @@ async function runTx(btnInput, label, methodName, args = [], overrides = {}, opt
 
     } catch (err) {
         if (err?.message === "RPC_SYNC_TIMEOUT") {
-            if (typeof appendLog === 'function') appendLog(`⚠️ NETWORK CONGESTION: TX ${err.txHash} verification timed out. It may still be pending.`, "text-yellow-400 font-bold");
-            showNotification("Network timeout. The transaction may still succeed. Please check the Block Explorer before retrying.", "warning");
+            if (typeof appendLog === 'function') appendLog(`⚠️ NETWORK CONGESTION: TX ${err.txHash} verification timed out.`, "text-yellow-400 font-bold");
+            showNotification("Network timeout. Please check Block Explorer before retrying.", "warning");
             return false;
         }
 
         if (err?.code === 'UNPREDICTABLE_GAS_LIMIT') {
             showNotification(`Transaction Failed: ${err.message}`, "error");
         } else {
-            // 🚨 [CRITICAL FIX]: บังคับแปลงเป็น String เสมอ ป้องกัน Null Pointer Crash ตอนเรียก .toLowerCase()
             const msg = String(typeof decodeContractError === 'function' ? decodeContractError(err) : (err?.message || err || "Unknown Error"));
             const lowerMsg = msg.toLowerCase();
             
@@ -1975,8 +2459,11 @@ async function runTx(btnInput, label, methodName, args = [], overrides = {}, opt
         return false;
     } finally {
         if (timeoutId) clearTimeout(timeoutId);
-        if (manageLock && typeof unlockSystem === 'function') unlockSystem();
-        if (manageButton && btn && typeof toggleButtonLoading === 'function') toggleButtonLoading(btn, false);
+        if (manageLock) {
+            isTransactionPending = false;
+            if (typeof unlockSystem === 'function') unlockSystem();
+        }
+        if (btn && typeof toggleButtonLoading === 'function') toggleButtonLoading(btn, false);
     }
 }
 
@@ -3836,73 +4323,15 @@ async function executeCastVote(btn) {
 }
 
 // ==============================================================================
-// ⚔️ FORGE & MINTING ENGINES (ZERO-BUG MANIFEST PARSING + PLEDGE MODAL)
+// ⚔️ FORGE & ARCHITECT MINT ENGINES (UNIFIED LOCKING & ASYNC FLOW)
 // ==============================================================================
 
-function toggleForgeButtonState() {
-    const checkbox = document.getElementById('forgeModalCheckbox');
-    const confirmBtn = document.getElementById('forgeModalConfirmBtn');
-    
-    if (!checkbox || !confirmBtn) return; 
-
-    if (checkbox.checked) {
-        confirmBtn.disabled = false;
-        confirmBtn.classList.remove('opacity-50', 'cursor-not-allowed', 'bg-red-900/30', 'text-stone-500');
-        confirmBtn.classList.add('cursor-pointer', 'bg-red-700', 'hover:bg-red-600', 'text-white', 'shadow-[0_0_15px_rgba(220,38,38,0.5)]');
-    } else {
-        confirmBtn.disabled = true;
-        confirmBtn.classList.remove('cursor-pointer', 'bg-red-700', 'hover:bg-red-600', 'text-white', 'shadow-[0_0_15px_rgba(220,38,38,0.5)]');
-        confirmBtn.classList.add('opacity-50', 'cursor-not-allowed', 'bg-red-900/30', 'text-stone-500');
-    }
-}
-
-function openForgeConsentModal(type, e) {
-    const modal = document.getElementById('forgeConsentModal');
-    if (modal) {
-        modal.classList.remove('hidden');
-        
-        const confirmBtn = document.getElementById('forgeModalConfirmBtn');
-        if(confirmBtn) {
-            confirmBtn.onclick = () => closeForgeConsentModal(true, type, e);
-        }
-    }
-}
-
-async function closeForgeConsentModal(isConfirmed, type, e) {
-    const modal = document.getElementById('forgeConsentModal');
-    const checkbox = document.getElementById('forgeModalCheckbox');
-
-    if (isConfirmed) {
-        if (checkbox && !checkbox.checked) {
-            if (typeof showNotification === 'function') showNotification("EXCEPTION: You must acknowledge the Sovereign Terms.", "error");
-            return;
-        }
-        
-        if (modal) modal.classList.add('hidden');
-        
-        if (typeof triggerForge === 'function') {
-            await triggerForge(type, e);
-        }
-        
-    } else {
-        if (modal) modal.classList.add('hidden');
-        if (typeof appendLog === 'function') appendLog("Sovereign Forge sequence aborted by operator.", "text-yellow-500");
-    }
-
-    if (checkbox) {
-        checkbox.checked = false;
-        toggleForgeButtonState();
-    }
-}
-
 async function triggerForge(type, e) {
-    if (!secureContract) { 
-        showNotification("Action suspended: Authenticate wallet signature first.", "error"); 
-        return; 
-    }
+    if (isTransactionPending || window.SystemState?._sysLocked) return;
+    if (!secureContract) { showNotification("Action suspended: Authenticate wallet signature first.", "error"); return; }
 
-    // 🛡️ [PRODUCTION PATCH 1]: Temporal State Lock - ล็อกระบบทันทีที่หน้าประตู
     if (typeof lockSystem === 'function') lockSystem();
+    isTransactionPending = true;
     const btn = toggleButtonLoading(e, true);
     let progress = null;
 
@@ -3927,14 +4356,9 @@ async function triggerForge(type, e) {
         }
 
         const mappedNode = typeof autoMap === 'function' ? await autoMap(targetTokenId) : null;
-        
-        if (mappedNode && mappedNode.isActivated) {
-            if (!isPrivileged) {
-                showNotification("STRUCTURAL EXCEPTION: Node is already active. Cannot execute Rebirth.", "error");
-                return;
-            } else {
-                if (typeof appendLog === 'function') appendLog("ARCHITECT OVERRIDE: Bypassing active node restriction.", "text-yellow-400 font-bold");
-            }
+        if (mappedNode && mappedNode.isActivated && !isPrivileged) {
+            showNotification("STRUCTURAL EXCEPTION: Node is already active. Cannot execute Rebirth.", "error");
+            return;
         }
 
         let strictFrontUri = "";
@@ -3944,19 +4368,11 @@ async function triggerForge(type, e) {
         }
         
         if (!strictFrontUri) {
-            if (typeof appendLog === 'function') appendLog(`MINT REJECTED: ไม่พบข้อมูล Front URI สำหรับ Node #${targetTokenId} ใน JSON Manifest`, "text-red-500 font-bold");
-            showNotification("METADATA EXCEPTION: Node not ready for minting (Architect has not assigned Obverse URI in Manifest).", "error");
+            showNotification("METADATA EXCEPTION: Node not ready for minting (Missing Front URI).", "error");
             return;
         }
 
-        let currentMintPriceWei = 0n;
-        try {
-            currentMintPriceWei = await secureContract.mintPrice();
-        } catch (rpcErr) {
-            if (typeof appendLog === 'function') appendLog("RPC RATE LIMIT (429) DETECTED: Retrying economic parameters fetch...", "text-yellow-500");
-            await new Promise(r => setTimeout(r, 1500));
-            currentMintPriceWei = await secureContract.mintPrice();
-        }
+        const currentMintPriceWei = await secureContract.mintPrice();
 
         const file = await promptUserForFile('image/*,video/*');
         if (!file) {
@@ -3978,210 +4394,49 @@ async function triggerForge(type, e) {
 
         if (!irys) throw new Error("Irys SDK Bridge is offline. Establish wallet connection first.");
 
-        if (typeof appendLog === 'function') appendLog(`Inscribing back-end media onto permanent Irys Datachain...`, "text-blue-400");
         const tags = [{ name: "Content-Type", value: file.type }];
+        if (typeof createProgressController === 'function') {
+            progress = createProgressController(file.size);
+            if (progress) progress.show(); 
+        }
         
-        progress = createProgressController(file.size);
-        if (progress) progress.show(); 
-        
-        // ส่ง File Object ให้ Irys SDK จัดการโดยตรง
         const response = await executeIrysUpload(file, tags, true, progress); 
-        
         const backMediaTxId = response?.data ? response.data.id : response?.id; 
-        
         if (!backMediaTxId) throw new Error("Irys payload generation failed: null TxID.");
 
-        const sanitizedTxId = sanitizeForDOM(backMediaTxId);
-        if (typeof appendLog === 'function') appendLog(`Back-end media successfully anchored: ${sanitizedTxId}`, "text-emerald-400 font-bold");
-
-        const backUriField = document.getElementById('forgeBackUri');
-        if (backUriField) backUriField.value = backMediaTxId;
-
-        if (typeof appendLog === 'function') appendLog(`Initiating THE SOVEREIGN AWAKENING sequence on-chain at ${ethers.formatEther(currentMintPriceWei)} ETH...`, "text-yellow-400");
-        
-        const tokenIdBn = BigInt(targetTokenId);
-
-        // 🛡️ [PRODUCTION PATCH 2]: Pre-emptive Cache Invalidation - เคลียร์แคชก่อนยิง TX ปิดตาย Race Condition
-        if (typeof GLOBAL_NODE_CACHE !== 'undefined' && GLOBAL_NODE_CACHE?.delete) {
-            GLOBAL_NODE_CACHE.delete(String(targetTokenId));
-        }
+        if (GLOBAL_NODE_CACHE?.delete) GLOBAL_NODE_CACHE.delete(String(targetTokenId));
 
         const receipt = await runTx(
             e, `SOVEREIGN_REBIRTH_#${targetTokenId}`, "SOVEREIGN_REBIRTH",
-            [tokenIdBn.toString(), strictFrontUri, backMediaTxId], { value: currentMintPriceWei.toString() },
+            [BigInt(targetTokenId).toString(), strictFrontUri, backMediaTxId], 
+            { value: currentMintPriceWei.toString() },
             { manageLock: false, manageButton: false } 
         );
 
         if (receipt) {
             if (typeof syncActiveMatrixNodes === 'function') await syncActiveMatrixNodes();
             if (typeof auditTokenFromLedger === 'function') await auditTokenFromLedger(targetTokenId);
-            if (typeof appendLog === 'function') appendLog(`Sovereign REBIRTH executed flawlessly on-chain.`, "text-emerald-400 font-bold");
             showNotification("THE SOVEREIGN AWAKENING complete. Dual-identity anchored.", "success");
         }
     } catch (err) {
-        const errorMsg = decodeContractError(err);
-        const sanitizedMsg = sanitizeForDOM(errorMsg);
-
-        if (err?.code === 4001 || sanitizedMsg === "USER_CANCELLED_TX" || err?.message?.toLowerCase().includes("user rejected") || err?.message?.toLowerCase().includes("declined")) {
-            if (typeof appendLog === 'function') appendLog("Forge execution cancelled by operator signature denial.", "text-yellow-500");
-            showNotification("Transaction cancelled by user.", "warning");
-        } else if (err?.code === "UNPREDICTABLE_GAS_LIMIT" || err?.message?.toLowerCase().includes("cannot estimate gas")) {
-            if (typeof appendLog === 'function') appendLog("Network rejected estimateGas: Execution will likely fail on-chain.", "text-red-500 font-bold");
-            showNotification("Gas estimation failed (Contract Revert Risk).", "error");
-        } else {
-            if (typeof appendLog === 'function') appendLog(`Execution aborted: ${sanitizedMsg}`, "text-red-500");
-            showNotification("Transaction failed. Check console/logs for details.", "error");
-        }
+        const errorMsg = typeof decodeContractError === 'function' ? decodeContractError(err) : (err?.message || err);
+        showNotification(`Execution aborted: ${errorMsg}`, "error");
     } finally {
         if (progress) progress.hide();
         if (btn) toggleButtonLoading(btn, false);
-        // 🛡️ [PRODUCTION PATCH 3]: ปลดล็อกระบบเสมอเมื่อจบการทำงาน
+        isTransactionPending = false;
         if (typeof unlockSystem === 'function') unlockSystem();
     }
 }
 
 async function executeArchitectMint(e) {
+    if (isTransactionPending || window.SystemState?._sysLocked) return;
     if (!secureContract || !signer) { showNotification("Action suspended: Authenticate wallet signature first.", "error"); return; }
 
-    try {
-        const userAddress = await signer.getAddress();
-        const privs = await verifyUserPrivileges(userAddress);
-
-        if (!privs.isAdmin) {
-            showNotification("SECURITY ENFORCEMENT: Architect privileges required.", "error");
-            return;
-        }
-
-        if (typeof checkGasSurge === 'function') await checkGasSurge();
-
-        const targetTokenId = globalSelectedTokenId;
-        if (!targetTokenId || isNaN(Number(targetTokenId))) {
-            showNotification("STRUCTURAL EXCEPTION: Please select a Token ID coordinate on the Matrix first.", "error");
-            return;
-        }
-        
-        const tokenId = typeof validateTokenRange === 'function' ? validateTokenRange(targetTokenId) : targetTokenId;
-        if (!tokenId) return;
-
-        if (typeof autoMap === 'function') {
-            const mappedNode = await autoMap(tokenId);
-            if (mappedNode && mappedNode.isActivated) {
-                showNotification("STRUCTURAL EXCEPTION: Node is already active. Cannot execute Architect Mint.", "error");
-                return;
-            }
-        }
-
-        // 🚨 [ARCHITECT UPDATE]: สลับการดึงข้อมูล Address ไปยังช่อง hiddeninputnova อย่างเด็ดขาด
-        const targetAddress = (document.getElementById('hiddeninputnova')?.value || "").trim();
-        
-        if (!targetAddress || !ethers.isAddress(targetAddress)) {
-            showNotification("STRUCTURAL EXCEPTION: Please specify a valid EVM Target Address.", "error");
-            return;
-        }
-
-        // 🚨 [CRITICAL FIX]: บังคับดึง Front URI จาก JSON Manifest 100%
-        let strictFrontUri = "";
-        if (window.IMPERIAL_MANIFEST && window.IMPERIAL_MANIFEST[String(tokenId)]) {
-            const manifestData = window.IMPERIAL_MANIFEST[String(tokenId)];
-            strictFrontUri = typeof manifestData === 'string' ? manifestData.trim() : String(manifestData.irys_id || "").trim();
-        }
-
-        if (!strictFrontUri) {
-            if (typeof appendLog === 'function') appendLog(`MINT REJECTED: ไม่พบข้อมูล Front URI สำหรับ Node #${tokenId} ใน JSON Manifest`, "text-red-500 font-bold");
-            showNotification("METADATA EXCEPTION: Node not ready for minting (Architect has not assigned Obverse URI in Manifest).", "error");
-            return;
-        }
-
-        const file = await promptUserForFile('image/*,video/*');
-        if (!file) {
-            if (typeof appendLog === 'function') appendLog("[SYSTEM] File selection cancelled. Architect system unlocked.", "text-yellow-500");
-            return;
-        }
-
-        const previewObjectUrl = URL.createObjectURL(file);
-        const dnaField = "ARCHITECT MINT OVERRIDE";
-        let isConfirmed = false;
-        
-        try {
-            isConfirmed = await requestMediaConfirmation(previewObjectUrl, dnaField, file.type);
-        } finally {
-            URL.revokeObjectURL(previewObjectUrl);
-        }
-        
-        if (!isConfirmed) return; 
-
-        const btn = toggleButtonLoading(e, true);
-        // 🚨 [CRITICAL FIX]: ล็อกระบบทันทีก่อนเริ่มอัปโหลด Irys
-        if (typeof lockSystem === 'function') lockSystem();
-        let progress = null;
-        
-        try {
-            if (typeof irys === 'undefined' || !irys) throw new Error("Irys SDK Bridge is offline.");
-
-            if (typeof appendLog === 'function') appendLog(`Inscribing Architect's back-end media onto permanent Irys Datachain...`, "text-blue-400");
-            const tags = [{ name: "Content-Type", value: file.type }];
-            
-            if (typeof createProgressController === 'function') {
-                progress = createProgressController(file.size);
-                if (progress) progress.show();
-            }
-            
-            // ส่ง File Object ให้ Irys SDK จัดการโดยตรง
-            const response = await executeIrysUpload(file, tags, true, progress); 
-            
-            const backMediaTxId = response?.data ? response.data.id : response?.id; 
-            
-            if (!backMediaTxId) throw new Error("Irys payload generation failed: null TxID.");
-
-            if (typeof appendLog === 'function') appendLog(`Back-end media successfully anchored: ${sanitizeForDOM(backMediaTxId)}`, "text-emerald-400 font-bold");
-            
-            const backUriField = document.getElementById('forgeBackUri');
-            if (backUriField) backUriField.value = backMediaTxId;
-
-            if (typeof appendLog === 'function') appendLog(`Initiating ARCHITECT_MINT for Node #${tokenId} to ${targetAddress.slice(0,6)}...`, "text-yellow-400");
-            const tokenIdBn = BigInt(tokenId);
-
-            const receipt = await runTx(
-                e, `ARCHITECT_MINT_#${tokenId}`, "ARCHITECT_MINT",
-                [tokenIdBn.toString(), targetAddress, strictFrontUri, backMediaTxId], {},
-                { manageLock: false, manageButton: false }
-            );
-
-            if (receipt) {
-                if (typeof GLOBAL_NODE_CACHE !== 'undefined' && GLOBAL_NODE_CACHE?.clear) GLOBAL_NODE_CACHE.clear();
-                if (typeof syncActiveMatrixNodes === 'function') await syncActiveMatrixNodes();
-                if (typeof auditTokenFromLedger === 'function') await auditTokenFromLedger(tokenId);
-                if (typeof appendLog === 'function') appendLog(`ARCHITECT MINT EXECUTED FLAWLESSLY ON-CHAIN.`, "text-emerald-400 font-bold");
-                showNotification(`Architect Mint complete. Rights transferred to ${targetAddress.slice(0,6)} successfully!`, "success");
-            }
-        } catch (err) {
-            const errorMsg = typeof decodeContractError === 'function' ? decodeContractError(err) : (err.message || err);
-            const sanitizedMsg = typeof sanitizeForDOM === 'function' ? sanitizeForDOM(errorMsg) : String(errorMsg);
-
-            if (err.code === 4001 || sanitizedMsg === "USER_CANCELLED_TX" || err.message?.toLowerCase().includes("user rejected") || err.message?.toLowerCase().includes("declined")) {
-                if (typeof appendLog === 'function') appendLog("Architect mint sequence aborted due to signature denial.", "text-yellow-500");
-                showNotification("Transaction cancelled by user.", "warning");
-            } else if (err.code === "UNPREDICTABLE_GAS_LIMIT" || err.message?.toLowerCase().includes("cannot estimate gas")) {
-                if (typeof appendLog === 'function') appendLog("Network rejected estimateGas: Execution will likely fail on-chain.", "text-red-500 font-bold");
-                showNotification("Gas estimation failed (Contract Revert Risk).", "error");
-            } else {
-                if (typeof appendLog === 'function') appendLog(`Execution aborted: ${sanitizedMsg}`, "text-red-500");
-                showNotification(`Transaction failed: ${sanitizedMsg}`, "error");
-            }
-        } finally {
-            if (progress && typeof progress.hide === 'function') progress.hide();
-            if (btn && typeof toggleButtonLoading === 'function') toggleButtonLoading(btn, false);
-            // 🚨 [CRITICAL FIX]: ปลดล็อกระบบเสมอเมื่อจบการทำงาน
-            if (typeof unlockSystem === 'function') unlockSystem();
-        }
-    } catch (criticalErr) {
-        if (typeof appendLog === 'function') appendLog(`Critical Error: ${criticalErr?.message || criticalErr}`, "text-red-500");
-    }
-}
-
-
-async function executeArchitectRemint(e) {
-    if (!secureContract || !signer) { showNotification("Action suspended: Authenticate wallet signature first.", "error"); return; }
+    if (typeof lockSystem === 'function') lockSystem();
+    isTransactionPending = true;
+    const btn = toggleButtonLoading(e, true);
+    let progress = null;
 
     try {
         const userAddress = await signer.getAddress();
@@ -4193,22 +4448,22 @@ async function executeArchitectRemint(e) {
         }
 
         await checkGasSurge();
-        
+
         const targetTokenId = globalSelectedTokenId;
         if (!targetTokenId || isNaN(Number(targetTokenId))) {
-            showNotification("STRUCTURAL EXCEPTION: Please select a Token ID coordinate on the Matrix first.", "error");
+            showNotification("STRUCTURAL EXCEPTION: Select a Token ID coordinate first.", "error");
             return;
         }
+        
         const tokenId = validateTokenRange(targetTokenId);
         if (!tokenId) return;
 
-        const mappedNode = await autoMap(tokenId);
-        if (mappedNode && mappedNode.isActivated) {
-            showNotification("STRUCTURAL EXCEPTION: Node is currently active. Must be burned before Remint.", "error");
+        const targetAddress = (document.getElementById('hiddeninputnova')?.value || "").trim();
+        if (!targetAddress || !ethers.isAddress(targetAddress)) {
+            showNotification("STRUCTURAL EXCEPTION: Invalid EVM Target Address.", "error");
             return;
         }
 
-        // 🚨 [CRITICAL FIX]: บังคับดึง Front URI จาก JSON Manifest 100%
         let strictFrontUri = "";
         if (window.IMPERIAL_MANIFEST && window.IMPERIAL_MANIFEST[String(tokenId)]) {
             const manifestData = window.IMPERIAL_MANIFEST[String(tokenId)];
@@ -4216,19 +4471,101 @@ async function executeArchitectRemint(e) {
         }
 
         if (!strictFrontUri) {
-            if (typeof appendLog === 'function') appendLog(`MINT REJECTED: ไม่พบข้อมูล Front URI สำหรับ Node #${tokenId} ใน JSON Manifest`, "text-red-500 font-bold");
-            showNotification("METADATA EXCEPTION: Node not ready for minting (Architect has not assigned Obverse URI in Manifest).", "error");
+            showNotification("METADATA EXCEPTION: Front URI missing in Manifest.", "error");
             return;
         }
 
-        let currentMintPriceWei = 0n;
-        try {
-            currentMintPriceWei = await secureContract.mintPrice();
-        } catch (rpcErr) {
-            if (typeof appendLog === 'function') appendLog("RPC RATE LIMIT (429) DETECTED: Retrying economic parameters fetch...", "text-yellow-500");
-            await new Promise(r => setTimeout(r, 1500));
-            currentMintPriceWei = await secureContract.mintPrice();
+        const file = await promptUserForFile('image/*,video/*');
+        if (!file) {
+            if (typeof appendLog === 'function') appendLog("[SYSTEM] File selection cancelled.", "text-yellow-500");
+            return;
         }
+
+        const previewObjectUrl = URL.createObjectURL(file);
+        let isConfirmed = false;
+        
+        try {
+            isConfirmed = await requestMediaConfirmation(previewObjectUrl, "ARCHITECT MINT OVERRIDE", file.type);
+        } finally {
+            URL.revokeObjectURL(previewObjectUrl);
+        }
+        
+        if (!isConfirmed) return; 
+
+        if (!irys) throw new Error("Irys SDK Bridge is offline.");
+
+        const tags = [{ name: "Content-Type", value: file.type }];
+        if (typeof createProgressController === 'function') {
+            progress = createProgressController(file.size);
+            if (progress) progress.show();
+        }
+        
+        const response = await executeIrysUpload(file, tags, true, progress); 
+        const backMediaTxId = response?.data ? response.data.id : response?.id; 
+        if (!backMediaTxId) throw new Error("Irys payload generation failed: null TxID.");
+
+        const receipt = await runTx(
+            e, `ARCHITECT_MINT_#${tokenId}`, "ARCHITECT_MINT",
+            [BigInt(tokenId).toString(), targetAddress, strictFrontUri, backMediaTxId], {},
+            { manageLock: false, manageButton: false }
+        );
+
+        if (receipt) {
+            if (GLOBAL_NODE_CACHE?.clear) GLOBAL_NODE_CACHE.clear();
+            if (typeof syncActiveMatrixNodes === 'function') await syncActiveMatrixNodes();
+            if (typeof auditTokenFromLedger === 'function') await auditTokenFromLedger(tokenId);
+            showNotification(`Architect Mint complete. Transferred to ${targetAddress.slice(0,6)}`, "success");
+        }
+    } catch (err) {
+        const errorMsg = typeof decodeContractError === 'function' ? decodeContractError(err) : (err?.message || err);
+        showNotification(`Execution aborted: ${errorMsg}`, "error");
+    } finally {
+        if (progress) progress.hide();
+        if (btn) toggleButtonLoading(btn, false);
+        isTransactionPending = false;
+        if (typeof unlockSystem === 'function') unlockSystem();
+    }
+}
+
+async function executeArchitectRemint(e) {
+    if (isTransactionPending || window.SystemState?._sysLocked) return;
+    if (!secureContract || !signer) { showNotification("Action suspended: Authenticate wallet signature first.", "error"); return; }
+
+    if (typeof lockSystem === 'function') lockSystem();
+    isTransactionPending = true;
+    const btn = toggleButtonLoading(e, true);
+    let progress = null;
+
+    try {
+        const userAddress = await signer.getAddress();
+        const privs = await verifyUserPrivileges(userAddress);
+        if (!privs.isAdmin) {
+            showNotification("SECURITY ENFORCEMENT: Architect privileges required.", "error");
+            return;
+        }
+
+        await checkGasSurge();
+        
+        const targetTokenId = globalSelectedTokenId;
+        if (!targetTokenId || isNaN(Number(targetTokenId))) {
+            showNotification("STRUCTURAL EXCEPTION: Select a Token ID coordinate first.", "error");
+            return;
+        }
+        const tokenId = validateTokenRange(targetTokenId);
+        if (!tokenId) return;
+
+        let strictFrontUri = "";
+        if (window.IMPERIAL_MANIFEST && window.IMPERIAL_MANIFEST[String(tokenId)]) {
+            const manifestData = window.IMPERIAL_MANIFEST[String(tokenId)];
+            strictFrontUri = typeof manifestData === 'string' ? manifestData.trim() : String(manifestData.irys_id || "").trim();
+        }
+
+        if (!strictFrontUri) {
+            showNotification("METADATA EXCEPTION: Front URI missing in Manifest.", "error");
+            return;
+        }
+
+        const currentMintPriceWei = await secureContract.mintPrice();
 
         const file = await promptUserForFile('image/*,video/*');
         if (!file) return;
@@ -4244,69 +4581,39 @@ async function executeArchitectRemint(e) {
         
         if (!isConfirmed) return;
 
-        const btn = toggleButtonLoading(e, true);
-        // 🚨 [CRITICAL FIX]: ล็อกระบบทันทีก่อนเริ่มอัปโหลด Irys
-        if (typeof lockSystem === 'function') lockSystem();
-        let progress = null;
-        
-        try {
-            if (!irys) throw new Error("Irys SDK Bridge is offline.");
+        if (!irys) throw new Error("Irys SDK Bridge is offline.");
 
-            if (typeof appendLog === 'function') appendLog(`Inscribing back-end media onto permanent Irys Datachain...`, "text-blue-400");
-            const tags = [{ name: "Content-Type", value: file.type }];
-            
+        const tags = [{ name: "Content-Type", value: file.type }];
+        if (typeof createProgressController === 'function') {
             progress = createProgressController(file.size);
             if (progress) progress.show();
-            
-            // ส่ง File Object ให้ Irys SDK จัดการโดยตรง
-            const response = await executeIrysUpload(file, tags, true, progress); 
-            
-            const backMediaTxId = response?.data ? response.data.id : response?.id; 
-            
-            if (!backMediaTxId) throw new Error("Irys payload generation failed: null TxID.");
-
-            const backUriField = document.getElementById('forgeBackUri');
-            if (backUriField) backUriField.value = backMediaTxId;
-
-            if (typeof appendLog === 'function') appendLog(`Initiating SOVEREIGN_REMINT on Smart Contract at ${ethers.formatEther(currentMintPriceWei)} ETH...`, "text-yellow-400");
-            
-            const tokenIdBn = BigInt(tokenId);
-
-            const receipt = await runTx(
-                e, `SOVEREIGN_REMINT_#${tokenId}`, "SOVEREIGN_REMINT",
-                [tokenIdBn.toString(), strictFrontUri, backMediaTxId], { value: currentMintPriceWei.toString() },
-                { manageLock: false, manageButton: false }
-            );
-
-            if (receipt) {
-                if (typeof GLOBAL_NODE_CACHE !== 'undefined' && GLOBAL_NODE_CACHE?.clear) GLOBAL_NODE_CACHE.clear();
-                if (typeof auditTokenFromLedger === 'function') await auditTokenFromLedger(tokenId);
-                if (typeof syncActiveMatrixNodes === 'function') await syncActiveMatrixNodes(); 
-                if (typeof appendLog === 'function') appendLog(`Sovereign REMINT executed flawlessly on-chain.`, "text-emerald-400 font-bold");
-                showNotification("Reminting complete. Deed reconstructed and pulled back into the system!", "success");
-            }
-        } catch (err) {
-            const errorMsg = decodeContractError(err);
-            const sanitizedMsg = sanitizeForDOM(errorMsg);
-
-            if (err.code === 4001 || sanitizedMsg === "USER_CANCELLED_TX" || err.message?.toLowerCase().includes("user rejected") || err.message?.toLowerCase().includes("declined")) {
-                if (typeof appendLog === 'function') appendLog("Architect Remint aborted by signature denial.", "text-yellow-500");
-                showNotification("Transaction cancelled by user.", "warning");
-            } else if (err.code === "UNPREDICTABLE_GAS_LIMIT" || err.message?.toLowerCase().includes("cannot estimate gas")) {
-                if (typeof appendLog === 'function') appendLog("Network rejected estimateGas: Execution will likely fail on-chain.", "text-red-500 font-bold");
-                showNotification("Gas estimation failed (Contract Revert Risk).", "error");
-            } else {
-                if (typeof appendLog === 'function') appendLog(`Execution aborted: ${sanitizedMsg}`, "text-red-500");
-                showNotification(`Transaction failed: ${sanitizedMsg}`, "error");
-            }
-        } finally {
-            if (progress) progress.hide();
-            if (btn) toggleButtonLoading(btn, false);
-            // 🚨 [CRITICAL FIX]: ปลดล็อกระบบเสมอเมื่อจบการทำงาน
-            if (typeof unlockSystem === 'function') unlockSystem();
         }
-    } catch (criticalErr) {
-        if (typeof appendLog === 'function') appendLog(`Critical Error: ${criticalErr?.message || criticalErr}`, "text-red-500");
+        
+        const response = await executeIrysUpload(file, tags, true, progress); 
+        const backMediaTxId = response?.data ? response.data.id : response?.id; 
+        if (!backMediaTxId) throw new Error("Irys payload generation failed: null TxID.");
+
+        const receipt = await runTx(
+            e, `SOVEREIGN_REMINT_#${tokenId}`, "SOVEREIGN_REMINT",
+            [BigInt(tokenId).toString(), strictFrontUri, backMediaTxId], 
+            { value: currentMintPriceWei.toString() },
+            { manageLock: false, manageButton: false }
+        );
+
+        if (receipt) {
+            if (GLOBAL_NODE_CACHE?.clear) GLOBAL_NODE_CACHE.clear();
+            if (typeof auditTokenFromLedger === 'function') await auditTokenFromLedger(tokenId);
+            if (typeof syncActiveMatrixNodes === 'function') await syncActiveMatrixNodes(); 
+            showNotification("Reminting complete. Deed reconstructed successfully!", "success");
+        }
+    } catch (err) {
+        const errorMsg = typeof decodeContractError === 'function' ? decodeContractError(err) : (err?.message || err);
+        showNotification(`Execution aborted: ${errorMsg}`, "error");
+    } finally {
+        if (progress) progress.hide();
+        if (btn) toggleButtonLoading(btn, false);
+        isTransactionPending = false;
+        if (typeof unlockSystem === 'function') unlockSystem();
     }
 }
 
@@ -6574,6 +6881,12 @@ function enforceSecurityConstraints() {
     if (targetInput) targetInput.setAttribute('maxlength', '128');
     const nameInput = document.getElementById('propName');
     if (nameInput) nameInput.setAttribute('maxlength', '128');
+
+    // 🚨 CRITICAL FIX: ENFORCE BYTE-LIMIT ON DNA & HIDDEN PAYLOADS TO PREVENT OOM/GAS DRAIN
+    const dnaInput = document.getElementById('novaDnaInput');
+    if (dnaInput) dnaInput.setAttribute('maxlength', '1024');
+    const hiddenInput = document.getElementById('novaHiddenInput');
+    if (hiddenInput) hiddenInput.setAttribute('maxlength', '1024');
 }
 
 // ==============================================================================
