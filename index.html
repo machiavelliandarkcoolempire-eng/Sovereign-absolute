@@ -4063,87 +4063,52 @@ async function executeArchitectMint(e) {
     const btn = toggleButtonLoading(e, true);
 
     try {
-        const userAddress = await signer.getAddress();
-        const privs = await verifyUserPrivileges(userAddress);
-
-        if (!privs.isAdmin) {
-            showNotification("SECURITY ENFORCEMENT: Architect privileges required.", "error");
-            return;
-        }
-
-        await checkGasSurge();
-
-        // 1. ดึง Token ID
         const rawTokenId = (document.getElementById('adminTokenId')?.value || globalSelectedTokenId || "").toString().trim();
-        if (!rawTokenId || isNaN(Number(rawTokenId))) {
-            showNotification("STRUCTURAL EXCEPTION: Enter or select a valid Token ID.", "error");
-            return;
-        }
         const tokenId = validateTokenRange(rawTokenId);
-        if (!tokenId) return;
+        if (!tokenId) throw new Error("Invalid Token ID");
 
-        // 2. ดึง Target Address
         const targetAddress = (document.getElementById('adminTargetAddress')?.value || "").trim();
-        if (!targetAddress || !ethers.isAddress(targetAddress)) {
-            showNotification("STRUCTURAL EXCEPTION: Invalid EVM Target Address.", "error");
-            return;
-        }
+        if (!targetAddress || !ethers.isAddress(targetAddress)) throw new Error("Invalid Target Address");
 
-        // 3. ดึง Front URI จากช่อง Override ก่อน ถ้าไม่มีค่อยดึงจาก Manifest
         let strictFrontUri = (document.getElementById('architectFrontUri')?.value || "").trim();
         if (!strictFrontUri && window.IMPERIAL_MANIFEST && window.IMPERIAL_MANIFEST[String(tokenId)]) {
             const manifestData = window.IMPERIAL_MANIFEST[String(tokenId)];
             strictFrontUri = typeof manifestData === 'string' ? manifestData.trim() : String(manifestData.irys_id || "").trim();
         }
+        if (!strictFrontUri) throw new Error("Front URI missing");
 
-        if (!strictFrontUri) {
-            showNotification("METADATA EXCEPTION: Front URI missing in Manifest.", "error");
-            return;
-        }
-
-        // 4. ดึง Back URI จากช่องที่กรอกไว้
         let backMediaTxId = (document.getElementById('architectBackUri')?.value || "").trim();
-        
-        // 🚨 ถ้ามี URL อยู่แล้ว ให้ข้ามการโหลดไฟล์ไปเลย! (ยิง TX ทันที)
-        if (!backMediaTxId) {
-            // จะเข้าเงื่อนไขนี้ก็ต่อเมื่อช่องกรอก "ว่างเปล่า" จริงๆ เท่านั้น
-            if (typeof appendLog === 'function') appendLog("No Direct Back URI provided. Initiating Irys File Picker...", "text-yellow-400");
-            
-            const file = await promptUserForFile('image/*,video/*');
-            if (!file) {
-                showNotification("Action aborted: No file selected for Back URI.", "warning");
-                return;
-            }
-            
-            const tags = [{ name: "Content-Type", value: file.type || "application/octet-stream" }];
-            const progress = typeof createProgressController === 'function' ? createProgressController(file.size) : null;
-            
-            const response = await executeIrysUpload(file, tags, true, progress);
-            backMediaTxId = response?.data ? response.data.id : response?.id;
-            
-            if (!backMediaTxId) throw new Error("Irys upload failed: No TxID returned.");
-            
-            // อัปเดตช่องกรอกให้แสดง TxID ที่เพิ่งอัปโหลดเสร็จ
-            const backUriInput = document.getElementById('architectBackUri');
-            if (backUriInput) backUriInput.value = backMediaTxId;
-        }
+        if (!backMediaTxId) throw new Error("Back URI missing");
 
-        // ยิง Transaction ทันที
-        const receipt = await runTx(
-            e, `ARCHITECT_MINT_#${tokenId}`, "ARCHITECT_MINT",
-            [BigInt(tokenId).toString(), targetAddress, strictFrontUri, backMediaTxId], {},
-            { manageLock: false, manageButton: false }
-        );
+        if (typeof appendLog === 'function') appendLog("Bypassing estimateGas. Forcing transaction to wallet...", "text-yellow-400");
+
+        // 🚨 สร้างข้อมูลยิงตรงเข้า Contract
+        const txData = secureContract.interface.encodeFunctionData("ARCHITECT_MINT", [
+            BigInt(tokenId).toString(),
+            targetAddress,
+            strictFrontUri,
+            backMediaTxId
+        ]);
+
+        // 🚨 ยิงตรงเข้า MetaMask ทันที ข้ามระบบ runTx และ estimateGas ทั้งหมด
+        const tx = await signer.sendTransaction({
+            to: CONTRACT_ADDRESS,
+            data: txData,
+            gasLimit: 800000n // บังคับใส่ Gas ไปเลย
+        });
+        
+        const receipt = await tx.wait();
 
         if (receipt) {
             if (GLOBAL_NODE_CACHE?.clear) GLOBAL_NODE_CACHE.clear();
             if (typeof syncActiveMatrixNodes === 'function') await syncActiveMatrixNodes();
             if (typeof auditTokenFromLedger === 'function') await auditTokenFromLedger(tokenId);
-            showNotification(`Architect Mint complete. Transferred to ${targetAddress.slice(0,6)}`, "success");
+            showNotification(`Architect Mint complete.`, "success");
         }
     } catch (err) {
         const errorMsg = typeof decodeContractError === 'function' ? decodeContractError(err) : (err?.message || err);
         showNotification(`Execution aborted: ${errorMsg}`, "error");
+        if (typeof appendLog === 'function') appendLog(`Error: ${errorMsg}`, "text-red-500");
     } finally {
         if (btn) toggleButtonLoading(btn, false);
         isTransactionPending = false;
