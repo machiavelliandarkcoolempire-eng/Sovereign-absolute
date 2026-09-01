@@ -937,64 +937,66 @@
         </div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
-        <div class="space-y-5 border border-stone-800 p-5 rounded-2xl bg-black/50 shadow-inner">
-            <span class="text-[11px] font-mono font-bold text-amber-500 uppercase tracking-widest block border-b border-stone-800 pb-2">// MANIFEST COMPONENT (2 AUTO-MAP FIELDS)</span>
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8">
+        <!-- ARCHITECT MINT & REMINT ENGINE ZONE -->
+        <div class="lg:col-span-7 space-y-4 border border-emerald-900/40 p-5 md:p-6 rounded-2xl bg-black/60 shadow-[inset_0_0_30px_rgba(0,0,0,0.9)]">
+            <div class="flex justify-between items-center border-b border-stone-800 pb-2 mb-3">
+                <span class="text-[11px] font-mono text-emerald-400 font-bold uppercase tracking-wider">// ⚜ ARCHITECT FORGE ENGINE (MINT & REMINT)</span>
+                <span class="text-[9px] font-mono text-stone-500 uppercase">FULL PROTOCOL PIPELINE</span>
+            </div>
+            
             <div>
-                <label class="text-[10px] text-stone-500 font-mono block mb-2">ROOT PROPERTY NAME</label>
-                <input type="text" id="propName" value="THE IMPERIAL SOVEREIGN DEED ♠️" maxlength="128" class="w-full bg-black border border-stone-800 p-3 text-[11px] font-mono text-stone-200 rounded-lg outline-none focus:border-amber-500 transition-all" />
+                <label class="text-[10px] text-stone-400 font-mono block mb-1.5 uppercase tracking-wider">① TARGET DESTINATION EVM ADDRESS</label>
+                <input type="text" id="adminTargetAddress" placeholder="0x... DESTINATION EVM ADDRESS" class="w-full bg-black border border-stone-800 p-3.5 text-xs font-mono text-emerald-400 rounded-xl outline-none focus:border-emerald-500 transition-all shadow-inner" />
             </div>
-            <div class="space-y-3 max-h-64 overflow-y-auto scroll-dark pr-2">
-                <div class="bg-stone-950 p-3 rounded-lg border border-stone-800">
-                    <input type="text" id="propKey1" value="RANK" class="w-full bg-black border border-stone-800 p-2.5 text-[10px] font-mono mb-2 text-stone-400 rounded-md outline-none" />
-                    <input type="text" id="prop1" value="" placeholder="AUTO-EXTRACTED FROM RANK DETAILED" class="w-full bg-black border border-stone-800 p-2.5 text-[11px] font-mono text-stone-200 rounded-md outline-none" />
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="text-[10px] text-stone-400 font-mono block mb-1.5 uppercase tracking-wider">② FRONT METADATA URI (OPTIONAL OVERRIDE)</label>
+                    <input type="text" id="architectFrontUri" placeholder="Auto-extracts from Manifest if blank" class="w-full bg-black border border-stone-800 p-3 text-xs font-mono text-amber-400 rounded-xl outline-none focus:border-amber-500 transition-all shadow-inner" />
                 </div>
-                <div class="bg-stone-950 p-3 rounded-lg border border-stone-800">
-                    <input type="text" id="propKey2" value="IDENTITY STATUS" class="w-full bg-black border border-stone-800 p-2.5 text-[10px] font-mono mb-2 text-stone-400 rounded-md outline-none" />
-                    <input type="text" id="prop2" value="UNCOMPROMISED INTEGRITY PROTOCOL" class="w-full bg-black border border-stone-800 p-2.5 text-[11px] font-mono text-stone-200 rounded-md outline-none" />
+                <div>
+                    <label class="text-[10px] text-stone-400 font-mono block mb-1.5 uppercase tracking-wider">③ DIRECT BACK MEDIA URI (OPTIONAL)</label>
+                    <input type="text" id="architectBackUri" placeholder="Irys Tx ID / Leave blank to select file" class="w-full bg-black border border-stone-800 p-3 text-xs font-mono text-rose-300 rounded-xl outline-none focus:border-rose-500 transition-all shadow-inner" />
                 </div>
             </div>
-            <button onclick="if(typeof buildAndUploadMetadata === 'function') buildAndUploadMetadata(this)" class="w-full bg-gradient-to-r from-amber-900 to-amber-700 text-black font-black font-mono text-[11px] py-3.5 rounded-xl uppercase tracking-wider shadow-[0_0_15px_rgba(217,119,6,0.3)]">COMPILE & TRANSMIT MANIFEST JSON</button>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3">
+                <button onclick="if(typeof executeArchitectMint === 'function') executeArchitectMint(event)" class="w-full bg-gradient-to-r from-emerald-950 to-stone-900 border border-emerald-700 text-emerald-400 font-black font-mono text-xs py-4 rounded-xl uppercase hover:brightness-125 transition-all shadow-[0_0_20px_rgba(16,185,129,0.25)] flex items-center justify-center gap-2">
+                    ✦ EXECUTE ARCHITECT MINT
+                </button>
+                <button onclick="if(typeof executeArchitectRemint === 'function') executeArchitectRemint(event)" class="w-full bg-gradient-to-r from-rose-950 to-stone-900 border border-rose-700 text-rose-400 font-black font-mono text-xs py-4 rounded-xl uppercase hover:brightness-125 transition-all shadow-[0_0_20px_rgba(153,27,27,0.25)] flex items-center justify-center gap-2">
+                    ♺ EXECUTE ARCHITECT REMINT ♠️
+                </button>
+            </div>
+            <p class="text-[9px] text-stone-500 mt-2 uppercase leading-relaxed font-bold border-l-2 border-emerald-900 pl-2">
+                * SYSTEM EXTRACTS TOKEN ID FROM MATRIX SELECTION. IF DIRECT BACK URI IS EMPTY, IRYS FILE PICKER WILL OPEN AUTOMATICALLY.
+            </p>
         </div>
 
-        <div class="space-y-4 border border-stone-800 p-5 rounded-2xl bg-black/50 shadow-inner">
-            <span class="text-[11px] font-mono text-rose-400 font-bold uppercase tracking-wider block border-b border-stone-800 pb-2">// MACRO POLICIES & RE-MINT CYCLE</span>
+        <!-- MACRO POLICIES & CONTROLS ZONE -->
+        <div class="lg:col-span-5 space-y-4 border border-stone-800 p-5 rounded-2xl bg-black/50 shadow-inner">
+            <span class="text-[11px] font-mono text-amber-500 font-bold uppercase tracking-wider block border-b border-stone-800 pb-2">// MACRO POLICIES & PROTOCOL CONTROLS</span>
             <div class="grid grid-cols-2 gap-3">
                 <div><label class="text-[10px] text-stone-500 font-mono block mb-1.5">MINT FEE ETH</label><input type="number" step="0.001" id="inputAdminMint" class="w-full bg-black border border-stone-800 p-3 text-xs font-mono text-amber-500 rounded-lg outline-none focus:border-amber-500" /></div>
                 <div><label class="text-[10px] text-stone-500 font-mono block mb-1.5">NOVA FEE ETH</label><input type="number" step="0.001" id="inputAdminNova" class="w-full bg-black border border-stone-800 p-3 text-xs font-mono text-rose-400 rounded-lg outline-none focus:border-rose-500" /></div>
             </div>
             <button onclick="if(typeof executeSetParams === 'function') executeSetParams(this)" class="w-full bg-amber-700 text-black font-black font-mono text-[11px] py-3 rounded-xl uppercase hover:bg-amber-600 transition-colors shadow-[0_0_15px_rgba(217,119,6,0.3)]">RATIFY setParams</button>
-            <div class="pt-3">
+            
+            <div class="pt-2">
                 <label class="text-[10px] text-stone-500 font-mono block mb-1.5">GLOBAL BASE TARGET URI</label>
                 <input type="text" id="inputBaseUri" class="w-full bg-black border border-stone-800 p-3 text-xs font-mono text-stone-200 rounded-lg outline-none focus:border-amber-500" />
             </div>
             <button onclick="if(typeof executeSetBaseUri === 'function') executeSetBaseUri(this)" class="w-full bg-stone-950 border border-amber-700 text-amber-400 font-black font-mono text-[11px] py-3 rounded-xl uppercase hover:bg-stone-900 transition-colors">AMEND setBaseURI</button>
-            <div class="grid grid-cols-2 gap-3 pt-3">
-                <button onclick="if(typeof executeContractPause === 'function') executeContractPause(true, this)" class="bg-rose-950 border border-rose-800 text-rose-400 font-mono font-bold text-[10px] py-3 rounded-xl uppercase hover:bg-rose-900 transition-colors">PAUSE</button>
-                <button onclick="if(typeof executeContractPause === 'function') executeContractPause(false, this)" class="bg-stone-950 border border-amber-800 text-amber-400 font-mono font-bold text-[10px] py-3 rounded-xl uppercase hover:bg-stone-900 transition-colors">UNPAUSE</button>
-            </div>
-        </div>
-        
-        <div class="lg:col-span-3 space-y-4 border border-stone-800 p-5 md:p-6 rounded-2xl bg-black/50 shadow-[inset_0_0_30px_rgba(0,0,0,0.9)] mt-2">
-            <span class="text-[11px] font-mono text-emerald-500 font-bold uppercase tracking-wider block border-b border-stone-800 pb-2">// ⚜ ARCHITECT FORGE (MINT & REMINT)</span>
             
-            <div>
-                <label class="text-[10px] text-stone-500 font-mono block mb-2 uppercase tracking-wider">TARGET ADDRESS (FOR FREE MINT)</label>
-                <input type="text" id="adminTargetAddress" placeholder="0x... DESTINATION EVM ADDRESS" class="w-full bg-black border border-stone-800 p-3.5 text-xs font-mono text-emerald-400 rounded-xl outline-none focus:border-emerald-500 transition-all" />
+            <div class="grid grid-cols-2 gap-3 pt-2">
+                <button onclick="if(typeof executeContractPause === 'function') executeContractPause(true, this)" class="bg-rose-950 border border-rose-800 text-rose-400 font-mono font-bold text-[10px] py-3 rounded-xl uppercase hover:bg-rose-900 transition-colors">PAUSE PROTOCOL</button>
+                <button onclick="if(typeof executeContractPause === 'function') executeContractPause(false, this)" class="bg-stone-950 border border-amber-800 text-amber-400 font-mono font-bold text-[10px] py-3 rounded-xl uppercase hover:bg-stone-900 transition-colors">UNPAUSE PROTOCOL</button>
             </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                <button onclick="if(typeof executeArchitectMint === 'function') executeArchitectMint(event)" class="w-full bg-gradient-to-r from-emerald-950 to-stone-900 border border-emerald-800 text-emerald-400 font-black font-mono text-[11px] py-4 rounded-xl uppercase hover:brightness-125 transition-all shadow-[0_0_20px_rgba(16,185,129,0.2)]">
-                    ✦ EXECUTE ARCHITECT FREE MINT
-                </button>
-                <button onclick="if(typeof executeArchitectRemint === 'function') executeArchitectRemint(event)" class="w-full bg-gradient-to-r from-rose-950 to-stone-900 border border-rose-800 text-rose-400 font-black font-mono text-[11px] py-4 rounded-xl uppercase hover:brightness-125 transition-all shadow-[0_0_20px_rgba(153,27,27,0.2)]">
-                    ♺ EXECUTE ARCHITECT REMINT ♠️
-                </button>
-            </div>
-            <p class="text-[9px] text-stone-500 mt-3 uppercase leading-relaxed font-bold border-l-2 border-stone-800 pl-2">* STRICT RULE: SYSTEM EXTRACTS TOKEN ID FROM SELECTED MATRIX CELL. FRONT URI MUST BE PRE-INITIALIZED.</p>
         </div>
     </div>
 </section>
+
 
 <div id="robotPanel" class="admin-locked chiaroscuro-bg mt-6 p-5 md:p-6 rounded-2xl border border-stone-800 font-mono text-[10px] space-y-4 hidden shadow-inner">
     <span class="text-amber-500 font-bold uppercase block border-b border-stone-800 pb-2 text-[11px] tracking-wider">// ARCHITECT COMMUNICATION CHANNELS ALIGNMENT</span>
@@ -1033,6 +1035,7 @@
         This protocol operates an exclusive, private digital identity infrastructure accessible solely via direct curation. All proceeds represent lawful studio service fees. Reserve allocations fund software R&D and Ecosystem Infrastructure Support Grants. Minting and on-chain operations are executed 100% self-sovereignly by curated pass holders. This protocol does not offer public sales, securities, or financial returns.
     </div>
 </footer>
+
 
 
 
@@ -1260,6 +1263,7 @@ let irysContract = null;
 let isTransactionPending = false;
 let walletSessionController = new AbortController();
 
+window.IMPERIAL_MANIFEST = {};
 window._mediaConfirmActive = false;
 window._actionConfirmActive = false;
 window._actionSettled = false;
@@ -1370,30 +1374,21 @@ window.IMPERIAL_MANIFEST = null;
 window.IMAGE_MANIFEST = null; // 👈 เพิ่มตัวแปรเก็บ Direct Image Hash
 
 async function fetchImperialManifest() {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10-second strict timeout
-
     try {
-        // 🛡️ Fetch both JSON Metadata and Direct Image with AbortSignal
+        // 🛡️ ดึงทั้ง 2 ไฟล์พร้อมกัน: JSON Metadata และ Direct Image
         const [manifestRes, imageRes] = await Promise.allSettled([
-            fetch(`./imperial-manifest.json?t=${Date.now()}`, { signal: controller.signal }),
-            fetch(`./image_imperial-manifest.json?t=${Date.now()}`, { signal: controller.signal })
+            fetch(`./imperial-manifest.json?t=${Date.now()}`),
+            fetch(`./image_imperial-manifest.json?t=${Date.now()}`) // 👈 ไฟล์รูปภาพตรงๆ
         ]);
         
-        clearTimeout(timeoutId);
-
         if (manifestRes.status === 'fulfilled' && manifestRes.value.ok) {
             const rawData = await manifestRes.value.json();
             window.IMPERIAL_MANIFEST = (rawData && typeof rawData === 'object' && rawData.data) ? rawData.data : rawData;
-        } else {
-            window.IMPERIAL_MANIFEST = {};
         }
 
         if (imageRes.status === 'fulfilled' && imageRes.value.ok) {
             const rawImgData = await imageRes.value.json();
             window.IMAGE_MANIFEST = (rawImgData && typeof rawImgData === 'object' && rawImgData.data) ? rawImgData.data : rawImgData;
-        } else {
-            window.IMAGE_MANIFEST = {};
         }
 
         if (typeof appendLog === 'function') {
@@ -1402,7 +1397,6 @@ async function fetchImperialManifest() {
         }
         return true;
     } catch (err) {
-        clearTimeout(timeoutId);
         window.IMPERIAL_MANIFEST = {}; 
         window.IMAGE_MANIFEST = {};
         if (typeof appendLog === 'function') {
@@ -1887,62 +1881,114 @@ async function promptUserForFile(acceptType = 'image/*,video/*') {
     });
 }
 
+// ==============================================================================
+// ⚔️ TRANSACTION EXECUTION ENGINE (ZERO-BUG & STRICT LOCKING ENFORCED)
+// ==============================================================================
 
-// ==============================================================================
-// ⚔️ TRANSACTION WRAPPER (NON-BLOCKING UI)
-// ==============================================================================
-async function runTx(eventOrBtn, actionName, methodName, args = [], overrides = {}, options = { manageLock: true, manageButton: true }) {
+async function runTx(btnInput, label, methodName, args = [], overrides = {}, options = {}) {
+    const { manageLock = true, manageButton = true, sync = true } = options;
+
+    // 🛡️ STRICT STATE GUARD: ป้องกันการยิงคำสั่งซ้อนทุกกรณี
+    if ((manageLock && typeof isTransactionPending !== 'undefined' && isTransactionPending) || window.SystemState?._sysLocked) {
+        console.warn(`[TX BLOCKED] System locked. Dropping request for: ${label}`);
+        return false;
+    }
+
     if (!secureContract || !signer) {
-        if (typeof showNotification === 'function') showNotification("Wallet not connected or contract uninitialized.", "error");
-        return null;
+        showNotification("SYSTEM ENFORCEMENT: Please connect your wallet first.", "error");
+        return false;
     }
 
-    let btn = null;
-    if (options.manageButton && typeof toggleButtonLoading === 'function') {
-        btn = toggleButtonLoading(eventOrBtn, true);
+    if (typeof secureContract[methodName] !== "function") {
+        showNotification(`STRUCTURAL EXCEPTION: Function '${methodName}' not found in ABI.`, "error");
+        return false;
     }
-    if (options.manageLock && typeof lockSystem === 'function') {
-        lockSystem();
+
+    const btn = (manageButton && typeof toggleButtonLoading === 'function') ? toggleButtonLoading(btnInput, true) : null;
+    let timeoutId;
+
+    if (manageLock) {
+        isTransactionPending = true;
+        if (typeof lockSystem === 'function') lockSystem();
     }
 
     try {
-        if (typeof safeAppendLog === 'function') safeAppendLog(`[TX] Initiating ${actionName}...`, "text-yellow-400");
-        
-        // Execute Ethers v6 Contract Method
-        const tx = await secureContract[methodName](...args, overrides);
-        
-        if (typeof safeAppendLog === 'function') safeAppendLog(`[TX] Broadcasted. Hash: ${tx.hash.slice(0,12)}... Awaiting confirmation.`, "text-blue-400");
-        
-        // Wait for 1 block confirmation
-        const receipt = await tx.wait();
-        
-        if (receipt && receipt.status === 1) {
-            if (typeof safeAppendLog === 'function') safeAppendLog(`[TX] ${actionName} confirmed in block ${receipt.blockNumber}.`, "text-emerald-400 font-bold");
-            return receipt;
-        } else {
-            throw new Error("Transaction reverted by EVM during execution.");
+        if (typeof checkGasSurge === 'function') {
+            await checkGasSurge().catch(() => {});
         }
+
+        let gasLimit;
+        try {
+            if (overrides.gasLimit) {
+                gasLimit = overrides.gasLimit;
+            } else {
+                const estimatedGas = await secureContract[methodName].estimateGas(...args, overrides);
+                gasLimit = (estimatedGas * 120n) / 100n;
+            }
+        } catch (gasErr) {
+            const decoded = typeof decodeContractError === 'function' ? decodeContractError(gasErr) : (gasErr?.message || "Unknown Gas Error");
+            if (typeof appendLog === 'function') appendLog(`[${label}] estimateGas reverted: ${decoded}`, "text-rose-500 font-bold");
+            const wrapped = new Error(decoded);
+            wrapped.original = gasErr;
+            wrapped.code = 'UNPREDICTABLE_GAS_LIMIT';
+            throw wrapped;
+        }
+
+        const finalOverrides = { ...overrides, gasLimit };
+        const tx = await secureContract[methodName](...args, finalOverrides);
+
+        if (typeof appendLog === 'function') {
+            appendLog(`Transaction [${label}] initiated: ${tx.hash}`, "text-blue-400");
+            appendLog(`Awaiting network consensus... Please do not close the window.`, "text-yellow-500");
+        }
+
+        const timeoutPromise = new Promise((_, reject) => {
+            timeoutId = setTimeout(() => {
+                const err = new Error("RPC_SYNC_TIMEOUT");
+                err.txHash = tx.hash;
+                reject(err);
+            }, 120000);
+        });
+
+        const receipt = await Promise.race([ tx.wait(1), timeoutPromise ]);
+
+        if (!receipt) throw new Error("Transaction receipt returned null or was dropped by network.");
+
+        if (typeof appendLog === 'function') appendLog(`Transaction confirmed in block ${receipt.blockNumber}`, "text-emerald-400");
+        
+        if (sync && typeof syncContractStates === 'function') await syncContractStates();
+        return receipt;
+
     } catch (err) {
-        const errorMsg = typeof decodeContractError === 'function' ? decodeContractError(err) : (err.message || "Unknown Error");
-        const sanitizedMsg = typeof sanitizeForDOM === 'function' ? sanitizeForDOM(errorMsg) : errorMsg;
-        
-        if (err.code === 4001 || sanitizedMsg === "USER_CANCELLED_TX" || (err.message && err.message.toLowerCase().includes("user rejected"))) {
-            if (typeof safeAppendLog === 'function') safeAppendLog(`[TX] ${actionName} cancelled by user signature denial.`, "text-yellow-500");
-            if (typeof showNotification === 'function') showNotification("Transaction cancelled by user.", "warning");
+        if (err?.message === "RPC_SYNC_TIMEOUT") {
+            if (typeof appendLog === 'function') appendLog(`⚠️ NETWORK CONGESTION: TX ${err.txHash} verification timed out.`, "text-yellow-400 font-bold");
+            showNotification("Network timeout. Please check Block Explorer before retrying.", "warning");
+            return false;
+        }
+
+        if (err?.code === 'UNPREDICTABLE_GAS_LIMIT') {
+            showNotification(`Transaction Failed: ${err.message}`, "error");
         } else {
-            if (typeof safeAppendLog === 'function') safeAppendLog(`[TX] ${actionName} failed: ${sanitizedMsg}`, "text-red-500");
-            if (typeof showNotification === 'function') showNotification(`Transaction failed: ${sanitizedMsg}`, "error");
+            const msg = String(typeof decodeContractError === 'function' ? decodeContractError(err) : (err?.message || err || "Unknown Error"));
+            const lowerMsg = msg.toLowerCase();
+            
+            if (msg === "USER_CANCELLED_TX" || err?.code === 4001 || lowerMsg.includes("rejected") || lowerMsg.includes("denied")) {
+                showNotification("Transaction cancelled by user.", "warning");
+            } else {
+                showNotification(`Transaction Failed: ${msg}`, "error");
+            }
         }
-        return null;
+        return false;
     } finally {
-        if (options.manageButton && btn && typeof toggleButtonLoading === 'function') {
-            toggleButtonLoading(btn, false);
+        if (timeoutId) clearTimeout(timeoutId);
+        if (manageLock) {
+            isTransactionPending = false;
+            if (typeof unlockSystem === 'function') unlockSystem();
         }
-        if (options.manageLock && typeof unlockSystem === 'function') {
-            unlockSystem();
-        }
+        if (btn && typeof toggleButtonLoading === 'function') toggleButtonLoading(btn, false);
     }
 }
+
 
 // ==============================================================================
 // 🌐 IRYS DECENTRALIZED STORAGE ENGINE
@@ -3799,7 +3845,6 @@ async function executeCastVote(btn) {
 }
 
 
-
 // ==============================================================================
 // ⚔️ FORGE & MINTING ENGINES (ZERO-BUG MANIFEST PARSING + PLEDGE MODAL)
 // ==============================================================================
@@ -4005,110 +4050,17 @@ async function triggerForge(type, e) {
     }
 }
 
-async function executeArchitectMint(e) {
-    // 🛡️ 1. SYSTEM LOCK & AUTHENTICATION
-    if (isTransactionPending || window.SystemState?._sysLocked) return;
-    if (!secureContract || !signer) { showNotification("Action suspended: Authenticate wallet signature first.", "error"); return; }
 
-    const btn = toggleButtonLoading(e, true);
+async function executeArchitectMint(e) {
+    if (isTransactionPending || window.SystemState?._sysLocked) return;
+    if (!secureContract || !signer) { 
+        showNotification("Action suspended: Authenticate wallet signature first.", "error"); 
+        return; 
+    }
+
     if (typeof lockSystem === 'function') lockSystem();
     isTransactionPending = true;
-
-    try {
-        const userAddress = await signer.getAddress();
-        const privs = await verifyUserPrivileges(userAddress);
-
-        if (!privs.isAdmin) {
-            showNotification("SECURITY ENFORCEMENT: Architect privileges required.", "error");
-            return;
-        }
-
-        if (typeof checkGasSurge === 'function') await checkGasSurge();
-
-        const targetTokenId = globalSelectedTokenId;
-        if (!targetTokenId || isNaN(Number(targetTokenId))) {
-            showNotification("STRUCTURAL EXCEPTION: Please select a Token ID coordinate on the Matrix first.", "error");
-            return;
-        }
-        
-        const tokenId = typeof validateTokenRange === 'function' ? validateTokenRange(targetTokenId) : targetTokenId;
-        if (!tokenId) return;
-
-        if (typeof autoMap === 'function') {
-            const mappedNode = await autoMap(tokenId);
-            if (mappedNode && mappedNode.isActivated) {
-                showNotification("STRUCTURAL EXCEPTION: Node is already active. Cannot execute Architect Mint.", "error");
-                return;
-            }
-        }
-
-        // 🔱 2. TARGET ADDRESS ROUTING (ดึงจาก adminTargetAddress)
-        const targetAddress = (document.getElementById('adminTargetAddress')?.value || "").trim();
-        if (!targetAddress || !ethers.isAddress(targetAddress)) {
-            showNotification("STRUCTURAL EXCEPTION: Please specify a valid EVM Target Address.", "error");
-            return;
-        }
-
-        // 🔱 3. FRONT URI ROUTING (ดึงจาก IMPERIAL_MANIFEST)
-        let strictFrontUri = "";
-        if (window.IMPERIAL_MANIFEST && window.IMPERIAL_MANIFEST[String(tokenId)]) {
-            const manifestData = window.IMPERIAL_MANIFEST[String(tokenId)];
-            strictFrontUri = typeof manifestData === 'string' ? manifestData.trim() : String(manifestData.irys_id || "").trim();
-        }
-
-        if (!strictFrontUri) {
-            if (typeof appendLog === 'function') appendLog(`MINT REJECTED: ไม่พบข้อมูล Front URI สำหรับ Node #${tokenId} ใน JSON Manifest`, "text-red-500 font-bold");
-            showNotification("METADATA EXCEPTION: Node not ready for minting (Missing Front URI in Manifest).", "error");
-            return;
-        }
-
-        // 🔱 4. BACK URI ROUTING (ดึงจาก novaHiddenInput โดยไม่มีการอัปโหลดไฟล์)
-        const backUriInput = document.getElementById('novaHiddenInput');
-        const backMediaTxId = (backUriInput?.value || "").trim();
-
-        if (!backMediaTxId) {
-            showNotification("STRUCTURAL EXCEPTION: Back URI TX ID is missing in Hidden Property input field.", "error");
-            if (typeof appendLog === 'function') appendLog("[SYSTEM] Architect mint aborted: Back URI field is empty.", "text-yellow-500");
-            return;
-        }
-
-        if (typeof appendLog === 'function') appendLog(`Initiating ARCHITECT_MINT for Node #${tokenId} to ${targetAddress.slice(0,6)}...`, "text-yellow-400");
-        const tokenIdBn = BigInt(tokenId);
-
-        // 🛡️ 5. SMART CONTRACT EXECUTION
-        const receipt = await runTx(
-            e, `ARCHITECT_MINT_#${tokenId}`, "ARCHITECT_MINT",
-            [tokenIdBn.toString(), targetAddress, strictFrontUri, backMediaTxId], {},
-            { manageLock: false, manageButton: false }
-        );
-
-        if (receipt) {
-            if (typeof GLOBAL_NODE_CACHE !== 'undefined' && GLOBAL_NODE_CACHE?.clear) GLOBAL_NODE_CACHE.clear();
-            if (typeof syncActiveMatrixNodes === 'function') await syncActiveMatrixNodes();
-            if (typeof auditTokenFromLedger === 'function') await auditTokenFromLedger(tokenId);
-            if (typeof appendLog === 'function') appendLog(`ARCHITECT MINT EXECUTED FLAWLESSLY ON-CHAIN.`, "text-emerald-400 font-bold");
-            showNotification(`Architect Mint complete. Rights transferred to ${targetAddress.slice(0,6)} successfully!`, "success");
-        }
-    } catch (err) {
-        const errorMsg = typeof decodeContractError === 'function' ? decodeContractError(err) : (err.message || err);
-        const sanitizedMsg = typeof sanitizeForDOM === 'function' ? sanitizeForDOM(errorMsg) : String(errorMsg);
-
-        if (err.code === 4001 || sanitizedMsg === "USER_CANCELLED_TX" || err.message?.toLowerCase().includes("user rejected") || err.message?.toLowerCase().includes("declined")) {
-            if (typeof appendLog === 'function') appendLog("Architect mint sequence aborted due to signature denial.", "text-yellow-500");
-            showNotification("Transaction cancelled by user.", "warning");
-        } else {
-            if (typeof appendLog === 'function') appendLog(`Execution aborted: ${sanitizedMsg}`, "text-red-500");
-            showNotification(`Transaction failed: ${sanitizedMsg}`, "error");
-        }
-    } finally {
-        if (btn && typeof toggleButtonLoading === 'function') toggleButtonLoading(btn, false);
-        isTransactionPending = false;
-        if (typeof unlockSystem === 'function') unlockSystem();
-    }
-}
-
-async function executeArchitectRemint(e) {
-    if (!secureContract || !signer) { showNotification("Action suspended: Authenticate wallet signature first.", "error"); return; }
+    const btn = toggleButtonLoading(e, true);
 
     try {
         const userAddress = await signer.getAddress();
@@ -4120,22 +4072,31 @@ async function executeArchitectRemint(e) {
         }
 
         await checkGasSurge();
-        
-        const targetTokenId = globalSelectedTokenId;
-        if (!targetTokenId || isNaN(Number(targetTokenId))) {
-            showNotification("STRUCTURAL EXCEPTION: Please select a Token ID coordinate on the Matrix first.", "error");
+
+        // 1. ดึง Token ID
+        const rawTokenId = (document.getElementById('adminTokenId')?.value || globalSelectedTokenId || "").toString().trim();
+        if (!rawTokenId || isNaN(Number(rawTokenId))) {
+            showNotification("STRUCTURAL EXCEPTION: Enter or select a valid Token ID.", "error");
             return;
         }
-        const tokenId = validateTokenRange(targetTokenId);
+        const tokenId = validateTokenRange(rawTokenId);
         if (!tokenId) return;
 
-        const mappedNode = await autoMap(tokenId);
-        if (mappedNode && mappedNode.isActivated) {
-            showNotification("STRUCTURAL EXCEPTION: Node is currently active. Must be burned before Remint.", "error");
+        // 2. ดึง Target Address
+        const targetAddress = (document.getElementById('adminTargetAddress')?.value || "").trim();
+        if (!targetAddress || !ethers.isAddress(targetAddress)) {
+            showNotification("STRUCTURAL EXCEPTION: Invalid EVM Target Address.", "error");
             return;
         }
 
-        // 🚨 [CRITICAL FIX]: บังคับดึง Front URI จาก JSON Manifest 100%
+        // 3. ดึง Back URI
+        const backMediaTxId = (document.getElementById('adminBackUri')?.value || "").trim();
+        if (!backMediaTxId) {
+            showNotification("INPUT EXCEPTION: Enter Back URI / Tx ID.", "error");
+            return;
+        }
+
+        // 4. ดึง Front URI จาก Manifest
         let strictFrontUri = "";
         if (window.IMPERIAL_MANIFEST && window.IMPERIAL_MANIFEST[String(tokenId)]) {
             const manifestData = window.IMPERIAL_MANIFEST[String(tokenId)];
@@ -4143,97 +4104,105 @@ async function executeArchitectRemint(e) {
         }
 
         if (!strictFrontUri) {
-            if (typeof appendLog === 'function') appendLog(`MINT REJECTED: ไม่พบข้อมูล Front URI สำหรับ Node #${tokenId} ใน JSON Manifest`, "text-red-500 font-bold");
-            showNotification("METADATA EXCEPTION: Node not ready for minting (Architect has not assigned Obverse URI in Manifest).", "error");
+            showNotification("METADATA EXCEPTION: Front URI missing in Manifest.", "error");
             return;
         }
 
-        let currentMintPriceWei = 0n;
-        try {
-            currentMintPriceWei = await secureContract.mintPrice();
-        } catch (rpcErr) {
-            if (typeof appendLog === 'function') appendLog("RPC RATE LIMIT (429) DETECTED: Retrying economic parameters fetch...", "text-yellow-500");
-            await new Promise(r => setTimeout(r, 1500));
-            currentMintPriceWei = await secureContract.mintPrice();
+        // ยิง Transaction ทันที ไม่ต้องอัปโหลด
+        const receipt = await runTx(
+            e, `ARCHITECT_MINT_#${tokenId}`, "ARCHITECT_MINT",
+            [BigInt(tokenId).toString(), targetAddress, strictFrontUri, backMediaTxId], {},
+            { manageLock: false, manageButton: false }
+        );
+
+        if (receipt) {
+            if (GLOBAL_NODE_CACHE?.clear) GLOBAL_NODE_CACHE.clear();
+            if (typeof syncActiveMatrixNodes === 'function') await syncActiveMatrixNodes();
+            if (typeof auditTokenFromLedger === 'function') await auditTokenFromLedger(tokenId);
+            showNotification(`Architect Mint complete. Transferred to ${targetAddress.slice(0,6)}`, "success");
+        }
+    } catch (err) {
+        const errorMsg = typeof decodeContractError === 'function' ? decodeContractError(err) : (err?.message || err);
+        showNotification(`Execution aborted: ${errorMsg}`, "error");
+    } finally {
+        if (btn) toggleButtonLoading(btn, false);
+        isTransactionPending = false;
+        if (typeof unlockSystem === 'function') unlockSystem();
+    }
+}
+
+async function executeArchitectRemint(e) {
+    if (isTransactionPending || window.SystemState?._sysLocked) return;
+    if (!secureContract || !signer) { 
+        showNotification("Action suspended: Authenticate wallet signature first.", "error"); 
+        return; 
+    }
+
+    if (typeof lockSystem === 'function') lockSystem();
+    isTransactionPending = true;
+    const btn = toggleButtonLoading(e, true);
+
+    try {
+        const userAddress = await signer.getAddress();
+        const privs = await verifyUserPrivileges(userAddress);
+        if (!privs.isAdmin) {
+            showNotification("SECURITY ENFORCEMENT: Architect privileges required.", "error");
+            return;
         }
 
-        const file = await promptUserForFile('image/*,video/*');
-        if (!file) return;
-
-        const previewObjectUrl = URL.createObjectURL(file);
-        let isConfirmed = false;
+        await checkGasSurge();
         
-        try {
-            isConfirmed = await requestMediaConfirmation(previewObjectUrl, "SOVEREIGN REMINT OVERRIDE", file.type);
-        } finally {
-            URL.revokeObjectURL(previewObjectUrl);
+        // 1. ดึง Token ID
+        const rawTokenId = (document.getElementById('adminTokenId')?.value || globalSelectedTokenId || "").toString().trim();
+        if (!rawTokenId || isNaN(Number(rawTokenId))) {
+            showNotification("STRUCTURAL EXCEPTION: Enter or select a valid Token ID.", "error");
+            return;
         }
-        
-        if (!isConfirmed) return;
+        const tokenId = validateTokenRange(rawTokenId);
+        if (!tokenId) return;
 
-        const btn = toggleButtonLoading(e, true);
-        // 🚨 [CRITICAL FIX]: ล็อกระบบทันทีก่อนเริ่มอัปโหลด Irys
-        if (typeof lockSystem === 'function') lockSystem();
-        let progress = null;
-        
-        try {
-            if (!irys) throw new Error("Irys SDK Bridge is offline.");
-
-            if (typeof appendLog === 'function') appendLog(`Inscribing back-end media onto permanent Irys Datachain...`, "text-blue-400");
-            const tags = [{ name: "Content-Type", value: file.type }];
-            
-            progress = createProgressController(file.size);
-            if (progress) progress.show();
-            
-            // ส่ง File Object ให้ Irys SDK จัดการโดยตรง
-            const response = await executeIrysUpload(file, tags, true, progress); 
-            
-            const backMediaTxId = response?.data ? response.data.id : response?.id; 
-            
-            if (!backMediaTxId) throw new Error("Irys payload generation failed: null TxID.");
-
-            const backUriField = document.getElementById('forgeBackUri');
-            if (backUriField) backUriField.value = backMediaTxId;
-
-            if (typeof appendLog === 'function') appendLog(`Initiating SOVEREIGN_REMINT on Smart Contract at ${ethers.formatEther(currentMintPriceWei)} ETH...`, "text-yellow-400");
-            
-            const tokenIdBn = BigInt(tokenId);
-
-            const receipt = await runTx(
-                e, `SOVEREIGN_REMINT_#${tokenId}`, "SOVEREIGN_REMINT",
-                [tokenIdBn.toString(), strictFrontUri, backMediaTxId], { value: currentMintPriceWei.toString() },
-                { manageLock: false, manageButton: false }
-            );
-
-            if (receipt) {
-                if (typeof GLOBAL_NODE_CACHE !== 'undefined' && GLOBAL_NODE_CACHE?.clear) GLOBAL_NODE_CACHE.clear();
-                if (typeof auditTokenFromLedger === 'function') await auditTokenFromLedger(tokenId);
-                if (typeof syncActiveMatrixNodes === 'function') await syncActiveMatrixNodes(); 
-                if (typeof appendLog === 'function') appendLog(`Sovereign REMINT executed flawlessly on-chain.`, "text-emerald-400 font-bold");
-                showNotification("Reminting complete. Deed reconstructed and pulled back into the system!", "success");
-            }
-        } catch (err) {
-            const errorMsg = decodeContractError(err);
-            const sanitizedMsg = sanitizeForDOM(errorMsg);
-
-            if (err.code === 4001 || sanitizedMsg === "USER_CANCELLED_TX" || err.message?.toLowerCase().includes("user rejected") || err.message?.toLowerCase().includes("declined")) {
-                if (typeof appendLog === 'function') appendLog("Architect Remint aborted by signature denial.", "text-yellow-500");
-                showNotification("Transaction cancelled by user.", "warning");
-            } else if (err.code === "UNPREDICTABLE_GAS_LIMIT" || err.message?.toLowerCase().includes("cannot estimate gas")) {
-                if (typeof appendLog === 'function') appendLog("Network rejected estimateGas: Execution will likely fail on-chain.", "text-red-500 font-bold");
-                showNotification("Gas estimation failed (Contract Revert Risk).", "error");
-            } else {
-                if (typeof appendLog === 'function') appendLog(`Execution aborted: ${sanitizedMsg}`, "text-red-500");
-                showNotification(`Transaction failed: ${sanitizedMsg}`, "error");
-            }
-        } finally {
-            if (progress) progress.hide();
-            if (btn) toggleButtonLoading(btn, false);
-            // 🚨 [CRITICAL FIX]: ปลดล็อกระบบเสมอเมือจบ
-            if (typeof unlockSystem === 'function') unlockSystem();
+        // 2. ดึง Back URI
+        const backMediaTxId = (document.getElementById('adminBackUri')?.value || "").trim();
+        if (!backMediaTxId) {
+            showNotification("INPUT EXCEPTION: Enter Back URI / Tx ID.", "error");
+            return;
         }
-    } catch (criticalErr) {
-        if (typeof appendLog === 'function') appendLog(`Critical Error: ${criticalErr?.message || criticalErr}`, "text-red-500");
+
+        // 3. ดึง Front URI จาก Manifest
+        let strictFrontUri = "";
+        if (window.IMPERIAL_MANIFEST && window.IMPERIAL_MANIFEST[String(tokenId)]) {
+            const manifestData = window.IMPERIAL_MANIFEST[String(tokenId)];
+            strictFrontUri = typeof manifestData === 'string' ? manifestData.trim() : String(manifestData.irys_id || "").trim();
+        }
+
+        if (!strictFrontUri) {
+            showNotification("METADATA EXCEPTION: Front URI missing in Manifest.", "error");
+            return;
+        }
+
+        const currentMintPriceWei = await secureContract.mintPrice();
+
+        // ยิง Transaction ทันที ไม่ต้องอัปโหลด
+        const receipt = await runTx(
+            e, `SOVEREIGN_REMINT_#${tokenId}`, "SOVEREIGN_REMINT",
+            [BigInt(tokenId).toString(), strictFrontUri, backMediaTxId], 
+            { value: currentMintPriceWei.toString() },
+            { manageLock: false, manageButton: false }
+        );
+
+        if (receipt) {
+            if (GLOBAL_NODE_CACHE?.clear) GLOBAL_NODE_CACHE.clear();
+            if (typeof auditTokenFromLedger === 'function') await auditTokenFromLedger(tokenId);
+            if (typeof syncActiveMatrixNodes === 'function') await syncActiveMatrixNodes(); 
+            showNotification("Reminting complete. Deed reconstructed successfully!", "success");
+        }
+    } catch (err) {
+        const errorMsg = typeof decodeContractError === 'function' ? decodeContractError(err) : (err?.message || err);
+        showNotification(`Execution aborted: ${errorMsg}`, "error");
+    } finally {
+        if (btn) toggleButtonLoading(btn, false);
+        isTransactionPending = false;
+        if (typeof unlockSystem === 'function') unlockSystem();
     }
 }
 
