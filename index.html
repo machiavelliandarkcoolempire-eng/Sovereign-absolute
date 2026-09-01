@@ -4089,16 +4089,9 @@ async function executeArchitectMint(e) {
             return;
         }
 
-        // 3. ดึง Back URI
-        const backMediaTxId = (document.getElementById('adminBackUri')?.value || "").trim();
-        if (!backMediaTxId) {
-            showNotification("INPUT EXCEPTION: Enter Back URI / Tx ID.", "error");
-            return;
-        }
-
-        // 4. ดึง Front URI จาก Manifest
-        let strictFrontUri = "";
-        if (window.IMPERIAL_MANIFEST && window.IMPERIAL_MANIFEST[String(tokenId)]) {
+        // 3. ดึง Front URI จากช่อง Override ก่อน ถ้าไม่มีค่อยดึงจาก Manifest
+        let strictFrontUri = (document.getElementById('architectFrontUri')?.value || "").trim();
+        if (!strictFrontUri && window.IMPERIAL_MANIFEST && window.IMPERIAL_MANIFEST[String(tokenId)]) {
             const manifestData = window.IMPERIAL_MANIFEST[String(tokenId)];
             strictFrontUri = typeof manifestData === 'string' ? manifestData.trim() : String(manifestData.irys_id || "").trim();
         }
@@ -4108,7 +4101,34 @@ async function executeArchitectMint(e) {
             return;
         }
 
-        // ยิง Transaction ทันที ไม่ต้องอัปโหลด
+        // 4. ดึง Back URI จากช่องที่กรอกไว้
+        let backMediaTxId = (document.getElementById('architectBackUri')?.value || "").trim();
+        
+        // 🚨 ถ้ามี URL อยู่แล้ว ให้ข้ามการโหลดไฟล์ไปเลย! (ยิง TX ทันที)
+        if (!backMediaTxId) {
+            // จะเข้าเงื่อนไขนี้ก็ต่อเมื่อช่องกรอก "ว่างเปล่า" จริงๆ เท่านั้น
+            if (typeof appendLog === 'function') appendLog("No Direct Back URI provided. Initiating Irys File Picker...", "text-yellow-400");
+            
+            const file = await promptUserForFile('image/*,video/*');
+            if (!file) {
+                showNotification("Action aborted: No file selected for Back URI.", "warning");
+                return;
+            }
+            
+            const tags = [{ name: "Content-Type", value: file.type || "application/octet-stream" }];
+            const progress = typeof createProgressController === 'function' ? createProgressController(file.size) : null;
+            
+            const response = await executeIrysUpload(file, tags, true, progress);
+            backMediaTxId = response?.data ? response.data.id : response?.id;
+            
+            if (!backMediaTxId) throw new Error("Irys upload failed: No TxID returned.");
+            
+            // อัปเดตช่องกรอกให้แสดง TxID ที่เพิ่งอัปโหลดเสร็จ
+            const backUriInput = document.getElementById('architectBackUri');
+            if (backUriInput) backUriInput.value = backMediaTxId;
+        }
+
+        // ยิง Transaction ทันที
         const receipt = await runTx(
             e, `ARCHITECT_MINT_#${tokenId}`, "ARCHITECT_MINT",
             [BigInt(tokenId).toString(), targetAddress, strictFrontUri, backMediaTxId], {},
@@ -4161,16 +4181,9 @@ async function executeArchitectRemint(e) {
         const tokenId = validateTokenRange(rawTokenId);
         if (!tokenId) return;
 
-        // 2. ดึง Back URI
-        const backMediaTxId = (document.getElementById('adminBackUri')?.value || "").trim();
-        if (!backMediaTxId) {
-            showNotification("INPUT EXCEPTION: Enter Back URI / Tx ID.", "error");
-            return;
-        }
-
-        // 3. ดึง Front URI จาก Manifest
-        let strictFrontUri = "";
-        if (window.IMPERIAL_MANIFEST && window.IMPERIAL_MANIFEST[String(tokenId)]) {
+        // 2. ดึง Front URI จากช่อง Override ก่อน ถ้าไม่มีค่อยดึงจาก Manifest
+        let strictFrontUri = (document.getElementById('architectFrontUri')?.value || "").trim();
+        if (!strictFrontUri && window.IMPERIAL_MANIFEST && window.IMPERIAL_MANIFEST[String(tokenId)]) {
             const manifestData = window.IMPERIAL_MANIFEST[String(tokenId)];
             strictFrontUri = typeof manifestData === 'string' ? manifestData.trim() : String(manifestData.irys_id || "").trim();
         }
@@ -4180,9 +4193,34 @@ async function executeArchitectRemint(e) {
             return;
         }
 
+        // 3. ดึง Back URI จากช่องที่กรอกไว้
+        let backMediaTxId = (document.getElementById('architectBackUri')?.value || "").trim();
+        
+        // 🚨 ถ้ามี URL อยู่แล้ว ให้ข้ามการโหลดไฟล์ไปเลย! (ยิง TX ทันที)
+        if (!backMediaTxId) {
+            if (typeof appendLog === 'function') appendLog("No Direct Back URI provided. Initiating Irys File Picker...", "text-yellow-400");
+            
+            const file = await promptUserForFile('image/*,video/*');
+            if (!file) {
+                showNotification("Action aborted: No file selected for Back URI.", "warning");
+                return;
+            }
+            
+            const tags = [{ name: "Content-Type", value: file.type || "application/octet-stream" }];
+            const progress = typeof createProgressController === 'function' ? createProgressController(file.size) : null;
+            
+            const response = await executeIrysUpload(file, tags, true, progress);
+            backMediaTxId = response?.data ? response.data.id : response?.id;
+            
+            if (!backMediaTxId) throw new Error("Irys upload failed: No TxID returned.");
+            
+            const backUriInput = document.getElementById('architectBackUri');
+            if (backUriInput) backUriInput.value = backMediaTxId;
+        }
+
         const currentMintPriceWei = await secureContract.mintPrice();
 
-        // ยิง Transaction ทันที ไม่ต้องอัปโหลด
+        // ยิง Transaction ทันที
         const receipt = await runTx(
             e, `SOVEREIGN_REMINT_#${tokenId}`, "SOVEREIGN_REMINT",
             [BigInt(tokenId).toString(), strictFrontUri, backMediaTxId], 
