@@ -978,6 +978,8 @@
                 <button onclick="if(typeof executeArchitectRemint === 'function') executeArchitectRemint(event)" class="w-full bg-gradient-to-r from-rose-950 to-stone-900 border border-rose-800 text-rose-400 font-black font-mono text-[11px] py-4 rounded-xl uppercase hover:brightness-125 transition-all shadow-[0_0_20px_rgba(153,27,27,0.2)]">
                     ♺ EXECUTE ARCHITECT REMINT ♠️
                 </button>
+                <button onclick="if(typeof executeExtractWETHRoyalty === 'function') executeExtractWETHRoyalty(this)" class="w-full bg-emerald-950 border border-emerald-800 text-emerald-400 font-black font-mono text-[11px] py-3 rounded-xl uppercase hover:bg-emerald-900 transition-colors mt-3">EXTRACT WETH ROYALTY
+                </button>
             </div>
             <p class="text-[9px] text-stone-500 mt-3 uppercase leading-relaxed font-bold border-l-2 border-stone-800 pl-2">* STRICT RULE: SYSTEM EXTRACTS TOKEN ID FROM SELECTED MATRIX CELL. FRONT URI IS AUTO-FETCHED FROM MANIFEST.</p>
         </div>
@@ -1034,7 +1036,7 @@
 // 🔱 THE IMPERIAL SOVEREIGN DEED - CORE ARCHITECTURE (ETHERS V6 & IRYS 0.0.4)
 // 🛡️ WORLD-CLASS SENIOR WEB3 FRONT-END STANDARD (ZERO-BUG POLICY ENFORCED)
 // ==============================================================================
-const CONTRACT_ADDRESS = "0x76600A9cA18B329FbB29Ae0b75cc7676Ce0Dd97e";
+const CONTRACT_ADDRESS = "0x7d52930e1F0c6429200a0DFe02Be9Ac2d2A19Dd2"; // อัปเดต Address ใหม่
 const WETH_ADDRESS = "0x4200000000000000000000000000000000000006";
 const MULTICALL3_ADDRESS = "0xcA11bde05977b3631167028862bE2a173976CA11";
 
@@ -1882,7 +1884,7 @@ async function promptUserForFile(acceptType = 'image/*,video/*') {
 // ==============================================================================
 // ⚔️ TRANSACTION WRAPPER (WITH STATICCALL SIMULATION & NON-BLOCKING UI)
 // ==============================================================================
-async function runTx(eventOrBtn, actionName, methodName, args = [], overrides = {}, options = { manageLock: true, manageButton: true }) {
+async function runTx(eventOrBtn, actionName, methodName, args = [], overrides = {}, options = { manageLock: true, manageButton: true, onBroadcast: null }) {
     if (!secureContract || !signer) {
         if (typeof showNotification === 'function') showNotification("Wallet not connected or contract uninitialized.", "error");
         return null;
@@ -1899,25 +1901,29 @@ async function runTx(eventOrBtn, actionName, methodName, args = [], overrides = 
     try {
         if (typeof safeAppendLog === 'function') safeAppendLog(`[TX] Initiating ${actionName}...`, "text-yellow-400");
         
-        // 🚨 [CRITICAL FIX]: EXECUTE STATICCALL SIMULATION BEFORE REAL TX
         if (typeof safeAppendLog === 'function') safeAppendLog(`[SIMULATION] Running staticCall for ${methodName}...`, "text-slate-400");
         try {
-            // จำลองการทำงานบน Base Mainnet โดยไม่เสีย Gas
             await secureContract[methodName].staticCall(...args, overrides);
             if (typeof safeAppendLog === 'function') safeAppendLog(`[SIMULATION] staticCall passed. No revert detected.`, "text-emerald-400");
         } catch (simErr) {
-            // ดึง Error Message ฉบับเต็มจาก Smart Contract
             const decodedSimErr = typeof decodeContractError === 'function' ? decodeContractError(simErr) : (simErr.message || "Unknown Simulation Error");
             if (typeof safeAppendLog === 'function') safeAppendLog(`[SIMULATION FAILED] Transaction will revert: ${decodedSimErr}`, "text-red-500 font-bold");
             throw new Error(`SIMULATION_REVERTED: ${decodedSimErr}`);
         }
 
-        // Execute Ethers v6 Contract Method (ยิง Transaction จริง)
         const tx = await secureContract[methodName](...args, overrides);
         
         if (typeof safeAppendLog === 'function') safeAppendLog(`[TX] Broadcasted. Hash: ${tx.hash.slice(0,12)}... Awaiting confirmation.`, "text-blue-400");
         
-        // Wait for 1 block confirmation
+        // [FIX]: Expose transaction hash to caller immediately after broadcast for state recovery
+        if (options && typeof options.onBroadcast === 'function') {
+            try {
+                options.onBroadcast(tx);
+            } catch (cbErr) {
+                console.warn("[SYS LOG] onBroadcast callback execution failed:", cbErr);
+            }
+        }
+        
         const receipt = await tx.wait();
         
         if (receipt && receipt.status === 1) {
@@ -1927,8 +1933,7 @@ async function runTx(eventOrBtn, actionName, methodName, args = [], overrides = 
             throw new Error("Transaction reverted by EVM during execution.");
         }
     } catch (err) {
-        // แยกแยะ Error ระหว่าง Simulation Revert กับ Error ทั่วไป
-        const errorMsg = err.message.startsWith('SIMULATION_REVERTED:') 
+        const errorMsg = err.message && err.message.startsWith('SIMULATION_REVERTED:') 
             ? err.message.replace('SIMULATION_REVERTED: ', '') 
             : (typeof decodeContractError === 'function' ? decodeContractError(err) : (err.message || "Unknown Error"));
             
@@ -2968,29 +2973,46 @@ async function checkHolding(account) {
 }
 
 function checkPendingNova() {
-    const pendingTxHash = localStorage.getItem('pending_nova_txid'); 
-    const pendingToken = localStorage.getItem('pending_nova_token');
-    
-    if (pendingTxHash) {
-        const hiddenInput = document.getElementById('novaHiddenInput');
-        const tokenInput = document.getElementById('novaTokenId');
+    try {
+        const pendingTxHash = localStorage.getItem('pending_nova_txid'); 
+        const pendingToken = localStorage.getItem('pending_nova_token');
         
-        if (hiddenInput) hiddenInput.value = pendingTxHash;
-        if (tokenInput && pendingToken) tokenInput.value = pendingToken;
-        
-        if (typeof showNotification === 'function') {
-            showNotification(`AWAITING CONFIRMATION: ระบบกำลังรอการยืนยันธุรกรรม [Node #${pendingToken}] จากเครือข่ายบล็อกเชน`, "warning");
+        if (pendingTxHash && pendingToken) {
+            // [FIX]: Strict type validation for recovered Token ID
+            const parsedTokenId = parseInt(pendingToken, 10);
+            
+            if (isNaN(parsedTokenId) || parsedTokenId < 1 || parsedTokenId > 333) {
+                throw new Error("Corrupted pending token ID in storage.");
+            }
+
+            const tokenInput = document.getElementById('novaTokenId');
+            if (tokenInput) {
+                tokenInput.value = parsedTokenId.toString();
+            }
+            
+            if (typeof showNotification === 'function') {
+                showNotification(`AWAITING CONFIRMATION: ระบบกำลังรอการยืนยันธุรกรรม [Node #${parsedTokenId}] จากเครือข่ายบล็อกเชน`, "warning");
+            }
+            
+            if (typeof safeAppendLog === 'function') {
+                // [FIX]: Safely slice the hash for display without injecting it into payload inputs
+                const shortHash = typeof pendingTxHash === 'string' ? `${pendingTxHash.slice(0, 10)}...` : 'Unknown';
+                safeAppendLog(`[SYSTEM] Tracking unconfirmed on-chain transaction (${shortHash}) for Node #${parsedTokenId}.`, "text-amber-400");
+            }
+            
+            const modal = document.getElementById('novaWarnModal');
+            if (modal) {
+                modal.classList.remove('hidden');
+            }
         }
-        
-        if (typeof safeAppendLog === 'function') {
-            safeAppendLog(`[SYSTEM] Tracking unconfirmed on-chain transaction for Node #${pendingToken}.`, "text-amber-400");
-        }
-        
-        const modal = document.getElementById('novaWarnModal');
-        if (modal) modal.classList.remove('hidden');
+    } catch (err) {
+        console.warn("[SYS LOG] Failed to recover pending Nova state. Purging corrupted data.", err);
+        try {
+            localStorage.removeItem('pending_nova_txid');
+            localStorage.removeItem('pending_nova_token');
+        } catch (purgeErr) {}
     }
 }
-
 
 async function executeArchitectCentralizedUpload(type) {
     if (!secureContract || !signer) { 
@@ -4230,7 +4252,7 @@ async function closeNovaWarn(isConfirmed) {
 
 async function triggerIdentityNova(e) {
     if (!secureContract || !signer) { 
-        showNotification("Action suspended: Authenticate wallet signature first to invoke the NOVA process.", "error"); 
+        if (typeof showNotification === 'function') showNotification("Action suspended: Authenticate wallet signature first to invoke the NOVA process.", "error"); 
         return; 
     }
 
@@ -4239,14 +4261,14 @@ async function triggerIdentityNova(e) {
         const userAddress = await signer.getAddress();
         const privs = await verifyUserPrivileges(userAddress);
         
-        // 🚨 [CRITICAL FIX]: บังคับใช้ ID จาก Node ที่คลิกบนจอเท่านั้น
         const targetTokenId = globalSelectedTokenId;
         if (!targetTokenId) {
-            showNotification("STRUCTURAL EXCEPTION: Please select a Token ID coordinate on the Matrix first.", "error");
+            if (typeof showNotification === 'function') showNotification("STRUCTURAL EXCEPTION: Please select a Token ID coordinate on the Matrix first.", "error");
             return;
         }
-        tokenId = validateTokenRange(targetTokenId);
-        if(!tokenId) return;
+        
+        tokenId = typeof validateTokenRange === 'function' ? validateTokenRange(targetTokenId) : parseInt(targetTokenId, 10);
+        if (!tokenId || isNaN(tokenId)) return;
 
         id = BigInt(tokenId);
 
@@ -4254,11 +4276,11 @@ async function triggerIdentityNova(e) {
             try {
                 const activeOwner = await secureContract.ownerOf(id.toString());
                 if (activeOwner.toLowerCase() !== userAddress.toLowerCase()) {
-                    showNotification("SECURITY ENFORCEMENT: You do not own this specific deed node.", "error");
+                    if (typeof showNotification === 'function') showNotification("SECURITY ENFORCEMENT: You do not own this specific deed node.", "error");
                     return;
                 }
             } catch (err) {
-                showNotification("SECURITY ENFORCEMENT: Node does not exist or ownership verification failed.", "error");
+                if (typeof showNotification === 'function') showNotification("SECURITY ENFORCEMENT: Node does not exist or ownership verification failed.", "error");
                 return;
             }
         }
@@ -4271,22 +4293,47 @@ async function triggerIdentityNova(e) {
         
         if (!isDnaValid || (typeof isMaliciousURI === 'function' && (isMaliciousURI(video) || isMaliciousURI(hidden)))) {
             if (typeof appendLog === 'function') appendLog("SECURITY ALERT: Contaminated identity structure or malicious URI detected. NOVA ritual suspended.", "text-red-500 font-bold");
-            showNotification("ACCESS DENIED: Contaminated identity structure. Code injection blocked.", "error");
+            if (typeof showNotification === 'function') showNotification("ACCESS DENIED: Contaminated identity structure. Code injection blocked.", "error");
             return;
         }
 
         fee = await secureContract.novaFee();
     } catch(globalErr) {
-        console.error(globalErr);
-        showNotification("System Warning: Failed to prepare NOVA ritual.", "error");
+        console.error("[SYS LOG] Nova Preparation Error:", globalErr);
+        if (typeof showNotification === 'function') showNotification("System Warning: Failed to prepare NOVA ritual.", "error");
         return;
     }
 
-    const receipt = await runTx(e, `SOVEREIGN_NOVA_#${tokenId}`, "THE_SOVEREIGN_NOVA", [id.toString(), dna, video, hidden], { value: fee.toString() });
-    if (receipt) {
+    // [FIX]: Implement onBroadcast callback to secure pending state, and ensure cleanup on resolution
+    const receipt = await runTx(
+        e, 
+        `SOVEREIGN_NOVA_#${tokenId}`, 
+        "THE_SOVEREIGN_NOVA", 
+        [id.toString(), dna, video, hidden], 
+        { value: fee.toString() },
+        {
+            manageLock: true,
+            manageButton: true,
+            onBroadcast: (tx) => {
+                if (tx && tx.hash) {
+                    try {
+                        localStorage.setItem('pending_nova_txid', tx.hash);
+                        localStorage.setItem('pending_nova_token', id.toString());
+                    } catch (storageErr) {
+                        console.warn("[SYS LOG] LocalStorage write failed:", storageErr);
+                    }
+                }
+            }
+        }
+    );
+
+    // Strict cleanup of pending state regardless of success or failure
+    try {
         localStorage.removeItem('pending_nova_txid');
         localStorage.removeItem('pending_nova_token');
-        
+    } catch (cleanupErr) {}
+
+    if (receipt) {
         if (typeof GLOBAL_NODE_CACHE !== 'undefined' && GLOBAL_NODE_CACHE?.delete) GLOBAL_NODE_CACHE.delete(id.toString());
         if ('caches' in window) {
             try { await caches.delete('eter-v6-asset-vault'); } catch(e) {}
