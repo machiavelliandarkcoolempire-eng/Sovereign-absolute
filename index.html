@@ -6,7 +6,6 @@
 <meta name="theme-color" content="#050814" />
 <meta http-equiv="X-Frame-Options" content="DENY" />
 <meta name="referrer" content="strict-origin-when-cross-origin" />
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https: https://*.irys.xyz https://gateway.irys.xyz https://arweave.net https://ar-io.net; media-src 'self' blob: https: https://*.irys.xyz https://gateway.irys.xyz https://arweave.net https://ar-io.net; connect-src 'self' https://mainnet.base.org https://base.llamarpc.com https://base-rpc.publicnode.com https://base-mainnet.g.alchemy.com wss://base-mainnet.g.alchemy.com https://*.irys.xyz https://gateway.irys.xyz https://arweave.net https://ar-io.net wss://relay.walletconnect.com wss://relay.walletconnect.org https://rpc.walletconnect.com https://api.web3modal.com https://api.reown.com wss:; frame-ancestors 'none'; base-uri 'none'; object-src 'none'; form-action 'self';">
 
 <title>THE IMPERIAL SOVEREIGN DEED ♠️</title>
 
@@ -17,16 +16,16 @@
         }
     </script>
     
-    <link rel="stylesheet" href="./dist.css" />
+    <!-- Tailwind CSS (Assuming you have a build process or use CDN for dev) -->
+    <script src="https://cdn.tailwindcss.com"></script>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://unpkg.com/@walletconnect/ethereum-provider@2.11.1/dist/index.umd.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    
+    <!-- Polyfills & Irys Bundle -->
     <script src="./web3-polyfill.js"></script>
     <script src="./irys-bundle.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-<script>eruda.init();</script>
-
     
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=JetBrains+Mono:wght@400;700;800&display=swap');
@@ -34,27 +33,14 @@
     :root {
         --void: #000000;
         --midnight: #050814;
-        --midnight-2: #0a0f24;
         --gold-bright: #fbbf24;
         --gold: #d97706;
-        --gold-deep: #78350f;
-        --gold-pale: #fef08a;
         --crimson: #be123c;
-        --crimson-deep: #9f1239;
-        --crimson-dark: #7f1d1d;
-        --hairline: rgba(251, 191, 36, 0.15);
     }
 
     html, body { background-color: var(--midnight) !important; }
     body { visibility: hidden; }
     body.app-ready { visibility: visible; }
-    
-    #displayCouncilPool span { font-size: 0 !important; }
-    #displayCouncilPool span::after {
-        content: "ETH (Ecosystem Vault Allocation)";
-        font-size: 0.75rem;
-        letter-spacing: normal;
-    }
 
     body {
         font-family: 'JetBrains Mono', monospace;
@@ -74,11 +60,6 @@
         mix-blend-mode: multiply;
     }
 
-    body::after {
-        content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: 0.04;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-    }
-
     .font-mono { font-family: 'JetBrains Mono', monospace; }
     .font-cinzel { font-family: 'Cinzel', serif; }
 
@@ -93,30 +74,20 @@
         box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 20px 50px rgba(0, 0, 0, 0.7);
     }
 
-    .chiaroscuro-bg::before {
-        content: ''; position: absolute; inset: 0 0 auto 0; height: 1px; border-radius: 1.25rem 1.25rem 0 0;
-        background: linear-gradient(90deg, transparent 0%, rgba(251, 191, 36, 0.4) 30%, rgba(254, 240, 138, 0.8) 50%, rgba(251, 191, 36, 0.4) 70%, transparent 100%);
-        opacity: 0.6; pointer-events: none;
-    }
-
     .gold-text {
         background: linear-gradient(135deg, #fffbeb 0%, #fef08a 25%, #fbbf24 50%, #d97706 75%, #78350f 100%);
         -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
         filter: drop-shadow(0 2px 10px rgba(217, 119, 6, 0.4));
     }
 
-    .crimson-text { color: #fda4af; text-shadow: 0 0 15px rgba(190, 18, 60, 0.8); }
-    .red-vivid { color: #f87171; text-shadow: 0 0 20px rgba(239, 68, 68, 0.6); }
-    .gold-vivid { color: #fcd34d; text-shadow: 0 0 25px rgba(251, 191, 36, 0.8), 0 2px 4px rgba(0, 0, 0, 0.9); }
-
     /* Button Animations */
-    .btn-gold-master, .btn-rebirth-bright, .btn-remint-bright { position: relative; overflow: hidden; isolation: isolate; }
-    .btn-gold-master::after, .btn-rebirth-bright::after, .btn-remint-bright::after {
+    .btn-gold-master, .btn-rebirth-bright { position: relative; overflow: hidden; isolation: isolate; }
+    .btn-gold-master::after, .btn-rebirth-bright::after {
         content: ''; position: absolute; top: 0; left: -150%; width: 70%; height: 100%;
         background: linear-gradient(100deg, transparent 0%, rgba(255, 255, 255, 0.5) 50%, transparent 100%);
         transform: skewX(-25deg); transition: left 0.7s cubic-bezier(0.4, 0, 0.2, 1); pointer-events: none;
     }
-    .btn-gold-master:hover:not(:disabled)::after, .btn-rebirth-bright:hover:not(:disabled)::after, .btn-remint-bright:hover:not(:disabled)::after { left: 150%; }
+    .btn-gold-master:hover:not(:disabled)::after, .btn-rebirth-bright:hover:not(:disabled)::after { left: 150%; }
 
     .btn-gold-master {
         background: linear-gradient(135deg, #78350f 0%, #b45309 25%, #fbbf24 50%, #b45309 75%, #78350f 100%);
@@ -140,7 +111,6 @@
         transform: translateY(-2px) scale(1.02);
         box-shadow: 0 12px 30px rgba(0, 0, 0, 0.8), 0 0 60px rgba(253, 224, 71, 0.8), inset 0 1px 2px rgba(255, 255, 255, 1);
     }
-    .btn-rebirth-bright:disabled { filter: grayscale(100%); opacity: 0.5; cursor: not-allowed; }
 
     /* Scrollbar */
     .scroll-dark::-webkit-scrollbar { width: 4px; height: 4px; }
@@ -165,27 +135,6 @@
         background: linear-gradient(180deg, rgba(15, 10, 20, 0.9) 0%, rgba(5, 5, 10, 0.98) 100%);
         border: 1px solid rgba(136, 19, 55, 0.5); transition: all 0.3s ease;
     }
-    .preview-slot:hover, .preview-slot.active {
-        border-color: rgba(217, 119, 6, 0.9); box-shadow: 0 0 35px rgba(217, 119, 6, 0.3);
-    }
-
-    /* Scanline Banner */
-    .scanline-bar {
-        position: relative; overflow: hidden; border: 1px solid rgba(251, 191, 36, 0.4);
-        border-radius: 1.25rem;
-        background: linear-gradient(135deg, rgba(20, 15, 5, 0.95) 0%, rgba(5, 5, 5, 0.98) 50%, rgba(20, 5, 10, 0.95) 100%);
-        box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.9), 0 0 40px rgba(217, 119, 6, 0.15);
-        transition: all 0.4s ease;
-    }
-    .scanline-bar:hover {
-        border-color: rgba(251, 191, 36, 0.8); box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.9), 0 0 60px rgba(217, 119, 6, 0.4);
-    }
-    .scanline-bar::before {
-        content: ''; position: absolute; top: -10%; left: 0; width: 100%; height: 2px;
-        background: linear-gradient(90deg, transparent, #fef08a 50%, transparent);
-        box-shadow: 0 0 30px 8px rgba(251, 191, 36, 0.8); animation: scanline 3s linear infinite;
-    }
-    @keyframes scanline { 0% { top: -10%; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { top: 100%; opacity: 0; } }
 
     /* Matrix Nodes */
     .matrix-node {
@@ -210,45 +159,27 @@
     }
 
     .node-active {
-    background: radial-gradient(circle at 50% 30%, rgba(6, 182, 212, 0.6) 0%, rgba(8, 51, 68, 0.4) 100%) !important;
-    border-color: #06b6d4 !important; 
-    color: #cffafe !important; 
-    box-shadow: 0 0 25px rgba(6, 182, 212, 0.9), inset 0 0 15px rgba(6, 182, 212, 0.6) !important;
-}
-
-
-    /* Input Fields */
-    input[type="text"], input[type="number"] {
-        background-color: rgba(0, 0, 0, 0.6);
-        border: 1px solid rgba(63, 63, 70, 0.8);
-        color: #fcd34d;
-        transition: all 0.3s ease;
+        background: radial-gradient(circle at 50% 30%, rgba(6, 182, 212, 0.6) 0%, rgba(8, 51, 68, 0.4) 100%) !important;
+        border-color: #06b6d4 !important; 
+        color: #cffafe !important; 
+        box-shadow: 0 0 25px rgba(6, 182, 212, 0.9), inset 0 0 15px rgba(6, 182, 212, 0.6) !important;
     }
-    input[type="text"]:focus, input[type="number"]:focus {
-        border-color: #fbbf24;
-        box-shadow: 0 0 15px rgba(251, 191, 36, 0.2);
-        outline: none;
-    }
-    
-    /* Tabs */
-    .tab-btn.active { background: rgba(245,158,11,0.15); border-color: rgba(245,158,11,0.8); color: #fbbf24; }
-    .tab-btn:hover:not(.active) { border-color: rgba(245,158,11,0.5); color: #fcd34d; }
-
 </style>
 </head>
 
 <body class="text-slate-100 font-mono antialiased relative">
 
-<!-- Modals (Kept exactly as original logic, improved styling) -->
+<!-- ========================================== -->
+<!-- MODALS -->
+<!-- ========================================== -->
 <div id="gasSurgeWarning" class="fixed top-4 left-1/2 transform -translate-x-1/2 bg-red-950/95 border border-red-500 text-red-100 px-6 py-3 rounded-xl z-[99999] hidden shadow-[0_0_30px_rgba(239,68,68,0.8)] backdrop-blur-md">
     <span class="font-cinzel font-black uppercase text-xs flex items-center gap-2"><span class="animate-pulse">⚠</span> NETWORK GAS SURGE DETECTED</span>
-    <p class="text-[10px] font-mono mt-1 text-red-300">Gas price is currently highly volatile. Proceeding may result in unexpected fees.</p>
 </div>
 
 <div id="securityHardLockOverlay" class="fixed inset-0 bg-red-950/95 z-[99999] flex flex-col items-center justify-center p-6 hidden text-center font-mono border-4 border-red-600 m-4 rounded-2xl shadow-[0_0_60px_rgba(239,68,68,0.6)] backdrop-blur-xl">
     <span class="text-6xl mb-4 animate-bounce">🛡️</span>
     <h1 class="text-2xl md:text-3xl font-black text-red-100 tracking-widest mb-2 font-cinzel">NETWORK CHAIN VIOLATION</h1>
-    <p class="text-xs md:text-sm text-red-300 max-w-md mb-8 font-bold leading-relaxed">FRONTEND SYSTEM COMPLETELY LOCKED. WALLET NOT CONNECTED TO BASE MAINNET. SWITCH NETWORK TO UNLOCK.</p>
+    <p class="text-xs md:text-sm text-red-300 max-w-md mb-8 font-bold leading-relaxed">FRONTEND SYSTEM COMPLETELY LOCKED. WALLET NOT CONNECTED TO BASE MAINNET.</p>
     <button onclick="window.location.reload();" class="px-8 py-3 bg-red-800 hover:bg-red-700 border border-red-400 text-white font-bold rounded-xl text-xs tracking-wider transition-all shadow-[0_0_20px_rgba(220,38,38,0.5)]">RE-INITIALIZE TELEMETRY</button>
 </div>
 
@@ -256,7 +187,7 @@
     <div class="chiaroscuro-bg p-6 md:p-8 rounded-2xl border border-amber-600/60 max-w-md w-full text-center shadow-[0_0_50px_rgba(217,119,6,0.3)]">
         <h3 class="text-base font-black font-cinzel text-amber-500 mb-3 uppercase tracking-widest">⛽ BRIDGE CAPITAL DEPLETION</h3>
         <p class="text-[11px] md:text-xs font-mono text-slate-300 leading-relaxed mb-6">
-            The network telemetry detects insufficient balance on the Irys Permanent Settlement Bridge. System requires additional gas allocation of: <br><span id="fundAmountDisplay" class="text-amber-400 font-bold text-lg block mt-2">0.0000</span> <span class="text-amber-500/70 text-[10px]">ETH (15% buffer included)</span>
+            System requires additional gas allocation of: <br><span id="fundAmountDisplay" class="text-amber-400 font-bold text-lg block mt-2">0.0000</span> <span class="text-amber-500/70 text-[10px]">ETH</span>
         </p>
         <div class="flex flex-col sm:flex-row gap-3">
             <button onclick="if(typeof window.resolveFundConfirm === 'function') window.resolveFundConfirm(false)" class="w-full sm:w-1/2 bg-stone-950 text-stone-400 font-mono text-xs py-3.5 rounded-xl uppercase border border-stone-800 hover:bg-stone-900 transition-colors">CANCEL</button>
@@ -268,9 +199,8 @@
 <div id="mediaConfirmModal" class="fixed inset-0 bg-black/95 backdrop-blur-xl z-[9999999] hidden items-center justify-center p-4">
     <div class="chiaroscuro-bg p-6 rounded-2xl border border-amber-600/60 max-w-lg w-full flex flex-col shadow-[0_0_60px_rgba(217,119,6,0.4)]">
         <h3 class="text-base font-black font-cinzel text-amber-500 mb-2 uppercase tracking-widest text-center">🎬 CRYPTOGRAPHIC MEDIA PREVIEW</h3>
-        <p class="text-[10px] font-mono text-slate-400 text-center uppercase mb-5 tracking-wider">Verify cryptographic DNA and artifact structure before ledger deployment.</p>
         <div id="mediaConfirmationPreviewContainer" class="aspect-[16/9] w-full bg-black border border-stone-800 rounded-xl overflow-hidden flex items-center justify-center mb-5 shadow-inner"></div>
-        <div id="mediaConfirmDnaDisplay" class="p-3 bg-stone-950 border border-rose-950/60 rounded-xl text-center font-mono text-[10px] text-rose-400 mb-6 break-all shadow-[inset_0_0_15px_rgba(0,0,0,0.8)]">
+        <div id="mediaConfirmDnaDisplay" class="p-3 bg-stone-950 border border-rose-950/60 rounded-xl text-left font-mono text-[10px] text-rose-400 mb-6 break-all shadow-[inset_0_0_15px_rgba(0,0,0,0.8)] max-h-32 overflow-y-auto scroll-dark">
             DNA: —
         </div>
         <div class="flex flex-col sm:flex-row gap-3">
@@ -297,48 +227,21 @@
         <p class="text-[10px] md:text-xs font-mono text-slate-400 leading-relaxed mb-4 flex-shrink-0">
             The Forensic Laboratory is strictly Token-Gated. Review the Sovereign Dashboard operational guide before executing the scan.
         </p>
-
         <div class="bg-black/80 border border-stone-800 rounded-xl p-5 mb-5 overflow-y-auto scroll-dark text-[10px] md:text-[11px] font-mono text-slate-300 space-y-6 flex-grow shadow-[inset_0_0_30px_rgba(0,0,0,0.9)] h-72">
-            <!-- Content kept identical to original -->
             <div>
-                <h4 class="text-amber-500 font-black uppercase mb-2 border-b border-stone-800 pb-1.5">Phase 1: Sovereign Awakening</h4>
+                <h4 class="text-amber-500 font-black uppercase mb-2 border-b border-stone-800 pb-1.5">Phase 1: Sovereign Awakening (Lazy Mint)</h4>
                 <ul class="space-y-2 list-none pl-1">
-                    <li><span class="text-rose-400 font-bold">Action:</span> Connect Web3 wallet and mint the Deed Access Utility Token on the Base network.</li>
-                    <li><span class="text-rose-400 font-bold">Fact:</span> Automatically deploys a Token Bound Account (TBA - ERC-6551) via Lazy Initialization. The dev team is permanently stripped of control with No Backdoors.</li>
-                    <li><span class="text-rose-400 font-bold">Outcome:</span> Absolute operational utility and control over metadata and media transfer strictly to the active keyholder.</li>
+                    <li><span class="text-rose-400 font-bold">Action:</span> เลือก Node ที่ว่าง -> กด SOVEREIGN AWAKENING -> อัปโหลดรูป/วิดิโอด้านหลัง -> ยืนยัน Transaction</li>
+                    <li><span class="text-rose-400 font-bold">Fact:</span> ระบบจะดึงรูปด้านหน้าจาก Manifest อัตโนมัติ และส่งข้อมูลทั้งหมดลง Smart Contract ใน 1 Tx</li>
+                    <li><span class="text-rose-400 font-bold">Outcome:</span> ได้รับสิทธิ์ขาดเหนือทรัพย์สินเบ็ดเสร็จ พร้อม TBA Wallet (ERC-6551) ทันที</li>
                 </ul>
             </div>
             <div>
-                <h4 class="text-amber-500 font-black uppercase mb-2 border-b border-stone-800 pb-1.5">Phase 2: Deed Ascension</h4>
+                <h4 class="text-amber-500 font-black uppercase mb-2 border-b border-stone-800 pb-1.5">Phase 2: The Sovereign Nova (Ascension)</h4>
                 <ul class="space-y-2 list-none pl-1">
-                    <li><span class="text-rose-400 font-bold">9:16 Video Preview Slots:</span> Designed strictly for viewing Nova sample templates. No data fields.</li>
-                    <li><span class="text-rose-400 font-bold">Premium 4K Production:</span> Select a template version → Contact the Architect via social links → Submit 5 source images. The Architect custom-engineers a 4K Branding Video and 5 profiles with personalized cryptographic DNA engraved at <span class="text-red-400 font-bold bg-red-950/40 px-1.5 py-0.5 rounded">3% Opacity</span> for forensic proof.</li>
-                    <li><span class="text-rose-400 font-bold">Nova Input Fields:</span> Enter 4 parameters required by Smart Contract: Token ID (t), Identity DNA (dna), Video URI (video), and Chrono-Map / Pixel Anchor (hiddenProperty).</li>
-                    <li class="mt-3 text-[10px] text-red-400 border border-red-900/60 bg-red-950/30 p-3 rounded-lg uppercase font-bold leading-relaxed">
-                        CRITICAL WARNING: identityDNA and hiddenProperty are permanently Immutable upon Nova execution. Media URIs (front, back, video) can be updated anytime for FREE (gas fee only) via updateIdentity() once Sanctified.
-                    </li>
-                </ul>
-            </div>
-            <div>
-                <h4 class="text-amber-500 font-black uppercase mb-2 border-b border-stone-800 pb-1.5">Phase 3: Forensic DNA Lab</h4>
-                <ul class="space-y-2 list-none pl-1">
-                    <li><span class="text-rose-400 font-bold">Action:</span> Access via the hidden trigger under the "Uncompromised Integrity Protocol" section.</li>
-                    <li><span class="text-rose-400 font-bold">Fact:</span> On-chain verification restricts access exclusively to the verified Deed holder.</li>
-                    <li><span class="text-rose-400 font-bold">Outcome:</span> Instantly cross-checks personal DNA footprints to deliver irrefutable, court-admissible evidence, significantly expediting identity theft and deepfake litigation.</li>
-                </ul>
-            </div>
-            <div>
-                <h4 class="text-amber-500 font-black uppercase mb-2 border-b border-stone-800 pb-1.5">Phase 4: Governance Panel</h4>
-                <ul class="space-y-2 list-none pl-1">
-                    <li><span class="text-rose-400 font-bold">Council Panel:</span> Dashboard UI displays ONLY the "Digital live vote tally" tracking towards the 199/333 Absolute Quorum. Opening a vote (Create Proposal) must be executed by a Council Member via BaseScan directly. (Deeds #1-10 hold Council Technical Governance Rights & Primary Quorum Authority; #50 and #100 hold Council Technical Governance Rights with standard execution weight).</li>
-                    <li><span class="text-rose-400 font-bold">Protocol Routing:</span> Automated 7-unit execution routing strictly dedicated to protocol operational processing, decentralized infrastructure maintenance, and system development support.</li>
-                </ul>
-            </div>
-            <div>
-                <h4 class="text-amber-500 font-black uppercase mb-2 border-b border-stone-800 pb-1.5">Phase 5: Sovereign Dissolution & Remint Loop</h4>
-                <ul class="space-y-2 list-none pl-1">
-                    <li><span class="text-rose-400 font-bold">Sovereign Immolation:</span> In times of protocol instability, nodes possess the autonomy to self-destruct (Burn). The immutable contract strictly executes an automated state-deactivation and resource release mechanism directly on-chain. <i>There are no manual overrides, and the protocol operates without human administration.</i></li>
-                    <li><span class="text-rose-400 font-bold">The Architect Restriction:</span> The void left by burned elements maps to address(0). The Architect holds severely bottlenecked structural access (Hardcapped overrides) to inject new meta-state and trigger a Re-Mint, restoring the empire's mass entirely strictly dictated by on-chain math.</li>
+                    <li><span class="text-rose-400 font-bold">Action:</span> กรอกข้อมูล DNA (คั่นด้วย |) และ Video URI -> กด SANCTIFY NOVA</li>
+                    <li><span class="text-rose-400 font-bold">Fact:</span> ข้อมูล DNA และ Hidden Property จะถูกสลักลง On-Chain อย่างถาวร (Immutable)</li>
+                    <li><span class="text-rose-400 font-bold">Outcome:</span> ปลดล็อคสถานะ Sanctified = TRUE สามารถอัปเดตสื่อ (รูป/วิดิโอ) ได้ฟรีตลอดชีพ (เสียแค่ค่าแก๊ส)</li>
                 </ul>
             </div>
         </div>
@@ -370,7 +273,9 @@
     </div>
 </div>
 
-<!-- Main UI Starts Here -->
+<!-- ========================================== -->
+<!-- MAIN UI -->
+<!-- ========================================== -->
 <header class="chiaroscuro-bg p-5 md:p-6 rounded-2xl mb-6 relative z-10 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-5">
     <div class="flex items-center gap-4 w-full lg:w-auto">
         <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-amber-500 to-rose-900 flex items-center justify-center font-cinzel font-black text-black text-3xl shadow-[0_0_25px_rgba(217,119,6,0.4)] flex-shrink-0">Ω</div>
@@ -379,7 +284,7 @@
                 THE IMPERIAL SOVEREIGN <span class="gold-text">DEED</span>
             </h1>
             <p class="text-[9px] md:text-[10px] font-mono text-rose-400/80 uppercase tracking-[0.15em] mt-1 truncate">
-                333 Bespoke Council Passes • Base Mainnet • <span class="font-bold text-stone-300" id="hdrContract">0x920c1........A2b230C9</span>
+                333 Bespoke Council Passes • Base Mainnet • <span class="font-bold text-stone-300" id="hdrContract">0x7d529........2A19Dd2</span>
             </p>
         </div>
     </div>
@@ -410,15 +315,7 @@
     </div>
 </header>
 
-<section class="mb-6 relative z-10">
-    <div onclick="if(typeof openIdentityAuthModal === 'function') openIdentityAuthModal()" class="scanline-bar chiaroscuro-bg p-6 md:p-8 rounded-2xl cursor-pointer hover:border-amber-500 transition-all shadow-[inset_0_0_30px_rgba(0,0,0,0.9)]" title="INITIALIZE IDENTITY PROBE">
-        <h2 class="gold-vivid text-center font-cinzel font-black text-xl md:text-3xl tracking-[0.2em] md:tracking-[0.3em] opacity-90 hover:opacity-100 transition-all drop-shadow-2xl select-none uppercase">
-            UNCOMPROMISED INTEGRITY PROTOCOL
-        </h2>
-    </div>
-</section>
-
-<!-- 🧬 เริ่มต้น Section: ห้อง DNA STUDIO -->
+<!-- 🧬 DNA STUDIO (Hidden by default) -->
 <div id="memberDnaStudio" class="hidden mb-6 relative z-10">
     <div class="chiaroscuro-bg p-6 md:p-8 rounded-2xl border border-cyan-900/50 shadow-[0_0_40px_rgba(6,182,212,0.15)]">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-stone-800 pb-4 mb-6 gap-3">
@@ -430,7 +327,6 @@
         </div>
 
         <div class="space-y-3 font-mono text-[10px] md:text-xs">
-            <!-- 8 ค่าที่ดึงตรงจาก Smart Contract (getDeedData) -->
             <div class="bg-black/80 p-3.5 rounded-lg border border-stone-800 flex flex-col gap-1">
                 <span class="text-stone-500 font-bold uppercase">1. ACCREDITED OWNER:</span> 
                 <span id="dna-owner" class="text-cyan-300 break-all font-bold">AWAITING...</span>
@@ -459,14 +355,13 @@
             </div>
             <div class="bg-black/80 p-3.5 rounded-lg border border-rose-900/30 flex flex-col gap-1 shadow-inner">
                 <span class="text-rose-400 font-bold uppercase">7. IDENTITY DNA:</span> 
-                <span id="dna-dna" class="text-rose-200 break-all font-bold">AWAITING...</span>
+                <div id="dna-dna" class="text-rose-200 break-all font-bold">AWAITING...</div>
             </div>
             <div class="bg-black/80 p-3.5 rounded-lg border border-rose-900/30 flex flex-col gap-1 shadow-inner">
-                <span class="text-rose-400 font-bold uppercase">8. HIDDEN PROPERTY:</span> 
-                <span id="dna-hidden" class="text-rose-200 break-all font-bold">AWAITING...</span>
+                <span class="text-rose-400 font-bold uppercase">8. HIDDEN PROPERTY (CHRONO-MAP):</span> 
+                <div id="dna-hidden" class="text-rose-200 break-all font-bold">AWAITING...</div>
             </div>
             
-            <!-- 2 ค่าที่ดึงจาก Factory Metadata (JSON) -->
             <div class="bg-black/80 p-3.5 rounded-lg border border-amber-900/50 flex flex-col gap-2 shadow-inner mt-2">
                 <span class="text-amber-500 font-bold uppercase border-b border-stone-800 pb-1">9. FACTORY METADATA (JSON ATTRIBUTES):</span> 
                 <span id="propDisplay1" class="text-amber-300 font-bold">AWAITING EXTRACTION...</span>
@@ -474,13 +369,11 @@
             </div>
         </div>
         
-        <!-- ปุ่มกด Refresh ข้อมูล -->
         <button onclick="if(typeof processIdentityDnaInspectionOnChain === 'function') processIdentityDnaInspectionOnChain()" class="w-full bg-cyan-950/60 text-cyan-200 border border-cyan-600 text-xs font-black py-4 rounded-xl uppercase hover:bg-cyan-900 transition-all tracking-widest shadow-[0_0_25px_rgba(6,182,212,0.4)] cursor-pointer mt-5">
             REFRESH ON-CHAIN STRUCTURAL TRACE 🧬
         </button>
     </div>
 </div>
-<!-- 🧬 สิ้นสุด Section: ห้อง DNA STUDIO -->
 
 <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5 mb-6 relative z-10">
     <div class="chiaroscuro-bg p-5 rounded-2xl border-l-4 border-amber-500">
@@ -495,19 +388,17 @@
     </div>
     <div class="chiaroscuro-bg p-5 rounded-2xl border-l-4 border-rose-700">
         <span class="text-[10px] font-mono uppercase text-stone-400 block mb-2 tracking-wider">SANCTIFIED ACTIVE DEEDS</span>
-        <div id="displaySupply" class="text-2xl md:text-3xl font-black red-vivid font-mono mt-1">0 / 333</div>
+        <div id="displaySupply" class="text-2xl md:text-3xl font-black text-rose-500 font-mono mt-1">0 / 333</div>
     </div>
     <div class="chiaroscuro-bg p-5 rounded-2xl border-l-4 border-amber-700 sm:col-span-2 lg:col-span-2">
         <span class="text-[10px] font-mono uppercase text-stone-400 block mb-2 tracking-wider">TRIBUTE TARIFF METRICS</span>
         <div class="text-xs md:text-sm font-mono text-stone-300 mt-2 leading-relaxed break-words">
-            MINT: <span id="lblMintPrice" class="text-amber-500 font-bold">0.0</span> | NOVA: <span id="lblNovaFee" class="text-rose-400 font-bold">0.0</span> ETH
+            MINT: <span id="lblMintPrice" class="text-amber-500 font-bold">1.2</span> | NOVA: <span id="lblNovaFee" class="text-rose-400 font-bold">1.3</span> ETH
         </div>
         <div class="text-[10px] font-mono text-stone-500 mt-3 pt-2 border-t border-stone-800 flex flex-wrap gap-2">
             <span>HIST MINTS: <span id="lblHistoricalMint" class="text-stone-300 font-bold">0</span></span>
             <span class="hidden sm:inline">|</span>
             <span>RES/NFT: <span id="lblReservePerNFT" class="text-stone-300 font-bold">0.0</span></span>
-            <span class="hidden sm:inline">|</span>
-            <span>DUST: <span id="dustVisualizer" class="text-stone-400 font-bold">0</span> WEI</span>
         </div>
     </div>
 </section>
@@ -543,28 +434,24 @@
     </div>
     
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        
-        <!-- ========================================== -->
-        <!-- คอลัมน์ซ้าย: ปุ่มคำสั่ง -->
-        <!-- ========================================== -->
         <div class="lg:col-span-5 space-y-5">
             <span class="text-[10px] font-mono text-stone-400 uppercase tracking-wider block font-bold">// CRYPTOGRAPHIC ACTION HUB</span>
             
             <div class="flex flex-col gap-4 bg-black/40 p-5 rounded-xl border border-stone-800">  
-                <!-- สลับสายชนวนสำเร็จ: เรียก Modal แทนการ Forge ทันที -->
                 <button id="executeForgeBtn" onclick="if(typeof openForgeConsentModal === 'function') openForgeConsentModal('REBIRTH', this)" class="btn-rebirth-bright text-sm py-4 rounded-xl font-black tracking-widest w-full">
                     [SOVEREIGN AWAKENING ♠️]
+                </button>
+                <button onclick="if(typeof openIdentityAuthModal === 'function') openIdentityAuthModal()" class="w-full bg-cyan-950/40 border border-cyan-800 text-cyan-400 font-mono text-xs py-3 rounded-xl uppercase hover:bg-cyan-900 transition-all shadow-[0_0_15px_rgba(6,182,212,0.2)]">
+                    🔍 INSPECT DNA (TOKEN-GATED)
                 </button>
             </div>
             
             <p class="text-[10px] font-mono text-stone-500 uppercase mt-2 pl-2 border-l-2 border-stone-800">
-              • Limited to 333 Absolute Passes Worldwide
+              • Limited to 333 Absolute Passes Worldwide<br>
+              • 1 Transaction Lazy Minting (Auto-fetch Front URI)
             </p>
         </div>
         
-        <!-- ========================================== -->
-        <!-- คอลัมน์ขวา: ส่วนแสดงผลข้อมูล (TBA / Vault) -->
-        <!-- ========================================== -->
         <div class="lg:col-span-7 bg-black/60 p-5 md:p-6 rounded-2xl border border-stone-800 flex flex-col justify-between shadow-inner">
             <div>
                 <span class="text-[10px] font-mono text-amber-500 uppercase tracking-wider block mb-3 font-bold">// SPECIFIC ACTIVE DEED OWNERSHIP STATE</span>
@@ -574,7 +461,7 @@
             </div>
 
             <div class="mt-5 p-4 md:p-5 bg-gradient-to-br from-stone-950 to-[#15080c] border border-amber-700/40 rounded-xl shadow-[0_0_20px_rgba(217,119,6,0.1)]">
-                <span class="text-[11px] font-mono text-amber-400 font-bold block uppercase mb-3 tracking-widest flex items-center gap-2">♠️ TBA WALLET</span>
+                <span class="text-[11px] font-mono text-amber-400 font-bold block uppercase mb-3 tracking-widest flex items-center gap-2">♠️ TBA WALLET (ERC-6551)</span>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-[11px] font-mono">
                     <div class="p-3 bg-black/80 rounded-lg border border-stone-800 flex flex-col gap-1">
                         <span class="text-stone-500 uppercase">TBA VAULT FUEL (ETH):</span>
@@ -588,33 +475,25 @@
             </div>
 
             <div class="mt-5 pt-4 border-t border-stone-800">
-                <label class="text-[10px] text-stone-500 font-mono block mb-2 uppercase tracking-widest">TBA: 0x... (ERC-6551 Address)</label>
+                <label class="text-[10px] text-stone-500 font-mono block mb-2 uppercase tracking-widest">TBA ADDRESS</label>
                 <div class="flex flex-col sm:flex-row gap-3">
                     <input type="text" id="tbaAddressDisplay" readonly placeholder="0x0000000000000000000000000000000000000000" class="flex-grow bg-stone-950 border border-stone-800 p-3 text-[11px] font-mono text-amber-400 rounded-lg outline-none select-all text-center sm:text-left" />
-                    <button onclick="navigator.clipboard.writeText(document.getElementById('tbaAddressDisplay').value); if(typeof showNotification === 'function') showNotification('TBA Address Copied!', 'success'); else console.log('Copied');" class="px-6 py-3 bg-stone-900 border border-stone-700 text-stone-300 hover:border-amber-500 hover:text-amber-400 rounded-lg text-[10px] font-mono uppercase font-bold transition-all whitespace-nowrap">COPY TBA</button>
+                    <button onclick="navigator.clipboard.writeText(document.getElementById('tbaAddressDisplay').value); if(typeof showNotification === 'function') showNotification('TBA Address Copied!', 'success');" class="px-6 py-3 bg-stone-900 border border-stone-700 text-stone-300 hover:border-amber-500 hover:text-amber-400 rounded-lg text-[10px] font-mono uppercase font-bold transition-all whitespace-nowrap">COPY TBA</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- ========================================== -->
-    <!-- ⚔️ SOVEREIGN FORGE PLEDGE MODAL -->
-    <!-- ข้าพเจ้าย้ายมาไว้ท้ายสุดของ Section เพื่อไม่ให้ไปกวน Layout ของ Grid ด้านบน -->
-    <!-- ========================================== -->
     <div id="forgeConsentModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm transition-opacity">
         <div class="bg-zinc-900 border border-red-900/50 p-6 rounded-lg max-w-lg w-full shadow-[0_0_40px_rgba(185,28,28,0.15)] relative overflow-hidden">
-            
             <h2 class="text-xl font-bold text-red-500 mb-4 tracking-widest border-b border-red-900/30 pb-2">
                 ⚔️ SOVEREIGN PLEDGE & DECLARATION
             </h2>
-            
-            <div class="text-stone-300 text-sm space-y-3 mb-6 leading-relaxed max-h-60 overflow-y-auto pr-2 custom-scrollbar">
+            <div class="text-stone-300 text-sm space-y-3 mb-6 leading-relaxed max-h-60 overflow-y-auto pr-2 scroll-dark">
                 <p><b class="text-red-400">I. Non-Financial Asset:</b> I acknowledge that the <b>IMPERIAL SOVEREIGN DEED</b> is exclusively a digital architectural artwork and a personal cryptographic identity instrument on the blockchain. It is strictly not a security, an investment asset, or a financial instrument of any kind.</p>
                 <p><b class="text-red-400">II. Zero Expectation of Profit:</b> This system provides no valuation guarantees and promises no future financial returns. I accept that the intrinsic value of this architecture is derived solely from its artistic merit and the personal will of its sovereign holder.</p>
                 <p><b class="text-red-400">III. Immutable Sovereignty:</b> The execution of the Rebirth (Minting) ritual onto the Blockchain is absolute and irreversible. I accept the conditions of asset revocation or Immolation, and I bear sole responsibility for the genetic metadata inscribed. Protocol fees are non-refundable.</p>
             </div>
-            
-            <!-- กล่องเช็คบ็อกซ์ยอมรับเงื่อนไข -->
             <div class="flex items-start space-x-3 mb-6 p-3 bg-black/50 border border-stone-800 rounded hover:border-stone-700 transition-colors">
                 <div class="flex items-center h-5 mt-0.5">
                     <input id="forgeModalCheckbox" type="checkbox" onchange="toggleForgeButtonState()" class="w-4 h-4 bg-gray-900 border-gray-700 rounded text-red-600 focus:ring-red-600 cursor-pointer">
@@ -624,8 +503,6 @@
                     <span class="text-stone-500 text-xs">(I explicitly accept the Sovereign Terms & Conditions above.)</span>
                 </label>
             </div>
-
-            <!-- ปุ่มควบคุม -->
             <div class="flex justify-end space-x-4">
                 <button onclick="closeForgeConsentModal(false)" class="px-4 py-2 bg-stone-800 hover:bg-stone-700 text-stone-300 rounded transition-colors text-sm font-bold tracking-wider">
                     ABORT
@@ -662,56 +539,47 @@
             </div>
         </div>
        <div class="lg:col-span-8 w-full">
-    <span class="text-[10px] font-mono text-stone-400 uppercase tracking-widest block mb-4 font-bold">// CHRONOGRAPH PREVIEW MATRIX (READ-ONLY)</span>
-    
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4 max-w-2xl">
-        
-        <!-- ปุ่ม SLOT #01 (ใส่ลิงก์ที่ data-uri) -->
-        <div id="vSlot1" data-uri="ใส่ลิงก์_Arweave_หรือ_Irys_ตัวที่_1_ที่นี่" onclick="if(typeof handleSlotClick === 'function') handleSlotClick(1)" class="preview-slot w-full bg-stone-950 border border-stone-800 rounded-xl p-4 flex items-center justify-start cursor-pointer hover:border-amber-500 transition-all group text-left">
-            <div class="flex items-center gap-4">
-                <span class="text-amber-500/50 group-hover:text-amber-400 text-2xl drop-shadow-[0_0_10px_rgba(217,119,6,0.6)] transition-colors">▶</span>
-                <div>
-                    <div class="text-[11px] font-mono text-stone-300 font-bold group-hover:text-amber-400 transition-colors">SLOT #01</div>
-                    <span id="vSlotStatus1" class="text-[9px] text-stone-500 uppercase block mt-1 font-bold">CONTACT ARCHITECT TO DEPLOY</span>
+            <span class="text-[10px] font-mono text-stone-400 uppercase tracking-widest block mb-4 font-bold">// CHRONOGRAPH PREVIEW MATRIX (READ-ONLY)</span>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4 max-w-2xl">
+                <div id="vSlot1" data-uri="ใส่ลิงก์_Arweave_หรือ_Irys_ตัวที่_1_ที่นี่" onclick="if(typeof handleSlotClick === 'function') handleSlotClick(1)" class="preview-slot w-full bg-stone-950 border border-stone-800 rounded-xl p-4 flex items-center justify-start cursor-pointer hover:border-amber-500 transition-all group text-left">
+                    <div class="flex items-center gap-4">
+                        <span class="text-amber-500/50 group-hover:text-amber-400 text-2xl drop-shadow-[0_0_10px_rgba(217,119,6,0.6)] transition-colors">▶</span>
+                        <div>
+                            <div class="text-[11px] font-mono text-stone-300 font-bold group-hover:text-amber-400 transition-colors">SLOT #01</div>
+                            <span id="vSlotStatus1" class="text-[9px] text-stone-500 uppercase block mt-1 font-bold">CONTACT ARCHITECT TO DEPLOY</span>
+                        </div>
+                    </div>
+                </div>
+                <div id="vSlot2" data-uri="ใส่ลิงก์_Arweave_หรือ_Irys_ตัวที่_2_ที่นี่" onclick="if(typeof handleSlotClick === 'function') handleSlotClick(2)" class="preview-slot w-full bg-stone-950 border border-stone-800 rounded-xl p-4 flex items-center justify-start cursor-pointer hover:border-amber-500 transition-all group text-left">
+                    <div class="flex items-center gap-4">
+                        <span class="text-amber-500/50 group-hover:text-amber-400 text-2xl drop-shadow-[0_0_10px_rgba(217,119,6,0.6)] transition-colors">▶</span>
+                        <div>
+                            <div class="text-[11px] font-mono text-stone-300 font-bold group-hover:text-amber-400 transition-colors">SLOT #02</div>
+                            <span id="vSlotStatus2" class="text-[9px] text-stone-500 uppercase block mt-1 font-bold">CONTACT ARCHITECT TO DEPLOY</span>
+                        </div>
+                    </div>
+                </div>
+                <div id="vSlot3" data-uri="ใส่ลิงก์_Arweave_หรือ_Irys_ตัวที่_3_ที่นี่" onclick="if(typeof handleSlotClick === 'function') handleSlotClick(3)" class="preview-slot w-full bg-stone-950 border border-stone-800 rounded-xl p-4 flex items-center justify-start cursor-pointer hover:border-amber-500 transition-all group text-left">
+                    <div class="flex items-center gap-4">
+                        <span class="text-amber-500/50 group-hover:text-amber-400 text-2xl drop-shadow-[0_0_10px_rgba(217,119,6,0.6)] transition-colors">▶</span>
+                        <div>
+                            <div class="text-[11px] font-mono text-stone-300 font-bold group-hover:text-amber-400 transition-colors">SLOT #03</div>
+                            <span id="vSlotStatus3" class="text-[9px] text-stone-500 uppercase block mt-1 font-bold">CONTACT ARCHITECT TO DEPLOY</span>
+                        </div>
+                    </div>
+                </div>
+                <div id="vSlot4" data-uri="ใส่ลิงก์_Arweave_หรือ_Irys_ตัวที่_4_ที่นี่" onclick="if(typeof handleSlotClick === 'function') handleSlotClick(4)" class="preview-slot w-full bg-stone-950 border border-stone-800 rounded-xl p-4 flex items-center justify-start cursor-pointer hover:border-amber-500 transition-all group text-left">
+                    <div class="flex items-center gap-4">
+                        <span class="text-amber-500/50 group-hover:text-amber-400 text-2xl drop-shadow-[0_0_10px_rgba(217,119,6,0.6)] transition-colors">▶</span>
+                        <div>
+                            <div class="text-[11px] font-mono text-stone-300 font-bold group-hover:text-amber-400 transition-colors">SLOT #04</div>
+                            <span id="vSlotStatus4" class="text-[9px] text-stone-500 uppercase block mt-1 font-bold">CONTACT ARCHITECT TO DEPLOY</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-
-        <!-- ปุ่ม SLOT #02 (ใส่ลิงก์ที่ data-uri) -->
-        <div id="vSlot2" data-uri="ใส่ลิงก์_Arweave_หรือ_Irys_ตัวที่_2_ที่นี่" onclick="if(typeof handleSlotClick === 'function') handleSlotClick(2)" class="preview-slot w-full bg-stone-950 border border-stone-800 rounded-xl p-4 flex items-center justify-start cursor-pointer hover:border-amber-500 transition-all group text-left">
-            <div class="flex items-center gap-4">
-                <span class="text-amber-500/50 group-hover:text-amber-400 text-2xl drop-shadow-[0_0_10px_rgba(217,119,6,0.6)] transition-colors">▶</span>
-                <div>
-                    <div class="text-[11px] font-mono text-stone-300 font-bold group-hover:text-amber-400 transition-colors">SLOT #02</div>
-                    <span id="vSlotStatus2" class="text-[9px] text-stone-500 uppercase block mt-1 font-bold">CONTACT ARCHITECT TO DEPLOY</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- ปุ่ม SLOT #03 (ใส่ลิงก์ที่ data-uri) -->
-        <div id="vSlot3" data-uri="ใส่ลิงก์_Arweave_หรือ_Irys_ตัวที่_3_ที่นี่" onclick="if(typeof handleSlotClick === 'function') handleSlotClick(3)" class="preview-slot w-full bg-stone-950 border border-stone-800 rounded-xl p-4 flex items-center justify-start cursor-pointer hover:border-amber-500 transition-all group text-left">
-            <div class="flex items-center gap-4">
-                <span class="text-amber-500/50 group-hover:text-amber-400 text-2xl drop-shadow-[0_0_10px_rgba(217,119,6,0.6)] transition-colors">▶</span>
-                <div>
-                    <div class="text-[11px] font-mono text-stone-300 font-bold group-hover:text-amber-400 transition-colors">SLOT #03</div>
-                    <span id="vSlotStatus3" class="text-[9px] text-stone-500 uppercase block mt-1 font-bold">CONTACT ARCHITECT TO DEPLOY</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- ปุ่ม SLOT #04 (ใส่ลิงก์ที่ data-uri) -->
-        <div id="vSlot4" data-uri="ใส่ลิงก์_Arweave_หรือ_Irys_ตัวที่_4_ที่นี่" onclick="if(typeof handleSlotClick === 'function') handleSlotClick(4)" class="preview-slot w-full bg-stone-950 border border-stone-800 rounded-xl p-4 flex items-center justify-start cursor-pointer hover:border-amber-500 transition-all group text-left">
-            <div class="flex items-center gap-4">
-                <span class="text-amber-500/50 group-hover:text-amber-400 text-2xl drop-shadow-[0_0_10px_rgba(217,119,6,0.6)] transition-colors">▶</span>
-                <div>
-                    <div class="text-[11px] font-mono text-stone-300 font-bold group-hover:text-amber-400 transition-colors">SLOT #04</div>
-                    <span id="vSlotStatus4" class="text-[9px] text-stone-500 uppercase block mt-1 font-bold">CONTACT ARCHITECT TO DEPLOY</span>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-     <div class="lg:col-span-12 w-full mt-2">
+        <div class="lg:col-span-12 w-full mt-2">
             <div class="bg-stone-950 border border-rose-900/50 rounded-xl p-5 md:p-6 shadow-inner">
                 <div class="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-3 md:gap-4">
                     <a id="linkSocial1" href="#" target="_blank" rel="noopener noreferrer" class="w-full sm:w-auto px-5 py-3 bg-stone-900 border border-stone-700 rounded-lg text-[10px] md:text-xs font-mono uppercase text-stone-300 hover:border-amber-500 hover:text-amber-400 transition-colors text-center">✦ LinkedIn Gateway</a>
@@ -725,73 +593,8 @@
 </section>
 
 <section class="chiaroscuro-bg p-6 md:p-8 rounded-2xl mb-6 relative z-10 border border-rose-900/40">
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-stone-800 pb-4 mb-6 gap-4">
-        <div>
-            <h2 class="text-xl font-black font-cinzel text-stone-100 uppercase tracking-tight">📡 Decentralized Media Transmission Station</h2>
-            <p class="text-[10px] font-mono text-stone-500 uppercase tracking-wide mt-1">DIRECT IRYS BRIDGING TRANSMISSION • MAXIMUM CAPACITY: 500MB</p>
-            <div id="uploadTargetDisplay" class="text-[10px] font-mono text-slate-500 mt-2 uppercase font-bold">LOCKED TOKEN ID: NONE</div>
-        </div>
-        <div id="targetBridgeFieldLabel" class="text-[10px] font-mono font-bold text-amber-500 uppercase bg-stone-950 px-4 py-2 border border-stone-800 rounded-lg shadow-inner text-center w-full md:w-auto">
-            TARGET ASPECT: DORMANT (CHOOSE NODES COORD)
-        </div>
-    </div>
-
-    <div class="flex flex-col sm:flex-row gap-3 mb-6" role="tablist" aria-label="Transmission station selector">
-        <button type="button" role="tab" aria-selected="true" aria-controls="stationFront" onclick="if(typeof switchStation === 'function') switchStation('front')" id="tabFront" class="tab-btn active flex-1 bg-stone-950 border border-stone-800 rounded-xl py-4 text-[11px] font-black font-mono uppercase tracking-wider text-stone-300 transition-all cursor-pointer">OBVERSE DECK (FRONT)</button>
-        <button type="button" role="tab" aria-selected="false" aria-controls="stationBack" onclick="if(typeof switchStation === 'function') switchStation('back')" id="tabBack" class="tab-btn flex-1 bg-stone-950 border border-stone-800 rounded-xl py-4 text-[11px] font-black font-mono uppercase tracking-wider text-stone-300 transition-all cursor-pointer">REVERSE DECK (BACK)</button>
-    </div>
-
-    <div id="stationFront" class="station-panel space-y-5">
-        <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 bg-stone-950 border border-stone-800 rounded-xl p-4 md:p-5 shadow-inner">
-            <span class="text-[11px] font-mono uppercase text-slate-400 flex items-center flex-wrap gap-2">
-                TARGET FILE CLASSIFICATION: 
-                <label class="flex items-center cursor-pointer ml-2"><input type="radio" name="frontType" value="image" checked class="accent-amber-500 w-4 h-4" onchange="if(typeof onTypeToggle === 'function') onTypeToggle('front')" /> <span class="text-amber-500 font-bold ml-1.5">IMAGE</span></label>
-                <span class="text-stone-600 mx-1">/</span>
-                <label class="flex items-center cursor-pointer"><input type="radio" name="frontType" value="video" class="accent-rose-500 w-4 h-4" onchange="if(typeof onTypeToggle === 'function') onTypeToggle('front')" /> <span class="text-rose-500 font-bold ml-1.5">VIDEO</span></label>
-            </span>
-            
-            <div class="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
-                <button id="btnConnectIrys" onclick="if(typeof ensureIrysReady === 'function') ensureIrysReady()" type="button" class="w-full sm:w-auto px-5 py-3 bg-slate-900 border border-blue-800 text-blue-400 font-mono text-xs font-bold hover:bg-blue-950 hover:text-blue-300 transition-colors shadow-[0_0_15px_rgba(30,58,138,0.4)] rounded-lg">
-                    ⚡ ENGAGE IRYS BRIDGE
-                </button>
-                <button onclick="if(typeof executeIrysTopUp === 'function') executeIrysTopUp('0.001')" type="button" class="w-full sm:w-auto px-5 py-3 bg-blue-950 border border-blue-900 text-blue-300 hover:bg-blue-900 text-[10px] font-mono font-bold uppercase rounded-lg shadow-[0_0_10px_rgba(30,58,138,0.3)] transition-colors">
-                    TOP-UP (0.001 ETH)
-                </button>
-                <button id="btnUploadFront" onclick="if(typeof executeArchitectCentralizedUpload === 'function') executeArchitectCentralizedUpload('front')" type="button" class="w-full sm:w-auto px-5 py-3 bg-amber-700 hover:bg-amber-600 text-black font-black text-[11px] font-mono uppercase rounded-lg transition-all shadow-[0_0_15px_rgba(217,119,6,0.3)]">
-                    STREAM PAYLOAD
-                </button>
-            </div>
-        </div>
-        <div>
-            <label class="text-[10px] text-stone-400 font-mono block mb-2 uppercase tracking-wider">FRONT <span id="frontTypeLabel" class="text-amber-500 font-bold">IMAGE</span> SOURCE REFERENCE URI</label>
-            <input type="text" id="forgeFrontUri" placeholder="e.g. Irys Tx ID (43 chars) or full URL" class="w-full bg-black border border-stone-800 p-3.5 text-sm font-mono text-stone-200 rounded-xl outline-none focus:border-amber-500 transition-all" />
-            <p class="text-[10px] font-mono text-stone-500 mt-2 uppercase">MAPS CODE TARGET TO → <span id="frontMapTarget" class="text-amber-500 font-bold">frontURI / imageURI</span></p>
-        </div>
-    </div>
-
-    <div id="stationBack" class="station-panel space-y-5 hidden">
-        <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 bg-stone-950 border border-stone-800 rounded-xl p-4 md:p-5 shadow-inner">
-            <span class="text-[11px] font-mono uppercase text-slate-400 flex items-center flex-wrap gap-2">
-                TARGET FILE CLASSIFICATION: 
-                <label class="flex items-center cursor-pointer ml-2"><input type="radio" name="backType" value="image" checked class="accent-amber-500 w-4 h-4" onchange="if(typeof onTypeToggle === 'function') onTypeToggle('back')" /> <span class="text-amber-500 font-bold ml-1.5">IMAGE</span></label>
-                <span class="text-stone-600 mx-1">/</span>
-                <label class="flex items-center cursor-pointer"><input type="radio" name="backType" value="video" class="accent-rose-500 w-4 h-4" onchange="if(typeof onTypeToggle === 'function') onTypeToggle('back')" /> <span class="text-rose-500 font-bold ml-1.5">VIDEO</span></label>
-            </span>
-            <button id="btnUploadBack" onclick="if(typeof executeArchitectCentralizedUpload === 'function') executeArchitectCentralizedUpload('back')" type="button" class="w-full lg:w-auto px-6 py-3 bg-amber-700 hover:bg-amber-600 text-black font-black text-[11px] font-mono uppercase rounded-lg transition-all shadow-[0_0_15px_rgba(217,119,6,0.3)]">
-                STREAM REVERSE PAYLOAD
-            </button>
-        </div>
-        <div>
-            <label class="text-[10px] text-stone-400 font-mono block mb-2 uppercase tracking-wider">BACK <span id="backTypeLabel" class="text-amber-500 font-bold">IMAGE</span> SOURCE REFERENCE URI</label>
-            <input type="text" id="forgeBackUri" placeholder="e.g. Irys Tx ID (43 chars) or full URL" class="w-full bg-black border border-stone-800 p-3.5 text-sm font-mono text-stone-200 rounded-xl outline-none focus:border-amber-500 transition-all" />
-            <p class="text-[10px] font-mono text-stone-500 mt-2 uppercase">MAPS CODE TARGET TO → <span id="backMapTarget" class="text-amber-500 font-bold">backURI / imageURI</span></p>
-        </div>
-    </div>
-</section>
-
-<section class="chiaroscuro-bg p-6 md:p-8 rounded-2xl mb-6 relative z-10 border border-rose-900/40">
     <div class="border-b border-stone-800 pb-4 mb-6">
-        <h2 class="text-xl font-black font-cinzel gold-text uppercase tracking-tight">⚡ Master Inscription Ledger Operations</h2>
+        <h2 class="text-xl font-black font-cinzel gold-text uppercase tracking-tight">⚡ Master Inscription Ledger Operations (NOVA)</h2>
         <p class="text-[10px] font-mono text-stone-500 uppercase tracking-wide mt-1">IMMUTABLE IDENTITY ASSIGNMENTS • FORGING CRYPTOGRAPHIC CONSENSUS PIPELINES</p>
     </div>
 
@@ -801,16 +604,16 @@
             <input type="number" id="novaTokenId" min="1" max="333" placeholder="1 - 333 Execution coordinate" class="w-full bg-black border border-stone-800 p-3.5 text-sm font-mono text-amber-500 rounded-xl outline-none focus:border-amber-500 transition-all" />
         </div>
         <div>
-            <label class="text-[10px] text-stone-400 font-mono block mb-2 uppercase tracking-wider">② Identity DNA : (YOUR NAME)</label>
-            <input type="text" id="novaDnaInput" maxlength="1024" placeholder='e.g. Anchor identifier sequence' class="w-full bg-black border border-stone-800 p-3.5 text-sm font-mono text-rose-300 rounded-xl outline-none focus:border-rose-500 transition-all" />
+            <label class="text-[10px] text-stone-400 font-mono block mb-2 uppercase tracking-wider">② Identity DNA (Use | to separate lines)</label>
+            <input type="text" id="novaDnaInput" maxlength="1024" placeholder='e.g. SAKSIT | PIXEL :X=1014,Y=1754' class="w-full bg-black border border-stone-800 p-3.5 text-sm font-mono text-rose-300 rounded-xl outline-none focus:border-rose-500 transition-all" />
         </div>
         <div>
             <label class="text-[10px] text-stone-400 font-mono block mb-2 uppercase tracking-wider">③ Video URI (video)</label>
             <input type="text" id="novaVideoUri" maxlength="128" placeholder="Irys Tx ID (43 chars) or full URI" class="w-full bg-black border border-stone-800 p-3.5 text-sm font-mono text-amber-400 rounded-xl outline-none focus:border-amber-500 transition-all" />
         </div>
         <div>
-            <label class="text-[10px] text-stone-400 font-mono block mb-2 uppercase tracking-wider">④ Chrono-Map/Pixel Anchor (hiddenProperty)</label>
-            <input type="text" id="novaHiddenInput" maxlength="1024" placeholder="Irys Tx ID (43 chars) or full URI" class="w-full bg-black border border-rose-900/60 p-3.5 text-sm font-mono text-rose-400 rounded-xl outline-none focus:border-rose-500 transition-all" />
+            <label class="text-[10px] text-stone-400 font-mono block mb-2 uppercase tracking-wider">④ Chrono-Map/Hidden (Use | to separate lines)</label>
+            <input type="text" id="novaHiddenInput" maxlength="1024" placeholder="e.g. VERIFIED AT 12S FR 1-5 | ZOOM 5X" class="w-full bg-black border border-rose-900/60 p-3.5 text-sm font-mono text-rose-400 rounded-xl outline-none focus:border-rose-500 transition-all" />
         </div>
     </div>
 
@@ -938,7 +741,6 @@
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8">
-        <!-- MACRO POLICIES & PROTOCOL CONTROLS -->
         <div class="lg:col-span-5 space-y-4 border border-stone-800 p-5 rounded-2xl bg-black/50 shadow-inner">
             <span class="text-[11px] font-mono text-rose-400 font-bold uppercase tracking-wider block border-b border-stone-800 pb-2">// MACRO POLICIES & PROTOCOL CONTROLS</span>
             <div class="grid grid-cols-2 gap-3">
@@ -957,7 +759,6 @@
             </div>
         </div>
         
-        <!-- ARCHITECT FORGE (MINT & REMINT) -->
         <div class="lg:col-span-7 space-y-4 border border-stone-800 p-5 md:p-6 rounded-2xl bg-black/50 shadow-[inset_0_0_30px_rgba(0,0,0,0.9)]">
             <span class="text-[11px] font-mono text-emerald-500 font-bold uppercase tracking-wider block border-b border-stone-800 pb-2">// ⚜ ARCHITECT FORGE (MINT & REMINT)</span>
             
@@ -997,13 +798,6 @@
     <button onclick="if(typeof saveArchitectGateways === 'function') saveArchitectGateways(this)" class="px-6 py-3.5 bg-amber-700 text-black font-black text-[11px] rounded-xl uppercase hover:bg-amber-600 transition-colors w-full sm:w-auto mt-3 shadow-[0_0_15px_rgba(217,119,6,0.3)]">RE-ALIGN VECTORS</button>
 </div>
 
-<section class="chiaroscuro-bg mt-6 p-5 md:p-6 rounded-2xl border border-slate-800 shadow-inner">
-    <span class="text-[11px] font-mono text-slate-500 uppercase block border-b border-slate-800 pb-2 font-bold tracking-wider">// SYSTEM EVENT REAL-TIME TELEMETRY STREAM LOG</span>
-    <div id="systemLogBox" class="mt-4 text-[10px] md:text-[11px] font-mono h-32 overflow-y-auto scroll-dark text-slate-400 space-y-1.5 select-text bg-black/50 p-3 rounded-xl border border-stone-900">
-        <div>[SYSTEM ONLINE] Ready for execution parameters entry.</div>
-    </div>
-</section>
-
 <section class="chiaroscuro-bg p-6 md:p-8 rounded-2xl my-6 border border-slate-800 bg-black/60 text-center relative z-10 shadow-[inset_0_0_30px_rgba(0,0,0,0.8)]">
     <h4 class="text-[11px] md:text-xs font-black font-cinzel text-slate-400 uppercase tracking-widest mb-3">
         ⚖ THE ARCHITECT ABDICATION & FORENSIC INTEGRITY DOCTRINE 🔱
@@ -1015,6 +809,16 @@
     <p class="text-[10px] md:text-[11px] font-mono text-slate-500 leading-relaxed max-w-4xl mx-auto uppercase tracking-tight">
         🚨 <span class="text-amber-600/90 font-bold">REAL-WORLD INTEGRITY MANDATE:</span> ALL PROFILE MEDIA AND 4K ASSETS INSCRIBED WITH CRYPTOGRAPHIC HASH METADATA MUST BE DEPLOYED EXCLUSIVELY TO REPRESENT REAL-WORLD IDENTITY ON EXTERNAL PLATFORMS. UTILIZING UNVERIFIED MEDIA NULLIFIES IDENTITY AUTHENTICITY; NEITHER THE SMART CONTRACT NOR DASHBOARD WILL OFFER PROOF OF PROTECTION AGAINST IDENTITY SPOOFING.
     </p>
+    <p class="text-[10px] md:text-[11px] font-mono text-slate-500 leading-relaxed max-w-4xl mx-auto uppercase tracking-tight mt-4">
+        <span class="text-rose-500 font-bold">3% OPACITY FORENSIC MARKER:</span> THE ARCHITECT WILL ENGRAVE YOUR DNA AT 3% OPACITY ON YOUR MEDIA. IF COPIED OR COMPRESSED BY MALICIOUS ACTORS, THE MARKER IS DESTROYED, RENDERING THE STOLEN ASSET DIGITAL TRASH. ONLY THE ON-CHAIN ORIGINAL RETAINS THE 100% VERIFIABLE TRUTH ACROSS ALL 3 LAYERS (REAL-WORLD, ON-CHAIN, ARWEAVE).
+    </p>
+</section>
+
+<section class="chiaroscuro-bg mt-6 p-5 md:p-6 rounded-2xl border border-slate-800 shadow-inner">
+    <span class="text-[11px] font-mono text-slate-500 uppercase block border-b border-slate-800 pb-2 font-bold tracking-wider">// SYSTEM EVENT REAL-TIME TELEMETRY STREAM LOG</span>
+    <div id="systemLogBox" class="mt-4 text-[10px] md:text-[11px] font-mono h-32 overflow-y-auto scroll-dark text-slate-400 space-y-1.5 select-text bg-black/50 p-3 rounded-xl border border-stone-900">
+        <div>[SYSTEM ONLINE] Ready for execution parameters entry.</div>
+    </div>
 </section>
 
 <footer class="mt-6 chiaroscuro-bg p-5 md:p-6 rounded-2xl font-mono text-[10px] text-slate-500 relative z-10 border border-stone-900">
@@ -1026,17 +830,15 @@
 
 
 
-
-
-
 <script>
+
 "use strict";
 
 // ==============================================================================
 // 🔱 THE IMPERIAL SOVEREIGN DEED - CORE ARCHITECTURE (ETHERS V6 & IRYS 0.0.4)
 // 🛡️ WORLD-CLASS SENIOR WEB3 FRONT-END STANDARD (ZERO-BUG POLICY ENFORCED)
 // ==============================================================================
-const CONTRACT_ADDRESS = "0x7d52930e1F0c6429200a0DFe02Be9Ac2d2A19Dd2"; // อัปเดต Address ใหม่
+const CONTRACT_ADDRESS = "0x7d52930e1F0c6429200a0DFe02Be9Ac2d2A19Dd2";
 const WETH_ADDRESS = "0x4200000000000000000000000000000000000006";
 const MULTICALL3_ADDRESS = "0xcA11bde05977b3631167028862bE2a173976CA11";
 
@@ -1266,7 +1068,7 @@ let searchDebounceTimer = null;
 let currentAuditSession = 0;
 let isSyncingState = false;
 let pendingSyncRequest = false;
-let lastSyncTime = 0; // 🚨 [FIXED]: Added to prevent ReferenceError in syncContractStates
+let lastSyncTime = 0; 
 
 window.SystemState = {
     globalSelectedTokenId: null,
@@ -1277,9 +1079,6 @@ window.SystemState = {
 
 let globalSelectedTokenId = window.SystemState.globalSelectedTokenId;
 let currentLoadedMediaData = window.SystemState.currentLoadedMediaData;
-
-
-
 
 // ==============================================================================
 // 🛠️ UTILITY & CORE FUNCTIONS
@@ -1356,16 +1155,14 @@ function clearAllTimers() {
     }
 }
 
-// [INJECT THIS AT THE TOP OF YOUR SCRIPT TAG, JUST BELOW "use strict";]
 window.IMPERIAL_MANIFEST = null;
-window.IMAGE_MANIFEST = null; // 👈 เพิ่มตัวแปรเก็บ Direct Image Hash
+window.IMAGE_MANIFEST = null; 
 
 async function fetchImperialManifest() {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10-second strict timeout
+    const timeoutId = setTimeout(() => controller.abort(), 10000); 
 
     try {
-        // 🛡️ Fetch both JSON Metadata and Direct Image with AbortSignal
         const [manifestRes, imageRes] = await Promise.allSettled([
             fetch(`./imperial-manifest.json?t=${Date.now()}`, { signal: controller.signal }),
             fetch(`./image_imperial-manifest.json?t=${Date.now()}`, { signal: controller.signal })
@@ -1403,11 +1200,6 @@ async function fetchImperialManifest() {
     }
 }
 
-/**
- * STRICT MANIFEST HANDLER: Processes ONLY Unclaimed (Lazy Mint) nodes.
- * Reads from local JSON files and sends the final URL to the renderers.
- * @param {number|string} tokenId - The ID of the token.
- */
 function processLazyMintFromManifest(tokenId) {
     let preMintFrontUri = "";
     if (window.IMPERIAL_MANIFEST && window.IMPERIAL_MANIFEST[String(tokenId)]) {
@@ -1425,12 +1217,10 @@ function processLazyMintFromManifest(tokenId) {
     }
 
     if (preMintFrontUri !== "") {
-        // Set Global State for Minting Payload
         currentLoadedMediaData.front = preMintFrontUri; 
         currentLoadedMediaData.back = "";
         currentLoadedMediaData.video = "";
 
-        // Update Metadata UI
         if (typeof autoMapMetadata === 'function') autoMapMetadata(tokenId);
         
         const metaDisp = document.getElementById('activeDeedMetadataDisplay');
@@ -1445,7 +1235,6 @@ function processLazyMintFromManifest(tokenId) {
             metaDisp.append(line1, readySpan, br, line2);
         }
 
-        // SEND URL TO RENDERER
         if (typeof renderToViewport === 'function') {
             renderToViewport('previewFrontContainer', displayImageUri, "Obverse aspect currently unassigned.");
             renderToViewport('previewBackContainer', "", "Void element data layer uninitialized.");
@@ -1453,7 +1242,6 @@ function processLazyMintFromManifest(tokenId) {
         
         if (typeof appendLog === 'function') appendLog(`[LAZY MINT READY] Matrix cell node #${tokenId} pre-loaded from Architect Manifest.`, "text-emerald-400 font-bold");
     } else {
-        // VOID ELEMENT (Not in Manifest)
         const metaDisp = document.getElementById('activeDeedMetadataDisplay');
         if (metaDisp) metaDisp.textContent = "VOID ELEMENT: UNINITIALIZED";
         
@@ -1464,6 +1252,7 @@ function processLazyMintFromManifest(tokenId) {
         if (typeof appendLog === 'function') appendLog(`Matrix cell node #${tokenId} contains no structural allocation details (Void Element).`, "text-yellow-500");
     }
 }
+
 // ==============================================================================
 // 🛡️ ANTI-LOCKING STATE MANAGEMENT (NO BLACK SCREEN OVERLAYS)
 // ==============================================================================
@@ -1472,7 +1261,6 @@ function lockSystem() {
     isTransactionPending = true;
     safeStorageSet('tx_pending', 'true');
     safeStorageSet('tx_pending_ts', String(Date.now()));
-    // 🚨 STRICT RULE ENFORCED: No full-screen black overlays. Users can scroll freely.
     return true;
 }
 
@@ -1531,7 +1319,6 @@ function toggleButtonLoading(targetInput, isLoading) {
         btn.appendChild(document.createTextNode("PROCESSING..."));
         
         btn.disabled = true;
-        // 🚨 STRICT RULE ENFORCED: Button turns gray, disabled, but UI remains interactive.
         btn.classList.add('btn-processing', 'cursor-not-allowed', 'opacity-60', 'pointer-events-none', 'scale-95', 'grayscale', 'shadow-inner');
     } else {
         if (typeof btn.dataset.originalText !== 'undefined') {
@@ -1616,7 +1403,6 @@ function safeAppendLog(msg, colorClass = "text-slate-400") {
         else if (typeof appendLog === 'function') appendLog(msg, colorClass);
         else console.log(`[SYS LOG]: ${msg}`);
 
-        // [FIX] อัปเดตข้อความลง Footer Log (systemFooterLog) เพิ่มเติม
         const footerLog = document.getElementById('systemFooterLog');
         if (footerLog) {
             footerLog.textContent = msg;
@@ -1625,7 +1411,6 @@ function safeAppendLog(msg, colorClass = "text-slate-400") {
         console.log(`[SYS LOG FALLBACK]: ${msg}`);
     }
 }
-
 
 function showNotification(msg, type = 'error') {
     try {
@@ -1731,7 +1516,6 @@ async function debouncedMulticall(providerInstance, calls) {
                                     callData: call.callData
                                 }));
 
-                                // 🚨 [CRITICAL FIX]: บังคับใช้ .staticCall ตรงนี้!
                                 const chunkResults = await multicall.aggregate3.staticCall(formattedChunk);
                                 
                                 const mappedResults = Array.from(chunkResults).map(res => ({
@@ -1866,7 +1650,6 @@ function decodeContractError(err) {
     return err.reason || err.message || "Transaction reverted by EVM";
 }
 
-
 async function promptUserForFile(acceptType = 'image/*,video/*') {
     return new Promise((resolve) => {
         const fileInput = document.createElement('input');
@@ -1889,7 +1672,7 @@ async function promptUserForFile(acceptType = 'image/*,video/*') {
                 return;
             }
 
-            const MAX_SIZE_BYTES = 500 * 1024 * 1024; // 500 MB
+            const MAX_SIZE_BYTES = 500 * 1024 * 1024; 
             if (file.size > MAX_SIZE_BYTES) {
                 if (typeof showNotification === 'function') {
                     showNotification("FILE REJECTED: ขนาดไฟล์เกินขีดจำกัดสูงสุดที่ 500 MB", "error");
@@ -1939,10 +1722,6 @@ async function promptUserForFile(acceptType = 'image/*,video/*') {
     });
 }
 
-
-// ==============================================================================
-// ⚔️ TRANSACTION WRAPPER (NON-BLOCKING UI)
-// ==============================================================================
 // ==============================================================================
 // ⚔️ TRANSACTION WRAPPER (WITH STATICCALL SIMULATION & NON-BLOCKING UI)
 // ==============================================================================
@@ -1977,7 +1756,6 @@ async function runTx(eventOrBtn, actionName, methodName, args = [], overrides = 
         
         if (typeof safeAppendLog === 'function') safeAppendLog(`[TX] Broadcasted. Hash: ${tx.hash.slice(0,12)}... Awaiting confirmation.`, "text-blue-400");
         
-        // [FIX]: Expose transaction hash to caller immediately after broadcast for state recovery
         if (options && typeof options.onBroadcast === 'function') {
             try {
                 options.onBroadcast(tx);
@@ -2016,403 +1794,6 @@ async function runTx(eventOrBtn, actionName, methodName, args = [], overrides = 
         if (options.manageLock && typeof unlockSystem === 'function') {
             unlockSystem();
         }
-    }
-}
-// ==============================================================================
-// ⚔️ FORGE & MINTING ENGINES (ZERO-BUG MANIFEST PARSING + PLEDGE MODAL)
-// ==============================================================================
-
-function toggleForgeButtonState() {
-    const checkbox = document.getElementById('forgeModalCheckbox');
-    const confirmBtn = document.getElementById('forgeModalConfirmBtn');
-    
-    if (!checkbox || !confirmBtn) return; 
-
-    if (checkbox.checked) {
-        confirmBtn.disabled = false;
-        confirmBtn.classList.remove('opacity-50', 'cursor-not-allowed', 'bg-red-900/30', 'text-stone-500');
-        confirmBtn.classList.add('cursor-pointer', 'bg-red-700', 'hover:bg-red-600', 'text-white', 'shadow-[0_0_15px_rgba(220,38,38,0.5)]');
-    } else {
-        confirmBtn.disabled = true;
-        confirmBtn.classList.remove('cursor-pointer', 'bg-red-700', 'hover:bg-red-600', 'text-white', 'shadow-[0_0_15px_rgba(220,38,38,0.5)]');
-        confirmBtn.classList.add('opacity-50', 'cursor-not-allowed', 'bg-red-900/30', 'text-stone-500');
-    }
-}
-
-function openForgeConsentModal(type, e) {
-    const modal = document.getElementById('forgeConsentModal');
-    if (modal) {
-        modal.classList.remove('hidden');
-        
-        const confirmBtn = document.getElementById('forgeModalConfirmBtn');
-        if(confirmBtn) {
-            confirmBtn.onclick = () => closeForgeConsentModal(true, type, e);
-        }
-    }
-}
-
-async function closeForgeConsentModal(isConfirmed, type, e) {
-    const modal = document.getElementById('forgeConsentModal');
-    const checkbox = document.getElementById('forgeModalCheckbox');
-
-    if (isConfirmed) {
-        if (checkbox && !checkbox.checked) {
-            if (typeof showNotification === 'function') showNotification("EXCEPTION: You must acknowledge the Sovereign Terms.", "error");
-            return;
-        }
-        
-        if (modal) modal.classList.add('hidden');
-        
-        if (typeof triggerForge === 'function') {
-            await triggerForge(type, e);
-        }
-        
-    } else {
-        if (modal) modal.classList.add('hidden');
-        if (typeof appendLog === 'function') appendLog("Sovereign Forge sequence aborted by operator.", "text-yellow-500");
-    }
-
-    if (checkbox) {
-        checkbox.checked = false;
-        toggleForgeButtonState();
-    }
-}
-
-async function triggerForge(type, e) {
-    if (!secureContract) { 
-        showNotification("Action suspended: Authenticate wallet signature first.", "error"); 
-        return; 
-    }
-
-    // 🛡️ [PRODUCTION PATCH 1]: Temporal State Lock - ล็อกระบบทันทีที่หน้าประตู
-    if (typeof lockSystem === 'function') lockSystem();
-    const btn = toggleButtonLoading(e, true);
-    let progress = null;
-
-    try {
-        await checkGasSurge();
-        
-        const targetTokenId = globalSelectedTokenId;
-        if (!targetTokenId || isNaN(Number(targetTokenId))) {
-            showNotification("STRUCTURAL EXCEPTION: Please select a Token ID coordinate on the Matrix first.", "error");
-            return;
-        }
-
-        let isPrivileged = false;
-        if (signer && secureContract) {
-            try {
-                const userAddress = await signer.getAddress();
-                const privs = await verifyUserPrivileges(userAddress);
-                isPrivileged = privs.isAdmin;
-            } catch (err) {
-                isPrivileged = false; 
-            }
-        }
-
-        const mappedNode = typeof autoMap === 'function' ? await autoMap(targetTokenId) : null;
-        
-        if (mappedNode && mappedNode.isActivated) {
-            if (!isPrivileged) {
-                showNotification("STRUCTURAL EXCEPTION: Node is already active. Cannot execute Rebirth.", "error");
-                return;
-            } else {
-                if (typeof appendLog === 'function') appendLog("ARCHITECT OVERRIDE: Bypassing active node restriction.", "text-yellow-400 font-bold");
-            }
-        }
-
-        let strictFrontUri = "";
-        if (window.IMPERIAL_MANIFEST && window.IMPERIAL_MANIFEST[String(targetTokenId)]) {
-            const manifestData = window.IMPERIAL_MANIFEST[String(targetTokenId)];
-            strictFrontUri = typeof manifestData === 'string' ? manifestData.trim() : String(manifestData.irys_id || "").trim();
-        }
-        
-        if (!strictFrontUri) {
-            if (typeof appendLog === 'function') appendLog(`MINT REJECTED: ไม่พบข้อมูล Front URI สำหรับ Node #${targetTokenId} ใน JSON Manifest`, "text-red-500 font-bold");
-            showNotification("METADATA EXCEPTION: Node not ready for minting (Architect has not assigned Obverse URI in Manifest).", "error");
-            return;
-        }
-
-        let currentMintPriceWei = 0n;
-        try {
-            currentMintPriceWei = await secureContract.mintPrice();
-        } catch (rpcErr) {
-            if (typeof appendLog === 'function') appendLog("RPC RATE LIMIT (429) DETECTED: Retrying economic parameters fetch...", "text-yellow-500");
-            await new Promise(r => setTimeout(r, 1500));
-            currentMintPriceWei = await secureContract.mintPrice();
-        }
-
-        const file = await promptUserForFile('image/*,video/*');
-        if (!file) {
-            if (typeof appendLog === 'function') appendLog("[SYSTEM] File selection aborted by user.", "text-yellow-500");
-            return;
-        }
-
-        const previewObjectUrl = URL.createObjectURL(file);
-        const dnaField = (document.getElementById('novaDnaInput')?.value || "").trim() || "N/A";
-        let isConfirmed = false;
-        
-        try {
-            isConfirmed = await requestMediaConfirmation(previewObjectUrl, dnaField, file.type);
-        } finally {
-            URL.revokeObjectURL(previewObjectUrl); 
-        }
-        
-        if (!isConfirmed) return; 
-
-        if (!irys) throw new Error("Irys SDK Bridge is offline. Establish wallet connection first.");
-
-        if (typeof appendLog === 'function') appendLog(`Inscribing back-end media onto permanent Irys Datachain...`, "text-blue-400");
-        const tags = [{ name: "Content-Type", value: file.type }];
-        
-        progress = createProgressController(file.size);
-        if (progress) progress.show(); 
-        
-        // ส่ง File Object ให้ Irys SDK จัดการโดยตรง
-        const response = await executeIrysUpload(file, tags, true, progress); 
-        
-        const backMediaTxId = response?.data ? response.data.id : response?.id; 
-        
-        if (!backMediaTxId) throw new Error("Irys payload generation failed: null TxID.");
-
-        const sanitizedTxId = sanitizeForDOM(backMediaTxId);
-        if (typeof appendLog === 'function') appendLog(`Back-end media successfully anchored: ${sanitizedTxId}`, "text-emerald-400 font-bold");
-
-        const backUriField = document.getElementById('forgeBackUri');
-        if (backUriField) backUriField.value = backMediaTxId;
-
-        if (typeof appendLog === 'function') appendLog(`Initiating THE SOVEREIGN AWAKENING sequence on-chain at ${ethers.formatEther(currentMintPriceWei)} ETH...`, "text-yellow-400");
-        
-        const tokenIdBn = BigInt(targetTokenId);
-
-        // 🛡️ [PRODUCTION PATCH 2]: Pre-emptive Cache Invalidation - เคลียร์แคชก่อนยิง TX ปิดตาย Race Condition
-        if (typeof GLOBAL_NODE_CACHE !== 'undefined' && GLOBAL_NODE_CACHE?.delete) {
-            GLOBAL_NODE_CACHE.delete(String(targetTokenId));
-        }
-
-        const receipt = await runTx(
-            e, `SOVEREIGN_REBIRTH_#${targetTokenId}`, "SOVEREIGN_REBIRTH",
-            [tokenIdBn.toString(), strictFrontUri, backMediaTxId], { value: currentMintPriceWei.toString() },
-            { manageLock: false, manageButton: false } 
-        );
-
-        if (receipt) {
-            if (typeof syncActiveMatrixNodes === 'function') await syncActiveMatrixNodes();
-            if (typeof auditTokenFromLedger === 'function') await auditTokenFromLedger(targetTokenId);
-            if (typeof appendLog === 'function') appendLog(`Sovereign REBIRTH executed flawlessly on-chain.`, "text-emerald-400 font-bold");
-            showNotification("THE SOVEREIGN AWAKENING complete. Dual-identity anchored.", "success");
-        }
-    } catch (err) {
-        const errorMsg = decodeContractError(err);
-        const sanitizedMsg = sanitizeForDOM(errorMsg);
-
-        if (err?.code === 4001 || sanitizedMsg === "USER_CANCELLED_TX" || err?.message?.toLowerCase().includes("user rejected") || err?.message?.toLowerCase().includes("declined")) {
-            if (typeof appendLog === 'function') appendLog("Forge execution cancelled by operator signature denial.", "text-yellow-500");
-            showNotification("Transaction cancelled by user.", "warning");
-        } else if (err?.code === "UNPREDICTABLE_GAS_LIMIT" || err?.message?.toLowerCase().includes("cannot estimate gas")) {
-            if (typeof appendLog === 'function') appendLog("Network rejected estimateGas: Execution will likely fail on-chain.", "text-red-500 font-bold");
-            showNotification("Gas estimation failed (Contract Revert Risk).", "error");
-        } else {
-            if (typeof appendLog === 'function') appendLog(`Execution aborted: ${sanitizedMsg}`, "text-red-500");
-            showNotification("Transaction failed. Check console/logs for details.", "error");
-        }
-    } finally {
-        if (progress) progress.hide();
-        if (btn) toggleButtonLoading(btn, false);
-        // 🛡️ [PRODUCTION PATCH 3]: ปลดล็อกระบบเสมอเมื่อจบการทำงาน
-        if (typeof unlockSystem === 'function') unlockSystem();
-    }
-}
-
-async function executeArchitectMint(e) {
-    if (isTransactionPending || window.SystemState?._sysLocked) return;
-    if (!secureContract || !signer) { showNotification("Action suspended: Authenticate wallet signature first.", "error"); return; }
-
-    if (typeof lockSystem === 'function') lockSystem();
-    isTransactionPending = true;
-    const btn = toggleButtonLoading(e, true);
-
-    try {
-        const userAddress = await signer.getAddress();
-        const privs = await verifyUserPrivileges(userAddress);
-        if (!privs.isAdmin) {
-            showNotification("SECURITY ENFORCEMENT: Architect privileges required.", "error");
-            return;
-        }
-
-        if (typeof checkGasSurge === 'function') await checkGasSurge();
-
-        const targetTokenId = globalSelectedTokenId;
-        if (!targetTokenId || isNaN(Number(targetTokenId))) {
-            showNotification("STRUCTURAL EXCEPTION: Please select a Token ID coordinate on the Matrix first.", "error");
-            return;
-        }
-        
-        const tokenId = typeof validateTokenRange === 'function' ? validateTokenRange(targetTokenId) : targetTokenId;
-        if (!tokenId) return;
-
-        if (typeof autoMap === 'function') {
-            const mappedNode = await autoMap(tokenId);
-            if (mappedNode && mappedNode.isActivated) {
-                showNotification("STRUCTURAL EXCEPTION: Node is already active. Cannot execute Architect Mint.", "error");
-                return;
-            }
-        }
-
-        const targetAddress = (document.getElementById('adminTargetAddress')?.value || "").trim();
-        if (!targetAddress || !ethers.isAddress(targetAddress)) {
-            showNotification("STRUCTURAL EXCEPTION: Please specify a valid EVM Target Address.", "error");
-            return;
-        }
-
-        let strictFrontUri = "";
-        if (window.IMPERIAL_MANIFEST && window.IMPERIAL_MANIFEST[String(tokenId)]) {
-            const manifestData = window.IMPERIAL_MANIFEST[String(tokenId)];
-            strictFrontUri = typeof manifestData === 'string' ? manifestData.trim() : String(manifestData.irys_id || "").trim();
-        }
-
-        if (!strictFrontUri) {
-            if (typeof appendLog === 'function') appendLog(`MINT REJECTED: ไม่พบข้อมูล Front URI สำหรับ Node #${tokenId} ใน JSON Manifest`, "text-red-500 font-bold");
-            showNotification("METADATA EXCEPTION: Node not ready for minting (Front URI missing in Manifest).", "error");
-            return;
-        }
-
-        const backMediaTxId = (document.getElementById('architectBackUri')?.value || "").trim();
-        if (!backMediaTxId) {
-            showNotification("STRUCTURAL EXCEPTION: Please specify a valid Back URI.", "error");
-            return;
-        }
-
-        if (typeof appendLog === 'function') appendLog(`Initiating ARCHITECT_MINT for Node #${tokenId} to ${targetAddress.slice(0,6)}...`, "text-yellow-400");
-        const tokenIdBn = BigInt(tokenId);
-
-        const receipt = await runTx(
-            e, `ARCHITECT_MINT_#${tokenId}`, "ARCHITECT_MINT",
-            [tokenIdBn.toString(), targetAddress, strictFrontUri, backMediaTxId], {},
-            { manageLock: false, manageButton: false }
-        );
-
-        if (receipt) {
-            if (typeof GLOBAL_NODE_CACHE !== 'undefined' && GLOBAL_NODE_CACHE?.clear) GLOBAL_NODE_CACHE.clear();
-            if (typeof syncActiveMatrixNodes === 'function') await syncActiveMatrixNodes();
-            if (typeof auditTokenFromLedger === 'function') await auditTokenFromLedger(tokenId);
-            if (typeof appendLog === 'function') appendLog(`ARCHITECT MINT EXECUTED FLAWLESSLY ON-CHAIN.`, "text-emerald-400 font-bold");
-            showNotification(`Architect Mint complete. Rights transferred to ${targetAddress.slice(0,6)} successfully!`, "success");
-        }
-    } catch (err) {
-        const errorMsg = typeof decodeContractError === 'function' ? decodeContractError(err) : (err.message || err);
-        const sanitizedMsg = typeof sanitizeForDOM === 'function' ? sanitizeForDOM(errorMsg) : String(errorMsg);
-
-        if (err.code === 4001 || sanitizedMsg === "USER_CANCELLED_TX" || err.message?.toLowerCase().includes("user rejected") || err.message?.toLowerCase().includes("declined")) {
-            if (typeof appendLog === 'function') appendLog("Architect mint sequence aborted due to signature denial.", "text-yellow-500");
-            showNotification("Transaction cancelled by user.", "warning");
-        } else if (err.code === "UNPREDICTABLE_GAS_LIMIT" || err.message?.toLowerCase().includes("cannot estimate gas")) {
-            if (typeof appendLog === 'function') appendLog("Network rejected estimateGas: Execution will likely fail on-chain.", "text-red-500 font-bold");
-            showNotification("Gas estimation failed (Contract Revert Risk).", "error");
-        } else {
-            if (typeof appendLog === 'function') appendLog(`Execution aborted: ${sanitizedMsg}`, "text-red-500");
-            showNotification(`Transaction failed: ${sanitizedMsg}`, "error");
-        }
-    } finally {
-        if (btn && typeof toggleButtonLoading === 'function') toggleButtonLoading(btn, false);
-        isTransactionPending = false;
-        if (typeof unlockSystem === 'function') unlockSystem();
-    }
-}
-
-async function executeArchitectRemint(e) {
-    if (isTransactionPending || window.SystemState?._sysLocked) return;
-    if (!secureContract || !signer) { showNotification("Action suspended: Authenticate wallet signature first.", "error"); return; }
-
-    if (typeof lockSystem === 'function') lockSystem();
-    isTransactionPending = true;
-    const btn = toggleButtonLoading(e, true);
-
-    try {
-        const userAddress = await signer.getAddress();
-        const privs = await verifyUserPrivileges(userAddress);
-        if (!privs.isAdmin) {
-            showNotification("SECURITY ENFORCEMENT: Architect privileges required.", "error");
-            return;
-        }
-
-        await checkGasSurge();
-        
-        const targetTokenId = globalSelectedTokenId;
-        if (!targetTokenId || isNaN(Number(targetTokenId))) {
-            showNotification("STRUCTURAL EXCEPTION: Please select a Token ID coordinate on the Matrix first.", "error");
-            return;
-        }
-        const tokenId = typeof validateTokenRange === 'function' ? validateTokenRange(targetTokenId) : targetTokenId;
-        if (!tokenId) return;
-
-        const mappedNode = await autoMap(tokenId);
-        if (mappedNode && mappedNode.isActivated) {
-            showNotification("STRUCTURAL EXCEPTION: Node is currently active. Must be burned before Remint.", "error");
-            return;
-        }
-
-        let strictFrontUri = "";
-        if (window.IMPERIAL_MANIFEST && window.IMPERIAL_MANIFEST[String(tokenId)]) {
-            const manifestData = window.IMPERIAL_MANIFEST[String(tokenId)];
-            strictFrontUri = typeof manifestData === 'string' ? manifestData.trim() : String(manifestData.irys_id || "").trim();
-        }
-
-        if (!strictFrontUri) {
-            if (typeof appendLog === 'function') appendLog(`MINT REJECTED: ไม่พบข้อมูล Front URI สำหรับ Node #${tokenId} ใน JSON Manifest`, "text-red-500 font-bold");
-            showNotification("METADATA EXCEPTION: Node not ready for minting (Front URI missing in Manifest).", "error");
-            return;
-        }
-
-        const backMediaTxId = (document.getElementById('architectBackUri')?.value || "").trim();
-        if (!backMediaTxId) {
-            showNotification("STRUCTURAL EXCEPTION: Please specify a valid Back URI.", "error");
-            return;
-        }
-
-        let currentMintPriceWei = 0n;
-        try {
-            currentMintPriceWei = await secureContract.mintPrice();
-        } catch (rpcErr) {
-            if (typeof appendLog === 'function') appendLog("RPC RATE LIMIT (429) DETECTED: Retrying economic parameters fetch...", "text-yellow-500");
-            await new Promise(r => setTimeout(r, 1500));
-            currentMintPriceWei = await secureContract.mintPrice();
-        }
-
-        if (typeof appendLog === 'function') appendLog(`Initiating SOVEREIGN_REMINT on Smart Contract at ${ethers.formatEther(currentMintPriceWei)} ETH...`, "text-yellow-400");
-        
-        const tokenIdBn = BigInt(tokenId);
-
-        const receipt = await runTx(
-            e, `SOVEREIGN_REMINT_#${tokenId}`, "SOVEREIGN_REMINT",
-            [tokenIdBn.toString(), strictFrontUri, backMediaTxId], { value: currentMintPriceWei.toString() },
-            { manageLock: false, manageButton: false }
-        );
-
-        if (receipt) {
-            if (typeof GLOBAL_NODE_CACHE !== 'undefined' && GLOBAL_NODE_CACHE?.clear) GLOBAL_NODE_CACHE.clear();
-            if (typeof auditTokenFromLedger === 'function') await auditTokenFromLedger(tokenId);
-            if (typeof syncActiveMatrixNodes === 'function') await syncActiveMatrixNodes(); 
-            if (typeof appendLog === 'function') appendLog(`Sovereign REMINT executed flawlessly on-chain.`, "text-emerald-400 font-bold");
-            showNotification("Reminting complete. Deed reconstructed and pulled back into the system!", "success");
-        }
-    } catch (err) {
-        const errorMsg = typeof decodeContractError === 'function' ? decodeContractError(err) : (err.message || err);
-        const sanitizedMsg = typeof sanitizeForDOM === 'function' ? sanitizeForDOM(errorMsg) : String(errorMsg);
-
-        if (err.code === 4001 || sanitizedMsg === "USER_CANCELLED_TX" || err.message?.toLowerCase().includes("user rejected") || err.message?.toLowerCase().includes("declined")) {
-            if (typeof appendLog === 'function') appendLog("Architect Remint aborted by signature denial.", "text-yellow-500");
-            showNotification("Transaction cancelled by user.", "warning");
-        } else if (err.code === "UNPREDICTABLE_GAS_LIMIT" || err.message?.toLowerCase().includes("cannot estimate gas")) {
-            if (typeof appendLog === 'function') appendLog("Network rejected estimateGas: Execution will likely fail on-chain.", "text-red-500 font-bold");
-            showNotification("Gas estimation failed (Contract Revert Risk).", "error");
-        } else {
-            if (typeof appendLog === 'function') appendLog(`Execution aborted: ${sanitizedMsg}`, "text-red-500");
-            showNotification(`Transaction failed: ${sanitizedMsg}`, "error");
-        }
-    } finally {
-        if (btn && typeof toggleButtonLoading === 'function') toggleButtonLoading(btn, false);
-        isTransactionPending = false;
-        if (typeof unlockSystem === 'function') unlockSystem();
     }
 }
 
@@ -2517,7 +1898,6 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
                     throw new TypeError("Payload must be a File or Blob when isFile is true.");
                 }
                 
-                // 🟢 THE FIX: แปลง File/Blob เป็น Buffer ผ่าน web3-polyfill.js เพื่อตัดปัญหา .pipe ที่ Irys SDK ตามหา
                 const arrayBuf = await payload.arrayBuffer();
                 dataToUpload = Buffer.from(arrayBuf);
                 size = dataToUpload.length;
@@ -2684,7 +2064,6 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
                             receipt = await irys.uploader.chunkedUploader.uploadData(dataToUpload, { tags, uploadId });
                             
                         } else {
-                            // ส่งข้อมูลแบบ Buffer ตรงเข้า upload() ของ Irys ได้เลย ปลอดภัยและเสถียรที่สุด
                             if (progressCtrl) progressCtrl.set(size / 2);
                             receipt = await irys.upload(dataToUpload, { tags });
                         }
@@ -2729,12 +2108,6 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
         if (activeBtn) toggleButtonLoading(activeBtn, false);
     }
 }
-
-
-
-// ==============================================================================
-// ⚡ CORE EXECUTION: TOP-UP PROTOCOL (ASYNC NON-BLOCKING)
-// ==============================================================================
 
 async function executeIrysTopUp(amountEthStr, triggerBtn = null) { 
     const activeBtn = toggleButtonLoading(triggerBtn, true);
@@ -2864,9 +2237,7 @@ function syncMatrixIdStateUI(activeId) {
     }
 }
 
-
-
-let isNodeProcessing = false; // ⚡ ANTI-SPAM LOCK
+let isNodeProcessing = false; 
 
 function initializeAbsoluteEventDelegation() {
     if (document.body.dataset.delegationAttached === "true") return;
@@ -2878,7 +2249,6 @@ function initializeAbsoluteEventDelegation() {
         const matrixNode = event.target.closest('[data-token-id], .matrix-node-cell, .matrix-cell, .matrix-node');
         if (!matrixNode) return;
 
-        // ⚡ FIX: ป้องกันการสแปมคลิก (Race Condition)
         if (isNodeProcessing) return; 
 
         const rawId = matrixNode.dataset.tokenId || matrixNode.getAttribute('data-token-id');
@@ -2890,7 +2260,7 @@ function initializeAbsoluteEventDelegation() {
                 return;
             }
 
-            isNodeProcessing = true; // ⚡ LOCK ENGAGED
+            isNodeProcessing = true; 
 
             try {
                 globalSelectedTokenId = tokenId;
@@ -2911,7 +2281,7 @@ function initializeAbsoluteEventDelegation() {
                 }
                 matrixNode.classList.add(...THINKING_CLASSES);
 
-                safeAppendLog(`[MATRIX] Engaging node #${tokenId}...`, "text-blue-400"); // ⚡ Direct Call
+                safeAppendLog(`[MATRIX] Engaging node #${tokenId}...`, "text-blue-400"); 
 
                 let isAdmin = false;
                 let adminRole = null;
@@ -2952,7 +2322,7 @@ function initializeAbsoluteEventDelegation() {
                 }
 
                 try {
-                    await auditTokenFromLedger(tokenId); // ⚡ Direct Call
+                    await auditTokenFromLedger(tokenId); 
                     matrixNode.classList.remove(...THINKING_CLASSES, ...ERROR_CLASSES);
                     matrixNode.classList.add(...ACTIVE_CLASSES);
 
@@ -2991,7 +2361,7 @@ function initializeAbsoluteEventDelegation() {
                     }
                 }
             } finally {
-                isNodeProcessing = false; // ⚡ RELEASE LOCK
+                isNodeProcessing = false; 
             }
         }
     });
@@ -3040,7 +2410,6 @@ function checkPendingNova() {
         const pendingToken = localStorage.getItem('pending_nova_token');
         
         if (pendingTxHash && pendingToken) {
-            // [FIX]: Strict type validation for recovered Token ID
             const parsedTokenId = parseInt(pendingToken, 10);
             
             if (isNaN(parsedTokenId) || parsedTokenId < 1 || parsedTokenId > 333) {
@@ -3057,7 +2426,6 @@ function checkPendingNova() {
             }
             
             if (typeof safeAppendLog === 'function') {
-                // [FIX]: Safely slice the hash for display without injecting it into payload inputs
                 const shortHash = typeof pendingTxHash === 'string' ? `${pendingTxHash.slice(0, 10)}...` : 'Unknown';
                 safeAppendLog(`[SYSTEM] Tracking unconfirmed on-chain transaction (${shortHash}) for Node #${parsedTokenId}.`, "text-amber-400");
             }
@@ -3150,6 +2518,19 @@ async function executeArchitectCentralizedUpload(type) {
     }
 }
 
+// 🛡️ FORMAT DNA STRING FOR UI (REAL-WORLD REQUIREMENT)
+function formatDnaString(rawDna) {
+    if (!rawDna || rawDna.trim() === "") return "UNASSIGNED";
+    const parts = rawDna.split('|').filter(p => p.trim() !== '');
+    if (parts.length <= 1) return sanitizeForDOM(rawDna);
+    
+    return parts.map((p, i) => {
+        return `<div class="mt-1.5 text-[10px] text-rose-300 border-l-2 border-rose-800 pl-2 py-0.5 bg-rose-950/20 rounded-r">
+            <span class="text-rose-500 font-black mr-1">[${i+1}]</span> ${sanitizeForDOM(p.trim())}
+        </div>`;
+    }).join('');
+}
+
 async function executeGatewayUnlock(event) {
     if (!secureContract || !signer) {
         showNotification("CRITICAL ERROR: WALLET NOT CONNECTED - Please connect your wallet first.", "error");
@@ -3166,11 +2547,9 @@ async function executeGatewayUnlock(event) {
     try {
         const userAddress = (await signer.getAddress()).toLowerCase();
         
-        // 1. ดึงข้อมูล On-Chain สดๆ จาก Smart Contract
         const deedData = await secureContract.getDeedData(tokenId.toString());
         const ownerOnChain = String(deedData[0]).toLowerCase();
         
-        // 2. ตรวจสอบสิทธิ์ (Token-Gating)
         const privs = await verifyUserPrivileges(userAddress);
         if (userAddress !== ownerOnChain && !privs.isArchitect) {
             showNotification("ACCESS DENIED: UNAUTHORIZED ENTITY", "error");
@@ -3179,22 +2558,24 @@ async function executeGatewayUnlock(event) {
             return;
         }
 
-        // 3. DOM Binding (Inject ข้อมูล 8 ค่าลงใน memberDnaStudio โดยตรง)
         document.getElementById('dna-owner').textContent = deedData[0];
         document.getElementById('dna-active').textContent = deedData[1] ? "TRUE (ACTIVE)" : "FALSE (DORMANT)";
         document.getElementById('dna-sanctified').textContent = deedData[2] ? "TRUE (SANCTIFIED)" : "FALSE (UNVERIFIED)";
         document.getElementById('dna-front').textContent = deedData[3] || "UNASSIGNED";
         document.getElementById('dna-back').textContent = deedData[4] || "UNASSIGNED";
         document.getElementById('dna-video').textContent = deedData[5] || "UNASSIGNED";
-        document.getElementById('dna-dna').textContent = deedData[6] || "UNASSIGNED";
-        document.getElementById('dna-hidden').textContent = deedData[7] || "UNASSIGNED";
+        
+        // 🛡️ Apply Formatting to DNA and Hidden Properties
+        const dnaContainer = document.getElementById('dna-dna');
+        if (dnaContainer) dnaContainer.innerHTML = formatDnaString(deedData[6]);
+        
+        const hiddenContainer = document.getElementById('dna-hidden');
+        if (hiddenContainer) hiddenContainer.innerHTML = formatDnaString(deedData[7]);
 
-        // 4. ดึงค่า Factory Metadata (RANK & IDENTITY STATUS) มาแสดงที่ propDisplay1, propDisplay2
         if (typeof loadDeedMetadata === 'function') {
             await loadDeedMetadata(tokenId);
         }
 
-        // 5. สิทธิ์ผ่าน -> ปิดหน้าต่างคำแนะนำ และเปิด memberDnaStudio
         closeIdentityAuthModal();
         const vault = document.getElementById('memberDnaStudio');
         if (vault) {
@@ -3221,7 +2602,6 @@ async function processIdentityDnaInspectionOnChain() {
     if (!activeContract) return;
 
     try {
-        // ดึง 8 ค่าหลัก
         const deedData = await activeContract.getDeedData(tokenId.toString());
         
         document.getElementById('dna-owner').textContent = deedData[0];
@@ -3230,10 +2610,13 @@ async function processIdentityDnaInspectionOnChain() {
         document.getElementById('dna-front').textContent = deedData[3] || "UNASSIGNED";
         document.getElementById('dna-back').textContent = deedData[4] || "UNASSIGNED";
         document.getElementById('dna-video').textContent = deedData[5] || "UNASSIGNED";
-        document.getElementById('dna-dna').textContent = deedData[6] || "UNASSIGNED";
-        document.getElementById('dna-hidden').textContent = deedData[7] || "UNASSIGNED";
+        
+        const dnaContainer = document.getElementById('dna-dna');
+        if (dnaContainer) dnaContainer.innerHTML = formatDnaString(deedData[6]);
+        
+        const hiddenContainer = document.getElementById('dna-hidden');
+        if (hiddenContainer) hiddenContainer.innerHTML = formatDnaString(deedData[7]);
 
-        // ดึง 2 ค่า Metadata
         if (typeof loadDeedMetadata === 'function') {
             await loadDeedMetadata(tokenId);
         }
@@ -3310,7 +2693,7 @@ function requestMediaConfirmation(uri, dnaString, mediaTypeHint = "") {
         }
         
         container.replaceChildren();
-        dnaDisplay.textContent = `DNA FIELD: ${dnaString || "N/A"}`;
+        dnaDisplay.innerHTML = `DNA FIELD:<br>${formatDnaString(dnaString)}`;
         
         const isVideo = String(mediaTypeHint || "").toLowerCase().includes('video');
         
@@ -3451,8 +2834,6 @@ function resetAdminInputs(forceClear = false) {
 }
 
 window.systemForceClearState = () => resetAdminInputs(true);
-
-
 
 async function loadDeedMetadata(tokenId) {
     const mappedNode = await autoMap(tokenId);
@@ -3618,21 +2999,16 @@ function setupWalletEventListeners(rawProvider) {
     }
 }
 
-// ==========================================
-// 2. REFACTORED handleAccountsChangedEvent FUNCTION
-// ==========================================
 async function handleAccountsChangedEvent(accounts) {
     if (walletSessionController) walletSessionController.abort();
     walletSessionController = new AbortController();
 
     try { if (secureContract?.removeAllListeners) secureContract.removeAllListeners(); } catch (err) {}
     
-    // เคลียร์แคชระบบทั้งหมด
     if (typeof GLOBAL_NODE_CACHE !== 'undefined' && GLOBAL_NODE_CACHE?.clear) GLOBAL_NODE_CACHE.clear();
     if (typeof window.NODE_STATE_MAP !== 'undefined' && window.NODE_STATE_MAP?.clear) window.NODE_STATE_MAP.clear();
     window._domStateCache = {}; 
     
-    // [แก้บั๊กตาม Fact]: ซิงค์ State กลับไปที่ Window เพื่ออุดรอยรั่ว Reference ฉีกขาด
     if (window.SystemState && window.SystemState.currentLoadedMediaData) {
         Object.assign(window.SystemState.currentLoadedMediaData, { 
             front: "", frontType: "image", back: "", backType: "image", video: "", videoType: "video" 
@@ -3640,7 +3016,6 @@ async function handleAccountsChangedEvent(accounts) {
     }
     if (window.SystemState) window.SystemState.globalSelectedTokenId = null;
 
-    // [แก้บั๊กตาม Fact]: ล้าง LocalStorage ป้องกัน Transaction ผีหลอก
     localStorage.removeItem('irys_pending_fund_tx');
     localStorage.removeItem('pending_nova_txid');
     localStorage.removeItem('pending_nova_token');
@@ -3649,7 +3024,6 @@ async function handleAccountsChangedEvent(accounts) {
     
     const isDisconnected = !accounts || !Array.isArray(accounts) || accounts.length === 0;
     
-    // [UI OVERRIDE]: Target Header Elements
     const walletInfo = document.getElementById('walletInfo');
     const hdrAddress = document.getElementById('hdrAddress');
     
@@ -3657,7 +3031,6 @@ async function handleAccountsChangedEvent(accounts) {
         if (typeof bindNodeOwnership === 'function') bindNodeOwnership(null);
         showNotification("SECURITY PROTOCOL: Wallet disconnected. System entering Standby mode.", "error");
         
-        // เอา Log พี่กลับมา!
         appendLog("Wallet disconnected by user.", "text-yellow-400 font-bold");
         
         if (walletInfo) walletInfo.classList.add('hidden');
@@ -3666,7 +3039,6 @@ async function handleAccountsChangedEvent(accounts) {
         if (typeof bindNodeOwnership === 'function') bindNodeOwnership(accounts[0]);
         showNotification("IDENTITY SHIFT DETECTED: Account switched successfully.", "warning");
         
-        // เอา Log พี่กลับมา!
         appendLog(`Identity vector shift detected to: ${accounts[0]}`, "text-yellow-400 font-bold");
         
         if (walletInfo) walletInfo.classList.remove('hidden');
@@ -3690,7 +3062,6 @@ async function handleAccountsChangedEvent(accounts) {
     window.secureContract = null;
     window.irys = null; 
 }
-
 
 function setNetworkHardLock(locked, observedChainId = '') {
     const overlay = document.getElementById('securityHardLockOverlay');
@@ -3719,7 +3090,6 @@ function handleChainChangedEvent(newChainId) {
     try { parsedChainId = BigInt(newChainId); } catch (_) { parsedChainId = 0n; }
     const wrongNetwork = parsedChainId !== 8453n;
     
-    // [UI OVERRIDE]: อัปเดต Network Text
     const hdrNetwork = document.getElementById('hdrNetwork');
     if (hdrNetwork) hdrNetwork.textContent = wrongNetwork ? `CHAIN: ${parsedChainId}` : "BASE MAINNET";
 
@@ -3730,7 +3100,6 @@ function handleChainChangedEvent(newChainId) {
     }
 }
 
-
 const eip6963Providers = [];
 window.addEventListener("eip6963:announceProvider", (event) => {
     if (event.detail && event.detail.provider && event.detail.info) {
@@ -3740,9 +3109,7 @@ window.addEventListener("eip6963:announceProvider", (event) => {
         }
     }
 });
-// ==========================================
-// 3. INTEGRATED WALLET CONTROLLER
-// ==========================================
+
 window.dispatchEvent(new Event("eip6963:requestProvider"));
 
 async function connectWallet(e) {
@@ -3790,7 +3157,6 @@ async function connectWallet(e) {
         else {
             appendLog("Secondary Route Engaged: Initializing WalletConnect V2.", "text-yellow-400");
             
-            // 🛡️ อัปเกรดจุดนี้ให้ค้นหา Provider ได้ครอบคลุมขึ้น ป้องกันโค้ดพัง
             const EthereumProviderCtor = window.EthereumProvider || window.WalletConnectProvider?.EthereumProvider;
             if (!EthereumProviderCtor) throw new Error("WalletConnect V2 Runtime Bundle unresolved or blocked by client.");
 
@@ -3837,7 +3203,6 @@ async function connectWallet(e) {
         provider = new ethers.BrowserProvider(rawProvider);
         signer = await provider.getSigner();
 
-        // 🛡️ [AUTHORITY INJECTION] อัปเดต Ownership ทันทีที่เชื่อมต่อบัญชีสำเร็จ (คงไว้ตามเดิม 100%)
         bindNodeOwnership(account);
         
         if (secureContract) {
@@ -3892,7 +3257,6 @@ async function connectWallet(e) {
         if (btn) toggleButtonLoading(btn, false);
     }
 }
-
 
 // ==============================================================================
 // 🏛️ GOVERNANCE & PROPOSAL ENGINE
@@ -4287,7 +3651,6 @@ async function executeCastVote(btn) {
     }
 }
 
-
 // ==============================================================================
 // 🧬 NOVA ASCENSION & IDENTITY UPDATES
 // ==============================================================================
@@ -4366,7 +3729,6 @@ async function triggerIdentityNova(e) {
         return;
     }
 
-    // [FIX]: Implement onBroadcast callback to secure pending state, and ensure cleanup on resolution
     const receipt = await runTx(
         e, 
         `SOVEREIGN_NOVA_#${tokenId}`, 
@@ -4389,7 +3751,6 @@ async function triggerIdentityNova(e) {
         }
     );
 
-    // Strict cleanup of pending state regardless of success or failure
     try {
         localStorage.removeItem('pending_nova_txid');
         localStorage.removeItem('pending_nova_token');
@@ -4416,7 +3777,6 @@ async function executeUpdateIdentity(e) {
         const userAddress = await signer.getAddress();
         const privs = await verifyUserPrivileges(userAddress);
 
-        // 🚨 [CRITICAL FIX]: บังคับใช้ ID จาก Node ที่คลิกบนจอเท่านั้น ห้ามดึงจากช่องกรอกตัวเลข
         const targetTokenId = globalSelectedTokenId;
         if (!targetTokenId) {
             showNotification("STRUCTURAL EXCEPTION: Please select a Token ID coordinate on the Matrix first.", "error");
@@ -4449,7 +3809,6 @@ async function executeUpdateIdentity(e) {
             }
         }
 
-        // 🚨 [CRITICAL FIX]: ข้อมูลภาพจะตรงกับ Node ที่คลิก 100% ไม่มีทางสลับมั่ว
         frontUri = (document.getElementById('forgeFrontUri')?.value || "").trim() || currentLoadedMediaData.front || "";
         backUri = (document.getElementById('forgeBackUri')?.value || "").trim() || currentLoadedMediaData.back || "";
         videoUri = (document.getElementById('novaVideoUri')?.value || "").trim() || currentLoadedMediaData.video || "";
@@ -4479,7 +3838,6 @@ async function executeUpdateIdentity(e) {
 async function executeSovereignSupport(e) {
     if (!secureContract || !signer) { showNotification("Action suspended: Authenticate wallet signature first.", "error"); return; }
     
-    // 🚨 [CRITICAL FIX]: บังคับใช้ ID จาก Node ที่คลิกบนจอเท่านั้น ป้องกันการพิมพ์เลขผิดแล้วไปเผาเหรียญอื่นทิ้ง
     const targetTokenId = globalSelectedTokenId;
     if (!targetTokenId) {
         showNotification("STRUCTURAL EXCEPTION: Please select a Token ID coordinate on the Matrix first.", "error");
@@ -4521,8 +3879,6 @@ async function executeSovereignSupport(e) {
         showNotification("Immolation successful.", "success");
     }
 }
-
-
 
 async function executeSetParams(e) {
     if (!secureContract || !signer) { showNotification("Action suspended: Authenticate wallet signature first.", "error"); return; }
@@ -4634,12 +3990,204 @@ async function executeContractPause(status, e) {
     }
 }
 
+async function executeArchitectMint(e) {
+    if (isTransactionPending || window.SystemState?._sysLocked) return;
+    if (!secureContract || !signer) { showNotification("Action suspended: Authenticate wallet signature first.", "error"); return; }
+
+    if (typeof lockSystem === 'function') lockSystem();
+    isTransactionPending = true;
+    const btn = toggleButtonLoading(e, true);
+
+    try {
+        const userAddress = await signer.getAddress();
+        const privs = await verifyUserPrivileges(userAddress);
+        if (!privs.isAdmin) {
+            showNotification("SECURITY ENFORCEMENT: Architect privileges required.", "error");
+            return;
+        }
+
+        if (typeof checkGasSurge === 'function') await checkGasSurge();
+
+        const targetTokenId = globalSelectedTokenId;
+        if (!targetTokenId || isNaN(Number(targetTokenId))) {
+            showNotification("STRUCTURAL EXCEPTION: Please select a Token ID coordinate on the Matrix first.", "error");
+            return;
+        }
+        
+        const tokenId = typeof validateTokenRange === 'function' ? validateTokenRange(targetTokenId) : targetTokenId;
+        if (!tokenId) return;
+
+        if (typeof autoMap === 'function') {
+            const mappedNode = await autoMap(tokenId);
+            if (mappedNode && mappedNode.isActivated) {
+                showNotification("STRUCTURAL EXCEPTION: Node is already active. Cannot execute Architect Mint.", "error");
+                return;
+            }
+        }
+
+        const targetAddress = (document.getElementById('adminTargetAddress')?.value || "").trim();
+        if (!targetAddress || !ethers.isAddress(targetAddress)) {
+            showNotification("STRUCTURAL EXCEPTION: Please specify a valid EVM Target Address.", "error");
+            return;
+        }
+
+        let strictFrontUri = "";
+        if (window.IMPERIAL_MANIFEST && window.IMPERIAL_MANIFEST[String(tokenId)]) {
+            const manifestData = window.IMPERIAL_MANIFEST[String(tokenId)];
+            strictFrontUri = typeof manifestData === 'string' ? manifestData.trim() : String(manifestData.irys_id || "").trim();
+        }
+
+        if (!strictFrontUri) {
+            if (typeof appendLog === 'function') appendLog(`MINT REJECTED: ไม่พบข้อมูล Front URI สำหรับ Node #${tokenId} ใน JSON Manifest`, "text-red-500 font-bold");
+            showNotification("METADATA EXCEPTION: Node not ready for minting (Front URI missing in Manifest).", "error");
+            return;
+        }
+
+        const backMediaTxId = (document.getElementById('architectBackUri')?.value || "").trim();
+        if (!backMediaTxId) {
+            showNotification("STRUCTURAL EXCEPTION: Please specify a valid Back URI.", "error");
+            return;
+        }
+
+        if (typeof appendLog === 'function') appendLog(`Initiating ARCHITECT_MINT for Node #${tokenId} to ${targetAddress.slice(0,6)}...`, "text-yellow-400");
+        const tokenIdBn = BigInt(tokenId);
+
+        const receipt = await runTx(
+            e, `ARCHITECT_MINT_#${tokenId}`, "ARCHITECT_MINT",
+            [tokenIdBn.toString(), targetAddress, strictFrontUri, backMediaTxId], {},
+            { manageLock: false, manageButton: false }
+        );
+
+        if (receipt) {
+            if (typeof GLOBAL_NODE_CACHE !== 'undefined' && GLOBAL_NODE_CACHE?.clear) GLOBAL_NODE_CACHE.clear();
+            if (typeof syncActiveMatrixNodes === 'function') await syncActiveMatrixNodes();
+            if (typeof auditTokenFromLedger === 'function') await auditTokenFromLedger(tokenId);
+            if (typeof appendLog === 'function') appendLog(`ARCHITECT MINT EXECUTED FLAWLESSLY ON-CHAIN.`, "text-emerald-400 font-bold");
+            showNotification(`Architect Mint complete. Rights transferred to ${targetAddress.slice(0,6)} successfully!`, "success");
+        }
+    } catch (err) {
+        const errorMsg = typeof decodeContractError === 'function' ? decodeContractError(err) : (err.message || err);
+        const sanitizedMsg = typeof sanitizeForDOM === 'function' ? sanitizeForDOM(errorMsg) : String(errorMsg);
+
+        if (err.code === 4001 || sanitizedMsg === "USER_CANCELLED_TX" || err.message?.toLowerCase().includes("user rejected") || err.message?.toLowerCase().includes("declined")) {
+            if (typeof appendLog === 'function') appendLog("Architect mint sequence aborted due to signature denial.", "text-yellow-500");
+            showNotification("Transaction cancelled by user.", "warning");
+        } else if (err.code === "UNPREDICTABLE_GAS_LIMIT" || err.message?.toLowerCase().includes("cannot estimate gas")) {
+            if (typeof appendLog === 'function') appendLog("Network rejected estimateGas: Execution will likely fail on-chain.", "text-red-500 font-bold");
+            showNotification("Gas estimation failed (Contract Revert Risk).", "error");
+        } else {
+            if (typeof appendLog === 'function') appendLog(`Execution aborted: ${sanitizedMsg}`, "text-red-500");
+            showNotification(`Transaction failed: ${sanitizedMsg}`, "error");
+        }
+    } finally {
+        if (btn && typeof toggleButtonLoading === 'function') toggleButtonLoading(btn, false);
+        isTransactionPending = false;
+        if (typeof unlockSystem === 'function') unlockSystem();
+    }
+}
+
+async function executeArchitectRemint(e) {
+    if (isTransactionPending || window.SystemState?._sysLocked) return;
+    if (!secureContract || !signer) { showNotification("Action suspended: Authenticate wallet signature first.", "error"); return; }
+
+    if (typeof lockSystem === 'function') lockSystem();
+    isTransactionPending = true;
+    const btn = toggleButtonLoading(e, true);
+
+    try {
+        const userAddress = await signer.getAddress();
+        const privs = await verifyUserPrivileges(userAddress);
+        if (!privs.isAdmin) {
+            showNotification("SECURITY ENFORCEMENT: Architect privileges required.", "error");
+            return;
+        }
+
+        await checkGasSurge();
+        
+        const targetTokenId = globalSelectedTokenId;
+        if (!targetTokenId || isNaN(Number(targetTokenId))) {
+            showNotification("STRUCTURAL EXCEPTION: Please select a Token ID coordinate on the Matrix first.", "error");
+            return;
+        }
+        const tokenId = typeof validateTokenRange === 'function' ? validateTokenRange(targetTokenId) : targetTokenId;
+        if (!tokenId) return;
+
+        const mappedNode = await autoMap(tokenId);
+        if (mappedNode && mappedNode.isActivated) {
+            showNotification("STRUCTURAL EXCEPTION: Node is currently active. Must be burned before Remint.", "error");
+            return;
+        }
+
+        let strictFrontUri = "";
+        if (window.IMPERIAL_MANIFEST && window.IMPERIAL_MANIFEST[String(tokenId)]) {
+            const manifestData = window.IMPERIAL_MANIFEST[String(tokenId)];
+            strictFrontUri = typeof manifestData === 'string' ? manifestData.trim() : String(manifestData.irys_id || "").trim();
+        }
+
+        if (!strictFrontUri) {
+            if (typeof appendLog === 'function') appendLog(`MINT REJECTED: ไม่พบข้อมูล Front URI สำหรับ Node #${tokenId} ใน JSON Manifest`, "text-red-500 font-bold");
+            showNotification("METADATA EXCEPTION: Node not ready for minting (Front URI missing in Manifest).", "error");
+            return;
+        }
+
+        const backMediaTxId = (document.getElementById('architectBackUri')?.value || "").trim();
+        if (!backMediaTxId) {
+            showNotification("STRUCTURAL EXCEPTION: Please specify a valid Back URI.", "error");
+            return;
+        }
+
+        let currentMintPriceWei = 0n;
+        try {
+            currentMintPriceWei = await secureContract.mintPrice();
+        } catch (rpcErr) {
+            if (typeof appendLog === 'function') appendLog("RPC RATE LIMIT (429) DETECTED: Retrying economic parameters fetch...", "text-yellow-500");
+            await new Promise(r => setTimeout(r, 1500));
+            currentMintPriceWei = await secureContract.mintPrice();
+        }
+
+        if (typeof appendLog === 'function') appendLog(`Initiating SOVEREIGN_REMINT on Smart Contract at ${ethers.formatEther(currentMintPriceWei)} ETH...`, "text-yellow-400");
+        
+        const tokenIdBn = BigInt(tokenId);
+
+        const receipt = await runTx(
+            e, `SOVEREIGN_REMINT_#${tokenId}`, "SOVEREIGN_REMINT",
+            [tokenIdBn.toString(), strictFrontUri, backMediaTxId], { value: currentMintPriceWei.toString() },
+            { manageLock: false, manageButton: false }
+        );
+
+        if (receipt) {
+            if (typeof GLOBAL_NODE_CACHE !== 'undefined' && GLOBAL_NODE_CACHE?.clear) GLOBAL_NODE_CACHE.clear();
+            if (typeof auditTokenFromLedger === 'function') await auditTokenFromLedger(tokenId);
+            if (typeof syncActiveMatrixNodes === 'function') await syncActiveMatrixNodes(); 
+            if (typeof appendLog === 'function') appendLog(`Sovereign REMINT executed flawlessly on-chain.`, "text-emerald-400 font-bold");
+            showNotification("Reminting complete. Deed reconstructed and pulled back into the system!", "success");
+        }
+    } catch (err) {
+        const errorMsg = typeof decodeContractError === 'function' ? decodeContractError(err) : (err.message || err);
+        const sanitizedMsg = typeof sanitizeForDOM === 'function' ? sanitizeForDOM(errorMsg) : String(errorMsg);
+
+        if (err.code === 4001 || sanitizedMsg === "USER_CANCELLED_TX" || err.message?.toLowerCase().includes("user rejected") || err.message?.toLowerCase().includes("declined")) {
+            if (typeof appendLog === 'function') appendLog("Architect Remint aborted by signature denial.", "text-yellow-500");
+            showNotification("Transaction cancelled by user.", "warning");
+        } else if (err.code === "UNPREDICTABLE_GAS_LIMIT" || err.message?.toLowerCase().includes("cannot estimate gas")) {
+            if (typeof appendLog === 'function') appendLog("Network rejected estimateGas: Execution will likely fail on-chain.", "text-red-500 font-bold");
+            showNotification("Gas estimation failed (Contract Revert Risk).", "error");
+        } else {
+            if (typeof appendLog === 'function') appendLog(`Execution aborted: ${sanitizedMsg}`, "text-red-500");
+            showNotification(`Transaction failed: ${sanitizedMsg}`, "error");
+        }
+    } finally {
+        if (btn && typeof toggleButtonLoading === 'function') toggleButtonLoading(btn, false);
+        isTransactionPending = false;
+        if (typeof unlockSystem === 'function') unlockSystem();
+    }
+}
+
 function extractIrysId(input) {
     if (!input || typeof input !== 'string') return "";
     let clean = input.trim();
     if (!clean) return "";
 
-    // 1. ถ้าเป็น HTTP/HTTPS ให้เอาเฉพาะ Pathname ทั้งหมด (ไม่ว่าจะเป็น CDN หรือ Gateway อะไรก็ตาม)
     if (/^https?:\/\//i.test(clean)) {
         try {
             clean = new URL(clean).pathname;
@@ -4648,16 +4196,9 @@ function extractIrysId(input) {
         }
     }
 
-    // 2. ตัด Protocol (ar://, irys://)
     clean = clean.replace(/^(ar|irys):\/\//i, '');
-
-    // 3. ตัด Query String (?...) และ Hash (#...) ออก
     clean = clean.split(/[?#]/)[0];
-
-    // 4. ตัด / หน้าสุดออกทั้งหมด
     clean = clean.replace(/^\/+/, '');
-
-    // 5. Safe Regex: สแกนผ่าน 100% อนุญาตให้มี / และ . ไม่ตัดเลขไฟล์ 5.png / 333.png ออกแน่นอน
     return clean.replace(/[^a-zA-Z0-9_\-\.\/]/g, '');
 }
 
@@ -4891,12 +4432,11 @@ async function autoMap(tokenId) {
                     }
                     
                     if (metaResponse.ok) {
-                        // 🛡️ [PRODUCTION PATCH]: Stream Reader with Hard Byte Limit (OOM Protection)
                         const reader = metaResponse.body.getReader();
                         const decoder = new TextDecoder('utf-8');
                         let text = '';
                         let bytesRead = 0;
-                        const MAX_BYTES = 51200; // 50KB Hard Limit
+                        const MAX_BYTES = 51200; 
 
                         try {
                             while (true) {
@@ -4905,12 +4445,12 @@ async function autoMap(tokenId) {
                                 bytesRead += value.length;
                                 
                                 if (bytesRead > MAX_BYTES) {
-                                    await reader.cancel(); // ตัดการเชื่อมต่อทันที
+                                    await reader.cancel(); 
                                     throw new Error("OOM_PROTECT_PAYLOAD_TOO_LARGE");
                                 }
                                 text += decoder.decode(value, { stream: true });
                             }
-                            text += decoder.decode(); // Flush remaining buffer
+                            text += decoder.decode(); 
                             
                             try {
                                 metadata = JSON.parse(text);
@@ -5104,7 +4644,6 @@ async function syncContractStates() {
         const reservePerNFT = tStatus[4] ?? 0n;
         const reserve = tStatus[0] ?? 0n;
 
-        // Sync Wallet ETH Balance & Network Telemetry
         const activeProvider = window.provider || readOnlyProvider;
         const currentHdrAddress = document.getElementById('hdrAddress')?.textContent;
         
@@ -5211,7 +4750,6 @@ async function syncContractStates() {
         isSyncingState = false;
     }
 }
-
 
 function renderEmptyState(container, text, colorClass = "text-slate-500") {
     container.replaceChildren();
@@ -5348,7 +4886,6 @@ async function resolveMediaUrl(urlList, signal, mimeType, depth = 0) {
                     }
                 }
             } catch (e) {
-                // Not JSON, proceed to blob
             }
 
             if (isJsonObj && actualMedia) {
@@ -5769,7 +5306,6 @@ async function auditTokenFromLedger(tokenId) {
         const tbaInputElem = document.getElementById('tbaAddressDisplay');
         if (tbaInputElem) tbaInputElem.value = "Calculating deterministic ERC-6551 TBA address hash...";
 
-        // 1. ยิงถาม Smart Contract สดๆ (Live Query)
         let deedData = null;
         let isBurned = false;
         let votingLockUntil = 0n;
@@ -5779,14 +5315,11 @@ async function auditTokenFromLedger(tokenId) {
             try { isBurned = await activeContract.genesisMinted(tokenId.toString()); } catch(e){}
             try { votingLockUntil = await activeContract.tokenVotingLockUntil(tokenId.toString()); } catch(e){}
         } catch (e) {
-            deedData = null; // ถ้า Revert แปลว่ายังไม่เคย Mint
+            deedData = null; 
         }
 
         const isActive = deedData ? deedData[1] : false;
 
-        // ==========================================
-        // 🔴 BURNED STATE (ถูกเผาไปแล้ว)
-        // ==========================================
         if (isBurned && !isActive) {
             const metaDisp = document.getElementById('activeDeedMetadataDisplay');
             if (metaDisp) metaDisp.textContent = "VOID ELEMENT: BURNED";
@@ -5799,9 +5332,6 @@ async function auditTokenFromLedger(tokenId) {
             return;
         }
 
-        // ==========================================
-        // 🟡 LAZY MINT STATE (ยังไม่ Mint ให้อ่านจาก Manifest)
-        // ==========================================
         if (!isActive) {
             let manifestJsonUrl = window.IMPERIAL_MANIFEST ? window.IMPERIAL_MANIFEST[String(tokenId)] : null;
             let directImageUrl = window.IMAGE_MANIFEST ? window.IMAGE_MANIFEST[String(tokenId)] : null;
@@ -5816,7 +5346,6 @@ async function auditTokenFromLedger(tokenId) {
                 currentLoadedMediaData.back = "";
                 currentLoadedMediaData.video = "";
 
-                // ดึง JSON จาก Manifest มาแสดง Attributes
                 try {
                     const res = await fetch(manifestJsonUrl);
                     const json = await res.json();
@@ -5828,7 +5357,6 @@ async function auditTokenFromLedger(tokenId) {
                         if (prop1) prop1.textContent = rankAttr ? rankAttr.value : "UNKNOWN";
                         if (prop2) prop2.textContent = statusAttr ? statusAttr.value : "UNCOMPROMISED INTEGRITY PROTO";
                     }
-                    // ถ้าไม่มี directImageUrl ให้ดึงจาก JSON
                     if (!directImageUrl && json.image) {
                         directImageUrl = json.image.startsWith('http') ? json.image : `https://gateway.irys.xyz/${json.image.replace('ar://', '')}`;
                     }
@@ -5848,7 +5376,6 @@ async function auditTokenFromLedger(tokenId) {
                 if (tbaInputElem) tbaInputElem.value = "UNINITIALIZED";
                 if (typeof setTbaBalanceDisplay === 'function') setTbaBalanceDisplay("0.0000", "0.0000");
             } else {
-                // ไม่มีข้อมูลใน Manifest เลย (Void)
                 const metaDisp = document.getElementById('activeDeedMetadataDisplay');
                 if (metaDisp) metaDisp.textContent = "VOID ELEMENT: UNINITIALIZED";
                 if (typeof renderToViewport === 'function') {
@@ -5861,27 +5388,22 @@ async function auditTokenFromLedger(tokenId) {
             return;
         }
 
-        // ==========================================
-        // 🟢 ACTIVE STATE (Mint แล้ว ดึงจาก Smart Contract)
-        // ==========================================
         if (mySession !== currentAuditSession) return;
 
         const owner = deedData[0];
         const isSanctified = deedData[2];
-        const frontUri = deedData[3]; // นี่คือ JSON URL
-        const backUri = deedData[4];  // นี่คือ Media URL
+        const frontUri = deedData[3]; 
+        const backUri = deedData[4];  
         const videoUri = deedData[5];
 
         currentLoadedMediaData.front = frontUri;
         currentLoadedMediaData.back = backUri;
         currentLoadedMediaData.video = videoUri;
 
-        // จัดการปุ่ม Burn
         const currentEpoch = Math.floor(Date.now() / 1000);
         const btnBurn = document.getElementById('btnBurnToken');
         if (btnBurn) btnBurn.disabled = (votingLockUntil && Number(votingLockUntil) > currentEpoch);
 
-        // จัดการ TBA
         try {
             const onChainTBA = await activeContract.getTBA(BigInt(tokenId));
             if (mySession !== currentAuditSession) return;
@@ -5892,7 +5414,6 @@ async function auditTokenFromLedger(tokenId) {
             if (typeof setTbaBalanceDisplay === 'function') setTbaBalanceDisplay("0.0000", "0.0000");
         }
 
-        // 🚨 แกะ JSON จาก frontUri เพื่อเอารูปภาพจริงไปแสดงผล
         let actualImageUrl = "";
         let rankText = "UNKNOWN";
         let statusText = "UNCOMPROMISED INTEGRITY PROTO";
@@ -5916,11 +5437,10 @@ async function auditTokenFromLedger(tokenId) {
                 }
             } catch (e) {
                 console.warn("Failed to fetch on-chain JSON", e);
-                actualImageUrl = frontUri; // Fallback เผื่อมันเป็นรูปลิงก์ตรง
+                actualImageUrl = frontUri; 
             }
         }
 
-        // อัปเดต Metadata UI
         const prop1 = document.getElementById('propDisplay1');
         const prop2 = document.getElementById('propDisplay2');
         if (prop1) prop1.textContent = rankText;
@@ -5933,7 +5453,6 @@ async function auditTokenFromLedger(tokenId) {
             displayData.innerHTML = `CELL NODE ID: ${tokenId} <span class="text-yellow-500 font-bold tracking-widest">[${rankText}]</span><br>ACCREDITED ROOT: ${safeOwner} // NOVA RATIFICATION: ${sanctifiedHtml}`;
         }
 
-        // ส่งรูปภาพจริงไป Render
         if (typeof renderToViewport === 'function') {
             renderToViewport('previewFrontContainer', actualImageUrl, "Obverse aspect currently unassigned.");
             
@@ -6035,7 +5554,6 @@ const matrixThumbnailObserver = new IntersectionObserver((entries, observer) => 
                         img.dispatchEvent(new Event('error'));
                     }
                 } catch (e) {
-                    // ถ้า fetch JSON พัง (อาจจะเป็นรูปลิงก์ตรง) ให้ลองยัดใส่ src เลย
                     img.src = jsonUrl;
                 }
             }
@@ -6082,7 +5600,6 @@ function renderToNodeCard(tokenId) {
         node.classList.add(state.status === 'LOCKED' ? 'bg-blue-950/50' : 'bg-slate-950');
         node.title = `NODE #${tokenId} [${state.status}]`;
         
-        // 🚨 ACTIVE NODE: ส่ง JSON URL ให้ Observer ไปแกะรูป
         const contractFrontUri = state.metadataUrl || "";
         if (contractFrontUri) {
             const cleanUri = contractFrontUri.startsWith('http') ? contractFrontUri : `https://gateway.irys.xyz/${contractFrontUri.replace('ar://', '')}`;
@@ -6107,7 +5624,6 @@ function renderToNodeCard(tokenId) {
         }
     }
 
-    // วาดรูปสำหรับ UNCLAIMED (Lazy Mint)
     if (displayImgUrl && state.status === 'UNCLAIMED') {
         const mediaContainer = document.createElement('div');
         mediaContainer.className = 'node-media-container absolute inset-0 w-full h-full overflow-hidden rounded z-10 flex items-center justify-center bg-slate-950';
@@ -6133,7 +5649,6 @@ function renderToNodeCard(tokenId) {
     }
 }
 
-// 3. REFACTORED BIND OWNERSHIP (INSTANT RE-PAINT)
 function bindNodeOwnership(walletAddress) {
     if (!window.NODE_STATE_MAP || window.NODE_STATE_MAP.size === 0) return;
     
@@ -6356,7 +5871,6 @@ function enforceSecurityConstraints() {
     const nameInput = document.getElementById('propName');
     if (nameInput) nameInput.setAttribute('maxlength', '128');
 
-    // 🚨 CRITICAL FIX: ENFORCE BYTE-LIMIT ON DNA & HIDDEN PAYLOADS TO PREVENT OOM/GAS DRAIN
     const dnaInput = document.getElementById('novaDnaInput');
     if (dnaInput) dnaInput.setAttribute('maxlength', '1024');
     const hiddenInput = document.getElementById('novaHiddenInput');
@@ -6372,11 +5886,11 @@ window.addEventListener('load', async () => {
     if (isSystemBooted) return;
     isSystemBooted = true;
 
-    // ⚡ DIRECT CALLS: ไม่มี Defensive Garbage อีกต่อไป
     enforceSecurityConstraints();
     revealApp(); 
     
     try { 
+        window.NODE_STATE_MAP = new Map();
         setupMatrixGrid(); 
     } catch (e) { 
         console.error('[BOOT] setupMatrixGrid failed:', e); 
@@ -6385,7 +5899,6 @@ window.addEventListener('load', async () => {
     initializeAbsoluteEventDelegation();
 
     if (window.visualViewport) {
-        // ⚡ FIX: Binding Event ให้ถูกต้องตาม Lifecycle
         if (window._sovereignResizeHandler) {
             window.visualViewport.removeEventListener("resize", window._sovereignResizeHandler);
             window.visualViewport.removeEventListener("scroll", window._sovereignResizeHandler);
@@ -6416,7 +5929,6 @@ window.addEventListener('load', async () => {
         }
     }
 });
-
 </script>
 </body>
 </html>
