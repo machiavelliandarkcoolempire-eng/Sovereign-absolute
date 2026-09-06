@@ -1403,6 +1403,67 @@ async function fetchImperialManifest() {
     }
 }
 
+/**
+ * STRICT MANIFEST HANDLER: Processes ONLY Unclaimed (Lazy Mint) nodes.
+ * Reads from local JSON files and sends the final URL to the renderers.
+ * @param {number|string} tokenId - The ID of the token.
+ */
+function processLazyMintFromManifest(tokenId) {
+    let preMintFrontUri = "";
+    if (window.IMPERIAL_MANIFEST && window.IMPERIAL_MANIFEST[String(tokenId)]) {
+        const manifestData = window.IMPERIAL_MANIFEST[String(tokenId)];
+        preMintFrontUri = typeof manifestData === 'string' ? manifestData.trim() : String(manifestData.irys_id || "").trim();
+    }
+
+    let displayImageUri = "";
+    const imgManifest = window.IMAGE_MANIFEST || window.IMPERIAL_MANIFEST_IMAGE;
+    if (imgManifest && imgManifest[String(tokenId)]) {
+        const rawImageId = String(imgManifest[String(tokenId)]).trim();
+        if (rawImageId) {
+            displayImageUri = rawImageId.startsWith('http') ? rawImageId : `https://gateway.irys.xyz/${rawImageId}`;
+        }
+    }
+
+    if (preMintFrontUri !== "") {
+        // Set Global State for Minting Payload
+        currentLoadedMediaData.front = preMintFrontUri; 
+        currentLoadedMediaData.back = "";
+        currentLoadedMediaData.video = "";
+
+        // Update Metadata UI
+        if (typeof autoMapMetadata === 'function') autoMapMetadata(tokenId);
+        
+        const metaDisp = document.getElementById('activeDeedMetadataDisplay');
+        if (metaDisp) {
+            metaDisp.textContent = "";
+            const line1 = document.createTextNode(`CELL NODE ID: ${tokenId} `);
+            const readySpan = document.createElement('span');
+            readySpan.className = "text-emerald-400 font-bold";
+            readySpan.textContent = "[READY FOR MINT]";
+            const br = document.createElement('br');
+            const line2 = document.createTextNode("ACCREDITED ROOT: PENDING");
+            metaDisp.append(line1, readySpan, br, line2);
+        }
+
+        // SEND URL TO RENDERER
+        if (typeof renderToViewport === 'function') {
+            renderToViewport('previewFrontContainer', displayImageUri, "Obverse aspect currently unassigned.");
+            renderToViewport('previewBackContainer', "", "Void element data layer uninitialized.");
+        }
+        
+        if (typeof appendLog === 'function') appendLog(`[LAZY MINT READY] Matrix cell node #${tokenId} pre-loaded from Architect Manifest.`, "text-emerald-400 font-bold");
+    } else {
+        // VOID ELEMENT (Not in Manifest)
+        const metaDisp = document.getElementById('activeDeedMetadataDisplay');
+        if (metaDisp) metaDisp.textContent = "VOID ELEMENT: UNINITIALIZED";
+        
+        if (typeof renderToViewport === 'function') {
+            renderToViewport('previewFrontContainer', "", "Void element data layer uninitialized.");
+            renderToViewport('previewBackContainer', "", "Void element data layer uninitialized.");
+        }
+        if (typeof appendLog === 'function') appendLog(`Matrix cell node #${tokenId} contains no structural allocation details (Void Element).`, "text-yellow-500");
+    }
+}
 // ==============================================================================
 // 🛡️ ANTI-LOCKING STATE MANAGEMENT (NO BLACK SCREEN OVERLAYS)
 // ==============================================================================
@@ -5692,10 +5753,9 @@ function autoMapMetadata(tokenId) {
 }
 
 /**
- * Audits and renders the detailed state of a token into the Viewport and Metadata panels.
- * STRICT RULE: UNCLAIMED = Manifest Only. ACTIVE = Smart Contract Only.
- * @param {number|string} tokenId - The ID of the token to audit.
- * @returns {Promise<void>}
+ * STRICT SMART CONTRACT HANDLER & ROUTER.
+ * Routes Unclaimed nodes to Manifest Handler. Processes Active nodes via Smart Contract.
+ * @param {number|string} tokenId - The ID of the token.
  */
 async function auditTokenFromLedger(tokenId) {
     if (typeof resetAdminInputs === 'function') resetAdminInputs();
@@ -5719,152 +5779,109 @@ async function auditTokenFromLedger(tokenId) {
 
         if (typeof appendLog === 'function') appendLog(`Extracting structural blueprint record for matrix cell node #${tokenId}...`, "text-purple-400");
 
-        // STRICT ROUTING BASED ON NODE STATE
+        // 1. CHECK STATE FROM MAP
         const nodeState = window.NODE_STATE_MAP ? window.NODE_STATE_MAP.get(Number(tokenId)) : null;
         const status = nodeState ? nodeState.status : 'UNCLAIMED';
 
+        // 2. ROUTE TO MANIFEST HANDLER IF UNCLAIMED
         if (status === 'UNCLAIMED') {
-            // ==========================================
-            // 🟡 LAZY MINT: READ STRICTLY FROM MANIFEST
-            // ==========================================
-            let preMintFrontUri = "";
-            if (window.IMPERIAL_MANIFEST && window.IMPERIAL_MANIFEST[String(tokenId)]) {
-                const manifestData = window.IMPERIAL_MANIFEST[String(tokenId)];
-                preMintFrontUri = typeof manifestData === 'string' ? manifestData.trim() : String(manifestData.irys_id || "").trim();
-            }
-
-            let displayImageUri = "";
-            const imgManifest = window.IMAGE_MANIFEST || window.IMPERIAL_MANIFEST_IMAGE;
-            if (imgManifest && imgManifest[String(tokenId)]) {
-                const rawImageId = String(imgManifest[String(tokenId)]).trim();
-                if (rawImageId) {
-                    displayImageUri = rawImageId.startsWith('http') ? rawImageId : `https://gateway.irys.xyz/${rawImageId}`;
-                }
-            }
-
-            if (preMintFrontUri !== "") {
-                currentLoadedMediaData.front = preMintFrontUri; 
-                currentLoadedMediaData.back = "";
-                currentLoadedMediaData.video = "";
-
-                if (typeof autoMapMetadata === 'function') autoMapMetadata(tokenId);
-
-                if (typeof renderToViewport === 'function') {
-                    renderToViewport('previewFrontContainer', displayImageUri, "Obverse aspect currently unassigned.");
-                    renderToViewport('previewBackContainer', "", "Void element data layer uninitialized.");
-                }
-
-                const metaDisp = document.getElementById('activeDeedMetadataDisplay');
-                if (metaDisp) {
-                    metaDisp.textContent = "";
-                    const line1 = document.createTextNode(`CELL NODE ID: ${tokenId} `);
-                    const readySpan = document.createElement('span');
-                    readySpan.className = "text-emerald-400 font-bold";
-                    readySpan.textContent = "[READY FOR MINT]";
-                    const br = document.createElement('br');
-                    const line2 = document.createTextNode("ACCREDITED ROOT: PENDING");
-                    metaDisp.append(line1, readySpan, br, line2);
-                }
-                
-                if (typeof appendLog === 'function') appendLog(`[LAZY MINT READY] Matrix cell node #${tokenId} pre-loaded from Architect Manifest.`, "text-emerald-400 font-bold");
-            } else {
-                throw new Error("VOID_ELEMENT");
-            }
-
-        } else if (status === 'BURNED') {
-            // ==========================================
-            // 🔴 BURNED: STRICTLY EMPTY
-            // ==========================================
-            throw new Error("VOID_ELEMENT");
-
-        } else {
-            // ==========================================
-            // 🟢 ACTIVE NODE: READ STRICTLY FROM SMART CONTRACT
-            // ==========================================
-            const mappedNode = await autoMap(tokenId);
-            if (mySession !== currentAuditSession) return;
-            if (!mappedNode) throw new Error("Mapping failure");
-
-            const currentEpoch = Math.floor(Date.now() / 1000);
-            const btnBurn = document.getElementById('btnBurnToken');
-            if (mappedNode.votingLockUntil && mappedNode.votingLockUntil > currentEpoch) {
-                if (btnBurn) btnBurn.disabled = true;
-            } else {
-                if (btnBurn) btnBurn.disabled = false;
-            }
-
-            try {
-                const onChainTBA = await activeContract.getTBA(BigInt(tokenId));
-                if (mySession !== currentAuditSession) return;
-                if (tbaInputElem) tbaInputElem.value = typeof sanitizeForDOM === 'function' ? sanitizeForDOM(onChainTBA) : String(onChainTBA);
-                if (typeof refreshTbaBalances === 'function') await refreshTbaBalances(onChainTBA, mySession);
-            } catch(tbaErr) {
-                if (tbaInputElem) tbaInputElem.value = "CRITICAL: FAILED TO EXTRACT DETERMINISTIC ADDR PIVOT";
-                if (typeof setTbaBalanceDisplay === 'function') setTbaBalanceDisplay("0.0000", "0.0000");
-            }
-
-            currentLoadedMediaData.front = mappedNode.front || "";
-            currentLoadedMediaData.back = mappedNode.back || "";
-            currentLoadedMediaData.video = mappedNode.video || "";
-
-            if (typeof loadDeedMetadata === 'function') loadDeedMetadata(tokenId);
-
-            if (typeof renderToViewport === 'function') {
-                renderToViewport('previewFrontContainer', currentLoadedMediaData.front, "Obverse aspect currently unassigned. Engage rebirth parameters.");
-            }
-
-            const backContainer = document.getElementById('previewBackContainer');
-            setTimeout(() => {
-                if (mySession !== currentAuditSession) return;
-                if (mappedNode.back && String(mappedNode.back).trim() !== "") {
-                    if (typeof renderToViewport === 'function') {
-                        renderToViewport('previewBackContainer', currentLoadedMediaData.back, "Reverse diagnostic data trace is currently null.");
-                    }
-                } else {
-                    if (backContainer) {
-                        while (backContainer.firstChild) backContainer.removeChild(backContainer.firstChild);
-                        const lockSpan = document.createElement('span');
-                        lockSpan.className = "text-[8px] font-mono text-center font-bold tracking-tight text-slate-500 p-1 uppercase w-full h-full flex items-center justify-center z-10 relative";
-                        lockSpan.textContent = "[ REVERSE ELEMENT UNINITIALIZED ]";
-                        backContainer.appendChild(lockSpan);
-                    }
-                }
-            }, 300);
-
-            const displayData = document.getElementById('activeDeedMetadataDisplay');
-            if(displayData) {
-                const imperialRank = typeof getImperialRankDetailed === 'function' ? getImperialRankDetailed(tokenId) : "UNKNOWN";
-                displayData.textContent = "";
-
-                const line1 = document.createTextNode(`CELL NODE ID: ${tokenId} `);
-                const rankSpan = document.createElement('span');
-                rankSpan.className = "text-yellow-500 font-bold tracking-widest";
-                rankSpan.textContent = `[${imperialRank}]`;
-
-                const br = document.createElement('br');
-
-                const safeOwner = mappedNode.owner ? (typeof sanitizeForDOM === 'function' ? sanitizeForDOM(mappedNode.owner) : String(mappedNode.owner)) : "0x0000000000000000000000000000000000000000";
-                const line2 = document.createTextNode(`ACCREDITED ROOT: ${safeOwner.slice(0,6)}...${safeOwner.slice(-4)} // NOVA RATIFICATION: `);
-
-                const sanctifiedSpan = document.createElement('span');
-                sanctifiedSpan.className = mappedNode.isSanctified ? 'text-emerald-400 font-bold' : 'text-slate-500';
-                sanctifiedSpan.textContent = mappedNode.isSanctified ? 'AFFIRMED' : 'DORMANT';
-
-                displayData.append(line1, rankSpan, br, line2, sanctifiedSpan);
-            }
+            processLazyMintFromManifest(tokenId);
+            return;
         }
+
+        // 3. ROUTE TO BURNED STATE
+        if (status === 'BURNED') {
+            const metaDisp = document.getElementById('activeDeedMetadataDisplay');
+            if (metaDisp) metaDisp.textContent = "VOID ELEMENT: BURNED";
+            if (typeof renderToViewport === 'function') {
+                renderToViewport('previewFrontContainer', "", "VOID ELEMENT: PERMANENTLY BURNED");
+                renderToViewport('previewBackContainer', "", "VOID ELEMENT: PERMANENTLY BURNED");
+            }
+            if (typeof appendLog === 'function') appendLog(`Matrix cell node #${tokenId} has been immolated (Burned).`, "text-red-500");
+            return;
+        }
+
+        // 4. PROCESS ACTIVE NODE (SMART CONTRACT ONLY)
+        const mappedNode = await autoMap(tokenId);
+        if (mySession !== currentAuditSession) return;
+        if (!mappedNode) throw new Error("Mapping failure");
+
+        const currentEpoch = Math.floor(Date.now() / 1000);
+        const btnBurn = document.getElementById('btnBurnToken');
+        if (mappedNode.votingLockUntil && mappedNode.votingLockUntil > currentEpoch) {
+            if (btnBurn) btnBurn.disabled = true;
+        } else {
+            if (btnBurn) btnBurn.disabled = false;
+        }
+
+        try {
+            const onChainTBA = await activeContract.getTBA(BigInt(tokenId));
+            if (mySession !== currentAuditSession) return;
+            if (tbaInputElem) tbaInputElem.value = typeof sanitizeForDOM === 'function' ? sanitizeForDOM(onChainTBA) : String(onChainTBA);
+            if (typeof refreshTbaBalances === 'function') await refreshTbaBalances(onChainTBA, mySession);
+        } catch(tbaErr) {
+            if (tbaInputElem) tbaInputElem.value = "CRITICAL: FAILED TO EXTRACT DETERMINISTIC ADDR PIVOT";
+            if (typeof setTbaBalanceDisplay === 'function') setTbaBalanceDisplay("0.0000", "0.0000");
+        }
+
+        currentLoadedMediaData.front = mappedNode.front || "";
+        currentLoadedMediaData.back = mappedNode.back || "";
+        currentLoadedMediaData.video = mappedNode.video || "";
+
+        if (typeof loadDeedMetadata === 'function') loadDeedMetadata(tokenId);
+
+        // SEND URL TO RENDERER
+        if (typeof renderToViewport === 'function') {
+            renderToViewport('previewFrontContainer', currentLoadedMediaData.front, "Obverse aspect currently unassigned. Engage rebirth parameters.");
+        }
+
+        const backContainer = document.getElementById('previewBackContainer');
+        setTimeout(() => {
+            if (mySession !== currentAuditSession) return;
+            if (mappedNode.back && String(mappedNode.back).trim() !== "") {
+                if (typeof renderToViewport === 'function') {
+                    renderToViewport('previewBackContainer', currentLoadedMediaData.back, "Reverse diagnostic data trace is currently null.");
+                }
+            } else {
+                if (backContainer) {
+                    while (backContainer.firstChild) backContainer.removeChild(backContainer.firstChild);
+                    const lockSpan = document.createElement('span');
+                    lockSpan.className = "text-[8px] font-mono text-center font-bold tracking-tight text-slate-500 p-1 uppercase w-full h-full flex items-center justify-center z-10 relative";
+                    lockSpan.textContent = "[ REVERSE ELEMENT UNINITIALIZED ]";
+                    backContainer.appendChild(lockSpan);
+                }
+            }
+        }, 300);
+
+        const displayData = document.getElementById('activeDeedMetadataDisplay');
+        if(displayData) {
+            const imperialRank = typeof getImperialRankDetailed === 'function' ? getImperialRankDetailed(tokenId) : "UNKNOWN";
+            displayData.textContent = "";
+
+            const line1 = document.createTextNode(`CELL NODE ID: ${tokenId} `);
+            const rankSpan = document.createElement('span');
+            rankSpan.className = "text-yellow-500 font-bold tracking-widest";
+            rankSpan.textContent = `[${imperialRank}]`;
+
+            const br = document.createElement('br');
+
+            const safeOwner = mappedNode.owner ? (typeof sanitizeForDOM === 'function' ? sanitizeForDOM(mappedNode.owner) : String(mappedNode.owner)) : "0x0000000000000000000000000000000000000000";
+            const line2 = document.createTextNode(`ACCREDITED ROOT: ${safeOwner.slice(0,6)}...${safeOwner.slice(-4)} // NOVA RATIFICATION: `);
+
+            const sanctifiedSpan = document.createElement('span');
+            sanctifiedSpan.className = mappedNode.isSanctified ? 'text-emerald-400 font-bold' : 'text-slate-500';
+            sanctifiedSpan.textContent = mappedNode.isSanctified ? 'AFFIRMED' : 'DORMANT';
+
+            displayData.append(line1, rankSpan, br, line2, sanctifiedSpan);
+        }
+
     } catch (e) {
         if (mySession !== currentAuditSession) return;
-        
-        // Fallback for VOID_ELEMENT or complete failure
-        if (typeof appendLog === 'function') {
-            appendLog(`Matrix cell node #${tokenId} contains no structural allocation details (Void Element).`, "text-yellow-500");
-        }
+        console.error("[SYS LOG] Audit Token Error:", e);
         if (typeof renderToViewport === 'function') {
             renderToViewport('previewFrontContainer', "", "Void element data layer uninitialized.");
             renderToViewport('previewBackContainer', "", "Void element data layer uninitialized.");
         }
-
         const metaDisp = document.getElementById('activeDeedMetadataDisplay');
         if (metaDisp) metaDisp.textContent = "VOID ELEMENT: UNINITIALIZED";
     } finally {
@@ -6027,6 +6044,11 @@ const matrixThumbnailObserver = new IntersectionObserver((entries, observer) => 
     });
 }, { rootMargin: "250px" });
 
+/**
+ * DUMB RENDERER: Only paints the grid cell based on pre-calculated state.
+ * Does NOT contain any logic for Manifest vs Smart Contract.
+ * @param {number|string} tokenId - The ID of the token.
+ */
 function renderToNodeCard(tokenId) {
     if (!tokenId) return;
     
@@ -6058,46 +6080,25 @@ function renderToNodeCard(tokenId) {
     node.className = 'matrix-node-cell relative transition-all duration-200 group';
     node.style.backgroundImage = 'none';
 
-    let displayImgUrl = "";
-    let hasManifestData = false;
-    let needsObserver = false;
-
+    // 1. APPLY BASE STYLES BASED ON STATUS
     if (state.status === 'UNCLAIMED') {
-        const localData = window.IMAGE_MANIFEST ? window.IMAGE_MANIFEST[String(tokenId)] : null;
-        const localHash = typeof localData === 'object' ? (localData.image || localData.irys_id) : localData;
-
-        if (localHash && typeof localHash === 'string' && localHash.trim() !== "") {
-            hasManifestData = true;
-            if (localHash.startsWith('ar://')) {
-                displayImgUrl = localHash.replace('ar://', 'https://gateway.irys.xyz/');
-            } else {
-                displayImgUrl = localHash.startsWith('http') ? localHash : `https://gateway.irys.xyz/${localHash.trim()}`;
-            }
-        }
-        
         node.classList.add('opacity-30', 'grayscale');
-        node.classList.add(hasManifestData ? 'bg-emerald-950/30' : 'bg-amber-950/20');
-        if (hasManifestData) node.classList.add('border-emerald-800/50');
-        node.title = `NODE #${tokenId} [${hasManifestData ? 'STAGED IN MANIFEST' : 'VOID - UNMINTED'}]`;
-
+        node.classList.add(state.imageUrl ? 'bg-emerald-950/30' : 'bg-amber-950/20');
+        if (state.imageUrl) node.classList.add('border-emerald-800/50');
+        node.title = `NODE #${tokenId} [${state.imageUrl ? 'STAGED IN MANIFEST' : 'VOID - UNMINTED'}]`;
     } else if (state.status === 'BURNED') {
         node.classList.add('opacity-30', 'grayscale', 'bg-red-950/20');
         node.title = `NODE #${tokenId} [BURNED - AWAITING REMINT]`;
-        
     } else if (state.status === 'ACTIVE' || state.status === 'LOCKED') {
-        const contractFrontUri = state.metadataUrl || "";
-        
-        if (contractFrontUri && typeof contractFrontUri === 'string' && contractFrontUri.trim() !== "") {
-            const cleanContractUri = typeof extractIrysId === 'function' ? extractIrysId(contractFrontUri) : contractFrontUri;
-            displayImgUrl = cleanContractUri.startsWith('http') ? cleanContractUri : `https://gateway.irys.xyz/${cleanContractUri}`;
-            needsObserver = true; 
-        }
-        
         node.classList.add(state.status === 'LOCKED' ? 'bg-blue-950/50' : 'bg-slate-950');
         node.title = `NODE #${tokenId} [${state.status}]`;
     }
 
-    if (displayImgUrl && (state.status === 'ACTIVE' || state.status === 'LOCKED' || state.status === 'UNCLAIMED')) {
+    // 2. RENDER IMAGE IF URL EXISTS (URL is pre-calculated in syncActiveMatrixNodes)
+    let displayImgUrl = state.imageUrl || "";
+    let needsObserver = (state.status === 'ACTIVE' || state.status === 'LOCKED') && state.metadataUrl;
+
+    if (displayImgUrl || needsObserver) {
         const mediaContainer = document.createElement('div');
         mediaContainer.className = 'node-media-container absolute inset-0 w-full h-full overflow-hidden rounded z-10 flex items-center justify-center bg-slate-950';
 
@@ -6107,9 +6108,12 @@ function renderToNodeCard(tokenId) {
         img.className = 'w-full h-full object-cover';
         
         if (needsObserver && typeof matrixThumbnailObserver !== 'undefined') {
-            img.dataset.metadataUrl = displayImgUrl; 
+            // For Active nodes, we pass the metadata URL to the observer to resolve JSON vs Media
+            const cleanContractUri = typeof extractIrysId === 'function' ? extractIrysId(state.metadataUrl) : state.metadataUrl;
+            img.dataset.metadataUrl = cleanContractUri.startsWith('http') ? cleanContractUri : `https://gateway.irys.xyz/${cleanContractUri}`;
             matrixThumbnailObserver.observe(img);
-        } else {
+        } else if (displayImgUrl) {
+            // For Unclaimed nodes, we just paint the direct image URL
             img.src = displayImgUrl; 
         }
 
@@ -6148,6 +6152,7 @@ function renderToNodeCard(tokenId) {
         node.appendChild(mediaContainer);
     }
 
+    // 3. RENDER OWNERSHIP BADGE
     if (state.isCurrentUser) {
         node.classList.remove('opacity-30', 'grayscale');
         node.classList.add('ring-2', 'ring-amber-400', 'shadow-[0_0_15px_rgba(251,191,36,0.6)]', 'z-20');
@@ -6157,7 +6162,6 @@ function renderToNodeCard(tokenId) {
         node.appendChild(badge);
     }
 }
-
 // 3. REFACTORED BIND OWNERSHIP (INSTANT RE-PAINT)
 function bindNodeOwnership(walletAddress) {
     if (!window.NODE_STATE_MAP || window.NODE_STATE_MAP.size === 0) return;
