@@ -5752,135 +5752,209 @@ function autoMapMetadata(tokenId) {
     }
 }
 
-/**
- * STRICT SMART CONTRACT HANDLER & ROUTER.
- * Routes Unclaimed nodes to Manifest Handler. Processes Active nodes via Smart Contract.
- * @param {number|string} tokenId - The ID of the token.
- */
 async function auditTokenFromLedger(tokenId) {
     if (typeof resetAdminInputs === 'function') resetAdminInputs();
     const mySession = ++currentAuditSession;
 
-    const activeContract = secureContract || (typeof readOnlyContract !== 'undefined' ? readOnlyContract : null);
-    if (!activeContract) {
-        if (typeof appendLog === 'function') appendLog("Interrogating consensus network parameters...", "text-yellow-500");
-        return;
-    }
+    const activeContract = secureContract || readOnlyContract;
+    if (!activeContract) return;
 
     try {
         globalSelectedTokenId = tokenId;
         if (typeof updateVideoSlotsUI === 'function') updateVideoSlotsUI();
-
+        
         const card = document.getElementById('sovereignFlipCard');
         if (card) card.classList.remove('flipped');
 
         const tbaInputElem = document.getElementById('tbaAddressDisplay');
         if (tbaInputElem) tbaInputElem.value = "Calculating deterministic ERC-6551 TBA address hash...";
 
-        if (typeof appendLog === 'function') appendLog(`Extracting structural blueprint record for matrix cell node #${tokenId}...`, "text-purple-400");
+        // 1. ยิงถาม Smart Contract สดๆ (Live Query)
+        let deedData = null;
+        let isBurned = false;
+        let votingLockUntil = 0n;
 
-        // 1. CHECK STATE FROM MAP
-        const nodeState = window.NODE_STATE_MAP ? window.NODE_STATE_MAP.get(Number(tokenId)) : null;
-        const status = nodeState ? nodeState.status : 'UNCLAIMED';
-
-        // 2. ROUTE TO MANIFEST HANDLER IF UNCLAIMED
-        if (status === 'UNCLAIMED') {
-            processLazyMintFromManifest(tokenId);
-            return;
+        try {
+            deedData = await activeContract.getDeedData(tokenId.toString());
+            try { isBurned = await activeContract.genesisMinted(tokenId.toString()); } catch(e){}
+            try { votingLockUntil = await activeContract.tokenVotingLockUntil(tokenId.toString()); } catch(e){}
+        } catch (e) {
+            deedData = null; // ถ้า Revert แปลว่ายังไม่เคย Mint
         }
 
-        // 3. ROUTE TO BURNED STATE
-        if (status === 'BURNED') {
+        const isActive = deedData ? deedData[1] : false;
+
+        // ==========================================
+        // 🔴 BURNED STATE (ถูกเผาไปแล้ว)
+        // ==========================================
+        if (isBurned && !isActive) {
             const metaDisp = document.getElementById('activeDeedMetadataDisplay');
             if (metaDisp) metaDisp.textContent = "VOID ELEMENT: BURNED";
             if (typeof renderToViewport === 'function') {
                 renderToViewport('previewFrontContainer', "", "VOID ELEMENT: PERMANENTLY BURNED");
                 renderToViewport('previewBackContainer', "", "VOID ELEMENT: PERMANENTLY BURNED");
             }
-            if (typeof appendLog === 'function') appendLog(`Matrix cell node #${tokenId} has been immolated (Burned).`, "text-red-500");
+            if (tbaInputElem) tbaInputElem.value = "UNINITIALIZED";
+            if (typeof setTbaBalanceDisplay === 'function') setTbaBalanceDisplay("0.0000", "0.0000");
             return;
         }
 
-        // 4. PROCESS ACTIVE NODE (SMART CONTRACT ONLY)
-        const mappedNode = await autoMap(tokenId);
-        if (mySession !== currentAuditSession) return;
-        if (!mappedNode) throw new Error("Mapping failure");
+        // ==========================================
+        // 🟡 LAZY MINT STATE (ยังไม่ Mint ให้อ่านจาก Manifest)
+        // ==========================================
+        if (!isActive) {
+            let manifestJsonUrl = window.IMPERIAL_MANIFEST ? window.IMPERIAL_MANIFEST[String(tokenId)] : null;
+            let directImageUrl = window.IMAGE_MANIFEST ? window.IMAGE_MANIFEST[String(tokenId)] : null;
 
-        const currentEpoch = Math.floor(Date.now() / 1000);
-        const btnBurn = document.getElementById('btnBurnToken');
-        if (mappedNode.votingLockUntil && mappedNode.votingLockUntil > currentEpoch) {
-            if (btnBurn) btnBurn.disabled = true;
-        } else {
-            if (btnBurn) btnBurn.disabled = false;
+            if (manifestJsonUrl) {
+                manifestJsonUrl = manifestJsonUrl.startsWith('http') ? manifestJsonUrl : `https://gateway.irys.xyz/${manifestJsonUrl}`;
+                if (directImageUrl) {
+                    directImageUrl = directImageUrl.startsWith('http') ? directImageUrl : `https://gateway.irys.xyz/${directImageUrl}`;
+                }
+
+                currentLoadedMediaData.front = manifestJsonUrl;
+                currentLoadedMediaData.back = "";
+                currentLoadedMediaData.video = "";
+
+                // ดึง JSON จาก Manifest มาแสดง Attributes
+                try {
+                    const res = await fetch(manifestJsonUrl);
+                    const json = await res.json();
+                    if (json.attributes) {
+                        const rankAttr = json.attributes.find(a => a.trait_type === "RANK");
+                        const statusAttr = json.attributes.find(a => a.trait_type === "IDENTITY STATUS");
+                        const prop1 = document.getElementById('propDisplay1');
+                        const prop2 = document.getElementById('propDisplay2');
+                        if (prop1) prop1.textContent = rankAttr ? rankAttr.value : "UNKNOWN";
+                        if (prop2) prop2.textContent = statusAttr ? statusAttr.value : "UNCOMPROMISED INTEGRITY PROTO";
+                    }
+                    // ถ้าไม่มี directImageUrl ให้ดึงจาก JSON
+                    if (!directImageUrl && json.image) {
+                        directImageUrl = json.image.startsWith('http') ? json.image : `https://gateway.irys.xyz/${json.image.replace('ar://', '')}`;
+                    }
+                } catch (e) {
+                    console.warn("Failed to fetch manifest JSON", e);
+                }
+
+                const metaDisp = document.getElementById('activeDeedMetadataDisplay');
+                if (metaDisp) {
+                    metaDisp.innerHTML = `CELL NODE ID: ${tokenId} <span class="text-emerald-400 font-bold">[READY FOR MINT]</span><br>ACCREDITED ROOT: PENDING`;
+                }
+
+                if (typeof renderToViewport === 'function') {
+                    renderToViewport('previewFrontContainer', directImageUrl, "Obverse aspect currently unassigned.");
+                    renderToViewport('previewBackContainer', "", "Void element data layer uninitialized.");
+                }
+                if (tbaInputElem) tbaInputElem.value = "UNINITIALIZED";
+                if (typeof setTbaBalanceDisplay === 'function') setTbaBalanceDisplay("0.0000", "0.0000");
+            } else {
+                // ไม่มีข้อมูลใน Manifest เลย (Void)
+                const metaDisp = document.getElementById('activeDeedMetadataDisplay');
+                if (metaDisp) metaDisp.textContent = "VOID ELEMENT: UNINITIALIZED";
+                if (typeof renderToViewport === 'function') {
+                    renderToViewport('previewFrontContainer', "", "VOID ELEMENT DATA LAYER UNINITIALIZED.");
+                    renderToViewport('previewBackContainer', "", "VOID ELEMENT DATA LAYER UNINITIALIZED.");
+                }
+                if (tbaInputElem) tbaInputElem.value = "UNINITIALIZED";
+                if (typeof setTbaBalanceDisplay === 'function') setTbaBalanceDisplay("0.0000", "0.0000");
+            }
+            return;
         }
 
+        // ==========================================
+        // 🟢 ACTIVE STATE (Mint แล้ว ดึงจาก Smart Contract)
+        // ==========================================
+        if (mySession !== currentAuditSession) return;
+
+        const owner = deedData[0];
+        const isSanctified = deedData[2];
+        const frontUri = deedData[3]; // นี่คือ JSON URL
+        const backUri = deedData[4];  // นี่คือ Media URL
+        const videoUri = deedData[5];
+
+        currentLoadedMediaData.front = frontUri;
+        currentLoadedMediaData.back = backUri;
+        currentLoadedMediaData.video = videoUri;
+
+        // จัดการปุ่ม Burn
+        const currentEpoch = Math.floor(Date.now() / 1000);
+        const btnBurn = document.getElementById('btnBurnToken');
+        if (btnBurn) btnBurn.disabled = (votingLockUntil && Number(votingLockUntil) > currentEpoch);
+
+        // จัดการ TBA
         try {
             const onChainTBA = await activeContract.getTBA(BigInt(tokenId));
             if (mySession !== currentAuditSession) return;
-            if (tbaInputElem) tbaInputElem.value = typeof sanitizeForDOM === 'function' ? sanitizeForDOM(onChainTBA) : String(onChainTBA);
+            if (tbaInputElem) tbaInputElem.value = onChainTBA;
             if (typeof refreshTbaBalances === 'function') await refreshTbaBalances(onChainTBA, mySession);
-        } catch(tbaErr) {
-            if (tbaInputElem) tbaInputElem.value = "CRITICAL: FAILED TO EXTRACT DETERMINISTIC ADDR PIVOT";
+        } catch(e) {
+            if (tbaInputElem) tbaInputElem.value = "CRITICAL: FAILED TO EXTRACT TBA";
             if (typeof setTbaBalanceDisplay === 'function') setTbaBalanceDisplay("0.0000", "0.0000");
         }
 
-        currentLoadedMediaData.front = mappedNode.front || "";
-        currentLoadedMediaData.back = mappedNode.back || "";
-        currentLoadedMediaData.video = mappedNode.video || "";
+        // 🚨 แกะ JSON จาก frontUri เพื่อเอารูปภาพจริงไปแสดงผล
+        let actualImageUrl = "";
+        let rankText = "UNKNOWN";
+        let statusText = "UNCOMPROMISED INTEGRITY PROTO";
 
-        if (typeof loadDeedMetadata === 'function') loadDeedMetadata(tokenId);
+        if (frontUri) {
+            try {
+                const cleanUri = frontUri.startsWith('http') ? frontUri : `https://gateway.irys.xyz/${frontUri.replace('ar://', '')}`;
+                const res = await fetch(cleanUri);
+                const json = await res.json();
+                
+                actualImageUrl = json.image || json.frontURI || json.animation_url || "";
+                if (actualImageUrl && !actualImageUrl.startsWith('http')) {
+                    actualImageUrl = `https://gateway.irys.xyz/${actualImageUrl.replace('ar://', '')}`;
+                }
 
-        // SEND URL TO RENDERER
-        if (typeof renderToViewport === 'function') {
-            renderToViewport('previewFrontContainer', currentLoadedMediaData.front, "Obverse aspect currently unassigned. Engage rebirth parameters.");
+                if (json.attributes) {
+                    const rankAttr = json.attributes.find(a => a.trait_type === "RANK");
+                    const statusAttr = json.attributes.find(a => a.trait_type === "IDENTITY STATUS");
+                    if (rankAttr) rankText = rankAttr.value;
+                    if (statusAttr) statusText = statusAttr.value;
+                }
+            } catch (e) {
+                console.warn("Failed to fetch on-chain JSON", e);
+                actualImageUrl = frontUri; // Fallback เผื่อมันเป็นรูปลิงก์ตรง
+            }
         }
 
-        const backContainer = document.getElementById('previewBackContainer');
-        setTimeout(() => {
-            if (mySession !== currentAuditSession) return;
-            if (mappedNode.back && String(mappedNode.back).trim() !== "") {
-                if (typeof renderToViewport === 'function') {
-                    renderToViewport('previewBackContainer', currentLoadedMediaData.back, "Reverse diagnostic data trace is currently null.");
-                }
-            } else {
-                if (backContainer) {
-                    while (backContainer.firstChild) backContainer.removeChild(backContainer.firstChild);
-                    const lockSpan = document.createElement('span');
-                    lockSpan.className = "text-[8px] font-mono text-center font-bold tracking-tight text-slate-500 p-1 uppercase w-full h-full flex items-center justify-center z-10 relative";
-                    lockSpan.textContent = "[ REVERSE ELEMENT UNINITIALIZED ]";
-                    backContainer.appendChild(lockSpan);
-                }
-            }
-        }, 300);
+        // อัปเดต Metadata UI
+        const prop1 = document.getElementById('propDisplay1');
+        const prop2 = document.getElementById('propDisplay2');
+        if (prop1) prop1.textContent = rankText;
+        if (prop2) prop2.textContent = statusText;
 
         const displayData = document.getElementById('activeDeedMetadataDisplay');
         if(displayData) {
-            const imperialRank = typeof getImperialRankDetailed === 'function' ? getImperialRankDetailed(tokenId) : "UNKNOWN";
-            displayData.textContent = "";
+            const safeOwner = owner ? `${owner.slice(0,6)}...${owner.slice(-4)}` : "0x000...0000";
+            const sanctifiedHtml = isSanctified ? `<span class="text-emerald-400 font-bold">AFFIRMED</span>` : `<span class="text-slate-500">DORMANT</span>`;
+            displayData.innerHTML = `CELL NODE ID: ${tokenId} <span class="text-yellow-500 font-bold tracking-widest">[${rankText}]</span><br>ACCREDITED ROOT: ${safeOwner} // NOVA RATIFICATION: ${sanctifiedHtml}`;
+        }
 
-            const line1 = document.createTextNode(`CELL NODE ID: ${tokenId} `);
-            const rankSpan = document.createElement('span');
-            rankSpan.className = "text-yellow-500 font-bold tracking-widest";
-            rankSpan.textContent = `[${imperialRank}]`;
-
-            const br = document.createElement('br');
-
-            const safeOwner = mappedNode.owner ? (typeof sanitizeForDOM === 'function' ? sanitizeForDOM(mappedNode.owner) : String(mappedNode.owner)) : "0x0000000000000000000000000000000000000000";
-            const line2 = document.createTextNode(`ACCREDITED ROOT: ${safeOwner.slice(0,6)}...${safeOwner.slice(-4)} // NOVA RATIFICATION: `);
-
-            const sanctifiedSpan = document.createElement('span');
-            sanctifiedSpan.className = mappedNode.isSanctified ? 'text-emerald-400 font-bold' : 'text-slate-500';
-            sanctifiedSpan.textContent = mappedNode.isSanctified ? 'AFFIRMED' : 'DORMANT';
-
-            displayData.append(line1, rankSpan, br, line2, sanctifiedSpan);
+        // ส่งรูปภาพจริงไป Render
+        if (typeof renderToViewport === 'function') {
+            renderToViewport('previewFrontContainer', actualImageUrl, "Obverse aspect currently unassigned.");
+            
+            const backContainer = document.getElementById('previewBackContainer');
+            setTimeout(() => {
+                if (mySession !== currentAuditSession) return;
+                if (backUri) {
+                    const cleanBackUri = backUri.startsWith('http') ? backUri : `https://gateway.irys.xyz/${backUri.replace('ar://', '')}`;
+                    renderToViewport('previewBackContainer', cleanBackUri, "Reverse diagnostic data trace is currently null.");
+                } else {
+                    if (backContainer) backContainer.innerHTML = `<span class="text-[8px] font-mono text-center font-bold tracking-tight text-slate-500 p-1 uppercase w-full h-full flex items-center justify-center z-10 relative">[ REVERSE ELEMENT UNINITIALIZED ]</span>`;
+                }
+            }, 300);
         }
 
     } catch (e) {
         if (mySession !== currentAuditSession) return;
         console.error("[SYS LOG] Audit Token Error:", e);
         if (typeof renderToViewport === 'function') {
-            renderToViewport('previewFrontContainer', "", "Void element data layer uninitialized.");
-            renderToViewport('previewBackContainer', "", "Void element data layer uninitialized.");
+            renderToViewport('previewFrontContainer', "", "VOID ELEMENT DATA LAYER UNINITIALIZED.");
+            renderToViewport('previewBackContainer', "", "VOID ELEMENT DATA LAYER UNINITIALIZED.");
         }
         const metaDisp = document.getElementById('activeDeedMetadataDisplay');
         if (metaDisp) metaDisp.textContent = "VOID ELEMENT: UNINITIALIZED";
@@ -5947,131 +6021,40 @@ const matrixThumbnailObserver = new IntersectionObserver((entries, observer) => 
         if (entry.isIntersecting) {
             const img = entry.target;
             observer.unobserve(img);
-
+            
             const jsonUrl = img.dataset.metadataUrl;
-            if (jsonUrl && !img.dataset.resolved) {
-                img.dataset.resolved = "fetching";
-
-                const controller = new AbortController();
-                if (typeof activeFetchControllers !== 'undefined') {
-                    activeFetchControllers.set(img, controller);
-                }
-
+            if (jsonUrl) {
                 try {
-                    let res;
-                    let targetUrl = jsonUrl;
+                    const res = await fetch(jsonUrl);
+                    const json = await res.json();
+                    let imageUrl = json.image || json.frontURI || json.animation_url;
                     
-                    try {
-                        res = await fetch(targetUrl, { signal: controller.signal, mode: 'cors' });
-                        if (!res.ok) throw new Error("HTTP " + res.status);
-                    } catch (fetchErr) {
-                        if (fetchErr.name !== 'AbortError' && targetUrl.includes('gateway.irys.xyz')) {
-                            targetUrl = targetUrl.replace('gateway.irys.xyz', 'arweave.net');
-                            res = await fetch(targetUrl, { signal: controller.signal, mode: 'cors' });
-                            if (!res.ok) throw new Error("HTTP_FALLBACK " + res.status);
-                        } else {
-                            throw fetchErr;
-                        }
-                    }
-
-                    const contentType = res.headers.get('content-type') || '';
-                    const isMediaExt = /\.(jpg|jpeg|png|gif|webp|mp4|webm|mov|svg)$/i.test(targetUrl.split('?')[0]);
-                    
-                    if (isMediaExt || contentType.includes('image/') || contentType.includes('video/')) {
-                        img.src = targetUrl;
-                        img.dataset.resolved = "true";
-                        return;
-                    }
-
-                    if (!contentType.includes('json') && !contentType.includes('text') && !contentType.includes('octet-stream')) {
-                        throw new Error("UNSUPPORTED_CONTENT_TYPE");
-                    }
-
-                    const reader = res.body.getReader();
-                    const decoder = new TextDecoder('utf-8');
-                    let text = '';
-                    let bytesRead = 0;
-                    const MAX_BYTES = 51200; 
-
-                    try {
-                        while (true) {
-                            const { done, value } = await reader.read();
-                            if (done) break;
-                            bytesRead += value.length;
-                            if (bytesRead > MAX_BYTES) {
-                                await reader.cancel();
-                                throw new Error("OOM_PROTECT_PAYLOAD_TOO_LARGE");
-                            }
-                            text += decoder.decode(value, { stream: true });
-                        }
-                        text += decoder.decode();
-                    } finally {
-                        reader.releaseLock();
-                    }
-                    
-                    let json;
-                    try {
-                        json = JSON.parse(text);
-                    } catch (parseErr) {
-                        throw new Error("JSON_PARSE_FAILED");
-                    }
-
-                    let imageHash = json.image || json.frontURI || json.animation_url;
-                    
-                    if (imageHash && typeof imageHash === 'string') {
-                        if (imageHash.startsWith('ar://')) {
-                            imageHash = imageHash.replace('ar://', 'https://gateway.irys.xyz/');
-                        } else if (!imageHash.startsWith('http')) {
-                            imageHash = `https://gateway.irys.xyz/${imageHash}`;
-                        }
-                        img.src = imageHash;
-                        img.dataset.resolved = "true";
+                    if (imageUrl) {
+                        img.src = imageUrl.startsWith('http') ? imageUrl : `https://gateway.irys.xyz/${imageUrl.replace('ar://', '')}`;
                     } else {
-                        throw new Error("NO_IMAGE_IN_METADATA");
-                    }
-                } catch (e) {
-                    if (e.name !== 'AbortError') {
-                        img.dataset.resolved = "error";
                         img.dispatchEvent(new Event('error'));
                     }
-                } finally {
-                    if (typeof activeFetchControllers !== 'undefined') {
-                        activeFetchControllers.delete(img);
-                    }
+                } catch (e) {
+                    // ถ้า fetch JSON พัง (อาจจะเป็นรูปลิงก์ตรง) ให้ลองยัดใส่ src เลย
+                    img.src = jsonUrl;
                 }
             }
         }
     });
 }, { rootMargin: "250px" });
 
-/**
- * DUMB RENDERER: Only paints the grid cell based on pre-calculated state.
- * Does NOT contain any logic for Manifest vs Smart Contract.
- * @param {number|string} tokenId - The ID of the token.
- */
 function renderToNodeCard(tokenId) {
     if (!tokenId) return;
-    
     const node = window.matrixDOMCache ? window.matrixDOMCache.get(Number(tokenId)) : document.querySelector(`[data-token-id="${tokenId}"]`);
     if (!node) return;
-    
     const state = window.NODE_STATE_MAP ? window.NODE_STATE_MAP.get(Number(tokenId)) : null;
     if (!state) return;
 
     const oldImg = node.querySelector('.node-media-container img');
     if (oldImg) {
+        oldImg.onload = null; oldImg.onerror = null;
         if (typeof matrixThumbnailObserver !== 'undefined') matrixThumbnailObserver.unobserve(oldImg);
-        if (typeof activeFetchControllers !== 'undefined') {
-            const oldController = activeFetchControllers.get(oldImg);
-            if (oldController) {
-                oldController.abort();
-                activeFetchControllers.delete(oldImg);
-            }
-        }
-        oldImg.onload = null;
-        oldImg.onerror = null;
     }
-
     const existingMedia = node.querySelector('.node-media-container');
     if (existingMedia) existingMedia.remove();
     const existingBadge = node.querySelector('.node-ownership-badge');
@@ -6080,79 +6063,66 @@ function renderToNodeCard(tokenId) {
     node.className = 'matrix-node-cell relative transition-all duration-200 group';
     node.style.backgroundImage = 'none';
 
-    // 1. APPLY BASE STYLES BASED ON STATUS
+    let displayImgUrl = "";
+
     if (state.status === 'UNCLAIMED') {
-        node.classList.add('opacity-30', 'grayscale');
-        node.classList.add(state.imageUrl ? 'bg-emerald-950/30' : 'bg-amber-950/20');
-        if (state.imageUrl) node.classList.add('border-emerald-800/50');
-        node.title = `NODE #${tokenId} [${state.imageUrl ? 'STAGED IN MANIFEST' : 'VOID - UNMINTED'}]`;
+        const localData = window.IMAGE_MANIFEST ? window.IMAGE_MANIFEST[String(tokenId)] : null;
+        if (localData) {
+            displayImgUrl = localData.startsWith('http') ? localData : `https://gateway.irys.xyz/${localData}`;
+            node.classList.add('bg-emerald-950/30', 'border-emerald-800/50');
+            node.title = `NODE #${tokenId} [STAGED IN MANIFEST]`;
+        } else {
+            node.classList.add('opacity-30', 'grayscale', 'bg-amber-950/20');
+            node.title = `NODE #${tokenId} [VOID - UNMINTED]`;
+        }
     } else if (state.status === 'BURNED') {
         node.classList.add('opacity-30', 'grayscale', 'bg-red-950/20');
         node.title = `NODE #${tokenId} [BURNED - AWAITING REMINT]`;
     } else if (state.status === 'ACTIVE' || state.status === 'LOCKED') {
         node.classList.add(state.status === 'LOCKED' ? 'bg-blue-950/50' : 'bg-slate-950');
         node.title = `NODE #${tokenId} [${state.status}]`;
+        
+        // 🚨 ACTIVE NODE: ส่ง JSON URL ให้ Observer ไปแกะรูป
+        const contractFrontUri = state.metadataUrl || "";
+        if (contractFrontUri) {
+            const cleanUri = contractFrontUri.startsWith('http') ? contractFrontUri : `https://gateway.irys.xyz/${contractFrontUri.replace('ar://', '')}`;
+            
+            const mediaContainer = document.createElement('div');
+            mediaContainer.className = 'node-media-container absolute inset-0 w-full h-full overflow-hidden rounded z-10 flex items-center justify-center bg-slate-950';
+            const img = document.createElement('img');
+            img.loading = 'lazy';
+            img.className = 'w-full h-full object-cover';
+            img.dataset.metadataUrl = cleanUri; 
+            
+            img.onerror = () => {
+                img.remove();
+                mediaContainer.innerHTML = `<span class="text-[7px] font-bold text-slate-400 bg-black/80 px-1 rounded border border-slate-700">${state.owner ? state.owner.slice(0,4) + '...' + state.owner.slice(-4) : 'ERR'}</span>`;
+            };
+
+            if (typeof matrixThumbnailObserver !== 'undefined') {
+                matrixThumbnailObserver.observe(img);
+            }
+            mediaContainer.appendChild(img);
+            node.appendChild(mediaContainer);
+        }
     }
 
-    // 2. RENDER IMAGE IF URL EXISTS (URL is pre-calculated in syncActiveMatrixNodes)
-    let displayImgUrl = state.imageUrl || "";
-    let needsObserver = (state.status === 'ACTIVE' || state.status === 'LOCKED') && state.metadataUrl;
-
-    if (displayImgUrl || needsObserver) {
+    // วาดรูปสำหรับ UNCLAIMED (Lazy Mint)
+    if (displayImgUrl && state.status === 'UNCLAIMED') {
         const mediaContainer = document.createElement('div');
         mediaContainer.className = 'node-media-container absolute inset-0 w-full h-full overflow-hidden rounded z-10 flex items-center justify-center bg-slate-950';
-
         const img = document.createElement('img');
         img.loading = 'lazy';
-        img.decoding = 'async';
         img.className = 'w-full h-full object-cover';
-        
-        if (needsObserver && typeof matrixThumbnailObserver !== 'undefined') {
-            // For Active nodes, we pass the metadata URL to the observer to resolve JSON vs Media
-            const cleanContractUri = typeof extractIrysId === 'function' ? extractIrysId(state.metadataUrl) : state.metadataUrl;
-            img.dataset.metadataUrl = cleanContractUri.startsWith('http') ? cleanContractUri : `https://gateway.irys.xyz/${cleanContractUri}`;
-            matrixThumbnailObserver.observe(img);
-        } else if (displayImgUrl) {
-            // For Unclaimed nodes, we just paint the direct image URL
-            img.src = displayImgUrl; 
-        }
-
-        const shortAddrText = state.owner ? `${state.owner.slice(0,4)}...${state.owner.slice(-4)}` : (state.status === 'UNCLAIMED' ? 'STAGED' : 'ERR');
-
-        img.onload = () => {
-            img.onload = null;
-            img.onerror = null;
-        };
-
+        img.src = displayImgUrl;
         img.onerror = () => {
-            img.onload = null;
-            img.onerror = null;
-            
-            const currentSrc = img.src || "";
-            if (currentSrc.includes('gateway.irys.xyz')) {
-                img.src = currentSrc.replace('gateway.irys.xyz', 'arweave.net');
-            } else {
-                img.remove();
-                const shortAddr = document.createElement('span');
-                shortAddr.className = 'text-[7px] font-bold text-slate-400 bg-black/80 px-1 rounded border border-slate-700';
-                shortAddr.textContent = shortAddrText;
-                mediaContainer.appendChild(shortAddr);
-            }
+            img.remove();
+            mediaContainer.innerHTML = `<span class="text-[7px] font-bold text-slate-400 bg-black/80 px-1 rounded border border-slate-700">STAGED</span>`;
         };
-        
         mediaContainer.appendChild(img);
-        node.appendChild(mediaContainer);
-    } else if (state.status === 'ACTIVE' || state.status === 'LOCKED') {
-        const mediaContainer = document.createElement('div');
-        mediaContainer.className = 'node-media-container absolute inset-0 w-full h-full overflow-hidden rounded z-10 flex items-center justify-center bg-slate-950';
-        const shortAddr = document.createElement('span');
-        shortAddr.className = 'text-[7px] font-bold text-slate-400 bg-black/80 px-1 rounded border border-slate-700';
-        shortAddr.textContent = state.owner ? `${state.owner.slice(0,4)}...${state.owner.slice(-4)}` : 'ERR';
-        mediaContainer.appendChild(shortAddr);
         node.appendChild(mediaContainer);
     }
 
-    // 3. RENDER OWNERSHIP BADGE
     if (state.isCurrentUser) {
         node.classList.remove('opacity-30', 'grayscale');
         node.classList.add('ring-2', 'ring-amber-400', 'shadow-[0_0_15px_rgba(251,191,36,0.6)]', 'z-20');
@@ -6162,6 +6132,7 @@ function renderToNodeCard(tokenId) {
         node.appendChild(badge);
     }
 }
+
 // 3. REFACTORED BIND OWNERSHIP (INSTANT RE-PAINT)
 function bindNodeOwnership(walletAddress) {
     if (!window.NODE_STATE_MAP || window.NODE_STATE_MAP.size === 0) return;
