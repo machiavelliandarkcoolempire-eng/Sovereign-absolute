@@ -196,13 +196,26 @@
     @media (hover: hover) {
         .matrix-node:hover { transform: scale(1.15) translateY(-2px); z-index: 20; box-shadow: 0 0 20px rgba(255, 255, 255, 0.2); }
     }
+    .rank-red { border-color: #991b1b !important; box-shadow: inset 0 0 10px rgba(153, 27, 27, 0.3) !important; }
+    .rank-silver { border-color: #94a3b8 !important; box-shadow: inset 0 0 10px rgba(148, 163, 184, 0.3) !important; }
+    .rank-gold { border-color: #ca8a04 !important; box-shadow: inset 0 0 10px rgba(202, 138, 4, 0.3) !important; }
+    .rank-prime { border-color: #d97706 !important; box-shadow: inset 0 0 15px rgba(217, 119, 6, 0.4) !important; }
+    .rank-imperial { 
+        border: 2px solid #ea580c !important; box-shadow: inset 0 0 20px rgba(234, 88, 12, 0.5) !important; 
+        animation: imperialPulse 2s ease-in-out infinite;
+    }
+    @keyframes imperialPulse {
+        0%, 100% { box-shadow: 0 0 15px rgba(234, 88, 12, 0.4), inset 0 0 15px rgba(234, 88, 12, 0.4); }
+        50% { box-shadow: 0 0 30px rgba(234, 88, 12, 0.8), inset 0 0 25px rgba(234, 88, 12, 0.6); }
+    }
 
     .node-active {
-        background: radial-gradient(circle at 50% 30%, rgba(6, 182, 212, 0.6) 0%, rgba(8, 51, 68, 0.4) 100%) !important;
-        border-color: #06b6d4 !important; 
-        color: #cffafe !important; 
-        box-shadow: 0 0 25px rgba(6, 182, 212, 0.9), inset 0 0 15px rgba(6, 182, 212, 0.6) !important;
-    }
+    background: radial-gradient(circle at 50% 30%, rgba(6, 182, 212, 0.6) 0%, rgba(8, 51, 68, 0.4) 100%) !important;
+    border-color: #06b6d4 !important; 
+    color: #cffafe !important; 
+    box-shadow: 0 0 25px rgba(6, 182, 212, 0.9), inset 0 0 15px rgba(6, 182, 212, 0.6) !important;
+}
+
 
     /* Input Fields */
     input[type="text"], input[type="number"] {
@@ -226,7 +239,7 @@
 
 <body class="text-slate-100 font-mono antialiased relative">
 
-<!-- Modals -->
+<!-- Modals (Kept exactly as original logic, improved styling) -->
 <div id="gasSurgeWarning" class="fixed top-4 left-1/2 transform -translate-x-1/2 bg-red-950/95 border border-red-500 text-red-100 px-6 py-3 rounded-xl z-[99999] hidden shadow-[0_0_30px_rgba(239,68,68,0.8)] backdrop-blur-md">
     <span class="font-cinzel font-black uppercase text-xs flex items-center gap-2"><span class="animate-pulse">⚠</span> NETWORK GAS SURGE DETECTED</span>
     <p class="text-[10px] font-mono mt-1 text-red-300">Gas price is currently highly volatile. Proceeding may result in unexpected fees.</p>
@@ -286,6 +299,7 @@
         </p>
 
         <div class="bg-black/80 border border-stone-800 rounded-xl p-5 mb-5 overflow-y-auto scroll-dark text-[10px] md:text-[11px] font-mono text-slate-300 space-y-6 flex-grow shadow-[inset_0_0_30px_rgba(0,0,0,0.9)] h-72">
+            <!-- Content kept identical to original -->
             <div>
                 <h4 class="text-amber-500 font-black uppercase mb-2 border-b border-stone-800 pb-1.5">Phase 1: Sovereign Awakening</h4>
                 <ul class="space-y-2 list-none pl-1">
@@ -513,9 +527,12 @@
     </div>
     
     <div class="flex flex-wrap gap-4 md:gap-6 mt-6 text-[9px] md:text-[10px] font-mono uppercase text-stone-400 bg-black/60 p-4 md:p-5 rounded-xl border border-stone-800">
-        <span class="flex items-center gap-2"><span class="w-4 h-4 rounded bg-stone-900 border border-stone-700"></span> DORMANT SPACE</span>
-        <span class="flex items-center gap-2"><span class="w-4 h-4 rounded bg-slate-950 border border-slate-800"></span> ACTIVE NODE</span>
-        <span class="flex items-center gap-2"><span class="w-4 h-4 rounded bg-slate-950 border-2 border-amber-400 shadow-[0_0_10px_rgba(251,191,36,0.6)]"></span> OWNED BY YOU</span>
+        <span class="flex items-center gap-2"><span class="w-4 h-4 rounded bg-stone-900 border border-stone-700"></span> Dormant Space</span>
+        <span class="flex items-center gap-2"><span class="w-4 h-4 rounded border rank-prime"></span> RANK-PRIME (1-10, 50, 100)</span>
+        <span class="flex items-center gap-2"><span class="w-4 h-4 rounded border rank-gold"></span> GOLD (11-99)</span>
+        <span class="flex items-center gap-2"><span class="w-4 h-4 rounded border rank-silver"></span> SILVER (101-200)</span>
+        <span class="flex items-center gap-2"><span class="w-4 h-4 rounded border rank-red"></span> RED (201-332)</span>
+        <span class="flex items-center gap-2"><span class="w-4 h-4 rounded border rank-imperial"></span> SOVEREIGN IMMORTAL 333</span>
     </div>
 </section>
 
@@ -920,7 +937,7 @@
         </div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8">
         <!-- MACRO POLICIES & PROTOCOL CONTROLS -->
         <div class="lg:col-span-5 space-y-4 border border-stone-800 p-5 rounded-2xl bg-black/50 shadow-inner">
             <span class="text-[11px] font-mono text-rose-400 font-bold uppercase tracking-wider block border-b border-stone-800 pb-2">// MACRO POLICIES & PROTOCOL CONTROLS</span>
@@ -1006,6 +1023,9 @@
         This protocol operates an exclusive, private digital identity infrastructure accessible solely via direct curation. All proceeds represent lawful studio service fees. Reserve allocations fund software R&D and Ecosystem Infrastructure Support Grants. Minting and on-chain operations are executed 100% self-sovereignly by curated pass holders. This protocol does not offer public sales, securities, or financial returns.
     </div>
 </footer>
+
+
+
 
 
 
@@ -1651,6 +1671,7 @@ async function debouncedMulticall(providerInstance, calls) {
                                     callData: call.callData
                                 }));
 
+                                // 🚨 [CRITICAL FIX]: บังคับใช้ .staticCall ตรงนี้!
                                 const chunkResults = await multicall.aggregate3.staticCall(formattedChunk);
                                 
                                 const mappedResults = Array.from(chunkResults).map(res => ({
@@ -1661,8 +1682,7 @@ async function debouncedMulticall(providerInstance, calls) {
                             } catch (chunkErr) {
                                 console.warn("[MULTICALL] Chunk failed, falling back to concurrent batches", chunkErr);
                                 
-                                // 🛡️ FIXED: Reduced batch size to 5 and increased delay to 250ms to prevent HTTP 429
-                                const BATCH_SIZE = 5;
+                                const BATCH_SIZE = 10;
                                 for (let j = 0; j < chunk.length; j += BATCH_SIZE) {
                                     const subChunk = chunk.slice(j, j + BATCH_SIZE);
                                     const subResults = await Promise.allSettled(
@@ -1685,7 +1705,7 @@ async function debouncedMulticall(providerInstance, calls) {
                                     });
                                     
                                     if (j + BATCH_SIZE < chunk.length) {
-                                        await new Promise(r => setTimeout(r, 250)); 
+                                        await new Promise(r => setTimeout(r, 50)); 
                                     }
                                 }
                             }
@@ -1861,6 +1881,9 @@ async function promptUserForFile(acceptType = 'image/*,video/*') {
 
 
 // ==============================================================================
+// ⚔️ TRANSACTION WRAPPER (NON-BLOCKING UI)
+// ==============================================================================
+// ==============================================================================
 // ⚔️ TRANSACTION WRAPPER (WITH STATICCALL SIMULATION & NON-BLOCKING UI)
 // ==============================================================================
 async function runTx(eventOrBtn, actionName, methodName, args = [], overrides = {}, options = { manageLock: true, manageButton: true, onBroadcast: null }) {
@@ -1935,7 +1958,6 @@ async function runTx(eventOrBtn, actionName, methodName, args = [], overrides = 
         }
     }
 }
-
 // ==============================================================================
 // ⚔️ FORGE & MINTING ENGINES (ZERO-BUG MANIFEST PARSING + PLEDGE MODAL)
 // ==============================================================================
@@ -2143,21 +2165,17 @@ async function triggerForge(type, e) {
 
 async function executeArchitectMint(e) {
     if (isTransactionPending || window.SystemState?._sysLocked) return;
-    if (!secureContract || !signer) { 
-        if (typeof showNotification === 'function') showNotification("Action suspended: Authenticate wallet signature first.", "error"); 
-        return; 
-    }
+    if (!secureContract || !signer) { showNotification("Action suspended: Authenticate wallet signature first.", "error"); return; }
 
     if (typeof lockSystem === 'function') lockSystem();
     isTransactionPending = true;
-    const btn = typeof toggleButtonLoading === 'function' ? toggleButtonLoading(e, true) : null;
+    const btn = toggleButtonLoading(e, true);
 
     try {
         const userAddress = await signer.getAddress();
         const privs = await verifyUserPrivileges(userAddress);
-
         if (!privs.isAdmin) {
-            if (typeof showNotification === 'function') showNotification("SECURITY ENFORCEMENT: Architect privileges required.", "error");
+            showNotification("SECURITY ENFORCEMENT: Architect privileges required.", "error");
             return;
         }
 
@@ -2165,7 +2183,7 @@ async function executeArchitectMint(e) {
 
         const targetTokenId = globalSelectedTokenId;
         if (!targetTokenId || isNaN(Number(targetTokenId))) {
-            if (typeof showNotification === 'function') showNotification("STRUCTURAL EXCEPTION: Please select a Token ID coordinate on the Matrix first.", "error");
+            showNotification("STRUCTURAL EXCEPTION: Please select a Token ID coordinate on the Matrix first.", "error");
             return;
         }
         
@@ -2175,17 +2193,14 @@ async function executeArchitectMint(e) {
         if (typeof autoMap === 'function') {
             const mappedNode = await autoMap(tokenId);
             if (mappedNode && mappedNode.isActivated) {
-                if (typeof showNotification === 'function') showNotification("STRUCTURAL EXCEPTION: Node is already active. Cannot execute Architect Mint.", "error");
+                showNotification("STRUCTURAL EXCEPTION: Node is already active. Cannot execute Architect Mint.", "error");
                 return;
             }
         }
 
-        // 🛡️ FIXED: Corrected DOM ID to match the HTML structure
-        const targetAddressInput = document.getElementById('adminTargetAddress');
-        const targetAddress = targetAddressInput ? targetAddressInput.value.trim() : "";
-        
-        if (!targetAddress || typeof ethers === 'undefined' || !ethers.isAddress(targetAddress)) {
-            if (typeof showNotification === 'function') showNotification("STRUCTURAL EXCEPTION: Please specify a valid EVM Target Address.", "error");
+        const targetAddress = (document.getElementById('adminTargetAddress')?.value || "").trim();
+        if (!targetAddress || !ethers.isAddress(targetAddress)) {
+            showNotification("STRUCTURAL EXCEPTION: Please specify a valid EVM Target Address.", "error");
             return;
         }
 
@@ -2197,15 +2212,13 @@ async function executeArchitectMint(e) {
 
         if (!strictFrontUri) {
             if (typeof appendLog === 'function') appendLog(`MINT REJECTED: ไม่พบข้อมูล Front URI สำหรับ Node #${tokenId} ใน JSON Manifest`, "text-red-500 font-bold");
-            if (typeof showNotification === 'function') showNotification("METADATA EXCEPTION: Node not ready for minting (Front URI missing in Manifest).", "error");
+            showNotification("METADATA EXCEPTION: Node not ready for minting (Front URI missing in Manifest).", "error");
             return;
         }
 
-        const backMediaInput = document.getElementById('architectBackUri');
-        const backMediaTxId = backMediaInput ? backMediaInput.value.trim() : "";
-        
+        const backMediaTxId = (document.getElementById('architectBackUri')?.value || "").trim();
         if (!backMediaTxId) {
-            if (typeof showNotification === 'function') showNotification("STRUCTURAL EXCEPTION: Please specify a valid Back URI.", "error");
+            showNotification("STRUCTURAL EXCEPTION: Please specify a valid Back URI.", "error");
             return;
         }
 
@@ -2223,21 +2236,21 @@ async function executeArchitectMint(e) {
             if (typeof syncActiveMatrixNodes === 'function') await syncActiveMatrixNodes();
             if (typeof auditTokenFromLedger === 'function') await auditTokenFromLedger(tokenId);
             if (typeof appendLog === 'function') appendLog(`ARCHITECT MINT EXECUTED FLAWLESSLY ON-CHAIN.`, "text-emerald-400 font-bold");
-            if (typeof showNotification === 'function') showNotification(`Architect Mint complete. Rights transferred to ${targetAddress.slice(0,6)} successfully!`, "success");
+            showNotification(`Architect Mint complete. Rights transferred to ${targetAddress.slice(0,6)} successfully!`, "success");
         }
     } catch (err) {
         const errorMsg = typeof decodeContractError === 'function' ? decodeContractError(err) : (err.message || err);
         const sanitizedMsg = typeof sanitizeForDOM === 'function' ? sanitizeForDOM(errorMsg) : String(errorMsg);
 
-        if (err.code === 4001 || sanitizedMsg === "USER_CANCELLED_TX" || (err.message && err.message.toLowerCase().includes("user rejected")) || (err.message && err.message.toLowerCase().includes("declined"))) {
+        if (err.code === 4001 || sanitizedMsg === "USER_CANCELLED_TX" || err.message?.toLowerCase().includes("user rejected") || err.message?.toLowerCase().includes("declined")) {
             if (typeof appendLog === 'function') appendLog("Architect mint sequence aborted due to signature denial.", "text-yellow-500");
-            if (typeof showNotification === 'function') showNotification("Transaction cancelled by user.", "warning");
-        } else if (err.code === "UNPREDICTABLE_GAS_LIMIT" || (err.message && err.message.toLowerCase().includes("cannot estimate gas"))) {
+            showNotification("Transaction cancelled by user.", "warning");
+        } else if (err.code === "UNPREDICTABLE_GAS_LIMIT" || err.message?.toLowerCase().includes("cannot estimate gas")) {
             if (typeof appendLog === 'function') appendLog("Network rejected estimateGas: Execution will likely fail on-chain.", "text-red-500 font-bold");
-            if (typeof showNotification === 'function') showNotification("Gas estimation failed (Contract Revert Risk).", "error");
+            showNotification("Gas estimation failed (Contract Revert Risk).", "error");
         } else {
             if (typeof appendLog === 'function') appendLog(`Execution aborted: ${sanitizedMsg}`, "text-red-500");
-            if (typeof showNotification === 'function') showNotification(`Transaction failed: ${sanitizedMsg}`, "error");
+            showNotification(`Transaction failed: ${sanitizedMsg}`, "error");
         }
     } finally {
         if (btn && typeof toggleButtonLoading === 'function') toggleButtonLoading(btn, false);
@@ -2444,12 +2457,12 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
                     throw new TypeError("Payload must be a File or Blob when isFile is true.");
                 }
                 
+                // 🟢 THE FIX: แปลง File/Blob เป็น Buffer ผ่าน web3-polyfill.js เพื่อตัดปัญหา .pipe ที่ Irys SDK ตามหา
                 const arrayBuf = await payload.arrayBuffer();
-                // 🛡️ STRICT FIX: Fallback to native Uint8Array if Buffer polyfill fails
-                dataToUpload = typeof Buffer !== 'undefined' ? Buffer.from(arrayBuf) : new Uint8Array(arrayBuf);
-                size = dataToUpload.length || dataToUpload.byteLength;
+                dataToUpload = Buffer.from(arrayBuf);
+                size = dataToUpload.length;
                 
-                safeAppendLog(`[IRYS TELEMETRY] File payload converted to Buffer/Uint8Array. Size: ${size} bytes.`, "text-slate-400");
+                safeAppendLog(`[IRYS TELEMETRY] File payload converted to Buffer. Size: ${size} bytes.`, "text-slate-400");
             }
         } catch (conversionErr) {
             safeAppendLog(`[IRYS TELEMETRY] Payload mapping failed: ${conversionErr?.message}`, "text-red-500");
@@ -2611,6 +2624,7 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
                             receipt = await irys.uploader.chunkedUploader.uploadData(dataToUpload, { tags, uploadId });
                             
                         } else {
+                            // ส่งข้อมูลแบบ Buffer ตรงเข้า upload() ของ Irys ได้เลย ปลอดภัยและเสถียรที่สุด
                             if (progressCtrl) progressCtrl.set(size / 2);
                             receipt = await irys.upload(dataToUpload, { tags });
                         }
@@ -2655,6 +2669,8 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
         if (activeBtn) toggleButtonLoading(activeBtn, false);
     }
 }
+
+
 
 // ==============================================================================
 // ⚡ CORE EXECUTION: TOP-UP PROTOCOL (ASYNC NON-BLOCKING)
@@ -2787,6 +2803,8 @@ function syncMatrixIdStateUI(activeId) {
         targetDisplay.classList.add('text-cyan-400', 'font-bold');
     }
 }
+
+
 
 let isNodeProcessing = false; // ⚡ ANTI-SPAM LOCK
 
@@ -2962,6 +2980,7 @@ function checkPendingNova() {
         const pendingToken = localStorage.getItem('pending_nova_token');
         
         if (pendingTxHash && pendingToken) {
+            // [FIX]: Strict type validation for recovered Token ID
             const parsedTokenId = parseInt(pendingToken, 10);
             
             if (isNaN(parsedTokenId) || parsedTokenId < 1 || parsedTokenId > 333) {
@@ -2978,6 +2997,7 @@ function checkPendingNova() {
             }
             
             if (typeof safeAppendLog === 'function') {
+                // [FIX]: Safely slice the hash for display without injecting it into payload inputs
                 const shortHash = typeof pendingTxHash === 'string' ? `${pendingTxHash.slice(0, 10)}...` : 'Unknown';
                 safeAppendLog(`[SYSTEM] Tracking unconfirmed on-chain transaction (${shortHash}) for Node #${parsedTokenId}.`, "text-amber-400");
             }
@@ -3356,27 +3376,23 @@ function resetAdminInputs(forceClear = false) {
         console.warn("[SYS LOG] resetAdminInputs called implicitly. State preserved to prevent destructive wiping.");
         return; 
     }
-    
-    // 🛡️ FIXED: Added Admin Sector inputs to prevent stale data retention
-    const inputsToClear = [
-        'forgeFrontUri', 'forgeBackUri', 'novaVideoUri', 'novaDnaInput', 'novaHiddenInput',
-        'adminTargetAddress', 'architectBackUri', 'inputAdminMint', 'inputAdminNova', 'inputBaseUri'
-    ];
-    
+    const inputsToClear = ['forgeFrontUri', 'forgeBackUri', 'novaVideoUri', 'novaDnaInput', 'novaHiddenInput'];
     inputsToClear.forEach(id => {
         const el = document.getElementById(id);
         if (el) el.value = "";
     });
     
     globalSelectedTokenId = null;
-    if (window.SystemState) {
-        window.SystemState.globalSelectedTokenId = null;
-        window.SystemState.selectedTokenId = null; 
-    }
+    window.SystemState.globalSelectedTokenId = null;
+    window.SystemState.selectedTokenId = null; 
+    syncMatrixIdStateUI(null);
     
-    if (typeof syncMatrixIdStateUI === 'function') syncMatrixIdStateUI(null);
-    if (typeof safeAppendLog === 'function') safeAppendLog("[SYSTEM] Admin state and Matrix ID mapping globally cleared.", "text-slate-400");
+    safeAppendLog("[SYSTEM] Admin state and Matrix ID mapping globally cleared.", "text-slate-400");
 }
+
+window.systemForceClearState = () => resetAdminInputs(true);
+
+
 
 async function loadDeedMetadata(tokenId) {
     const mappedNode = await autoMap(tokenId);
@@ -3542,16 +3558,21 @@ function setupWalletEventListeners(rawProvider) {
     }
 }
 
+// ==========================================
+// 2. REFACTORED handleAccountsChangedEvent FUNCTION
+// ==========================================
 async function handleAccountsChangedEvent(accounts) {
     if (walletSessionController) walletSessionController.abort();
     walletSessionController = new AbortController();
 
     try { if (secureContract?.removeAllListeners) secureContract.removeAllListeners(); } catch (err) {}
     
+    // เคลียร์แคชระบบทั้งหมด
     if (typeof GLOBAL_NODE_CACHE !== 'undefined' && GLOBAL_NODE_CACHE?.clear) GLOBAL_NODE_CACHE.clear();
     if (typeof window.NODE_STATE_MAP !== 'undefined' && window.NODE_STATE_MAP?.clear) window.NODE_STATE_MAP.clear();
     window._domStateCache = {}; 
     
+    // [แก้บั๊กตาม Fact]: ซิงค์ State กลับไปที่ Window เพื่ออุดรอยรั่ว Reference ฉีกขาด
     if (window.SystemState && window.SystemState.currentLoadedMediaData) {
         Object.assign(window.SystemState.currentLoadedMediaData, { 
             front: "", frontType: "image", back: "", backType: "image", video: "", videoType: "video" 
@@ -3559,6 +3580,7 @@ async function handleAccountsChangedEvent(accounts) {
     }
     if (window.SystemState) window.SystemState.globalSelectedTokenId = null;
 
+    // [แก้บั๊กตาม Fact]: ล้าง LocalStorage ป้องกัน Transaction ผีหลอก
     localStorage.removeItem('irys_pending_fund_tx');
     localStorage.removeItem('pending_nova_txid');
     localStorage.removeItem('pending_nova_token');
@@ -3567,6 +3589,7 @@ async function handleAccountsChangedEvent(accounts) {
     
     const isDisconnected = !accounts || !Array.isArray(accounts) || accounts.length === 0;
     
+    // [UI OVERRIDE]: Target Header Elements
     const walletInfo = document.getElementById('walletInfo');
     const hdrAddress = document.getElementById('hdrAddress');
     
@@ -3574,6 +3597,7 @@ async function handleAccountsChangedEvent(accounts) {
         if (typeof bindNodeOwnership === 'function') bindNodeOwnership(null);
         showNotification("SECURITY PROTOCOL: Wallet disconnected. System entering Standby mode.", "error");
         
+        // เอา Log พี่กลับมา!
         appendLog("Wallet disconnected by user.", "text-yellow-400 font-bold");
         
         if (walletInfo) walletInfo.classList.add('hidden');
@@ -3582,6 +3606,7 @@ async function handleAccountsChangedEvent(accounts) {
         if (typeof bindNodeOwnership === 'function') bindNodeOwnership(accounts[0]);
         showNotification("IDENTITY SHIFT DETECTED: Account switched successfully.", "warning");
         
+        // เอา Log พี่กลับมา!
         appendLog(`Identity vector shift detected to: ${accounts[0]}`, "text-yellow-400 font-bold");
         
         if (walletInfo) walletInfo.classList.remove('hidden');
@@ -3605,6 +3630,7 @@ async function handleAccountsChangedEvent(accounts) {
     window.secureContract = null;
     window.irys = null; 
 }
+
 
 function setNetworkHardLock(locked, observedChainId = '') {
     const overlay = document.getElementById('securityHardLockOverlay');
@@ -3633,6 +3659,7 @@ function handleChainChangedEvent(newChainId) {
     try { parsedChainId = BigInt(newChainId); } catch (_) { parsedChainId = 0n; }
     const wrongNetwork = parsedChainId !== 8453n;
     
+    // [UI OVERRIDE]: อัปเดต Network Text
     const hdrNetwork = document.getElementById('hdrNetwork');
     if (hdrNetwork) hdrNetwork.textContent = wrongNetwork ? `CHAIN: ${parsedChainId}` : "BASE MAINNET";
 
@@ -3643,6 +3670,7 @@ function handleChainChangedEvent(newChainId) {
     }
 }
 
+
 const eip6963Providers = [];
 window.addEventListener("eip6963:announceProvider", (event) => {
     if (event.detail && event.detail.provider && event.detail.info) {
@@ -3652,7 +3680,6 @@ window.addEventListener("eip6963:announceProvider", (event) => {
         }
     }
 });
-
 // ==========================================
 // 3. INTEGRATED WALLET CONTROLLER
 // ==========================================
@@ -3703,6 +3730,7 @@ async function connectWallet(e) {
         else {
             appendLog("Secondary Route Engaged: Initializing WalletConnect V2.", "text-yellow-400");
             
+            // 🛡️ อัปเกรดจุดนี้ให้ค้นหา Provider ได้ครอบคลุมขึ้น ป้องกันโค้ดพัง
             const EthereumProviderCtor = window.EthereumProvider || window.WalletConnectProvider?.EthereumProvider;
             if (!EthereumProviderCtor) throw new Error("WalletConnect V2 Runtime Bundle unresolved or blocked by client.");
 
@@ -3749,6 +3777,7 @@ async function connectWallet(e) {
         provider = new ethers.BrowserProvider(rawProvider);
         signer = await provider.getSigner();
 
+        // 🛡️ [AUTHORITY INJECTION] อัปเดต Ownership ทันทีที่เชื่อมต่อบัญชีสำเร็จ (คงไว้ตามเดิม 100%)
         bindNodeOwnership(account);
         
         if (secureContract) {
@@ -3804,6 +3833,7 @@ async function connectWallet(e) {
     }
 }
 
+
 // ==============================================================================
 // 🏛️ GOVERNANCE & PROPOSAL ENGINE
 // ==============================================================================
@@ -3828,24 +3858,13 @@ async function fetchAndDisplayProposals() {
 
         let targetVotes = 199; 
         let timelockDelay = 172800; 
-        let currentNetworkTimeMs = Date.now(); 
         
         try {
-            const activeProvider = readOnlyProvider || provider;
             const calls = [
                 { target: CONTRACT_ADDRESS, allowFailure: true, callData: activeContract.interface.encodeFunctionData("ABSOLUTE_QUORUM") },
                 { target: CONTRACT_ADDRESS, allowFailure: true, callData: activeContract.interface.encodeFunctionData("TIMELOCK_DELAY") }
             ];
-            
-            const [results, latestBlock] = await Promise.all([
-                debouncedMulticall(activeProvider, calls),
-                activeProvider.getBlock('latest').catch(() => null)
-            ]);
-            
-            if (latestBlock && latestBlock.timestamp) {
-                currentNetworkTimeMs = latestBlock.timestamp * 1000;
-            }
-
+            const results = await debouncedMulticall(readOnlyProvider || provider, calls);
             if (results[0].success) targetVotes = Number(activeContract.interface.decodeFunctionResult("ABSOLUTE_QUORUM", results[0].returnData)[0]);
             if (results[1].success) timelockDelay = Number(activeContract.interface.decodeFunctionResult("TIMELOCK_DELAY", results[1].returnData)[0]);
         } catch (rpcErr) {
@@ -3928,7 +3947,7 @@ async function fetchAndDisplayProposals() {
                 const queuedAtSeconds = queuedAt ? Number(queuedAt) : 0;
                 
                 const executeReadyAt = queuedAtSeconds + timelockDelay;
-                const isExpired = currentNetworkTimeMs > (deadlineSeconds * 1000); 
+                const isExpired = Date.now() > (deadlineSeconds * 1000); 
                 const passedQuorum = massVotesNum >= targetVotes;
 
                 if (i === totalProposals) {
@@ -4287,6 +4306,7 @@ async function triggerIdentityNova(e) {
         return;
     }
 
+    // [FIX]: Implement onBroadcast callback to secure pending state, and ensure cleanup on resolution
     const receipt = await runTx(
         e, 
         `SOVEREIGN_NOVA_#${tokenId}`, 
@@ -4309,6 +4329,7 @@ async function triggerIdentityNova(e) {
         }
     );
 
+    // Strict cleanup of pending state regardless of success or failure
     try {
         localStorage.removeItem('pending_nova_txid');
         localStorage.removeItem('pending_nova_token');
@@ -4335,6 +4356,7 @@ async function executeUpdateIdentity(e) {
         const userAddress = await signer.getAddress();
         const privs = await verifyUserPrivileges(userAddress);
 
+        // 🚨 [CRITICAL FIX]: บังคับใช้ ID จาก Node ที่คลิกบนจอเท่านั้น ห้ามดึงจากช่องกรอกตัวเลข
         const targetTokenId = globalSelectedTokenId;
         if (!targetTokenId) {
             showNotification("STRUCTURAL EXCEPTION: Please select a Token ID coordinate on the Matrix first.", "error");
@@ -4367,6 +4389,7 @@ async function executeUpdateIdentity(e) {
             }
         }
 
+        // 🚨 [CRITICAL FIX]: ข้อมูลภาพจะตรงกับ Node ที่คลิก 100% ไม่มีทางสลับมั่ว
         frontUri = (document.getElementById('forgeFrontUri')?.value || "").trim() || currentLoadedMediaData.front || "";
         backUri = (document.getElementById('forgeBackUri')?.value || "").trim() || currentLoadedMediaData.back || "";
         videoUri = (document.getElementById('novaVideoUri')?.value || "").trim() || currentLoadedMediaData.video || "";
@@ -4396,6 +4419,7 @@ async function executeUpdateIdentity(e) {
 async function executeSovereignSupport(e) {
     if (!secureContract || !signer) { showNotification("Action suspended: Authenticate wallet signature first.", "error"); return; }
     
+    // 🚨 [CRITICAL FIX]: บังคับใช้ ID จาก Node ที่คลิกบนจอเท่านั้น ป้องกันการพิมพ์เลขผิดแล้วไปเผาเหรียญอื่นทิ้ง
     const targetTokenId = globalSelectedTokenId;
     if (!targetTokenId) {
         showNotification("STRUCTURAL EXCEPTION: Please select a Token ID coordinate on the Matrix first.", "error");
@@ -4555,6 +4579,7 @@ function extractIrysId(input) {
     let clean = input.trim();
     if (!clean) return "";
 
+    // 1. ถ้าเป็น HTTP/HTTPS ให้เอาเฉพาะ Pathname ทั้งหมด (ไม่ว่าจะเป็น CDN หรือ Gateway อะไรก็ตาม)
     if (/^https?:\/\//i.test(clean)) {
         try {
             clean = new URL(clean).pathname;
@@ -4563,10 +4588,16 @@ function extractIrysId(input) {
         }
     }
 
+    // 2. ตัด Protocol (ar://, irys://)
     clean = clean.replace(/^(ar|irys):\/\//i, '');
+
+    // 3. ตัด Query String (?...) และ Hash (#...) ออก
     clean = clean.split(/[?#]/)[0];
+
+    // 4. ตัด / หน้าสุดออกทั้งหมด
     clean = clean.replace(/^\/+/, '');
 
+    // 5. Safe Regex: สแกนผ่าน 100% อนุญาตให้มี / และ . ไม่ตัดเลขไฟล์ 5.png / 333.png ออกแน่นอน
     return clean.replace(/[^a-zA-Z0-9_\-\.\/]/g, '');
 }
 
@@ -4639,7 +4670,7 @@ function isMaliciousURI(uri) {
 
 function isValidSovereignInput(text) {
     if (!text) return true;
-    const maliciousPattern = /[<>]/;
+    const maliciousPattern = /[<>&"'/]/;
     return !maliciousPattern.test(text);
 }
 
@@ -4800,14 +4831,12 @@ async function autoMap(tokenId) {
                     }
                     
                     if (metaResponse.ok) {
-                        if (!metaResponse.body) {
-                            throw new Error("OOM_PROTECT_NULL_BODY");
-                        }
+                        // 🛡️ [PRODUCTION PATCH]: Stream Reader with Hard Byte Limit (OOM Protection)
                         const reader = metaResponse.body.getReader();
                         const decoder = new TextDecoder('utf-8');
                         let text = '';
                         let bytesRead = 0;
-                        const MAX_BYTES = 51200; 
+                        const MAX_BYTES = 51200; // 50KB Hard Limit
 
                         try {
                             while (true) {
@@ -4816,12 +4845,12 @@ async function autoMap(tokenId) {
                                 bytesRead += value.length;
                                 
                                 if (bytesRead > MAX_BYTES) {
-                                    await reader.cancel(); 
+                                    await reader.cancel(); // ตัดการเชื่อมต่อทันที
                                     throw new Error("OOM_PROTECT_PAYLOAD_TOO_LARGE");
                                 }
                                 text += decoder.decode(value, { stream: true });
                             }
-                            text += decoder.decode(); 
+                            text += decoder.decode(); // Flush remaining buffer
                             
                             try {
                                 metadata = JSON.parse(text);
@@ -5015,6 +5044,7 @@ async function syncContractStates() {
         const reservePerNFT = tStatus[4] ?? 0n;
         const reserve = tStatus[0] ?? 0n;
 
+        // Sync Wallet ETH Balance & Network Telemetry
         const activeProvider = window.provider || readOnlyProvider;
         const currentHdrAddress = document.getElementById('hdrAddress')?.textContent;
         
@@ -5225,9 +5255,6 @@ async function resolveMediaUrl(urlList, signal, mimeType, depth = 0) {
                 const contentType = response.headers.get('content-type') || '';
                 
                 if (contentType.includes('json') || contentType.includes('text')) {
-                    if (!clone.body) {
-                        throw new Error("OOM_PROTECT_NULL_BODY");
-                    }
                     const reader = clone.body.getReader();
                     const decoder = new TextDecoder('utf-8');
                     let text = '';
@@ -5638,16 +5665,27 @@ function handleSlotClick(slotNum) {
     }
 }
 
+function getImperialRankDetailed(tokenId) { 
+    const id = parseInt(tokenId, 10); 
+    if (isNaN(id)) return "UNKNOWN ENTITY"; 
+    if ([1,2,3,4,5,6,7,8,9,10,50,100].includes(id)) return "THE COUNCIL PRIME"; 
+    if (id >= 11 && id <= 99 && id !== 50) return "THE GOLDEN COUNCIL"; 
+    if (id >= 101 && id <= 200 && id !== 100) return "THE SILVER CYPHER COUNCIL"; 
+    if (id >= 201 && id <= 332) return "THE RED MACHINE COUNCIL"; 
+    if (id === 333) return "SOVEREIGN IMMORTAL 333"; 
+    return "UNKNOWN ENTITY"; 
+}
+
 function autoMapMetadata(tokenId) { 
     const properties = [ 
-        { k: "IDENTITY STATUS", v: "UNCOMPROMISED INTEGRITY PROTO" }, 
-        { k: "SYSTEM", v: "IMPERIAL SOVEREIGN DEED" } 
+        { k: "RANK", v: getImperialRankDetailed(tokenId).toUpperCase() }, 
+        { k: "IDENTITY STATUS", v: "UNCOMPROMISED INTEGRITY PROTO" } 
     ];
 
     for (let i = 0; i < 2; i++) {
         const keyInput = document.getElementById(`propKey${i+1}`);
         const valInput = document.getElementById(`prop${i+1}`);
-        if (keyInput && valInput && properties[i]) {
+        if (keyInput && valInput) {
             keyInput.value = properties[i].k;
             valInput.value = properties[i].v;
         }
@@ -5796,9 +5834,14 @@ async function auditTokenFromLedger(tokenId) {
 
             const displayData = document.getElementById('activeDeedMetadataDisplay');
             if(displayData) {
+                const imperialRank = typeof getImperialRankDetailed === 'function' ? getImperialRankDetailed(tokenId) : "UNKNOWN";
                 displayData.textContent = "";
 
                 const line1 = document.createTextNode(`CELL NODE ID: ${tokenId} `);
+                const rankSpan = document.createElement('span');
+                rankSpan.className = "text-yellow-500 font-bold tracking-widest";
+                rankSpan.textContent = `[${imperialRank}]`;
+
                 const br = document.createElement('br');
 
                 const safeOwner = mappedNode.owner ? (typeof sanitizeForDOM === 'function' ? sanitizeForDOM(mappedNode.owner) : String(mappedNode.owner)) : "0x0000000000000000000000000000000000000000";
@@ -5808,7 +5851,7 @@ async function auditTokenFromLedger(tokenId) {
                 sanctifiedSpan.className = mappedNode.isSanctified ? 'text-emerald-400 font-bold' : 'text-slate-500';
                 sanctifiedSpan.textContent = mappedNode.isSanctified ? 'AFFIRMED' : 'DORMANT';
 
-                displayData.append(line1, br, line2, sanctifiedSpan);
+                displayData.append(line1, rankSpan, br, line2, sanctifiedSpan);
             }
         }
     } catch (e) {
@@ -5882,8 +5925,6 @@ function filterSovereignGrid() {
         });
     }, 250); 
 }
-
-const activeFetchControllers = new WeakMap();
 
 const matrixThumbnailObserver = new IntersectionObserver((entries, observer) => {
     entries.forEach(async (entry) => {
@@ -6242,12 +6283,22 @@ function setupMatrixGrid() {
     const isTouch = typeof IS_TOUCH_DEVICE !== 'undefined' && IS_TOUCH_DEVICE;
 
     for (let i = 1; i <= 333; i++) {
+        let rankClass = "border-slate-800";
+        let hasCrown = false;
+
+        if ([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 50, 100].includes(i)) {
+            rankClass = "rank-prime"; hasCrown = true;
+        } else if (i >= 11 && i <= 100) { rankClass = "rank-gold"; } 
+        else if (i >= 101 && i <= 200) { rankClass = "rank-silver"; } 
+        else if (i >= 201 && i <= 332) { rankClass = "rank-red"; } 
+        else if (i === 333) { rankClass = "rank-imperial"; hasCrown = true; }
+
         const node = document.createElement('div');
         node.id = `node-${i}`;
         node.setAttribute('data-token-id', i.toString());
         
         const hoverClass = isTouch ? "active:bg-slate-800" : "hover:bg-slate-800";
-        node.className = `matrix-node aspect-square w-full bg-slate-950 border border-slate-800 rounded flex flex-col items-center justify-center font-mono text-[8px] sm:text-[10px] md:text-xs text-slate-500 cursor-pointer p-1 sm:p-2 transition-all duration-300 ${hoverClass}`;
+        node.className = `matrix-node aspect-square w-full bg-slate-950 border rounded flex flex-col items-center justify-center font-mono text-[8px] sm:text-[10px] md:text-xs text-slate-500 cursor-pointer p-1 sm:p-2 transition-all duration-300 ${hoverClass} ${rankClass}`;
         
         node.style.contentVisibility = 'auto';
         node.style.contain = 'strict';
@@ -6259,6 +6310,13 @@ function setupMatrixGrid() {
         const numSpan = document.createElement('span');
         numSpan.textContent = i.toString().padStart(3, '0');
         innerDiv.appendChild(numSpan);
+
+        if (hasCrown) {
+            const crownSpan = document.createElement('span');
+            crownSpan.className = "text-[6px] sm:text-[8px] font-bold block leading-none ml-1";
+            crownSpan.textContent = "👑";
+            innerDiv.appendChild(crownSpan);
+        }
 
         node.appendChild(innerDiv);
         fragment.appendChild(node);
@@ -6324,6 +6382,7 @@ function enforceSecurityConstraints() {
     const nameInput = document.getElementById('propName');
     if (nameInput) nameInput.setAttribute('maxlength', '128');
 
+    // 🚨 CRITICAL FIX: ENFORCE BYTE-LIMIT ON DNA & HIDDEN PAYLOADS TO PREVENT OOM/GAS DRAIN
     const dnaInput = document.getElementById('novaDnaInput');
     if (dnaInput) dnaInput.setAttribute('maxlength', '1024');
     const hiddenInput = document.getElementById('novaHiddenInput');
@@ -6339,6 +6398,7 @@ window.addEventListener('load', async () => {
     if (isSystemBooted) return;
     isSystemBooted = true;
 
+    // ⚡ DIRECT CALLS: ไม่มี Defensive Garbage อีกต่อไป
     enforceSecurityConstraints();
     revealApp(); 
     
@@ -6351,6 +6411,7 @@ window.addEventListener('load', async () => {
     initializeAbsoluteEventDelegation();
 
     if (window.visualViewport) {
+        // ⚡ FIX: Binding Event ให้ถูกต้องตาม Lifecycle
         if (window._sovereignResizeHandler) {
             window.visualViewport.removeEventListener("resize", window._sovereignResizeHandler);
             window.visualViewport.removeEventListener("scroll", window._sovereignResizeHandler);
