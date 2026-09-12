@@ -5174,65 +5174,38 @@ function renderLoadingSkeleton(container) {
     container.appendChild(skeleton);
 }
 
-async function resolveMediaUrl(urlList, signal, mimeType, depth = 0) {
+async function resolveMediaUrl(urlList, signal, depth = 0) {
     const CACHE_NAME = 'eter-v6-asset-vault';
-    const isVideo = mimeType === 'video';
-    
+
     if (!Array.isArray(urlList) || urlList.length === 0) {
         throw new Error('INVALID_URL_LIST');
     }
 
-    if (isVideo) {
-        for (const url of urlList) {
-            if (signal && signal.aborted) throw new Error('Aborted');
-            const localCtrl = new AbortController();
-            try {
-                const testResponse = await fetch(url, { 
-                    method: 'GET', 
-                    signal: localCtrl.signal, 
-                    headers: { Range: "bytes=0-100" },
-                    mode: 'cors',
-                    referrerPolicy: 'no-referrer'
-                });
-                
-                if (!testResponse.ok && testResponse.status !== 206) throw new Error('HTTP ' + testResponse.status);
-                
-                const contentType = testResponse.headers.get('content-type') || '';
-                
-                if (contentType.includes('application/json') || contentType.includes('text/plain')) {
-                    localCtrl.abort();
-                    break; 
-                }
-
-                localCtrl.abort(); 
-                const cleanUrl = typeof url === 'string' ? url.split('?')[0] : url; 
-                return { url: cleanUrl, isBlob: false, sourceUrl: url };
-            } catch (e) { 
-                localCtrl.abort();
-                if (e.name === 'AbortError' && signal && signal.aborted) throw e; 
-                continue; 
-            }
-        }
-    }
-    
     for (const url of urlList) {
         if (signal && signal.aborted) throw new Error('Aborted');
         const cleanUrl = typeof url === 'string' ? url.split('?')[0] : url;
 
         if (typeof url === 'string' && url.includes('.m3u8')) {
-            return { url: cleanUrl, isBlob: false, sourceUrl: url };
+            return { url: cleanUrl, isBlob: false, sourceUrl: url, type: 'video' };
         }
 
+        // 🚨 1. ระบบ Cache & Memory Management (ดึงกลับมาแล้ว)
         if ('caches' in window) {
             try {
                 const cache = await caches.open(CACHE_NAME);
                 const cachedResponse = await cache.match(cleanUrl);
                 if (cachedResponse) {
+                    const contentType = (cachedResponse.headers.get('content-type') || '').toLowerCase();
+                    const isVideo = contentType.startsWith('video/') || cleanUrl.match(/\.(mp4|webm|mov)$/i);
+                    const type = isVideo ? 'video' : 'image';
+
                     const blob = await cachedResponse.blob();
                     const objUrl = URL.createObjectURL(blob);
                     if (signal && signal.aborted) { URL.revokeObjectURL(objUrl); throw new Error('Aborted'); }
+                    
+                    // 🚨 เรียกใช้ Garbage Collector ป้องกัน Memory Leak
                     if (typeof registerBlobForGc === 'function') registerBlobForGc(cleanUrl, objUrl, isVideo);
-                    return { url: objUrl, isBlob: true, sourceUrl: url };
+                    return { url: objUrl, isBlob: true, sourceUrl: url, type: type };
                 }
             } catch (e) { console.warn("[CACHE] Read error:", e); }
         }
@@ -5247,60 +5220,56 @@ async function resolveMediaUrl(urlList, signal, mimeType, depth = 0) {
             if (!response.ok) throw new Error('HTTP ' + response.status);
             
             const clone = response.clone();
-            let isJsonObj = false;
-            let actualMedia = null;
+            const contentType = (response.headers.get('content-type') || '').toLowerCase();
 
-            try {
-                if (depth >= 2) throw new Error("RECURSION LIMIT EXCEEDED");
-                const contentType = response.headers.get('content-type') || '';
-                
-                if (contentType.includes('json') || contentType.includes('text')) {
-                    const reader = clone.body.getReader();
-                    const decoder = new TextDecoder('utf-8');
-                    let text = '';
-                    let bytesRead = 0;
-                    const MAX_BYTES = 51200; 
+            // 🚨 2. Dynamic Sniffing: ถ้าเป็น JSON ให้ Unpack อัตโนมัติ
+            if (contentType.includes('json') || contentType.includes('text')) {
+                const reader = clone.body.getReader();
+                const decoder = new TextDecoder('utf-8');
+                let text = '';
+                let bytesRead = 0;
+                const MAX_BYTES = 51200; // OOM Protection
 
-                    try {
-                        while (true) {
-                            const { done, value } = await reader.read();
-                            if (done) break;
-                            bytesRead += value.length;
-                            if (bytesRead > MAX_BYTES) {
-                                await reader.cancel();
-                                throw new Error("OOM_PROTECT_PAYLOAD_TOO_LARGE");
-                            }
-                            text += decoder.decode(value, { stream: true });
+                try {
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+                        bytesRead += value.length;
+                        if (bytesRead > MAX_BYTES) {
+                            await reader.cancel();
+                            throw new Error("OOM_PROTECT_PAYLOAD_TOO_LARGE");
                         }
-                        text += decoder.decode(); 
-                        
-                        const json = JSON.parse(text);
-                        if (json && typeof json === 'object' && !Array.isArray(json)) {
-                            actualMedia = json.animation_url || json.videoURI || json.image || json.frontURI;
-                            if (actualMedia && typeof actualMedia === 'string') {
-                                isJsonObj = true;
-                            }
-                        }
-                    } catch (streamErr) {
-                        console.warn("[Media Resolver] Stream aborted or size exceeded:", streamErr.message);
-                    } finally {
-                        reader.releaseLock();
+                        text += decoder.decode(value, { stream: true });
                     }
+                    text += decoder.decode(); 
+                    
+                    const json = JSON.parse(text);
+                    if (json && typeof json === 'object' && !Array.isArray(json)) {
+                        let actualMedia = json.animation_url || json.videoURI || (json.properties && json.properties.video) || json.image || json.frontURI;
+                        if (actualMedia && typeof actualMedia === 'string') {
+                            if (depth >= 3) throw new Error("RECURSION LIMIT EXCEEDED");
+
+                            if (actualMedia.startsWith('ar://')) {
+                                actualMedia = actualMedia.replace('ar://', 'https://gateway.irys.xyz/');
+                            } else if (!actualMedia.startsWith('http')) {
+                                actualMedia = `https://gateway.irys.xyz/${typeof extractIrysId === 'function' ? extractIrysId(actualMedia) : actualMedia}`;
+                            }
+
+                            const newUrls = typeof buildIrysUrls === 'function' ? buildIrysUrls(actualMedia) : [actualMedia];
+                            // วนลูปกลับไปโหลดไฟล์ Media จริงๆ
+                            return await resolveMediaUrl(newUrls, signal, depth + 1); 
+                        }
+                    }
+                } catch (streamErr) {
+                    console.warn("[Media Resolver] Stream aborted or size exceeded:", streamErr.message);
+                } finally {
+                    reader.releaseLock();
                 }
-            } catch (e) {
-                // Not JSON, proceed to blob
             }
 
-            if (isJsonObj && actualMedia) {
-                if (!actualMedia.startsWith('http') && !actualMedia.startsWith('ar://')) {
-                    actualMedia = `https://gateway.irys.xyz/${actualMedia}`;
-                } else if (actualMedia.startsWith('ar://')) {
-                    actualMedia = actualMedia.replace('ar://', 'https://gateway.irys.xyz/');
-                }
-                const newUrls = typeof buildIrysUrls === 'function' ? buildIrysUrls(actualMedia) : [actualMedia];
-                const newMimeType = typeof guessMediaTypeAdvanced === 'function' ? await guessMediaTypeAdvanced(newUrls[0]) : mimeType;
-                return await resolveMediaUrl(newUrls, signal, newMimeType, depth + 1); 
-            }
+            // 🚨 3. ถ้าเป็น Media (Image/Video) ให้เก็บลง Cache และสร้าง Blob
+            const isVideo = contentType.startsWith('video/') || cleanUrl.match(/\.(mp4|webm|mov)$/i);
+            const type = isVideo ? 'video' : 'image';
 
             if ('caches' in window) {
                 try {
@@ -5314,8 +5283,9 @@ async function resolveMediaUrl(urlList, signal, mimeType, depth = 0) {
             
             if (signal && signal.aborted) { URL.revokeObjectURL(objUrl); throw new Error('Aborted'); }
             
+            // 🚨 เรียกใช้ Garbage Collector ป้องกัน Memory Leak
             if (typeof registerBlobForGc === 'function') registerBlobForGc(cleanUrl, objUrl, isVideo);
-            return { url: objUrl, isBlob: true, sourceUrl: url };
+            return { url: objUrl, isBlob: true, sourceUrl: url, type: type };
             
         } catch (e) {
             if (e.name === 'AbortError') throw e;
@@ -5324,10 +5294,13 @@ async function resolveMediaUrl(urlList, signal, mimeType, depth = 0) {
         }
     }
     
-    return { url: typeof urlList[0] === 'string' ? urlList[0].split('?')[0] : urlList[0], isBlob: false, sourceUrl: urlList[0] };
+    // Fallback สุดท้ายถ้า Fetch พังหมด
+    const fallbackUrl = typeof urlList[0] === 'string' ? urlList[0].split('?')[0] : urlList[0];
+    const isVideoFallback = fallbackUrl.match(/\.(mp4|webm|mov|m3u8)$/i);
+    return { url: fallbackUrl, isBlob: false, sourceUrl: urlList[0], type: isVideoFallback ? 'video' : 'image' };
 }
 
-async function renderToViewport(containerId, path, defaultText, explicitMediaType = null) {
+async function renderToViewport(containerId, path, defaultText) {
     if (!containerId || typeof containerId !== 'string') return;
     const container = document.getElementById(containerId);
     if (!container) return;
@@ -5344,13 +5317,8 @@ async function renderToViewport(containerId, path, defaultText, explicitMediaTyp
     }
 
     const safePath = path.trim();
-    
     const isRawHash = (safePath.length >= 42 && safePath.length <= 45 && /^[a-zA-Z0-9_-]+$/.test(safePath) && !/^https?:\/\//i.test(safePath));
-    
-    const isPermittedScheme = /^https?:\/\//i.test(safePath) || 
-                              safePath.startsWith('ar://') || 
-                              safePath.startsWith('irys://') || 
-                              isRawHash;
+    const isPermittedScheme = /^https?:\/\//i.test(safePath) || safePath.startsWith('ar://') || safePath.startsWith('irys://') || isRawHash;
     
     if ((typeof isMaliciousURI === 'function' && isMaliciousURI(safePath)) || !isPermittedScheme) {
         renderEmptyState(container, "⛔ BLOCKED: UNSAFE URI SCHEME REJECTED", "text-red-500");
@@ -5365,15 +5333,10 @@ async function renderToViewport(containerId, path, defaultText, explicitMediaTyp
         
         if (!urlsToTry || urlsToTry.length === 0) throw new Error("URI_RESOLUTION_FAILED");
 
-        const mimeType = typeof guessMediaTypeAdvanced === 'function' 
-            ? await guessMediaTypeAdvanced(urlsToTry[0], explicitMediaType) 
-            : (explicitMediaType || 'image');
-        
         if (masterController.signal.aborted) return;
         
-        const resolvedMedia = typeof resolveMediaUrl === 'function' 
-            ? await resolveMediaUrl(urlsToTry, masterController.signal, mimeType)
-            : { url: urlsToTry[0], isBlob: false, sourceUrl: urlsToTry[0] };
+        // 🚨 เรียกใช้ Resolver ตัวเต็มที่มีระบบ Memory Management
+        const resolvedMedia = await resolveMediaUrl(urlsToTry, masterController.signal);
         
         if (masterController.signal.aborted) {
             if (resolvedMedia && resolvedMedia.isBlob && resolvedMedia.url) {
@@ -5383,12 +5346,13 @@ async function renderToViewport(containerId, path, defaultText, explicitMediaTyp
         }
 
         if (typeof renderMediaToDOM === 'function') {
-            renderMediaToDOM(container, resolvedMedia, mimeType, masterController.signal);
+            // 🚨 ส่ง resolvedMedia.type (video หรือ image) ที่ดมกลิ่นมาได้ ให้ DOM Renderer
+            renderMediaToDOM(container, resolvedMedia, resolvedMedia.type, masterController.signal);
         }
 
     } catch (e) {
         if (e.name === 'AbortError') return;
-        renderEmptyState(container, "IRYS GATEWAY SEVERED", "text-red-500");
+        renderEmptyState(container, "IRYS GATEWAY SEVERED OR INVALID MEDIA", "text-red-500");
     }
 }
 
@@ -5692,12 +5656,6 @@ function autoMapMetadata(tokenId) {
     }
 }
 
-/**
- * Audits and renders the detailed state of a token into the Viewport and Metadata panels.
- * STRICT RULE: UNCLAIMED = Manifest Only. ACTIVE = Smart Contract Only.
- * @param {number|string} tokenId - The ID of the token to audit.
- * @returns {Promise<void>}
- */
 async function auditTokenFromLedger(tokenId) {
     if (typeof resetAdminInputs === 'function') resetAdminInputs();
     const mySession = ++currentAuditSession;
@@ -5720,9 +5678,17 @@ async function auditTokenFromLedger(tokenId) {
 
         if (typeof appendLog === 'function') appendLog(`Extracting structural blueprint record for matrix cell node #${tokenId}...`, "text-purple-400");
 
-        // STRICT ROUTING BASED ON NODE STATE
-        const nodeState = window.NODE_STATE_MAP ? window.NODE_STATE_MAP.get(Number(tokenId)) : null;
-        const status = nodeState ? nodeState.status : 'UNCLAIMED';
+        // 🚨 CRITICAL FIX 1: ALWAYS FETCH ON-CHAIN TRUTH FIRST
+        const mappedNode = await autoMap(tokenId);
+        if (mySession !== currentAuditSession) return;
+
+        // Determine true status from on-chain data, bypassing unreliable NODE_STATE_MAP
+        const isMintedEver = mappedNode && mappedNode.owner && mappedNode.owner !== ethers.ZeroAddress;
+        const isActive = mappedNode && mappedNode.isActivated;
+        
+        let status = 'UNCLAIMED';
+        if (isActive) status = 'ACTIVE';
+        else if (isMintedEver) status = 'BURNED';
 
         if (status === 'UNCLAIMED') {
             // ==========================================
@@ -5742,6 +5708,11 @@ async function auditTokenFromLedger(tokenId) {
                     displayImageUri = rawImageId.startsWith('http') ? rawImageId : `https://gateway.irys.xyz/${rawImageId}`;
                 }
             }
+            
+            // 🚨 CRITICAL FIX 4: Fallback to preMintFrontUri if displayImageUri is empty
+            if (!displayImageUri && preMintFrontUri) {
+                displayImageUri = preMintFrontUri.startsWith('http') ? preMintFrontUri : `https://gateway.irys.xyz/${preMintFrontUri}`;
+            }
 
             if (preMintFrontUri !== "") {
                 currentLoadedMediaData.front = preMintFrontUri; 
@@ -5751,8 +5722,9 @@ async function auditTokenFromLedger(tokenId) {
                 if (typeof autoMapMetadata === 'function') autoMapMetadata(tokenId);
 
                 if (typeof renderToViewport === 'function') {
-                    renderToViewport('previewFrontContainer', displayImageUri, "Obverse aspect currently unassigned.");
-                    renderToViewport('previewBackContainer', "", "Void element data layer uninitialized.");
+                    // Explicitly define media types
+                    renderToViewport('previewFrontContainer', displayImageUri, "Obverse aspect currently unassigned.", "image");
+                    renderToViewport('previewBackContainer', "", "Void element data layer uninitialized.", "video");
                 }
 
                 const metaDisp = document.getElementById('activeDeedMetadataDisplay');
@@ -5782,10 +5754,6 @@ async function auditTokenFromLedger(tokenId) {
             // ==========================================
             // 🟢 ACTIVE NODE: READ STRICTLY FROM SMART CONTRACT
             // ==========================================
-            const mappedNode = await autoMap(tokenId);
-            if (mySession !== currentAuditSession) return;
-            if (!mappedNode) throw new Error("Mapping failure");
-
             const currentEpoch = Math.floor(Date.now() / 1000);
             const btnBurn = document.getElementById('btnBurnToken');
             if (mappedNode.votingLockUntil && mappedNode.votingLockUntil > currentEpoch) {
@@ -5811,7 +5779,8 @@ async function auditTokenFromLedger(tokenId) {
             if (typeof loadDeedMetadata === 'function') loadDeedMetadata(tokenId);
 
             if (typeof renderToViewport === 'function') {
-                renderToViewport('previewFrontContainer', currentLoadedMediaData.front, "Obverse aspect currently unassigned. Engage rebirth parameters.");
+                // 🚨 CRITICAL FIX 3: Explicitly pass "image" for front
+                renderToViewport('previewFrontContainer', currentLoadedMediaData.front, "Obverse aspect currently unassigned. Engage rebirth parameters.", "image");
             }
 
             const backContainer = document.getElementById('previewBackContainer');
@@ -5819,7 +5788,8 @@ async function auditTokenFromLedger(tokenId) {
                 if (mySession !== currentAuditSession) return;
                 if (mappedNode.back && String(mappedNode.back).trim() !== "") {
                     if (typeof renderToViewport === 'function') {
-                        renderToViewport('previewBackContainer', currentLoadedMediaData.back, "Reverse diagnostic data trace is currently null.");
+                        // 🚨 CRITICAL FIX 3: Explicitly pass "video" for back (Buyer Upload Mechanic)
+                        renderToViewport('previewBackContainer', currentLoadedMediaData.back, "Reverse diagnostic data trace is currently null.", "video");
                     }
                 } else {
                     if (backContainer) {
@@ -5857,7 +5827,6 @@ async function auditTokenFromLedger(tokenId) {
     } catch (e) {
         if (mySession !== currentAuditSession) return;
         
-        // Fallback for VOID_ELEMENT or complete failure
         if (typeof appendLog === 'function') {
             appendLog(`Matrix cell node #${tokenId} contains no structural allocation details (Void Element).`, "text-yellow-500");
         }
