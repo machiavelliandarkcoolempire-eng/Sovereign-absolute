@@ -1651,7 +1651,6 @@ async function debouncedMulticall(providerInstance, calls) {
                                     callData: call.callData
                                 }));
 
-                                // 🚨 [CRITICAL FIX]: บังคับใช้ .staticCall ตรงนี้!
                                 const chunkResults = await multicall.aggregate3.staticCall(formattedChunk);
                                 
                                 const mappedResults = Array.from(chunkResults).map(res => ({
@@ -1662,7 +1661,8 @@ async function debouncedMulticall(providerInstance, calls) {
                             } catch (chunkErr) {
                                 console.warn("[MULTICALL] Chunk failed, falling back to concurrent batches", chunkErr);
                                 
-                                const BATCH_SIZE = 10;
+                                // 🛡️ FIXED: Reduced batch size to 5 and increased delay to 250ms to prevent HTTP 429
+                                const BATCH_SIZE = 5;
                                 for (let j = 0; j < chunk.length; j += BATCH_SIZE) {
                                     const subChunk = chunk.slice(j, j + BATCH_SIZE);
                                     const subResults = await Promise.allSettled(
@@ -1685,7 +1685,7 @@ async function debouncedMulticall(providerInstance, calls) {
                                     });
                                     
                                     if (j + BATCH_SIZE < chunk.length) {
-                                        await new Promise(r => setTimeout(r, 50)); 
+                                        await new Promise(r => setTimeout(r, 250)); 
                                     }
                                 }
                             }
@@ -2143,18 +2143,21 @@ async function triggerForge(type, e) {
 
 async function executeArchitectMint(e) {
     if (isTransactionPending || window.SystemState?._sysLocked) return;
-    if (!secureContract || !signer) { showNotification("Action suspended: Authenticate wallet signature first.", "error"); return; }
+    if (!secureContract || !signer) { 
+        if (typeof showNotification === 'function') showNotification("Action suspended: Authenticate wallet signature first.", "error"); 
+        return; 
+    }
 
     if (typeof lockSystem === 'function') lockSystem();
     isTransactionPending = true;
-    const btn = toggleButtonLoading(e, true);
+    const btn = typeof toggleButtonLoading === 'function' ? toggleButtonLoading(e, true) : null;
 
     try {
         const userAddress = await signer.getAddress();
         const privs = await verifyUserPrivileges(userAddress);
 
         if (!privs.isAdmin) {
-            showNotification("SECURITY ENFORCEMENT: Architect privileges required.", "error");
+            if (typeof showNotification === 'function') showNotification("SECURITY ENFORCEMENT: Architect privileges required.", "error");
             return;
         }
 
@@ -2162,7 +2165,7 @@ async function executeArchitectMint(e) {
 
         const targetTokenId = globalSelectedTokenId;
         if (!targetTokenId || isNaN(Number(targetTokenId))) {
-            showNotification("STRUCTURAL EXCEPTION: Please select a Token ID coordinate on the Matrix first.", "error");
+            if (typeof showNotification === 'function') showNotification("STRUCTURAL EXCEPTION: Please select a Token ID coordinate on the Matrix first.", "error");
             return;
         }
         
@@ -2172,14 +2175,17 @@ async function executeArchitectMint(e) {
         if (typeof autoMap === 'function') {
             const mappedNode = await autoMap(tokenId);
             if (mappedNode && mappedNode.isActivated) {
-                showNotification("STRUCTURAL EXCEPTION: Node is already active. Cannot execute Architect Mint.", "error");
+                if (typeof showNotification === 'function') showNotification("STRUCTURAL EXCEPTION: Node is already active. Cannot execute Architect Mint.", "error");
                 return;
             }
         }
 
-        const targetAddress = (document.getElementById('adminTargetAddress')?.value || "").trim();
-        if (!targetAddress || !ethers.isAddress(targetAddress)) {
-            showNotification("STRUCTURAL EXCEPTION: Please specify a valid EVM Target Address.", "error");
+        // 🛡️ FIXED: Corrected DOM ID to match the HTML structure
+        const targetAddressInput = document.getElementById('adminTargetAddress');
+        const targetAddress = targetAddressInput ? targetAddressInput.value.trim() : "";
+        
+        if (!targetAddress || typeof ethers === 'undefined' || !ethers.isAddress(targetAddress)) {
+            if (typeof showNotification === 'function') showNotification("STRUCTURAL EXCEPTION: Please specify a valid EVM Target Address.", "error");
             return;
         }
 
@@ -2191,13 +2197,15 @@ async function executeArchitectMint(e) {
 
         if (!strictFrontUri) {
             if (typeof appendLog === 'function') appendLog(`MINT REJECTED: ไม่พบข้อมูล Front URI สำหรับ Node #${tokenId} ใน JSON Manifest`, "text-red-500 font-bold");
-            showNotification("METADATA EXCEPTION: Node not ready for minting (Front URI missing in Manifest).", "error");
+            if (typeof showNotification === 'function') showNotification("METADATA EXCEPTION: Node not ready for minting (Front URI missing in Manifest).", "error");
             return;
         }
 
-        const backMediaTxId = (document.getElementById('architectBackUri')?.value || "").trim();
+        const backMediaInput = document.getElementById('architectBackUri');
+        const backMediaTxId = backMediaInput ? backMediaInput.value.trim() : "";
+        
         if (!backMediaTxId) {
-            showNotification("STRUCTURAL EXCEPTION: Please specify a valid Back URI.", "error");
+            if (typeof showNotification === 'function') showNotification("STRUCTURAL EXCEPTION: Please specify a valid Back URI.", "error");
             return;
         }
 
@@ -2215,21 +2223,21 @@ async function executeArchitectMint(e) {
             if (typeof syncActiveMatrixNodes === 'function') await syncActiveMatrixNodes();
             if (typeof auditTokenFromLedger === 'function') await auditTokenFromLedger(tokenId);
             if (typeof appendLog === 'function') appendLog(`ARCHITECT MINT EXECUTED FLAWLESSLY ON-CHAIN.`, "text-emerald-400 font-bold");
-            showNotification(`Architect Mint complete. Rights transferred to ${targetAddress.slice(0,6)} successfully!`, "success");
+            if (typeof showNotification === 'function') showNotification(`Architect Mint complete. Rights transferred to ${targetAddress.slice(0,6)} successfully!`, "success");
         }
     } catch (err) {
         const errorMsg = typeof decodeContractError === 'function' ? decodeContractError(err) : (err.message || err);
         const sanitizedMsg = typeof sanitizeForDOM === 'function' ? sanitizeForDOM(errorMsg) : String(errorMsg);
 
-        if (err.code === 4001 || sanitizedMsg === "USER_CANCELLED_TX" || err.message?.toLowerCase().includes("user rejected") || err.message?.toLowerCase().includes("declined")) {
+        if (err.code === 4001 || sanitizedMsg === "USER_CANCELLED_TX" || (err.message && err.message.toLowerCase().includes("user rejected")) || (err.message && err.message.toLowerCase().includes("declined"))) {
             if (typeof appendLog === 'function') appendLog("Architect mint sequence aborted due to signature denial.", "text-yellow-500");
-            showNotification("Transaction cancelled by user.", "warning");
-        } else if (err.code === "UNPREDICTABLE_GAS_LIMIT" || err.message?.toLowerCase().includes("cannot estimate gas")) {
+            if (typeof showNotification === 'function') showNotification("Transaction cancelled by user.", "warning");
+        } else if (err.code === "UNPREDICTABLE_GAS_LIMIT" || (err.message && err.message.toLowerCase().includes("cannot estimate gas"))) {
             if (typeof appendLog === 'function') appendLog("Network rejected estimateGas: Execution will likely fail on-chain.", "text-red-500 font-bold");
-            showNotification("Gas estimation failed (Contract Revert Risk).", "error");
+            if (typeof showNotification === 'function') showNotification("Gas estimation failed (Contract Revert Risk).", "error");
         } else {
             if (typeof appendLog === 'function') appendLog(`Execution aborted: ${sanitizedMsg}`, "text-red-500");
-            showNotification(`Transaction failed: ${sanitizedMsg}`, "error");
+            if (typeof showNotification === 'function') showNotification(`Transaction failed: ${sanitizedMsg}`, "error");
         }
     } finally {
         if (btn && typeof toggleButtonLoading === 'function') toggleButtonLoading(btn, false);
@@ -3348,21 +3356,27 @@ function resetAdminInputs(forceClear = false) {
         console.warn("[SYS LOG] resetAdminInputs called implicitly. State preserved to prevent destructive wiping.");
         return; 
     }
-    const inputsToClear = ['forgeFrontUri', 'forgeBackUri', 'novaVideoUri', 'novaDnaInput', 'novaHiddenInput'];
+    
+    // 🛡️ FIXED: Added Admin Sector inputs to prevent stale data retention
+    const inputsToClear = [
+        'forgeFrontUri', 'forgeBackUri', 'novaVideoUri', 'novaDnaInput', 'novaHiddenInput',
+        'adminTargetAddress', 'architectBackUri', 'inputAdminMint', 'inputAdminNova', 'inputBaseUri'
+    ];
+    
     inputsToClear.forEach(id => {
         const el = document.getElementById(id);
         if (el) el.value = "";
     });
     
     globalSelectedTokenId = null;
-    window.SystemState.globalSelectedTokenId = null;
-    window.SystemState.selectedTokenId = null; 
-    syncMatrixIdStateUI(null);
+    if (window.SystemState) {
+        window.SystemState.globalSelectedTokenId = null;
+        window.SystemState.selectedTokenId = null; 
+    }
     
-    safeAppendLog("[SYSTEM] Admin state and Matrix ID mapping globally cleared.", "text-slate-400");
+    if (typeof syncMatrixIdStateUI === 'function') syncMatrixIdStateUI(null);
+    if (typeof safeAppendLog === 'function') safeAppendLog("[SYSTEM] Admin state and Matrix ID mapping globally cleared.", "text-slate-400");
 }
-
-window.systemForceClearState = () => resetAdminInputs(true);
 
 async function loadDeedMetadata(tokenId) {
     const mappedNode = await autoMap(tokenId);
