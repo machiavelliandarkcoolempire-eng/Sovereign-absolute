@@ -24,9 +24,6 @@
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="./web3-polyfill.js"></script>
     <script src="./irys-bundle.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-<script>eruda.init();</script>
-
     
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=JetBrains+Mono:wght@400;700;800&display=swap');
@@ -196,9 +193,6 @@
     @media (hover: hover) {
         .matrix-node:hover { transform: scale(1.15) translateY(-2px); z-index: 20; box-shadow: 0 0 20px rgba(255, 255, 255, 0.2); }
     }
-    .rank-red { border-color: #991b1b !important; box-shadow: inset 0 0 10px rgba(153, 27, 27, 0.3) !important; }
-    .rank-silver { border-color: #94a3b8 !important; box-shadow: inset 0 0 10px rgba(148, 163, 184, 0.3) !important; }
-    .rank-gold { border-color: #ca8a04 !important; box-shadow: inset 0 0 10px rgba(202, 138, 4, 0.3) !important; }
     .rank-prime { border-color: #d97706 !important; box-shadow: inset 0 0 15px rgba(217, 119, 6, 0.4) !important; }
     .rank-imperial { 
         border: 2px solid #ea580c !important; box-shadow: inset 0 0 20px rgba(234, 88, 12, 0.5) !important; 
@@ -210,12 +204,11 @@
     }
 
     .node-active {
-    background: radial-gradient(circle at 50% 30%, rgba(6, 182, 212, 0.6) 0%, rgba(8, 51, 68, 0.4) 100%) !important;
-    border-color: #06b6d4 !important; 
-    color: #cffafe !important; 
-    box-shadow: 0 0 25px rgba(6, 182, 212, 0.9), inset 0 0 15px rgba(6, 182, 212, 0.6) !important;
-}
-
+        background: radial-gradient(circle at 50% 30%, rgba(6, 182, 212, 0.6) 0%, rgba(8, 51, 68, 0.4) 100%) !important;
+        border-color: #06b6d4 !important; 
+        color: #cffafe !important; 
+        box-shadow: 0 0 25px rgba(6, 182, 212, 0.9), inset 0 0 15px rgba(6, 182, 212, 0.6) !important;
+    }
 
     /* Input Fields */
     input[type="text"], input[type="number"] {
@@ -239,7 +232,7 @@
 
 <body class="text-slate-100 font-mono antialiased relative">
 
-<!-- Modals (Kept exactly as original logic, improved styling) -->
+<!-- Modals -->
 <div id="gasSurgeWarning" class="fixed top-4 left-1/2 transform -translate-x-1/2 bg-red-950/95 border border-red-500 text-red-100 px-6 py-3 rounded-xl z-[99999] hidden shadow-[0_0_30px_rgba(239,68,68,0.8)] backdrop-blur-md">
     <span class="font-cinzel font-black uppercase text-xs flex items-center gap-2"><span class="animate-pulse">⚠</span> NETWORK GAS SURGE DETECTED</span>
     <p class="text-[10px] font-mono mt-1 text-red-300">Gas price is currently highly volatile. Proceeding may result in unexpected fees.</p>
@@ -299,7 +292,6 @@
         </p>
 
         <div class="bg-black/80 border border-stone-800 rounded-xl p-5 mb-5 overflow-y-auto scroll-dark text-[10px] md:text-[11px] font-mono text-slate-300 space-y-6 flex-grow shadow-[inset_0_0_30px_rgba(0,0,0,0.9)] h-72">
-            <!-- Content kept identical to original -->
             <div>
                 <h4 class="text-amber-500 font-black uppercase mb-2 border-b border-stone-800 pb-1.5">Phase 1: Sovereign Awakening</h4>
                 <ul class="space-y-2 list-none pl-1">
@@ -379,7 +371,7 @@
                 THE IMPERIAL SOVEREIGN <span class="gold-text">DEED</span>
             </h1>
             <p class="text-[9px] md:text-[10px] font-mono text-rose-400/80 uppercase tracking-[0.15em] mt-1 truncate">
-                333 Bespoke Council Passes • Base Mainnet • <span class="font-bold text-stone-300" id="hdrContract">0x920c1........A2b230C9</span>
+                333 Bespoke Council Passes • Base Mainnet • <span class="font-bold text-stone-300" id="hdrContract">0x7d52930e1F0c6429200a0DFe02Be9Ac2d2A19Dd2</span>
             </p>
         </div>
     </div>
@@ -424,7 +416,7 @@
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-stone-800 pb-4 mb-6 gap-3">
             <div>
                 <h2 class="text-xl font-black font-cinzel text-cyan-400 uppercase tracking-tight">SOVEREIGN NOVA: ON-CHAIN FORENSIC TRUTH</h2>
-                <p class="text-[10px] font-mono text-stone-500 uppercase tracking-wide mt-1">RESTRICTED SYSTEM — 8-PARAMETER ON-CHAIN DATA & FACTORY METADATA</p>
+                <p class="text-[10px] font-mono text-stone-500 uppercase tracking-wide mt-1">RESTRICTED SYSTEM — 8-PARAMETER ON-CHAIN DATA</p>
             </div>
             <span id="labAccessBadge" class="bg-cyan-950/60 text-cyan-300 border border-cyan-700 text-[10px] font-black px-3 py-2 tracking-widest uppercase rounded-lg shadow-[0_0_15px_rgba(6,182,212,0.4)]">HOLDER VERIFIED</span>
         </div>
@@ -465,13 +457,6 @@
                 <span class="text-rose-400 font-bold uppercase">8. HIDDEN PROPERTY:</span> 
                 <span id="dna-hidden" class="text-rose-200 break-all font-bold">AWAITING...</span>
             </div>
-            
-            <!-- 2 ค่าที่ดึงจาก Factory Metadata (JSON) -->
-            <div class="bg-black/80 p-3.5 rounded-lg border border-amber-900/50 flex flex-col gap-2 shadow-inner mt-2">
-                <span class="text-amber-500 font-bold uppercase border-b border-stone-800 pb-1">9. FACTORY METADATA (JSON ATTRIBUTES):</span> 
-                <span id="propDisplay1" class="text-amber-300 font-bold">AWAITING EXTRACTION...</span>
-                <span id="propDisplay2" class="text-amber-300 font-bold">AWAITING EXTRACTION...</span>
-            </div>
         </div>
         
         <!-- ปุ่มกด Refresh ข้อมูล -->
@@ -500,7 +485,7 @@
     <div class="chiaroscuro-bg p-5 rounded-2xl border-l-4 border-amber-700 sm:col-span-2 lg:col-span-2">
         <span class="text-[10px] font-mono uppercase text-stone-400 block mb-2 tracking-wider">TRIBUTE TARIFF METRICS</span>
         <div class="text-xs md:text-sm font-mono text-stone-300 mt-2 leading-relaxed break-words">
-            MINT: <span id="lblMintPrice" class="text-amber-500 font-bold">0.0</span> | NOVA: <span id="lblNovaFee" class="text-rose-400 font-bold">0.0</span> ETH
+            MINT: <span id="lblMintPrice" class="text-amber-500 font-bold">1.2</span> | NOVA: <span id="lblNovaFee" class="text-rose-400 font-bold">1.3</span> ETH
         </div>
         <div class="text-[10px] font-mono text-stone-500 mt-3 pt-2 border-t border-stone-800 flex flex-wrap gap-2">
             <span>HIST MINTS: <span id="lblHistoricalMint" class="text-stone-300 font-bold">0</span></span>
@@ -527,12 +512,9 @@
     </div>
     
     <div class="flex flex-wrap gap-4 md:gap-6 mt-6 text-[9px] md:text-[10px] font-mono uppercase text-stone-400 bg-black/60 p-4 md:p-5 rounded-xl border border-stone-800">
-        <span class="flex items-center gap-2"><span class="w-4 h-4 rounded bg-stone-900 border border-stone-700"></span> Dormant Space</span>
-        <span class="flex items-center gap-2"><span class="w-4 h-4 rounded border rank-prime"></span> RANK-PRIME (1-10, 50, 100)</span>
-        <span class="flex items-center gap-2"><span class="w-4 h-4 rounded border rank-gold"></span> GOLD (11-99)</span>
-        <span class="flex items-center gap-2"><span class="w-4 h-4 rounded border rank-silver"></span> SILVER (101-200)</span>
-        <span class="flex items-center gap-2"><span class="w-4 h-4 rounded border rank-red"></span> RED (201-332)</span>
-        <span class="flex items-center gap-2"><span class="w-4 h-4 rounded border rank-imperial"></span> SOVEREIGN IMMORTAL 333</span>
+        <span class="flex items-center gap-2"><span class="w-4 h-4 rounded bg-slate-950 border border-slate-800"></span> DORMANT NODE</span>
+        <span class="flex items-center gap-2"><span class="w-4 h-4 rounded bg-slate-950 border border-slate-800 flex items-center justify-center"><span class="w-2 h-2 bg-slate-400 rounded-sm"></span></span> ACTIVE NODE</span>
+        <span class="flex items-center gap-2"><span class="w-4 h-4 rounded bg-slate-950 border border-amber-400 shadow-[0_0_10px_rgba(251,191,36,0.4)]"></span> OWNED BY YOU</span>
     </div>
 </section>
 
@@ -551,7 +533,6 @@
             <span class="text-[10px] font-mono text-stone-400 uppercase tracking-wider block font-bold">// CRYPTOGRAPHIC ACTION HUB</span>
             
             <div class="flex flex-col gap-4 bg-black/40 p-5 rounded-xl border border-stone-800">  
-                <!-- สลับสายชนวนสำเร็จ: เรียก Modal แทนการ Forge ทันที -->
                 <button id="executeForgeBtn" onclick="if(typeof openForgeConsentModal === 'function') openForgeConsentModal('REBIRTH', this)" class="btn-rebirth-bright text-sm py-4 rounded-xl font-black tracking-widest w-full">
                     [SOVEREIGN AWAKENING ♠️]
                 </button>
@@ -599,7 +580,6 @@
 
     <!-- ========================================== -->
     <!-- ⚔️ SOVEREIGN FORGE PLEDGE MODAL -->
-    <!-- ข้าพเจ้าย้ายมาไว้ท้ายสุดของ Section เพื่อไม่ให้ไปกวน Layout ของ Grid ด้านบน -->
     <!-- ========================================== -->
     <div id="forgeConsentModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm transition-opacity">
         <div class="bg-zinc-900 border border-red-900/50 p-6 rounded-lg max-w-lg w-full shadow-[0_0_40px_rgba(185,28,28,0.15)] relative overflow-hidden">
@@ -614,7 +594,6 @@
                 <p><b class="text-red-400">III. Immutable Sovereignty:</b> The execution of the Rebirth (Minting) ritual onto the Blockchain is absolute and irreversible. I accept the conditions of asset revocation or Immolation, and I bear sole responsibility for the genetic metadata inscribed. Protocol fees are non-refundable.</p>
             </div>
             
-            <!-- กล่องเช็คบ็อกซ์ยอมรับเงื่อนไข -->
             <div class="flex items-start space-x-3 mb-6 p-3 bg-black/50 border border-stone-800 rounded hover:border-stone-700 transition-colors">
                 <div class="flex items-center h-5 mt-0.5">
                     <input id="forgeModalCheckbox" type="checkbox" onchange="toggleForgeButtonState()" class="w-4 h-4 bg-gray-900 border-gray-700 rounded text-red-600 focus:ring-red-600 cursor-pointer">
@@ -625,7 +604,6 @@
                 </label>
             </div>
 
-            <!-- ปุ่มควบคุม -->
             <div class="flex justify-end space-x-4">
                 <button onclick="closeForgeConsentModal(false)" class="px-4 py-2 bg-stone-800 hover:bg-stone-700 text-stone-300 rounded transition-colors text-sm font-bold tracking-wider">
                     ABORT
@@ -666,7 +644,6 @@
     
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4 max-w-2xl">
         
-        <!-- ปุ่ม SLOT #01 (ใส่ลิงก์ที่ data-uri) -->
         <div id="vSlot1" data-uri="ใส่ลิงก์_Arweave_หรือ_Irys_ตัวที่_1_ที่นี่" onclick="if(typeof handleSlotClick === 'function') handleSlotClick(1)" class="preview-slot w-full bg-stone-950 border border-stone-800 rounded-xl p-4 flex items-center justify-start cursor-pointer hover:border-amber-500 transition-all group text-left">
             <div class="flex items-center gap-4">
                 <span class="text-amber-500/50 group-hover:text-amber-400 text-2xl drop-shadow-[0_0_10px_rgba(217,119,6,0.6)] transition-colors">▶</span>
@@ -677,7 +654,6 @@
             </div>
         </div>
 
-        <!-- ปุ่ม SLOT #02 (ใส่ลิงก์ที่ data-uri) -->
         <div id="vSlot2" data-uri="ใส่ลิงก์_Arweave_หรือ_Irys_ตัวที่_2_ที่นี่" onclick="if(typeof handleSlotClick === 'function') handleSlotClick(2)" class="preview-slot w-full bg-stone-950 border border-stone-800 rounded-xl p-4 flex items-center justify-start cursor-pointer hover:border-amber-500 transition-all group text-left">
             <div class="flex items-center gap-4">
                 <span class="text-amber-500/50 group-hover:text-amber-400 text-2xl drop-shadow-[0_0_10px_rgba(217,119,6,0.6)] transition-colors">▶</span>
@@ -688,7 +664,6 @@
             </div>
         </div>
 
-        <!-- ปุ่ม SLOT #03 (ใส่ลิงก์ที่ data-uri) -->
         <div id="vSlot3" data-uri="ใส่ลิงก์_Arweave_หรือ_Irys_ตัวที่_3_ที่นี่" onclick="if(typeof handleSlotClick === 'function') handleSlotClick(3)" class="preview-slot w-full bg-stone-950 border border-stone-800 rounded-xl p-4 flex items-center justify-start cursor-pointer hover:border-amber-500 transition-all group text-left">
             <div class="flex items-center gap-4">
                 <span class="text-amber-500/50 group-hover:text-amber-400 text-2xl drop-shadow-[0_0_10px_rgba(217,119,6,0.6)] transition-colors">▶</span>
@@ -699,7 +674,6 @@
             </div>
         </div>
 
-        <!-- ปุ่ม SLOT #04 (ใส่ลิงก์ที่ data-uri) -->
         <div id="vSlot4" data-uri="ใส่ลิงก์_Arweave_หรือ_Irys_ตัวที่_4_ที่นี่" onclick="if(typeof handleSlotClick === 'function') handleSlotClick(4)" class="preview-slot w-full bg-stone-950 border border-stone-800 rounded-xl p-4 flex items-center justify-start cursor-pointer hover:border-amber-500 transition-all group text-left">
             <div class="flex items-center gap-4">
                 <span class="text-amber-500/50 group-hover:text-amber-400 text-2xl drop-shadow-[0_0_10px_rgba(217,119,6,0.6)] transition-colors">▶</span>
@@ -1024,11 +998,6 @@
     </div>
 </footer>
 
-
-
-
-
-
 <script>
 "use strict";
 
@@ -1036,7 +1005,7 @@
 // 🔱 THE IMPERIAL SOVEREIGN DEED - CORE ARCHITECTURE (ETHERS V6 & IRYS 0.0.4)
 // 🛡️ WORLD-CLASS SENIOR WEB3 FRONT-END STANDARD (ZERO-BUG POLICY ENFORCED)
 // ==============================================================================
-const CONTRACT_ADDRESS = "0x7d52930e1F0c6429200a0DFe02Be9Ac2d2A19Dd2"; // อัปเดต Address ใหม่
+const CONTRACT_ADDRESS = "0x7d52930e1F0c6429200a0DFe02Be9Ac2d2A19Dd2";
 const WETH_ADDRESS = "0x4200000000000000000000000000000000000006";
 const MULTICALL3_ADDRESS = "0xcA11bde05977b3631167028862bE2a173976CA11";
 
@@ -1050,47 +1019,6 @@ const MULTICALL3_ABI = [
     "function aggregate3(tuple(address target, bool allowFailure, bytes callData)[] calls) payable returns (tuple(bool success, bytes returnData)[] returnData)"
 ];
 
-// ==============================================================================
-// 📱 MOBILE OPTIMIZATION & UI STATE VARIABLES (HOTFIX)
-// ==============================================================================
-const IS_TOUCH_DEVICE = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (window.matchMedia && window.matchMedia("(pointer: coarse)").matches);
-
-const THINKING_CLASSES = ['animate-pulse', 'bg-amber-900/50', 'border-amber-500'];
-const ACTIVE_CLASSES = ['bg-emerald-900/50', 'border-emerald-500', 'shadow-[0_0_15px_rgba(16,185,129,0.4)]'];
-const ERROR_CLASSES = ['bg-red-900/50', 'border-red-500'];
-const ALL_STATE_CLASSES = [...THINKING_CLASSES, ...ACTIVE_CLASSES, ...ERROR_CLASSES];
-
-const BASE_MAINNET_CHAIN_ID = '0x2105';
-const BASE_CHAIN_ID = '0x2105';
-
-const BASE_MAINNET_PARAMS = {
-    chainId: BASE_MAINNET_CHAIN_ID,
-    chainName: 'Base',
-    nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
-    rpcUrls: ['https://mainnet.base.org'],
-    blockExplorerUrls: ['https://basescan.org']
-};
-
-const GENERAL_ENDPOINTS = [
-    'https://base-mainnet.g.alchemy.com/v2/wR5UgtUrkfPjKnqfMhm8k',
-    'https://mainnet.base.org',                                   
-    'https://base.llamarpc.com',                                  
-    'https://base-rpc.publicnode.com'
-];
-
-const IRYS_ENDPOINTS = [
-    'https://base-mainnet.g.alchemy.com/v2/XOBcrOR6Zzmrgjg9osZWR', 
-    'https://mainnet.base.org',                                   
-    'https://base.llamarpc.com',                                  
-    'https://base-rpc.publicnode.com'
-];
-
-window.IRYS_ENDPOINTS = IRYS_ENDPOINTS;
-window.GENERAL_ENDPOINTS = GENERAL_ENDPOINTS;
-
-// ==============================================================================
-// 🛡️ CONTRACT ABI (UPGRADED TO FULL SECURE JSON STANDARD)
-// ==============================================================================
 const CONTRACT_ABI = [
     {"inputs":[{"internalType":"address","name":"_architect","type":"address"},{"internalType":"address","name":"_weth","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},
     {"inputs":[],"name":"AgendaSetterOnly","type":"error"},
@@ -1236,6 +1164,7 @@ const WETH_ABI = [
     "function balanceOf(address account) view returns (uint256)"
 ];
 
+
 // ==========================================
 // SYSTEM CORE VARIABLES
 // ==========================================
@@ -1267,7 +1196,7 @@ let searchDebounceTimer = null;
 let currentAuditSession = 0;
 let isSyncingState = false;
 let pendingSyncRequest = false;
-let lastSyncTime = 0; // 🚨 [FIXED]: Added to prevent ReferenceError in syncContractStates
+let lastSyncTime = 0;
 
 window.SystemState = {
     globalSelectedTokenId: null,
@@ -1279,8 +1208,29 @@ window.SystemState = {
 let globalSelectedTokenId = window.SystemState.globalSelectedTokenId;
 let currentLoadedMediaData = window.SystemState.currentLoadedMediaData;
 
+const BASE_MAINNET_CHAIN_ID = '0x2105';
+const GENERAL_ENDPOINTS = [
+    'https://base-mainnet.g.alchemy.com/v2/wR5UgtUrkfPjKnqfMhm8k',
+    'https://mainnet.base.org',                                   
+    'https://base.llamarpc.com',                                  
+    'https://base-rpc.publicnode.com'
+];
 
+const IRYS_ENDPOINTS = [
+    'https://base-mainnet.g.alchemy.com/v2/XOBcrOR6Zzmrgjg9osZWR', 
+    'https://mainnet.base.org',                                   
+    'https://base.llamarpc.com',                                  
+    'https://base-rpc.publicnode.com'
+];
 
+window.IRYS_ENDPOINTS = IRYS_ENDPOINTS;
+window.GENERAL_ENDPOINTS = GENERAL_ENDPOINTS;
+
+const IS_TOUCH_DEVICE = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (window.matchMedia && window.matchMedia("(pointer: coarse)").matches);
+const THINKING_CLASSES = ['animate-pulse', 'bg-amber-900/50', 'border-amber-500'];
+const ACTIVE_CLASSES = ['bg-emerald-900/50', 'border-emerald-500', 'shadow-[0_0_15px_rgba(16,185,129,0.4)]'];
+const ERROR_CLASSES = ['bg-red-900/50', 'border-red-500'];
+const ALL_STATE_CLASSES = [...THINKING_CLASSES, ...ACTIVE_CLASSES, ...ERROR_CLASSES];
 
 // ==============================================================================
 // 🛠️ UTILITY & CORE FUNCTIONS
@@ -1357,16 +1307,14 @@ function clearAllTimers() {
     }
 }
 
-// [INJECT THIS AT THE TOP OF YOUR SCRIPT TAG, JUST BELOW "use strict";]
 window.IMPERIAL_MANIFEST = null;
-window.IMAGE_MANIFEST = null; // 👈 เพิ่มตัวแปรเก็บ Direct Image Hash
+window.IMAGE_MANIFEST = null; 
 
 async function fetchImperialManifest() {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10-second strict timeout
+    const timeoutId = setTimeout(() => controller.abort(), 10000); 
 
     try {
-        // 🛡️ Fetch both JSON Metadata and Direct Image with AbortSignal
         const [manifestRes, imageRes] = await Promise.allSettled([
             fetch(`./imperial-manifest.json?t=${Date.now()}`, { signal: controller.signal }),
             fetch(`./image_imperial-manifest.json?t=${Date.now()}`, { signal: controller.signal })
@@ -1412,7 +1360,6 @@ function lockSystem() {
     isTransactionPending = true;
     safeStorageSet('tx_pending', 'true');
     safeStorageSet('tx_pending_ts', String(Date.now()));
-    // 🚨 STRICT RULE ENFORCED: No full-screen black overlays. Users can scroll freely.
     return true;
 }
 
@@ -1471,7 +1418,6 @@ function toggleButtonLoading(targetInput, isLoading) {
         btn.appendChild(document.createTextNode("PROCESSING..."));
         
         btn.disabled = true;
-        // 🚨 STRICT RULE ENFORCED: Button turns gray, disabled, but UI remains interactive.
         btn.classList.add('btn-processing', 'cursor-not-allowed', 'opacity-60', 'pointer-events-none', 'scale-95', 'grayscale', 'shadow-inner');
     } else {
         if (typeof btn.dataset.originalText !== 'undefined') {
@@ -1556,7 +1502,6 @@ function safeAppendLog(msg, colorClass = "text-slate-400") {
         else if (typeof appendLog === 'function') appendLog(msg, colorClass);
         else console.log(`[SYS LOG]: ${msg}`);
 
-        // [FIX] อัปเดตข้อความลง Footer Log (systemFooterLog) เพิ่มเติม
         const footerLog = document.getElementById('systemFooterLog');
         if (footerLog) {
             footerLog.textContent = msg;
@@ -1565,7 +1510,6 @@ function safeAppendLog(msg, colorClass = "text-slate-400") {
         console.log(`[SYS LOG FALLBACK]: ${msg}`);
     }
 }
-
 
 function showNotification(msg, type = 'error') {
     try {
@@ -1671,7 +1615,6 @@ async function debouncedMulticall(providerInstance, calls) {
                                     callData: call.callData
                                 }));
 
-                                // 🚨 [CRITICAL FIX]: บังคับใช้ .staticCall ตรงนี้!
                                 const chunkResults = await multicall.aggregate3.staticCall(formattedChunk);
                                 
                                 const mappedResults = Array.from(chunkResults).map(res => ({
@@ -1806,7 +1749,6 @@ function decodeContractError(err) {
     return err.reason || err.message || "Transaction reverted by EVM";
 }
 
-
 async function promptUserForFile(acceptType = 'image/*,video/*') {
     return new Promise((resolve) => {
         const fileInput = document.createElement('input');
@@ -1829,16 +1771,72 @@ async function promptUserForFile(acceptType = 'image/*,video/*') {
                 return;
             }
 
-            const MAX_SIZE_BYTES = 500 * 1024 * 1024; // 500 MB
+            // 🛡️ LAYER 1: HARD LIMIT (PHYSICS GUARD)
+            // บังคับขนาดไฟล์สูงสุด 300MB ป้องกันการโจมตีผ่าน Storage และลดภาระ Irys
+            const MAX_SIZE_BYTES = 300 * 1024 * 1024; 
             if (file.size > MAX_SIZE_BYTES) {
                 if (typeof showNotification === 'function') {
-                    showNotification("FILE REJECTED: ขนาดไฟล์เกินขีดจำกัดสูงสุดที่ 500 MB", "error");
+                    showNotification("FILE REJECTED: ขนาดไฟล์เกินขีดจำกัดสูงสุดที่ 300 MB", "error");
                 }
                 resolve(null);
                 return;
             }
 
-            resolve(file);
+            // 🛡️ LAYER 2: DURATION & INTEGRITY GUARD (BROWSER ENGINE)
+            if (file.type.startsWith('video/')) {
+                const video = document.createElement('video');
+                video.preload = 'metadata';
+                video.muted = true; // บังคับ Mute ป้องกัน iOS Block Autoplay Policy
+                video.playsInline = true;
+                
+                // ใช้ไฟล์เต็ม (File Object) สร้าง Pointer เบราว์เซอร์จะอ่านจาก Disk ไม่กิน RAM
+                const objectUrl = window.URL.createObjectURL(file); 
+                
+                // ⏱️ TIMEOUT GUARD: ป้องกันเบราว์เซอร์ค้างหากเจอไฟล์วิดีโอผีดิบ (Corrupted)
+                const timeoutId = setTimeout(() => {
+                    window.URL.revokeObjectURL(objectUrl);
+                    video.removeAttribute('src');
+                    video.load();
+                    if (typeof showNotification === 'function') {
+                        showNotification("FILE REJECTED: หมดเวลาตรวจสอบไฟล์ (ไฟล์อาจเสียหายหรือไม่รองรับ)", "error");
+                    }
+                    resolve(null); 
+                }, 5000); // ให้เวลาเบราว์เซอร์อ่าน Metadata สูงสุด 5 วินาที
+
+                video.onloadedmetadata = function() {
+                    clearTimeout(timeoutId); 
+                    window.URL.revokeObjectURL(objectUrl);
+                    video.removeAttribute('src');
+                    video.load(); // บังคับเคลียร์ Memory ทันที
+                    
+                    // ตรวจสอบความยาว 60 วินาที (อนุโลมเศษทศนิยมให้ถึง 61 วินาที ป้องกันบั๊ก Frame Rate)
+                    if (video.duration > 61) {
+                        if (typeof showNotification === 'function') {
+                            showNotification("FILE REJECTED: ความยาววิดีโอเกินขีดจำกัดสูงสุดที่ 1 นาที", "error");
+                        }
+                        resolve(null);
+                    } else {
+                        resolve(file); // ผ่านทุกด่าน ส่งไฟล์ไปอัปโหลด
+                    }
+                };
+                
+                video.onerror = function() {
+                    clearTimeout(timeoutId); 
+                    window.URL.revokeObjectURL(objectUrl);
+                    video.removeAttribute('src');
+                    video.load();
+                    
+                    if (typeof showNotification === 'function') {
+                        showNotification("FILE REJECTED: รูปแบบวิดีโอผิดปกติ หรือเบราว์เซอร์ไม่รองรับ", "error");
+                    }
+                    resolve(null); // ปฏิเสธไฟล์ที่อ่านไม่ได้เด็ดขาด
+                };
+                
+                video.src = objectUrl;
+            } else {
+                // หากเป็นรูปภาพ (Image) ให้ผ่านได้เลย (เพราะเช็ค 300MB ไปแล้ว)
+                resolve(file);
+            }
         };
 
         const handleFileChange = (event) => {
@@ -1879,10 +1877,6 @@ async function promptUserForFile(acceptType = 'image/*,video/*') {
     });
 }
 
-
-// ==============================================================================
-// ⚔️ TRANSACTION WRAPPER (NON-BLOCKING UI)
-// ==============================================================================
 // ==============================================================================
 // ⚔️ TRANSACTION WRAPPER (WITH STATICCALL SIMULATION & NON-BLOCKING UI)
 // ==============================================================================
@@ -1917,7 +1911,6 @@ async function runTx(eventOrBtn, actionName, methodName, args = [], overrides = 
         
         if (typeof safeAppendLog === 'function') safeAppendLog(`[TX] Broadcasted. Hash: ${tx.hash.slice(0,12)}... Awaiting confirmation.`, "text-blue-400");
         
-        // [FIX]: Expose transaction hash to caller immediately after broadcast for state recovery
         if (options && typeof options.onBroadcast === 'function') {
             try {
                 options.onBroadcast(tx);
@@ -1958,6 +1951,7 @@ async function runTx(eventOrBtn, actionName, methodName, args = [], overrides = 
         }
     }
 }
+
 // ==============================================================================
 // ⚔️ FORGE & MINTING ENGINES (ZERO-BUG MANIFEST PARSING + PLEDGE MODAL)
 // ==============================================================================
@@ -2024,7 +2018,6 @@ async function triggerForge(type, e) {
         return; 
     }
 
-    // 🛡️ [PRODUCTION PATCH 1]: Temporal State Lock - ล็อกระบบทันทีที่หน้าประตู
     if (typeof lockSystem === 'function') lockSystem();
     const btn = toggleButtonLoading(e, true);
     let progress = null;
@@ -2107,7 +2100,6 @@ async function triggerForge(type, e) {
         progress = createProgressController(file.size);
         if (progress) progress.show(); 
         
-        // ส่ง File Object ให้ Irys SDK จัดการโดยตรง
         const response = await executeIrysUpload(file, tags, true, progress); 
         
         const backMediaTxId = response?.data ? response.data.id : response?.id; 
@@ -2124,7 +2116,6 @@ async function triggerForge(type, e) {
         
         const tokenIdBn = BigInt(targetTokenId);
 
-        // 🛡️ [PRODUCTION PATCH 2]: Pre-emptive Cache Invalidation - เคลียร์แคชก่อนยิง TX ปิดตาย Race Condition
         if (typeof GLOBAL_NODE_CACHE !== 'undefined' && GLOBAL_NODE_CACHE?.delete) {
             GLOBAL_NODE_CACHE.delete(String(targetTokenId));
         }
@@ -2158,7 +2149,6 @@ async function triggerForge(type, e) {
     } finally {
         if (progress) progress.hide();
         if (btn) toggleButtonLoading(btn, false);
-        // 🛡️ [PRODUCTION PATCH 3]: ปลดล็อกระบบเสมอเมื่อจบการทำงาน
         if (typeof unlockSystem === 'function') unlockSystem();
     }
 }
@@ -2446,7 +2436,7 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
 
         let dataToUpload;
         let size = 0;
-
+        
         try {
             if (!isFile) {
                 dataToUpload = String(payload);
@@ -2457,12 +2447,11 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
                     throw new TypeError("Payload must be a File or Blob when isFile is true.");
                 }
                 
-                // 🟢 THE FIX: แปลง File/Blob เป็น Buffer ผ่าน web3-polyfill.js เพื่อตัดปัญหา .pipe ที่ Irys SDK ตามหา
-                const arrayBuf = await payload.arrayBuffer();
-                dataToUpload = Buffer.from(arrayBuf);
-                size = dataToUpload.length;
+                // [LINE-BY-LINE OVERRIDE]: Zero-Copy Memory. Pass File directly.
+                dataToUpload = payload; 
+                size = payload.size;
                 
-                safeAppendLog(`[IRYS TELEMETRY] File payload converted to Buffer. Size: ${size} bytes.`, "text-slate-400");
+                safeAppendLog(`[IRYS TELEMETRY] File payload mapped directly. Size: ${size} bytes.`, "text-slate-400");
             }
         } catch (conversionErr) {
             safeAppendLog(`[IRYS TELEMETRY] Payload mapping failed: ${conversionErr?.message}`, "text-red-500");
@@ -2624,7 +2613,6 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
                             receipt = await irys.uploader.chunkedUploader.uploadData(dataToUpload, { tags, uploadId });
                             
                         } else {
-                            // ส่งข้อมูลแบบ Buffer ตรงเข้า upload() ของ Irys ได้เลย ปลอดภัยและเสถียรที่สุด
                             if (progressCtrl) progressCtrl.set(size / 2);
                             receipt = await irys.upload(dataToUpload, { tags });
                         }
@@ -2669,8 +2657,6 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
         if (activeBtn) toggleButtonLoading(activeBtn, false);
     }
 }
-
-
 
 // ==============================================================================
 // ⚡ CORE EXECUTION: TOP-UP PROTOCOL (ASYNC NON-BLOCKING)
@@ -2804,9 +2790,7 @@ function syncMatrixIdStateUI(activeId) {
     }
 }
 
-
-
-let isNodeProcessing = false; // ⚡ ANTI-SPAM LOCK
+let isNodeProcessing = false; 
 
 function initializeAbsoluteEventDelegation() {
     if (document.body.dataset.delegationAttached === "true") return;
@@ -2818,7 +2802,6 @@ function initializeAbsoluteEventDelegation() {
         const matrixNode = event.target.closest('[data-token-id], .matrix-node-cell, .matrix-cell, .matrix-node');
         if (!matrixNode) return;
 
-        // ⚡ FIX: ป้องกันการสแปมคลิก (Race Condition)
         if (isNodeProcessing) return; 
 
         const rawId = matrixNode.dataset.tokenId || matrixNode.getAttribute('data-token-id');
@@ -2830,7 +2813,7 @@ function initializeAbsoluteEventDelegation() {
                 return;
             }
 
-            isNodeProcessing = true; // ⚡ LOCK ENGAGED
+            isNodeProcessing = true; 
 
             try {
                 globalSelectedTokenId = tokenId;
@@ -2851,7 +2834,7 @@ function initializeAbsoluteEventDelegation() {
                 }
                 matrixNode.classList.add(...THINKING_CLASSES);
 
-                safeAppendLog(`[MATRIX] Engaging node #${tokenId}...`, "text-blue-400"); // ⚡ Direct Call
+                safeAppendLog(`[MATRIX] Engaging node #${tokenId}...`, "text-blue-400"); 
 
                 let isAdmin = false;
                 let adminRole = null;
@@ -2892,7 +2875,7 @@ function initializeAbsoluteEventDelegation() {
                 }
 
                 try {
-                    await auditTokenFromLedger(tokenId); // ⚡ Direct Call
+                    await auditTokenFromLedger(tokenId); 
                     matrixNode.classList.remove(...THINKING_CLASSES, ...ERROR_CLASSES);
                     matrixNode.classList.add(...ACTIVE_CLASSES);
 
@@ -2931,7 +2914,7 @@ function initializeAbsoluteEventDelegation() {
                     }
                 }
             } finally {
-                isNodeProcessing = false; // ⚡ RELEASE LOCK
+                isNodeProcessing = false; 
             }
         }
     });
@@ -2980,7 +2963,6 @@ function checkPendingNova() {
         const pendingToken = localStorage.getItem('pending_nova_token');
         
         if (pendingTxHash && pendingToken) {
-            // [FIX]: Strict type validation for recovered Token ID
             const parsedTokenId = parseInt(pendingToken, 10);
             
             if (isNaN(parsedTokenId) || parsedTokenId < 1 || parsedTokenId > 333) {
@@ -2997,7 +2979,6 @@ function checkPendingNova() {
             }
             
             if (typeof safeAppendLog === 'function') {
-                // [FIX]: Safely slice the hash for display without injecting it into payload inputs
                 const shortHash = typeof pendingTxHash === 'string' ? `${pendingTxHash.slice(0, 10)}...` : 'Unknown';
                 safeAppendLog(`[SYSTEM] Tracking unconfirmed on-chain transaction (${shortHash}) for Node #${parsedTokenId}.`, "text-amber-400");
             }
@@ -3069,6 +3050,10 @@ async function executeArchitectCentralizedUpload(type) {
         const sanitizedTxId = sanitizeForDOM(txId);
         safeAppendLog(`Payload successfully anchored: ${sanitizedTxId}`, "text-emerald-400 font-bold");
         
+        // ค้นหาบรรทัดนี้ในฟังก์ชัน executeArchitectCentralizedUpload เดิม:
+// renderToViewport('previewFrontContainer', sanitizedTxId, "Obverse aspect currently unassigned.");
+// และเปลี่ยนเป็น:
+
         if (type === 'front') {
             const frontUriField = document.getElementById('forgeFrontUri');
             if (frontUriField) frontUriField.value = sanitizedTxId;
@@ -3106,11 +3091,9 @@ async function executeGatewayUnlock(event) {
     try {
         const userAddress = (await signer.getAddress()).toLowerCase();
         
-        // 1. ดึงข้อมูล On-Chain สดๆ จาก Smart Contract
         const deedData = await secureContract.getDeedData(tokenId.toString());
         const ownerOnChain = String(deedData[0]).toLowerCase();
         
-        // 2. ตรวจสอบสิทธิ์ (Token-Gating)
         const privs = await verifyUserPrivileges(userAddress);
         if (userAddress !== ownerOnChain && !privs.isArchitect) {
             showNotification("ACCESS DENIED: UNAUTHORIZED ENTITY", "error");
@@ -3119,22 +3102,18 @@ async function executeGatewayUnlock(event) {
             return;
         }
 
-        // 3. DOM Binding (Inject ข้อมูล 8 ค่าลงใน memberDnaStudio โดยตรง)
+        // 🛡️ ฉีดข้อมูล On-Chain ลง DOM และใช้ parseSovereignDNA
         document.getElementById('dna-owner').textContent = deedData[0];
         document.getElementById('dna-active').textContent = deedData[1] ? "TRUE (ACTIVE)" : "FALSE (DORMANT)";
         document.getElementById('dna-sanctified').textContent = deedData[2] ? "TRUE (SANCTIFIED)" : "FALSE (UNVERIFIED)";
         document.getElementById('dna-front').textContent = deedData[3] || "UNASSIGNED";
         document.getElementById('dna-back').textContent = deedData[4] || "UNASSIGNED";
         document.getElementById('dna-video').textContent = deedData[5] || "UNASSIGNED";
-        document.getElementById('dna-dna').textContent = deedData[6] || "UNASSIGNED";
-        document.getElementById('dna-hidden').textContent = deedData[7] || "UNASSIGNED";
+        
+        // 🧬 Parse DNA & Hidden Property
+        document.getElementById('dna-dna').innerHTML = parseSovereignDNA(deedData[6]);
+        document.getElementById('dna-hidden').innerHTML = parseSovereignDNA(deedData[7]);
 
-        // 4. ดึงค่า Factory Metadata (RANK & IDENTITY STATUS) มาแสดงที่ propDisplay1, propDisplay2
-        if (typeof loadDeedMetadata === 'function') {
-            await loadDeedMetadata(tokenId);
-        }
-
-        // 5. สิทธิ์ผ่าน -> ปิดหน้าต่างคำแนะนำ และเปิด memberDnaStudio
         closeIdentityAuthModal();
         const vault = document.getElementById('memberDnaStudio');
         if (vault) {
@@ -3161,7 +3140,6 @@ async function processIdentityDnaInspectionOnChain() {
     if (!activeContract) return;
 
     try {
-        // ดึง 8 ค่าหลัก
         const deedData = await activeContract.getDeedData(tokenId.toString());
         
         document.getElementById('dna-owner').textContent = deedData[0];
@@ -3170,19 +3148,42 @@ async function processIdentityDnaInspectionOnChain() {
         document.getElementById('dna-front').textContent = deedData[3] || "UNASSIGNED";
         document.getElementById('dna-back').textContent = deedData[4] || "UNASSIGNED";
         document.getElementById('dna-video').textContent = deedData[5] || "UNASSIGNED";
-        document.getElementById('dna-dna').textContent = deedData[6] || "UNASSIGNED";
-        document.getElementById('dna-hidden').textContent = deedData[7] || "UNASSIGNED";
-
-        // ดึง 2 ค่า Metadata
-        if (typeof loadDeedMetadata === 'function') {
-            await loadDeedMetadata(tokenId);
-        }
+        
+        // 🧬 Parse DNA & Hidden Property
+        document.getElementById('dna-dna').innerHTML = parseSovereignDNA(deedData[6]);
+        document.getElementById('dna-hidden').innerHTML = parseSovereignDNA(deedData[7]);
 
         safeAppendLog(`On-chain Forensic analysis refreshed for Node #${tokenId}.`, "text-emerald-400");
         showNotification("Data refreshed from blockchain.", "success");
     } catch (err) {
         safeAppendLog(`Failed to extract on-chain DNA for Node #${tokenId}.`, "text-red-500");
         showNotification("Failed to refresh data.", "error");
+    }
+}
+
+// ==============================================================================
+// 🧬 NEW: DNA PARSER ENGINE
+// ==============================================================================
+function parseSovereignDNA(rawString) {
+    if (!rawString || typeof rawString !== 'string' || rawString.trim() === "") return "UNASSIGNED";
+    try {
+        // แยกด้วย | และ : เพื่อจัด Format ให้สวยงาม
+        const pairs = rawString.split('|');
+        let formattedHTML = `<div class="flex flex-col gap-1 mt-1">`;
+        pairs.forEach(pair => {
+            const parts = pair.split(':');
+            if (parts.length >= 2) {
+                const key = sanitizeForDOM(parts[0].trim());
+                const val = sanitizeForDOM(parts.slice(1).join(':').trim());
+                formattedHTML += `<div class="flex justify-between border-b border-rose-900/30 pb-0.5"><span class="text-rose-500/70 text-[9px]">${key}</span><span class="text-rose-200 text-[10px]">${val}</span></div>`;
+            } else {
+                formattedHTML += `<div class="text-rose-200 text-[10px]">${sanitizeForDOM(pair)}</div>`;
+            }
+        });
+        formattedHTML += `</div>`;
+        return formattedHTML;
+    } catch (e) {
+        return sanitizeForDOM(rawString); // Fallback
     }
 }
 
@@ -3394,19 +3395,6 @@ window.systemForceClearState = () => resetAdminInputs(true);
 
 
 
-async function loadDeedMetadata(tokenId) {
-    const mappedNode = await autoMap(tokenId);
-    if (!mappedNode?.rawMetadata?.attributes || !Array.isArray(mappedNode.rawMetadata.attributes)) return; 
-    
-    const attrs = mappedNode.rawMetadata.attributes;
-    for(let i = 0; i < attrs.length; i++) {
-        const targetElement = document.getElementById(`propDisplay${i+1}`); 
-        if(targetElement && attrs[i] && typeof attrs[i] === 'object' && 'value' in attrs[i]) {
-            targetElement.textContent = String(attrs[i].value);
-        }
-    }
-}
-
 // ==============================================================================
 // 🌐 RPC & WALLET CONNECTION ENGINES
 // ==============================================================================
@@ -3558,21 +3546,16 @@ function setupWalletEventListeners(rawProvider) {
     }
 }
 
-// ==========================================
-// 2. REFACTORED handleAccountsChangedEvent FUNCTION
-// ==========================================
 async function handleAccountsChangedEvent(accounts) {
     if (walletSessionController) walletSessionController.abort();
     walletSessionController = new AbortController();
 
     try { if (secureContract?.removeAllListeners) secureContract.removeAllListeners(); } catch (err) {}
     
-    // เคลียร์แคชระบบทั้งหมด
     if (typeof GLOBAL_NODE_CACHE !== 'undefined' && GLOBAL_NODE_CACHE?.clear) GLOBAL_NODE_CACHE.clear();
     if (typeof window.NODE_STATE_MAP !== 'undefined' && window.NODE_STATE_MAP?.clear) window.NODE_STATE_MAP.clear();
     window._domStateCache = {}; 
     
-    // [แก้บั๊กตาม Fact]: ซิงค์ State กลับไปที่ Window เพื่ออุดรอยรั่ว Reference ฉีกขาด
     if (window.SystemState && window.SystemState.currentLoadedMediaData) {
         Object.assign(window.SystemState.currentLoadedMediaData, { 
             front: "", frontType: "image", back: "", backType: "image", video: "", videoType: "video" 
@@ -3580,7 +3563,6 @@ async function handleAccountsChangedEvent(accounts) {
     }
     if (window.SystemState) window.SystemState.globalSelectedTokenId = null;
 
-    // [แก้บั๊กตาม Fact]: ล้าง LocalStorage ป้องกัน Transaction ผีหลอก
     localStorage.removeItem('irys_pending_fund_tx');
     localStorage.removeItem('pending_nova_txid');
     localStorage.removeItem('pending_nova_token');
@@ -3589,7 +3571,6 @@ async function handleAccountsChangedEvent(accounts) {
     
     const isDisconnected = !accounts || !Array.isArray(accounts) || accounts.length === 0;
     
-    // [UI OVERRIDE]: Target Header Elements
     const walletInfo = document.getElementById('walletInfo');
     const hdrAddress = document.getElementById('hdrAddress');
     
@@ -3597,7 +3578,6 @@ async function handleAccountsChangedEvent(accounts) {
         if (typeof bindNodeOwnership === 'function') bindNodeOwnership(null);
         showNotification("SECURITY PROTOCOL: Wallet disconnected. System entering Standby mode.", "error");
         
-        // เอา Log พี่กลับมา!
         appendLog("Wallet disconnected by user.", "text-yellow-400 font-bold");
         
         if (walletInfo) walletInfo.classList.add('hidden');
@@ -3606,7 +3586,6 @@ async function handleAccountsChangedEvent(accounts) {
         if (typeof bindNodeOwnership === 'function') bindNodeOwnership(accounts[0]);
         showNotification("IDENTITY SHIFT DETECTED: Account switched successfully.", "warning");
         
-        // เอา Log พี่กลับมา!
         appendLog(`Identity vector shift detected to: ${accounts[0]}`, "text-yellow-400 font-bold");
         
         if (walletInfo) walletInfo.classList.remove('hidden');
@@ -3630,7 +3609,6 @@ async function handleAccountsChangedEvent(accounts) {
     window.secureContract = null;
     window.irys = null; 
 }
-
 
 function setNetworkHardLock(locked, observedChainId = '') {
     const overlay = document.getElementById('securityHardLockOverlay');
@@ -3659,7 +3637,6 @@ function handleChainChangedEvent(newChainId) {
     try { parsedChainId = BigInt(newChainId); } catch (_) { parsedChainId = 0n; }
     const wrongNetwork = parsedChainId !== 8453n;
     
-    // [UI OVERRIDE]: อัปเดต Network Text
     const hdrNetwork = document.getElementById('hdrNetwork');
     if (hdrNetwork) hdrNetwork.textContent = wrongNetwork ? `CHAIN: ${parsedChainId}` : "BASE MAINNET";
 
@@ -3670,7 +3647,6 @@ function handleChainChangedEvent(newChainId) {
     }
 }
 
-
 const eip6963Providers = [];
 window.addEventListener("eip6963:announceProvider", (event) => {
     if (event.detail && event.detail.provider && event.detail.info) {
@@ -3680,9 +3656,7 @@ window.addEventListener("eip6963:announceProvider", (event) => {
         }
     }
 });
-// ==========================================
-// 3. INTEGRATED WALLET CONTROLLER
-// ==========================================
+
 window.dispatchEvent(new Event("eip6963:requestProvider"));
 
 async function connectWallet(e) {
@@ -3730,7 +3704,6 @@ async function connectWallet(e) {
         else {
             appendLog("Secondary Route Engaged: Initializing WalletConnect V2.", "text-yellow-400");
             
-            // 🛡️ อัปเกรดจุดนี้ให้ค้นหา Provider ได้ครอบคลุมขึ้น ป้องกันโค้ดพัง
             const EthereumProviderCtor = window.EthereumProvider || window.WalletConnectProvider?.EthereumProvider;
             if (!EthereumProviderCtor) throw new Error("WalletConnect V2 Runtime Bundle unresolved or blocked by client.");
 
@@ -3777,7 +3750,6 @@ async function connectWallet(e) {
         provider = new ethers.BrowserProvider(rawProvider);
         signer = await provider.getSigner();
 
-        // 🛡️ [AUTHORITY INJECTION] อัปเดต Ownership ทันทีที่เชื่อมต่อบัญชีสำเร็จ (คงไว้ตามเดิม 100%)
         bindNodeOwnership(account);
         
         if (secureContract) {
@@ -3832,7 +3804,6 @@ async function connectWallet(e) {
         if (btn) toggleButtonLoading(btn, false);
     }
 }
-
 
 // ==============================================================================
 // 🏛️ GOVERNANCE & PROPOSAL ENGINE
@@ -4227,7 +4198,6 @@ async function executeCastVote(btn) {
     }
 }
 
-
 // ==============================================================================
 // 🧬 NOVA ASCENSION & IDENTITY UPDATES
 // ==============================================================================
@@ -4306,7 +4276,6 @@ async function triggerIdentityNova(e) {
         return;
     }
 
-    // [FIX]: Implement onBroadcast callback to secure pending state, and ensure cleanup on resolution
     const receipt = await runTx(
         e, 
         `SOVEREIGN_NOVA_#${tokenId}`, 
@@ -4329,7 +4298,6 @@ async function triggerIdentityNova(e) {
         }
     );
 
-    // Strict cleanup of pending state regardless of success or failure
     try {
         localStorage.removeItem('pending_nova_txid');
         localStorage.removeItem('pending_nova_token');
@@ -4340,7 +4308,7 @@ async function triggerIdentityNova(e) {
         if ('caches' in window) {
             try { await caches.delete('eter-v6-asset-vault'); } catch(e) {}
         }
-        if (typeof auditTokenFromLedger === 'function') await auditTokenFromLedger(tokenId, true); 
+        if (typeof auditTokenFromLedger === 'function') await auditTokenFromLedger(tokenId); 
         if (typeof appendLog === 'function') appendLog(`THE SOVEREIGN NOVA: High ascension ritual over node element #${tokenId} integrated permanently into on-chain forensics!`, "text-blue-400 font-bold");
     }
 }
@@ -4356,7 +4324,6 @@ async function executeUpdateIdentity(e) {
         const userAddress = await signer.getAddress();
         const privs = await verifyUserPrivileges(userAddress);
 
-        // 🚨 [CRITICAL FIX]: บังคับใช้ ID จาก Node ที่คลิกบนจอเท่านั้น ห้ามดึงจากช่องกรอกตัวเลข
         const targetTokenId = globalSelectedTokenId;
         if (!targetTokenId) {
             showNotification("STRUCTURAL EXCEPTION: Please select a Token ID coordinate on the Matrix first.", "error");
@@ -4389,7 +4356,6 @@ async function executeUpdateIdentity(e) {
             }
         }
 
-        // 🚨 [CRITICAL FIX]: ข้อมูลภาพจะตรงกับ Node ที่คลิก 100% ไม่มีทางสลับมั่ว
         frontUri = (document.getElementById('forgeFrontUri')?.value || "").trim() || currentLoadedMediaData.front || "";
         backUri = (document.getElementById('forgeBackUri')?.value || "").trim() || currentLoadedMediaData.back || "";
         videoUri = (document.getElementById('novaVideoUri')?.value || "").trim() || currentLoadedMediaData.video || "";
@@ -4411,7 +4377,7 @@ async function executeUpdateIdentity(e) {
         if ('caches' in window) {
             try { await caches.delete('eter-v6-asset-vault'); } catch(e) {}
         }
-        if (typeof auditTokenFromLedger === 'function') await auditTokenFromLedger(tokenId, true);
+        if (typeof auditTokenFromLedger === 'function') await auditTokenFromLedger(tokenId);
         if (typeof appendLog === 'function') appendLog(`Exempt payload reference alterations applied successfully over node element #${tokenId}.`, "text-emerald-400");
     }
 }
@@ -4419,7 +4385,6 @@ async function executeUpdateIdentity(e) {
 async function executeSovereignSupport(e) {
     if (!secureContract || !signer) { showNotification("Action suspended: Authenticate wallet signature first.", "error"); return; }
     
-    // 🚨 [CRITICAL FIX]: บังคับใช้ ID จาก Node ที่คลิกบนจอเท่านั้น ป้องกันการพิมพ์เลขผิดแล้วไปเผาเหรียญอื่นทิ้ง
     const targetTokenId = globalSelectedTokenId;
     if (!targetTokenId) {
         showNotification("STRUCTURAL EXCEPTION: Please select a Token ID coordinate on the Matrix first.", "error");
@@ -4461,8 +4426,6 @@ async function executeSovereignSupport(e) {
         showNotification("Immolation successful.", "success");
     }
 }
-
-
 
 async function executeSetParams(e) {
     if (!secureContract || !signer) { showNotification("Action suspended: Authenticate wallet signature first.", "error"); return; }
@@ -4574,12 +4537,15 @@ async function executeContractPause(status, e) {
     }
 }
 
+// ==============================================================================
+// 🌐 MEDIA RESOLVER & RENDERING ENGINE
+// ==============================================================================
+
 function extractIrysId(input) {
     if (!input || typeof input !== 'string') return "";
     let clean = input.trim();
     if (!clean) return "";
 
-    // 1. ถ้าเป็น HTTP/HTTPS ให้เอาเฉพาะ Pathname ทั้งหมด (ไม่ว่าจะเป็น CDN หรือ Gateway อะไรก็ตาม)
     if (/^https?:\/\//i.test(clean)) {
         try {
             clean = new URL(clean).pathname;
@@ -4588,16 +4554,9 @@ function extractIrysId(input) {
         }
     }
 
-    // 2. ตัด Protocol (ar://, irys://)
     clean = clean.replace(/^(ar|irys):\/\//i, '');
-
-    // 3. ตัด Query String (?...) และ Hash (#...) ออก
     clean = clean.split(/[?#]/)[0];
-
-    // 4. ตัด / หน้าสุดออกทั้งหมด
     clean = clean.replace(/^\/+/, '');
-
-    // 5. Safe Regex: สแกนผ่าน 100% อนุญาตให้มี / และ . ไม่ตัดเลขไฟล์ 5.png / 333.png ออกแน่นอน
     return clean.replace(/[^a-zA-Z0-9_\-\.\/]/g, '');
 }
 
@@ -4831,12 +4790,11 @@ async function autoMap(tokenId) {
                     }
                     
                     if (metaResponse.ok) {
-                        // 🛡️ [PRODUCTION PATCH]: Stream Reader with Hard Byte Limit (OOM Protection)
                         const reader = metaResponse.body.getReader();
                         const decoder = new TextDecoder('utf-8');
                         let text = '';
                         let bytesRead = 0;
-                        const MAX_BYTES = 51200; // 50KB Hard Limit
+                        const MAX_BYTES = 51200; 
 
                         try {
                             while (true) {
@@ -4845,12 +4803,12 @@ async function autoMap(tokenId) {
                                 bytesRead += value.length;
                                 
                                 if (bytesRead > MAX_BYTES) {
-                                    await reader.cancel(); // ตัดการเชื่อมต่อทันที
+                                    await reader.cancel(); 
                                     throw new Error("OOM_PROTECT_PAYLOAD_TOO_LARGE");
                                 }
                                 text += decoder.decode(value, { stream: true });
                             }
-                            text += decoder.decode(); // Flush remaining buffer
+                            text += decoder.decode(); 
                             
                             try {
                                 metadata = JSON.parse(text);
@@ -5044,7 +5002,6 @@ async function syncContractStates() {
         const reservePerNFT = tStatus[4] ?? 0n;
         const reserve = tStatus[0] ?? 0n;
 
-        // Sync Wallet ETH Balance & Network Telemetry
         const activeProvider = window.provider || readOnlyProvider;
         const currentHdrAddress = document.getElementById('hdrAddress')?.textContent;
         
@@ -5152,7 +5109,6 @@ async function syncContractStates() {
     }
 }
 
-
 function renderEmptyState(container, text, colorClass = "text-slate-500") {
     container.replaceChildren();
     const span = document.createElement('span');
@@ -5174,133 +5130,8 @@ function renderLoadingSkeleton(container) {
     container.appendChild(skeleton);
 }
 
-async function resolveMediaUrl(urlList, signal, depth = 0) {
-    const CACHE_NAME = 'eter-v6-asset-vault';
-
-    if (!Array.isArray(urlList) || urlList.length === 0) {
-        throw new Error('INVALID_URL_LIST');
-    }
-
-    for (const url of urlList) {
-        if (signal && signal.aborted) throw new Error('Aborted');
-        const cleanUrl = typeof url === 'string' ? url.split('?')[0] : url;
-
-        if (typeof url === 'string' && url.includes('.m3u8')) {
-            return { url: cleanUrl, isBlob: false, sourceUrl: url, type: 'video' };
-        }
-
-        // 🚨 1. ระบบ Cache & Memory Management (ดึงกลับมาแล้ว)
-        if ('caches' in window) {
-            try {
-                const cache = await caches.open(CACHE_NAME);
-                const cachedResponse = await cache.match(cleanUrl);
-                if (cachedResponse) {
-                    const contentType = (cachedResponse.headers.get('content-type') || '').toLowerCase();
-                    const isVideo = contentType.startsWith('video/') || cleanUrl.match(/\.(mp4|webm|mov)$/i);
-                    const type = isVideo ? 'video' : 'image';
-
-                    const blob = await cachedResponse.blob();
-                    const objUrl = URL.createObjectURL(blob);
-                    if (signal && signal.aborted) { URL.revokeObjectURL(objUrl); throw new Error('Aborted'); }
-                    
-                    // 🚨 เรียกใช้ Garbage Collector ป้องกัน Memory Leak
-                    if (typeof registerBlobForGc === 'function') registerBlobForGc(cleanUrl, objUrl, isVideo);
-                    return { url: objUrl, isBlob: true, sourceUrl: url, type: type };
-                }
-            } catch (e) { console.warn("[CACHE] Read error:", e); }
-        }
-
-        try {
-            const response = await fetch(url, { 
-                signal, 
-                mode: 'cors',
-                referrerPolicy: 'no-referrer'
-            });
-            
-            if (!response.ok) throw new Error('HTTP ' + response.status);
-            
-            const clone = response.clone();
-            const contentType = (response.headers.get('content-type') || '').toLowerCase();
-
-            // 🚨 2. Dynamic Sniffing: ถ้าเป็น JSON ให้ Unpack อัตโนมัติ
-            if (contentType.includes('json') || contentType.includes('text')) {
-                const reader = clone.body.getReader();
-                const decoder = new TextDecoder('utf-8');
-                let text = '';
-                let bytesRead = 0;
-                const MAX_BYTES = 51200; // OOM Protection
-
-                try {
-                    while (true) {
-                        const { done, value } = await reader.read();
-                        if (done) break;
-                        bytesRead += value.length;
-                        if (bytesRead > MAX_BYTES) {
-                            await reader.cancel();
-                            throw new Error("OOM_PROTECT_PAYLOAD_TOO_LARGE");
-                        }
-                        text += decoder.decode(value, { stream: true });
-                    }
-                    text += decoder.decode(); 
-                    
-                    const json = JSON.parse(text);
-                    if (json && typeof json === 'object' && !Array.isArray(json)) {
-                        let actualMedia = json.animation_url || json.videoURI || (json.properties && json.properties.video) || json.image || json.frontURI;
-                        if (actualMedia && typeof actualMedia === 'string') {
-                            if (depth >= 3) throw new Error("RECURSION LIMIT EXCEEDED");
-
-                            if (actualMedia.startsWith('ar://')) {
-                                actualMedia = actualMedia.replace('ar://', 'https://gateway.irys.xyz/');
-                            } else if (!actualMedia.startsWith('http')) {
-                                actualMedia = `https://gateway.irys.xyz/${typeof extractIrysId === 'function' ? extractIrysId(actualMedia) : actualMedia}`;
-                            }
-
-                            const newUrls = typeof buildIrysUrls === 'function' ? buildIrysUrls(actualMedia) : [actualMedia];
-                            // วนลูปกลับไปโหลดไฟล์ Media จริงๆ
-                            return await resolveMediaUrl(newUrls, signal, depth + 1); 
-                        }
-                    }
-                } catch (streamErr) {
-                    console.warn("[Media Resolver] Stream aborted or size exceeded:", streamErr.message);
-                } finally {
-                    reader.releaseLock();
-                }
-            }
-
-            // 🚨 3. ถ้าเป็น Media (Image/Video) ให้เก็บลง Cache และสร้าง Blob
-            const isVideo = contentType.startsWith('video/') || cleanUrl.match(/\.(mp4|webm|mov)$/i);
-            const type = isVideo ? 'video' : 'image';
-
-            if ('caches' in window) {
-                try {
-                    const cache = await caches.open(CACHE_NAME);
-                    cache.put(cleanUrl, response.clone()).catch(() => {}); 
-                } catch (e) {}
-            }
-            
-            const blob = await response.blob();
-            const objUrl = URL.createObjectURL(blob);
-            
-            if (signal && signal.aborted) { URL.revokeObjectURL(objUrl); throw new Error('Aborted'); }
-            
-            // 🚨 เรียกใช้ Garbage Collector ป้องกัน Memory Leak
-            if (typeof registerBlobForGc === 'function') registerBlobForGc(cleanUrl, objUrl, isVideo);
-            return { url: objUrl, isBlob: true, sourceUrl: url, type: type };
-            
-        } catch (e) {
-            if (e.name === 'AbortError') throw e;
-            console.warn(`[Media Resolver] Fetch blocked by CORS or HTTP Error for ${url}. Falling back to direct URI injection.`);
-            continue;
-        }
-    }
-    
-    // Fallback สุดท้ายถ้า Fetch พังหมด
-    const fallbackUrl = typeof urlList[0] === 'string' ? urlList[0].split('?')[0] : urlList[0];
-    const isVideoFallback = fallbackUrl.match(/\.(mp4|webm|mov|m3u8)$/i);
-    return { url: fallbackUrl, isBlob: false, sourceUrl: urlList[0], type: isVideoFallback ? 'video' : 'image' };
-}
-
-async function renderToViewport(containerId, path, defaultText) {
+// 1. แก้ไข Signature ของ renderToViewport
+async function renderToViewport(containerId, path, defaultText, explicitType = null) {
     if (!containerId || typeof containerId !== 'string') return;
     const container = document.getElementById(containerId);
     if (!container) return;
@@ -5335,8 +5166,8 @@ async function renderToViewport(containerId, path, defaultText) {
 
         if (masterController.signal.aborted) return;
         
-        // 🚨 เรียกใช้ Resolver ตัวเต็มที่มีระบบ Memory Management
-        const resolvedMedia = await resolveMediaUrl(urlsToTry, masterController.signal);
+        // 🛡️ ส่ง explicitType ต่อไปให้ resolver
+        const resolvedMedia = await resolveMediaUrl(urlsToTry, masterController.signal, 0, explicitType);
         
         if (masterController.signal.aborted) {
             if (resolvedMedia && resolvedMedia.isBlob && resolvedMedia.url) {
@@ -5346,7 +5177,6 @@ async function renderToViewport(containerId, path, defaultText) {
         }
 
         if (typeof renderMediaToDOM === 'function') {
-            // 🚨 ส่ง resolvedMedia.type (video หรือ image) ที่ดมกลิ่นมาได้ ให้ DOM Renderer
             renderMediaToDOM(container, resolvedMedia, resolvedMedia.type, masterController.signal);
         }
 
@@ -5354,6 +5184,145 @@ async function renderToViewport(containerId, path, defaultText) {
         if (e.name === 'AbortError') return;
         renderEmptyState(container, "IRYS GATEWAY SEVERED OR INVALID MEDIA", "text-red-500");
     }
+}
+
+// 2. แก้ไข Signature ของ resolveMediaUrl
+async function resolveMediaUrl(urlList, signal, depth = 0, explicitType = null) {
+    const CACHE_NAME = 'eter-v6-asset-vault';
+
+    if (!Array.isArray(urlList) || urlList.length === 0) {
+        throw new Error('INVALID_URL_LIST');
+    }
+
+    for (const url of urlList) {
+        if (signal && signal.aborted) throw new Error('Aborted');
+        const cleanUrl = typeof url === 'string' ? url.split('?')[0] : url;
+
+        if (typeof url === 'string' && url.includes('.m3u8')) {
+            return { url: cleanUrl, isBlob: false, sourceUrl: url, type: 'video' };
+        }
+
+        if ('caches' in window) {
+            try {
+                const cache = await caches.open(CACHE_NAME);
+                const cachedResponse = await cache.match(cleanUrl);
+                if (cachedResponse) {
+                    // 🛡️ ใช้ explicitType ถ้ามี
+                    let type = 'image';
+                    if (explicitType) {
+                        type = explicitType.includes('video') ? 'video' : 'image';
+                    } else {
+                        const contentType = (cachedResponse.headers.get('content-type') || '').toLowerCase();
+                        const isVideo = contentType.startsWith('video/') || cleanUrl.match(/\.(mp4|webm|mov)$/i);
+                        type = isVideo ? 'video' : 'image';
+                    }
+
+                    const blob = await cachedResponse.blob();
+                    const objUrl = URL.createObjectURL(blob);
+                    if (signal && signal.aborted) { URL.revokeObjectURL(objUrl); throw new Error('Aborted'); }
+                    
+                    if (typeof registerBlobForGc === 'function') registerBlobForGc(cleanUrl, objUrl, type === 'video');
+                    return { url: objUrl, isBlob: true, sourceUrl: url, type: type };
+                }
+            } catch (e) { console.warn("[CACHE] Read error:", e); }
+        }
+
+        try {
+            const response = await fetch(url, { 
+                signal, 
+                mode: 'cors',
+                referrerPolicy: 'no-referrer'
+            });
+            
+            if (!response.ok) throw new Error('HTTP ' + response.status);
+            
+            const clone = response.clone();
+            const contentType = (response.headers.get('content-type') || '').toLowerCase();
+
+            if (contentType.includes('json') || contentType.includes('text')) {
+                // ... (โค้ดอ่าน JSON เดิม ไม่เปลี่ยนแปลง) ...
+                const reader = clone.body.getReader();
+                const decoder = new TextDecoder('utf-8');
+                let text = '';
+                let bytesRead = 0;
+                const MAX_BYTES = 51200; 
+
+                try {
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+                        bytesRead += value.length;
+                        if (bytesRead > MAX_BYTES) {
+                            await reader.cancel();
+                            throw new Error("OOM_PROTECT_PAYLOAD_TOO_LARGE");
+                        }
+                        text += decoder.decode(value, { stream: true });
+                    }
+                    text += decoder.decode(); 
+                    
+                    const json = JSON.parse(text);
+                    if (json && typeof json === 'object' && !Array.isArray(json)) {
+                        let actualMedia = json.animation_url || json.videoURI || (json.properties && json.properties.video) || json.image || json.frontURI;
+                        if (actualMedia && typeof actualMedia === 'string') {
+                            if (depth >= 3) throw new Error("RECURSION LIMIT EXCEEDED");
+
+                            if (actualMedia.startsWith('ar://')) {
+                                actualMedia = actualMedia.replace('ar://', 'https://gateway.irys.xyz/');
+                            } else if (!actualMedia.startsWith('http')) {
+                                actualMedia = `https://gateway.irys.xyz/${typeof extractIrysId === 'function' ? extractIrysId(actualMedia) : actualMedia}`;
+                            }
+
+                            const newUrls = typeof buildIrysUrls === 'function' ? buildIrysUrls(actualMedia) : [actualMedia];
+                            return await resolveMediaUrl(newUrls, signal, depth + 1, explicitType); 
+                        }
+                    }
+                } catch (streamErr) {
+                    console.warn("[Media Resolver] Stream aborted or size exceeded:", streamErr.message);
+                } finally {
+                    reader.releaseLock();
+                }
+            }
+
+            // 🛡️ ใช้ explicitType ถ้ามี
+            let type = 'image';
+            if (explicitType) {
+                type = explicitType.includes('video') ? 'video' : 'image';
+            } else {
+                const isVideo = contentType.startsWith('video/') || cleanUrl.match(/\.(mp4|webm|mov)$/i);
+                type = isVideo ? 'video' : 'image';
+            }
+
+            if ('caches' in window) {
+                try {
+                    const cache = await caches.open(CACHE_NAME);
+                    cache.put(cleanUrl, response.clone()).catch(() => {}); 
+                } catch (e) {}
+            }
+            
+            const blob = await response.blob();
+            const objUrl = URL.createObjectURL(blob);
+            
+            if (signal && signal.aborted) { URL.revokeObjectURL(objUrl); throw new Error('Aborted'); }
+            
+            if (typeof registerBlobForGc === 'function') registerBlobForGc(cleanUrl, objUrl, type === 'video');
+            return { url: objUrl, isBlob: true, sourceUrl: url, type: type };
+            
+        } catch (e) {
+            if (e.name === 'AbortError') throw e;
+            console.warn(`[Media Resolver] Fetch blocked by CORS or HTTP Error for ${url}. Falling back to direct URI injection.`);
+            continue;
+        }
+    }
+    
+    const fallbackUrl = typeof urlList[0] === 'string' ? urlList[0].split('?')[0] : urlList[0];
+    let type = 'image';
+    if (explicitType) {
+        type = explicitType.includes('video') ? 'video' : 'image';
+    } else {
+        const isVideoFallback = fallbackUrl.match(/\.(mp4|webm|mov|m3u8)$/i);
+        type = isVideoFallback ? 'video' : 'image';
+    }
+    return { url: fallbackUrl, isBlob: false, sourceUrl: urlList[0], type: type };
 }
 
 function renderMediaToDOM(container, resolvedMedia, mediaType, abortSignal) {
@@ -5629,33 +5598,6 @@ function handleSlotClick(slotNum) {
     }
 }
 
-function getImperialRankDetailed(tokenId) { 
-    const id = parseInt(tokenId, 10); 
-    if (isNaN(id)) return "UNKNOWN ENTITY"; 
-    if ([1,2,3,4,5,6,7,8,9,10,50,100].includes(id)) return "THE COUNCIL PRIME"; 
-    if (id >= 11 && id <= 99 && id !== 50) return "THE GOLDEN COUNCIL"; 
-    if (id >= 101 && id <= 200 && id !== 100) return "THE SILVER CYPHER COUNCIL"; 
-    if (id >= 201 && id <= 332) return "THE RED MACHINE COUNCIL"; 
-    if (id === 333) return "SOVEREIGN IMMORTAL 333"; 
-    return "UNKNOWN ENTITY"; 
-}
-
-function autoMapMetadata(tokenId) { 
-    const properties = [ 
-        { k: "RANK", v: getImperialRankDetailed(tokenId).toUpperCase() }, 
-        { k: "IDENTITY STATUS", v: "UNCOMPROMISED INTEGRITY PROTO" } 
-    ];
-
-    for (let i = 0; i < 2; i++) {
-        const keyInput = document.getElementById(`propKey${i+1}`);
-        const valInput = document.getElementById(`prop${i+1}`);
-        if (keyInput && valInput) {
-            keyInput.value = properties[i].k;
-            valInput.value = properties[i].v;
-        }
-    }
-}
-
 async function auditTokenFromLedger(tokenId) {
     if (typeof resetAdminInputs === 'function') resetAdminInputs();
     const mySession = ++currentAuditSession;
@@ -5678,11 +5620,9 @@ async function auditTokenFromLedger(tokenId) {
 
         if (typeof appendLog === 'function') appendLog(`Extracting structural blueprint record for matrix cell node #${tokenId}...`, "text-purple-400");
 
-        // 🚨 CRITICAL FIX 1: ALWAYS FETCH ON-CHAIN TRUTH FIRST
         const mappedNode = await autoMap(tokenId);
         if (mySession !== currentAuditSession) return;
 
-        // Determine true status from on-chain data, bypassing unreliable NODE_STATE_MAP
         const isMintedEver = mappedNode && mappedNode.owner && mappedNode.owner !== ethers.ZeroAddress;
         const isActive = mappedNode && mappedNode.isActivated;
         
@@ -5691,9 +5631,6 @@ async function auditTokenFromLedger(tokenId) {
         else if (isMintedEver) status = 'BURNED';
 
         if (status === 'UNCLAIMED') {
-            // ==========================================
-            // 🟡 LAZY MINT: READ STRICTLY FROM MANIFEST
-            // ==========================================
             let preMintFrontUri = "";
             if (window.IMPERIAL_MANIFEST && window.IMPERIAL_MANIFEST[String(tokenId)]) {
                 const manifestData = window.IMPERIAL_MANIFEST[String(tokenId)];
@@ -5709,7 +5646,6 @@ async function auditTokenFromLedger(tokenId) {
                 }
             }
             
-            // 🚨 CRITICAL FIX 4: Fallback to preMintFrontUri if displayImageUri is empty
             if (!displayImageUri && preMintFrontUri) {
                 displayImageUri = preMintFrontUri.startsWith('http') ? preMintFrontUri : `https://gateway.irys.xyz/${preMintFrontUri}`;
             }
@@ -5722,22 +5658,30 @@ async function auditTokenFromLedger(tokenId) {
                 if (typeof autoMapMetadata === 'function') autoMapMetadata(tokenId);
 
                 if (typeof renderToViewport === 'function') {
-                    // Explicitly define media types
                     renderToViewport('previewFrontContainer', displayImageUri, "Obverse aspect currently unassigned.", "image");
                     renderToViewport('previewBackContainer', "", "Void element data layer uninitialized.", "video");
                 }
 
-                const metaDisp = document.getElementById('activeDeedMetadataDisplay');
-                if (metaDisp) {
-                    metaDisp.textContent = "";
-                    const line1 = document.createTextNode(`CELL NODE ID: ${tokenId} `);
-                    const readySpan = document.createElement('span');
-                    readySpan.className = "text-emerald-400 font-bold";
-                    readySpan.textContent = "[READY FOR MINT]";
-                    const br = document.createElement('br');
-                    const line2 = document.createTextNode("ACCREDITED ROOT: PENDING");
-                    metaDisp.append(line1, readySpan, br, line2);
-                }
+                // ค้นหาบรรทัดนี้ใน auditTokenFromLedger:
+// const imperialRank = typeof getImperialRankDetailed === 'function' ? getImperialRankDetailed(tokenId) : "UNKNOWN";
+// และเปลี่ยน Block การแสดงผล Metadata เป็น:
+
+            const displayData = document.getElementById('activeDeedMetadataDisplay');
+            if(displayData) {
+                displayData.textContent = "";
+
+                const line1 = document.createTextNode(`CELL NODE ID: ${tokenId} `);
+                const br = document.createElement('br');
+
+                const safeOwner = mappedNode.owner ? (typeof sanitizeForDOM === 'function' ? sanitizeForDOM(mappedNode.owner) : String(mappedNode.owner)) : "0x0000000000000000000000000000000000000000";
+                const line2 = document.createTextNode(`ACCREDITED ROOT: ${safeOwner.slice(0,6)}...${safeOwner.slice(-4)} // NOVA RATIFICATION: `);
+
+                const sanctifiedSpan = document.createElement('span');
+                sanctifiedSpan.className = mappedNode.isSanctified ? 'text-emerald-400 font-bold' : 'text-slate-500';
+                sanctifiedSpan.textContent = mappedNode.isSanctified ? 'AFFIRMED' : 'DORMANT';
+
+                displayData.append(line1, br, line2, sanctifiedSpan);
+            }
                 
                 if (typeof appendLog === 'function') appendLog(`[LAZY MINT READY] Matrix cell node #${tokenId} pre-loaded from Architect Manifest.`, "text-emerald-400 font-bold");
             } else {
@@ -5745,15 +5689,9 @@ async function auditTokenFromLedger(tokenId) {
             }
 
         } else if (status === 'BURNED') {
-            // ==========================================
-            // 🔴 BURNED: STRICTLY EMPTY
-            // ==========================================
             throw new Error("VOID_ELEMENT");
 
         } else {
-            // ==========================================
-            // 🟢 ACTIVE NODE: READ STRICTLY FROM SMART CONTRACT
-            // ==========================================
             const currentEpoch = Math.floor(Date.now() / 1000);
             const btnBurn = document.getElementById('btnBurnToken');
             if (mappedNode.votingLockUntil && mappedNode.votingLockUntil > currentEpoch) {
@@ -5779,7 +5717,6 @@ async function auditTokenFromLedger(tokenId) {
             if (typeof loadDeedMetadata === 'function') loadDeedMetadata(tokenId);
 
             if (typeof renderToViewport === 'function') {
-                // 🚨 CRITICAL FIX 3: Explicitly pass "image" for front
                 renderToViewport('previewFrontContainer', currentLoadedMediaData.front, "Obverse aspect currently unassigned. Engage rebirth parameters.", "image");
             }
 
@@ -5788,7 +5725,6 @@ async function auditTokenFromLedger(tokenId) {
                 if (mySession !== currentAuditSession) return;
                 if (mappedNode.back && String(mappedNode.back).trim() !== "") {
                     if (typeof renderToViewport === 'function') {
-                        // 🚨 CRITICAL FIX 3: Explicitly pass "video" for back (Buyer Upload Mechanic)
                         renderToViewport('previewBackContainer', currentLoadedMediaData.back, "Reverse diagnostic data trace is currently null.", "video");
                     }
                 } else {
@@ -5901,91 +5837,62 @@ const matrixThumbnailObserver = new IntersectionObserver((entries, observer) => 
             const img = entry.target;
             observer.unobserve(img);
 
-            const jsonUrl = img.dataset.metadataUrl;
-            if (jsonUrl && !img.dataset.resolved) {
+            // 🛡️ dataset.metadataUrl ตอนนี้คือ Direct Media URL (ไม่ใช่ JSON แล้ว)
+            const mediaUrl = img.dataset.metadataUrl;
+            if (mediaUrl && !img.dataset.resolved) {
                 img.dataset.resolved = "fetching";
 
+                // 1. ตรวจสอบจากนามสกุลไฟล์ (Fast Check - Video)
+                if (/\.(mp4|webm|mov|m3u8)$/i.test(mediaUrl.split('?')[0])) {
+                    img.dataset.resolved = "video_skipped";
+                    img.style.display = 'none';
+                    const container = img.parentElement;
+                    if (container) {
+                        const videoIcon = document.createElement('span');
+                        videoIcon.className = 'text-slate-500 text-[8px] font-bold tracking-widest';
+                        videoIcon.textContent = '▶ VIDEO';
+                        container.appendChild(videoIcon);
+                    }
+                    return;
+                }
+
+                // 2. ตรวจสอบจากนามสกุลไฟล์ (Fast Check - Image)
+                if (/\.(jpg|jpeg|png|gif|webp|svg)$/i.test(mediaUrl.split('?')[0])) {
+                    img.src = mediaUrl;
+                    img.dataset.resolved = "true";
+                    return;
+                }
+
+                // 3. กรณีเป็น Raw Hash (ไม่มีนามสกุล) -> ยิง HEAD Request เช็ค Content-Type
                 const controller = new AbortController();
                 if (typeof activeFetchControllers !== 'undefined') {
                     activeFetchControllers.set(img, controller);
                 }
 
                 try {
-                    let res;
-                    let targetUrl = jsonUrl;
-                    
-                    try {
-                        res = await fetch(targetUrl, { signal: controller.signal, mode: 'cors' });
-                        if (!res.ok) throw new Error("HTTP " + res.status);
-                    } catch (fetchErr) {
-                        if (fetchErr.name !== 'AbortError' && targetUrl.includes('gateway.irys.xyz')) {
-                            targetUrl = targetUrl.replace('gateway.irys.xyz', 'arweave.net');
-                            res = await fetch(targetUrl, { signal: controller.signal, mode: 'cors' });
-                            if (!res.ok) throw new Error("HTTP_FALLBACK " + res.status);
-                        } else {
-                            throw fetchErr;
-                        }
-                    }
-
+                    const res = await fetch(mediaUrl, { method: 'HEAD', signal: controller.signal, mode: 'cors' });
                     const contentType = res.headers.get('content-type') || '';
-                    const isMediaExt = /\.(jpg|jpeg|png|gif|webp|mp4|webm|mov|svg)$/i.test(targetUrl.split('?')[0]);
-                    
-                    if (isMediaExt || contentType.includes('image/') || contentType.includes('video/')) {
-                        img.src = targetUrl;
-                        img.dataset.resolved = "true";
-                        return;
-                    }
 
-                    if (!contentType.includes('json') && !contentType.includes('text') && !contentType.includes('octet-stream')) {
-                        throw new Error("UNSUPPORTED_CONTENT_TYPE");
-                    }
-
-                    const reader = res.body.getReader();
-                    const decoder = new TextDecoder('utf-8');
-                    let text = '';
-                    let bytesRead = 0;
-                    const MAX_BYTES = 51200; 
-
-                    try {
-                        while (true) {
-                            const { done, value } = await reader.read();
-                            if (done) break;
-                            bytesRead += value.length;
-                            if (bytesRead > MAX_BYTES) {
-                                await reader.cancel();
-                                throw new Error("OOM_PROTECT_PAYLOAD_TOO_LARGE");
-                            }
-                            text += decoder.decode(value, { stream: true });
+                    if (contentType.includes('video/')) {
+                        img.dataset.resolved = "video_skipped";
+                        img.style.display = 'none';
+                        const container = img.parentElement;
+                        if (container) {
+                            const videoIcon = document.createElement('span');
+                            videoIcon.className = 'text-slate-500 text-[8px] font-bold tracking-widest';
+                            videoIcon.textContent = '▶ VIDEO';
+                            container.appendChild(videoIcon);
                         }
-                        text += decoder.decode();
-                    } finally {
-                        reader.releaseLock();
-                    }
-                    
-                    let json;
-                    try {
-                        json = JSON.parse(text);
-                    } catch (parseErr) {
-                        throw new Error("JSON_PARSE_FAILED");
-                    }
-
-                    let imageHash = json.image || json.frontURI || json.animation_url;
-                    
-                    if (imageHash && typeof imageHash === 'string') {
-                        if (imageHash.startsWith('ar://')) {
-                            imageHash = imageHash.replace('ar://', 'https://gateway.irys.xyz/');
-                        } else if (!imageHash.startsWith('http')) {
-                            imageHash = `https://gateway.irys.xyz/${imageHash}`;
-                        }
-                        img.src = imageHash;
-                        img.dataset.resolved = "true";
                     } else {
-                        throw new Error("NO_IMAGE_IN_METADATA");
+                        // ถ้าไม่ใช่ Video ให้ถือว่าเป็น Image
+                        img.src = mediaUrl;
+                        img.dataset.resolved = "true";
                     }
                 } catch (e) {
                     if (e.name !== 'AbortError') {
-                        img.dataset.resolved = "error";
-                        img.dispatchEvent(new Event('error'));
+                        // Fallback: ถ้าดึง Header ไม่ได้ ให้ลองยัดลง img ไปเลย
+                        img.src = mediaUrl;
+                        img.dataset.resolved = "fallback";
                     }
                 } finally {
                     if (typeof activeFetchControllers !== 'undefined') {
@@ -6128,7 +6035,6 @@ function renderToNodeCard(tokenId) {
     }
 }
 
-// 3. REFACTORED BIND OWNERSHIP (INSTANT RE-PAINT)
 function bindNodeOwnership(walletAddress) {
     if (!window.NODE_STATE_MAP || window.NODE_STATE_MAP.size === 0) return;
     
@@ -6252,22 +6158,13 @@ function setupMatrixGrid() {
     const isTouch = typeof IS_TOUCH_DEVICE !== 'undefined' && IS_TOUCH_DEVICE;
 
     for (let i = 1; i <= 333; i++) {
-        let rankClass = "border-slate-800";
-        let hasCrown = false;
-
-        if ([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 50, 100].includes(i)) {
-            rankClass = "rank-prime"; hasCrown = true;
-        } else if (i >= 11 && i <= 100) { rankClass = "rank-gold"; } 
-        else if (i >= 101 && i <= 200) { rankClass = "rank-silver"; } 
-        else if (i >= 201 && i <= 332) { rankClass = "rank-red"; } 
-        else if (i === 333) { rankClass = "rank-imperial"; hasCrown = true; }
-
         const node = document.createElement('div');
         node.id = `node-${i}`;
         node.setAttribute('data-token-id', i.toString());
         
         const hoverClass = isTouch ? "active:bg-slate-800" : "hover:bg-slate-800";
-        node.className = `matrix-node aspect-square w-full bg-slate-950 border rounded flex flex-col items-center justify-center font-mono text-[8px] sm:text-[10px] md:text-xs text-slate-500 cursor-pointer p-1 sm:p-2 transition-all duration-300 ${hoverClass} ${rankClass}`;
+        // 🛡️ ลบตัวแปร rankClass ออก ใช้ border มาตรฐานสี slate-800
+        node.className = `matrix-node aspect-square w-full bg-slate-950 border border-slate-800 rounded flex flex-col items-center justify-center font-mono text-[8px] sm:text-[10px] md:text-xs text-slate-500 cursor-pointer p-1 sm:p-2 transition-all duration-300 ${hoverClass}`;
         
         node.style.contentVisibility = 'auto';
         node.style.contain = 'strict';
@@ -6280,12 +6177,7 @@ function setupMatrixGrid() {
         numSpan.textContent = i.toString().padStart(3, '0');
         innerDiv.appendChild(numSpan);
 
-        if (hasCrown) {
-            const crownSpan = document.createElement('span');
-            crownSpan.className = "text-[6px] sm:text-[8px] font-bold block leading-none ml-1";
-            crownSpan.textContent = "👑";
-            innerDiv.appendChild(crownSpan);
-        }
+        // 🛡️ ลบ Logic การใส่ Crown (มงกุฎ) ทิ้งทั้งหมด
 
         node.appendChild(innerDiv);
         fragment.appendChild(node);
@@ -6351,23 +6243,18 @@ function enforceSecurityConstraints() {
     const nameInput = document.getElementById('propName');
     if (nameInput) nameInput.setAttribute('maxlength', '128');
 
-    // 🚨 CRITICAL FIX: ENFORCE BYTE-LIMIT ON DNA & HIDDEN PAYLOADS TO PREVENT OOM/GAS DRAIN
     const dnaInput = document.getElementById('novaDnaInput');
     if (dnaInput) dnaInput.setAttribute('maxlength', '1024');
     const hiddenInput = document.getElementById('novaHiddenInput');
     if (hiddenInput) hiddenInput.setAttribute('maxlength', '1024');
 }
 
-// ==============================================================================
-// 🛡️ CRITICAL FIX: DETERMINISTIC BOOT SEQUENCE (SINGLE SOURCE OF TRUTH)
-// ==============================================================================
 let isSystemBooted = false;
 
 window.addEventListener('load', async () => {
     if (isSystemBooted) return;
     isSystemBooted = true;
 
-    // ⚡ DIRECT CALLS: ไม่มี Defensive Garbage อีกต่อไป
     enforceSecurityConstraints();
     revealApp(); 
     
@@ -6380,7 +6267,6 @@ window.addEventListener('load', async () => {
     initializeAbsoluteEventDelegation();
 
     if (window.visualViewport) {
-        // ⚡ FIX: Binding Event ให้ถูกต้องตาม Lifecycle
         if (window._sovereignResizeHandler) {
             window.visualViewport.removeEventListener("resize", window._sovereignResizeHandler);
             window.visualViewport.removeEventListener("scroll", window._sovereignResizeHandler);
