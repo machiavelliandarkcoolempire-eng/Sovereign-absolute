@@ -36,9 +36,9 @@
         --gold: #d97706;
         --gold-deep: #78350f;
         --gold-pale: #fef08a;
-        --crimson: #be123c;
-        --crimson-deep: #9f1239;
-        --crimson-dark: #7f1d1d;
+        --crimson: #0aa0aa;
+        --crimson-deep: #100119;
+        --crimson-dark: #1f0001;
         --hairline: rgba(251, 191, 36, 0.15);
     }
 
@@ -102,8 +102,8 @@
         filter: drop-shadow(0 2px 10px rgba(217, 119, 6, 0.4));
     }
 
-    .crimson-text { color: #fda4af; text-shadow: 0 0 15px rgba(190, 18, 60, 0.8); }
-    .red-vivid { color: #f87171; text-shadow: 0 0 20px rgba(239, 68, 68, 0.6); }
+    .crimson-text { color: #00caa8; text-shadow: 0 0 15px rgba(190, 18, 60, 0.8); }
+    .red-vivid { color: #007171; text-shadow: 0 0 20px rgba(239, 68, 68, 0.6); }
     .gold-vivid { color: #fcd34d; text-shadow: 0 0 25px rgba(251, 191, 36, 0.8), 0 2px 4px rgba(0, 0, 0, 0.9); }
 
     /* Button Animations */
@@ -128,7 +128,7 @@
     .btn-gold-master:disabled { filter: grayscale(100%); opacity: 0.5; cursor: not-allowed; }
 
     .btn-rebirth-bright {
-        background: linear-gradient(135deg, #b45309 0%, #fbbf24 30%, #fef9c3 50%, #fbbf24 70%, #b45309 100%);
+        background: linear-gradient(135deg, #200400 0%, #fbbf24 30%, #fef9c3 50%, #fbbf24 70%, #b45309 100%);
         color: #1a0e00; font-weight: 900; text-transform: uppercase; letter-spacing: 0.12em;
         box-shadow: 0 8px 25px rgba(0, 0, 0, 0.7), 0 0 40px rgba(253, 224, 71, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.8);
         transition: all 0.3s ease; border: 1px solid #fffbeb;
@@ -142,8 +142,8 @@
     /* Scrollbar */
     .scroll-dark::-webkit-scrollbar { width: 4px; height: 4px; }
     .scroll-dark::-webkit-scrollbar-track { background: rgba(0,0,0,0.5); border-radius: 4px; }
-    .scroll-dark::-webkit-scrollbar-thumb { background: #7f1d1d; border-radius: 4px; }
-    .scroll-dark::-webkit-scrollbar-thumb:hover { background: #be123c; }
+    .scroll-dark::-webkit-scrollbar-thumb { background: #00fffd; border-radius: 4px; }
+    .scroll-dark::-webkit-scrollbar-thumb:hover { background: #00dddd; }
 
     /* 3D Card */
     .deed-card-container { perspective: 1500px; width: 100%; max-width: 340px; aspect-ratio: 9 / 16; margin: 0 auto; }
@@ -303,9 +303,9 @@
             <div>
                 <h4 class="text-amber-500 font-black uppercase mb-2 border-b border-stone-800 pb-1.5">Phase 2: Deed Ascension</h4>
                 <ul class="space-y-2 list-none pl-1">
-                    <li><span class="text-rose-400 font-bold">9:16 Video Preview Slots:</span> Designed strictly for viewing Nova sample templates. No data fields.</li>
-                    <li><span class="text-rose-400 font-bold">Premium 4K Production:</span> Select a template version → Contact the Architect via social links → Submit 5 source images. The Architect custom-engineers a 4K Branding Video and 5 profiles with personalized cryptographic DNA engraved at <span class="text-red-400 font-bold bg-red-950/40 px-1.5 py-0.5 rounded">3% Opacity</span> for forensic proof.</li>
-                    <li><span class="text-rose-400 font-bold">Nova Input Fields:</span> Enter 4 parameters required by Smart Contract: Token ID (t), Identity DNA (dna), Video URI (video), and Chrono-Map / Pixel Anchor (hiddenProperty).</li>
+                    <li><span class="text-rose-400 font-bold">Dynamic Preview Slots:</span> Upgraded to dynamic viewing capabilities for Nova sample templates.</li>
+                    <li><span class="text-rose-400 font-bold">Forensic Anointment (The Imprint):</span> The Architect does not manufacture full 4K videos. We execute precise forensic imprinting ("Anointment"). <strong>For Video:</strong> The buyer selects a specific Chrono-Map timeframe (e.g., 12 seconds, frames 1-5) where the cryptographic DNA flashes for exactly 0.01 seconds (5 frames). <strong>For 5 Profile Images:</strong> The DNA is permanently engraved at <span class="text-red-400 font-bold bg-red-950/40 px-1.5 py-0.5 rounded">3% Opacity</span>.</li>
+                    <li><span class="text-rose-400 font-bold">Nova Input Fields:</span> Enter 4 parameters required by Smart Contract: Token ID (t), Identity DNA (dna), Video URI (video), and Chrono-Map / Pixel Anchor (hiddenProperty). <br><span class="text-amber-400 text-[10px] font-bold mt-1.5 inline-block">STRATEGIC ADVISORY: It is highly recommended that buyers use the exact same Identity DNA (identical text and numbers) across all inputs for absolute consistency.</span></li>
                     <li class="mt-3 text-[10px] text-red-400 border border-red-900/60 bg-red-950/30 p-3 rounded-lg uppercase font-bold leading-relaxed">
                         CRITICAL WARNING: identityDNA and hiddenProperty are permanently Immutable upon Nova execution. Media URIs (front, back, video) can be updated anytime for FREE (gas fee only) via updateIdentity() once Sanctified.
                     </li>
@@ -635,15 +635,15 @@
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-stone-800 pb-4 mb-6 gap-4">
         <div>
             <h2 class="text-xl font-black font-cinzel gold-text uppercase tracking-tight">🎬 Real-Time Interactive Canvas Framework</h2>
-            <p class="text-[10px] font-mono text-stone-500 uppercase tracking-wide mt-1">4 STRUCTURAL VIDEO PREVIEW SLOTS // 180 DEGREE INSPECTION ROTATOR</p>
+            <p class="text-[10px] font-mono text-stone-500 uppercase tracking-wide mt-1">4 STRUCTURAL VIDEO PREVIEW SLOTS // DYNAMIC INSPECTION ROTATOR</p>
         </div>
         <button onclick="if(typeof toggleCardFlip === 'function') toggleCardFlip()" class="w-full md:w-auto px-5 py-3.5 bg-rose-950 hover:bg-rose-900 text-rose-200 font-black text-xs font-mono rounded-xl transition-all shadow-[0_0_20px_rgba(153,27,27,0.4)] uppercase tracking-wider border border-rose-700">
-            🔄 FLIP INSPECTION CANVAS (180°)
+            🔄 FLIP INSPECTION CANVAS (DYNAMIC)
         </button>
     </div>
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center justify-items-center lg:justify-items-start">
         <div class="lg:col-span-4 flex flex-col items-center w-full">
-            <div class="deed-card-container">
+            <div class="deed-card-container dynamic-mode">
                 <div id="sovereignFlipCard" class="deed-card-inner">
                     <div id="previewFrontContainer" class="deed-card-front preview-slot border border-amber-600/50 flex flex-col items-center justify-center p-4 shadow-[0_0_30px_rgba(217,119,6,0.15)]">
                         <span class="text-[10px] font-mono text-stone-500 text-center uppercase italic">[ OBVERSE ELEMENT UNINITIALIZED ]</span>
@@ -712,6 +712,7 @@
         </div>
     </div>
 </section>
+
 
 <section class="chiaroscuro-bg p-6 md:p-8 rounded-2xl mb-6 relative z-10 border border-rose-900/40">
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-stone-800 pb-4 mb-6 gap-4">
@@ -5400,9 +5401,6 @@ async function resolveMediaUrl(urlList, signal, depth = 0, explicitType = null) 
         return { url: urlList[0], isBlob: false, sourceUrl: urlList[0], type: finalType };
     }
 
-    // Fallback เผื่อหลุดมา
-    return { url: urlList[0], isBlob: false, sourceUrl: urlList[0], type: 'image' };
-}
     // LAYER 2: GATEWAY RACING & MIME VERIFICATION
     const timeoutMs = 5000;
     const raceControllers = [];
@@ -5466,7 +5464,8 @@ async function resolveMediaUrl(urlList, signal, depth = 0, explicitType = null) 
 
         return { url: winner.url, isBlob: winner.isBlob, sourceUrl: winner.sourceUrl, type: winner.type };
     } catch (aggregateErr) {
-        throw new Error("All gateways failed or timed out.");
+        // Fallback เผื่อหลุดมา
+        return { url: urlList[0], isBlob: false, sourceUrl: urlList[0], type: 'image' };
     }
 }
 
