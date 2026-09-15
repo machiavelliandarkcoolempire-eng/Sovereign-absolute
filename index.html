@@ -541,7 +541,7 @@
                     </label>
                     <input type="text" id="rebirthBackUriInput" placeholder="เว้นว่างเพื่ออัปโหลด หรือวาง TX ID" class="w-full bg-black border border-stone-700 p-3.5 text-sm font-mono text-stone-200 rounded-lg outline-none focus:border-amber-500 transition-all" />
                     <p class="text-[9px] font-mono text-stone-500 mt-2 uppercase leading-relaxed">
-                        * หากเว้นว่าง ระบบจะให้เลือกไฟล์อัปโหลด และนำ TX ID มาเติมให้อัตโนมัติ
+                        automatically populate  TX ID.
                     </p>
                 </div>
 
@@ -777,7 +777,6 @@
         </div>
     </div>
 </section>
-
 <section class="chiaroscuro-bg p-6 md:p-8 rounded-2xl mb-6 relative z-10 border border-rose-900/40">
     <div class="border-b border-stone-800 pb-4 mb-6">
         <h2 class="text-xl font-black font-cinzel gold-text uppercase tracking-tight">⚡ Master Inscription Ledger Operations</h2>
@@ -803,16 +802,11 @@
             <input type="text" id="novaVideoUri" maxlength="128" placeholder="Irys Tx ID (43 chars) or full URI" class="w-full bg-black border border-stone-800 p-3.5 text-sm font-mono text-amber-400 rounded-xl outline-none focus:border-amber-500 transition-all" />
         </div>
         <div>
-            <label class="text-[10px] text-stone-400 font-mono block mb-2 uppercase tracking-wider">④ Chrono-Map/Pixel Anchor (hiddenProperty)</label>
-            <input type="text" id="novaHiddenInput" maxlength="1024" placeholder="Irys Tx ID (43 chars) or full URI" class="w-full bg-black border border-rose-900/60 p-3.5 text-sm font-mono text-rose-400 rounded-xl outline-none focus:border-rose-500 transition-all" />
+            <label class="text-[10px] text-stone-400 font-mono block mb-2 uppercase tracking-wider">④ Hidden (Token URL / Freedom)</label>
+            <input type="text" id="novaHiddenInput" maxlength="1024" placeholder="Custom Token URL override" class="w-full bg-black border border-rose-900/60 p-3.5 text-sm font-mono text-rose-400 rounded-xl outline-none focus:border-rose-500 transition-all" />
         </div>
     </div>
-
-         <div>
-            <label class="text-[10px] text-stone-400 font-mono block mb-2 uppercase tracking-wider">④ Chrono-Map/Pixel Anchor (hiddenProperty)</label>
-            <input type="text" id="novaHiddenInput" maxlength="1024" placeholder="Irys Tx ID (43 chars) or full URI" class="w-full bg-black border border-rose-900/60 p-3.5 text-sm font-mono text-rose-400 rounded-xl outline-none focus:border-rose-500 transition-all" />
-        </div>
-    </div>
+        
        <div class="mt-8">
             <div class="p-5 md:p-6 border border-rose-900/50 rounded-2xl bg-black/40 shadow-inner mb-4">
              <span class="text-[10px] font-mono text-rose-400 uppercase tracking-widest block mb-4 pb-4 border-b border-stone-800 leading-relaxed">
@@ -844,6 +838,7 @@
               </div>
          </div>
 </section>
+
 
 
 <section class="chiaroscuro-bg p-6 md:p-8 rounded-2xl mb-6 relative z-10 border border-rose-900/40">
@@ -1053,6 +1048,8 @@
 const CONTRACT_ADDRESS = "0x7d52930e1F0c6429200a0DFe02Be9Ac2d2A19Dd2";
 const WETH_ADDRESS = "0x4200000000000000000000000000000000000006";
 const MULTICALL3_ADDRESS = "0xcA11bde05977b3631167028862bE2a173976CA11";
+const ERC6551_REGISTRY = "0x000000006551c19487814612e58FE06813775758";
+const TBA_IMPL = "0x55266d75D1a14E4572138116aF39863Ed6596E7F";
 
 const ARWEAVE_GATEWAYS = [
     "https://gateway.irys.xyz/",
@@ -5397,11 +5394,15 @@ async function resolveMediaUrl(urlList, signal, depth = 0, explicitType = null) 
         throw new Error('INVALID_URL_LIST');
     }
 
-    // LAYER 1 Fallback Guard (Should be caught by renderToViewport, but enforced here for safety)
-    if (explicitType === 'direct-image') {
-        return { url: urlList[0], isBlob: false, sourceUrl: urlList[0], type: 'image' };
+    // 🚀 ฟิกตายตัวตามสั่ง: ถ้ามี explicitType ส่งมา (image หรือ video) บังคับใช้เลย ไม่ต้องยิง HEAD เช็คให้เสียเวลา
+    if (explicitType === 'image' || explicitType === 'video' || explicitType === 'direct-image') {
+        const finalType = explicitType === 'direct-image' ? 'image' : explicitType;
+        return { url: urlList[0], isBlob: false, sourceUrl: urlList[0], type: finalType };
     }
 
+    // Fallback เผื่อหลุดมา
+    return { url: urlList[0], isBlob: false, sourceUrl: urlList[0], type: 'image' };
+}
     // LAYER 2: GATEWAY RACING & MIME VERIFICATION
     const timeoutMs = 5000;
     const raceControllers = [];
@@ -5846,11 +5847,12 @@ async function auditTokenFromLedger(tokenId) {
             currentLoadedMediaData.back = mappedNode.back || "";
             currentLoadedMediaData.video = mappedNode.video || "";
 
+            // ... โค้ดก่อนหน้า ...
             if (typeof loadDeedMetadata === 'function') loadDeedMetadata(tokenId);
 
             if (typeof renderToViewport === 'function') {
-                // Pass null to trigger Layer 2 Gateway Racing & MIME checking
-                renderToViewport('previewFrontContainer', currentLoadedMediaData.front, "Obverse aspect currently unassigned. Engage rebirth parameters.", null);
+                // 🚀 บังคับส่ง "image" ไปเลย สำหรับด้านหน้า
+                renderToViewport('previewFrontContainer', currentLoadedMediaData.front, "Obverse aspect currently unassigned. Engage rebirth parameters.", "image");
             }
 
             const backContainer = document.getElementById('previewBackContainer');
@@ -5858,7 +5860,8 @@ async function auditTokenFromLedger(tokenId) {
                 if (mySession !== currentAuditSession) return;
                 if (mappedNode.back && String(mappedNode.back).trim() !== "") {
                     if (typeof renderToViewport === 'function') {
-                        renderToViewport('previewBackContainer', currentLoadedMediaData.back, "Reverse diagnostic data trace is currently null.", null);
+                        // 🚀 บังคับส่ง "video" ไปเลย สำหรับด้านหลัง
+                        renderToViewport('previewBackContainer', currentLoadedMediaData.back, "Reverse diagnostic data trace is currently null.", "video");
                     }
                 } else {
                     if (backContainer) {
@@ -5870,6 +5873,7 @@ async function auditTokenFromLedger(tokenId) {
                     }
                 }
             }, 300);
+            // ... โค้ดหลังจากนี้ ...
 
             const displayData = document.getElementById('activeDeedMetadataDisplay');
             if(displayData) {
@@ -5982,68 +5986,28 @@ function filterSovereignGrid() {
 }
 
 const matrixThumbnailObserver = new IntersectionObserver((entries, observer) => {
-    entries.forEach(async (entry) => {
+    entries.forEach((entry) => {
         if (entry.isIntersecting) {
             const img = entry.target;
-            observer.unobserve(img);
+            observer.unobserve(img); // เลิกติดตามเมื่อเห็นแล้ว
 
             const mediaUrl = img.dataset.metadataUrl;
             if (mediaUrl && !img.dataset.resolved) {
-                img.dataset.resolved = "fetching";
+                img.dataset.resolved = "true";
 
+                // ถ้าเป็นนามสกุลวิดีโอชัดเจน ให้ซ่อนรูปแล้วขึ้นคำว่า VIDEO
                 if (/\.(mp4|webm|mov|m3u8)$/i.test(mediaUrl.split('?')[0])) {
-                    img.dataset.resolved = "video_skipped";
-                    img.style.visibility = 'hidden';
-                    img.style.opacity = '0';
-
+                    img.style.display = 'none';
                     const container = img.parentElement;
-                    if (container) {
+                    if (container && !container.querySelector('.video-icon')) {
                         const videoIcon = document.createElement('span');
-                        videoIcon.className = 'text-slate-500 text-[8px] font-bold tracking-widest';
+                        videoIcon.className = 'video-icon text-slate-500 text-[8px] font-bold tracking-widest z-20 relative bg-black/80 px-1 rounded';
                         videoIcon.textContent = '▶ VIDEO';
                         container.appendChild(videoIcon);
                     }
-                    return;
-                }
-
-                if (/\.(jpg|jpeg|png|gif|webp|svg)$/i.test(mediaUrl.split('?')[0])) {
+                } else {
+                    // 🚀 บังคับยัด URL ใส่ src เลย ไม่ต้องไป fetch เช็คส้นตีนอะไรทั้งนั้น!
                     img.src = mediaUrl;
-                    img.dataset.resolved = "true";
-                    return;
-                }
-
-                const controller = new AbortController();
-                if (typeof activeFetchControllers !== 'undefined') {
-                    activeFetchControllers.set(img, controller);
-                }
-
-                try {
-                    const res = await fetch(mediaUrl, { method: 'HEAD', signal: controller.signal, mode: 'cors' });
-                    const contentType = res.headers.get('content-type') || '';
-
-                    if (contentType.includes('video/')) {
-                        img.dataset.resolved = "video_skipped";
-                        img.style.display = 'none';
-                        const container = img.parentElement;
-                        if (container) {
-                            const videoIcon = document.createElement('span');
-                            videoIcon.className = 'text-slate-500 text-[8px] font-bold tracking-widest';
-                            videoIcon.textContent = '▶ VIDEO';
-                            container.appendChild(videoIcon);
-                        }
-                    } else {
-                        img.src = mediaUrl;
-                        img.dataset.resolved = "true";
-                    }
-                } catch (e) {
-                    if (e.name !== 'AbortError') {
-                        img.src = mediaUrl;
-                        img.dataset.resolved = "fallback";
-                    }
-                } finally {
-                    if (typeof activeFetchControllers !== 'undefined') {
-                        activeFetchControllers.delete(img);
-                    }
                 }
             }
         }
@@ -6053,136 +6017,106 @@ const matrixThumbnailObserver = new IntersectionObserver((entries, observer) => 
 function renderToNodeCard(tokenId) {
     if (!tokenId) return;
     
-    const node = window.matrixDOMCache ? window.matrixDOMCache.get(Number(tokenId)) : document.querySelector(`[data-token-id="${tokenId}"]`);
+    const numId = Number(tokenId);
+    const node = window.matrixDOMCache ? window.matrixDOMCache.get(numId) : document.querySelector(`[data-token-id="${tokenId}"]`);
     if (!node) return;
     
-    const state = window.NODE_STATE_MAP ? window.NODE_STATE_MAP.get(Number(tokenId)) : null;
+    const state = window.NODE_STATE_MAP ? window.NODE_STATE_MAP.get(numId) : null;
     if (!state) return;
 
-    const oldImg = node.querySelector('.node-media-container img');
-    if (oldImg) {
-        if (typeof matrixThumbnailObserver !== 'undefined') matrixThumbnailObserver.unobserve(oldImg);
-        if (typeof activeFetchControllers !== 'undefined') {
-            const oldController = activeFetchControllers.get(oldImg);
-            if (oldController) {
-                oldController.abort();
-                activeFetchControllers.delete(oldImg);
-            }
-        }
-        oldImg.onload = null;
-        oldImg.onerror = null;
-    }
-
+    // 1. ล้างรูปเก่าออกก่อน
     const existingMedia = node.querySelector('.node-media-container');
-    if (existingMedia) existingMedia.remove();
+    if (existingMedia) {
+        const oldImg = existingMedia.querySelector('img');
+        if (oldImg && typeof matrixThumbnailObserver !== 'undefined') {
+            matrixThumbnailObserver.unobserve(oldImg);
+        }
+        existingMedia.remove();
+    }
     const existingBadge = node.querySelector('.node-ownership-badge');
     if (existingBadge) existingBadge.remove();
 
-    node.className = 'matrix-node-cell relative transition-all duration-200 group';
-    node.style.backgroundImage = 'none';
+    // 2. บังคับให้กล่องหลักเป็น relative เพื่อให้รูปอยู่ข้างในได้พอดี
+    node.style.position = 'relative';
+    node.style.overflow = 'hidden';
 
+    // 3. ดึง URL รูปภาพ
     let displayImgUrl = "";
-    let hasManifestData = false;
-    let needsObserver = false;
-
     if (state.status === 'UNCLAIMED') {
         let localData = window.IMAGE_MANIFEST ? window.IMAGE_MANIFEST[String(tokenId)] : null;
-        if (!localData && window.IMPERIAL_MANIFEST) {
-            localData = window.IMPERIAL_MANIFEST[String(tokenId)];
-        }
+        if (!localData && window.IMPERIAL_MANIFEST) localData = window.IMPERIAL_MANIFEST[String(tokenId)];
         const localHash = typeof localData === 'object' ? (localData.image || localData.irys_id) : localData;
-
         if (localHash && typeof localHash === 'string' && localHash.trim() !== "") {
-            hasManifestData = true;
-            if (localHash.startsWith('ar://')) {
-                displayImgUrl = localHash.replace('ar://', 'https://gateway.irys.xyz/');
-            } else {
-                displayImgUrl = localHash.startsWith('http') ? localHash : `https://gateway.irys.xyz/${localHash.trim()}`;
-            }
+            displayImgUrl = localHash.startsWith('http') ? localHash : `https://gateway.irys.xyz/${localHash.replace('ar://', '').trim()}`;
         }
-        
-        node.classList.add('opacity-30', 'grayscale');
-        node.classList.add(hasManifestData ? 'bg-emerald-950/30' : 'bg-amber-950/20');
-        if (hasManifestData) node.classList.add('border-emerald-800/50');
-        node.title = `NODE #${tokenId} [${hasManifestData ? 'STAGED IN MANIFEST' : 'VOID - UNMINTED'}]`;
-
-    } else if (state.status === 'BURNED') {
-        node.classList.add('opacity-30', 'grayscale', 'bg-red-950/20');
-        node.title = `NODE #${tokenId} [BURNED - AWAITING REMINT]`;
-        
     } else if (state.status === 'ACTIVE' || state.status === 'LOCKED') {
         const contractFrontUri = state.metadataUrl || "";
-        
         if (contractFrontUri && typeof contractFrontUri === 'string' && contractFrontUri.trim() !== "") {
             const cleanContractUri = typeof extractIrysId === 'function' ? extractIrysId(contractFrontUri) : contractFrontUri;
             displayImgUrl = cleanContractUri.startsWith('http') ? cleanContractUri : `https://gateway.irys.xyz/${cleanContractUri}`;
-            needsObserver = true; 
         }
-        
-        node.classList.add(state.status === 'LOCKED' ? 'bg-blue-950/50' : 'bg-slate-950');
-        node.title = `NODE #${tokenId} [${state.status}]`;
     }
 
-    if (displayImgUrl && (state.status === 'ACTIVE' || state.status === 'LOCKED' || state.status === 'UNCLAIMED')) {
+    // 4. ถ้ารูปมี URL ให้สร้าง Layer รูปภาพ
+    if (displayImgUrl) {
         const mediaContainer = document.createElement('div');
-        mediaContainer.className = 'node-media-container absolute inset-0 w-full h-full overflow-hidden rounded z-10 flex items-center justify-center bg-slate-950';
+        // ให้รูปอยู่ Layer ล่างสุด (z-0) เต็มกล่อง
+        mediaContainer.className = 'node-media-container absolute inset-0 w-full h-full z-0 bg-slate-950';
 
         const img = document.createElement('img');
-        img.loading = 'lazy';
-        img.decoding = 'async';
-        img.className = 'w-full h-full object-cover';
-        
-        if (needsObserver && typeof matrixThumbnailObserver !== 'undefined') {
-            img.dataset.metadataUrl = displayImgUrl; 
+        img.className = 'w-full h-full object-cover opacity-70 hover:opacity-100 transition-opacity';
+        img.dataset.metadataUrl = displayImgUrl;
+
+        // ส่งให้ Observer โหลดรูป
+        if (typeof matrixThumbnailObserver !== 'undefined') {
             matrixThumbnailObserver.observe(img);
         } else {
-            img.src = displayImgUrl; 
+            img.src = displayImgUrl;
         }
 
-        const shortAddrText = state.owner ? `${state.owner.slice(0,4)}...${state.owner.slice(-4)}` : (state.status === 'UNCLAIMED' ? 'STAGED' : 'ERR');
-
-        img.onload = () => {
-            img.onload = null;
-            img.onerror = null;
+        // ถ้ารูปพัง ให้ขึ้นตัวหนังสือสีแดง
+        img.onerror = () => {
+            img.remove();
+            const errSpan = document.createElement('span');
+            errSpan.className = 'absolute inset-0 flex items-center justify-center text-[7px] text-red-500 font-bold bg-black/80 z-10';
+            errSpan.textContent = 'IMG ERR';
+            mediaContainer.appendChild(errSpan);
         };
 
-        const handleError = () => {
-            const currentSrc = img.src || "";
-            if (currentSrc.includes('gateway.irys.xyz')) {
-                img.src = currentSrc.replace('gateway.irys.xyz', 'arweave.net');
-            } else if (currentSrc.includes('arweave.net')) {
-                img.src = currentSrc.replace('arweave.net', 'ar-io.net');
-            } else {
-                img.onload = null;
-                img.onerror = null;
-                img.remove();
-                const shortAddr = document.createElement('span');
-                shortAddr.className = 'text-[7px] font-bold text-slate-400 bg-black/80 px-1 rounded border border-slate-700';
-                shortAddr.textContent = shortAddrText;
-                mediaContainer.appendChild(shortAddr);
-            }
-        };
-        img.onerror = handleError;
-        
         mediaContainer.appendChild(img);
         node.appendChild(mediaContainer);
-    } else if (state.status === 'ACTIVE' || state.status === 'LOCKED') {
-        const mediaContainer = document.createElement('div');
-        mediaContainer.className = 'node-media-container absolute inset-0 w-full h-full overflow-hidden rounded z-10 flex items-center justify-center bg-slate-950';
-        const shortAddr = document.createElement('span');
-        shortAddr.className = 'text-[7px] font-bold text-slate-400 bg-black/80 px-1 rounded border border-slate-700';
-        shortAddr.textContent = state.owner ? `${state.owner.slice(0,4)}...${state.owner.slice(-4)}` : 'ERR';
-        mediaContainer.appendChild(shortAddr);
-        node.appendChild(mediaContainer);
+        
+        // 🚀 โคตรสำคัญ: ดึงตัวเลข (เช่น 333) ให้ลอยขึ้นมาอยู่บนรูป (z-20) และใส่พื้นหลังดำโปร่งแสงให้มองเห็นชัดๆ
+        const numDiv = node.querySelector('div:not(.node-media-container)');
+        if (numDiv) {
+            numDiv.style.position = 'relative';
+            numDiv.style.zIndex = '20';
+            numDiv.style.background = 'rgba(0,0,0,0.6)';
+            numDiv.style.padding = '2px 4px';
+            numDiv.style.borderRadius = '4px';
+        }
     }
 
+    // 5. จัดการสถานะความเป็นเจ้าของ (ขอบทอง)
     if (state.isCurrentUser) {
-        node.classList.remove('opacity-30', 'grayscale');
-        node.classList.add('ring-2', 'ring-amber-400', 'shadow-[0_0_15px_rgba(251,191,36,0.6)]', 'z-20');
+        node.style.borderColor = '#fbbf24';
+        node.style.boxShadow = '0 0 15px rgba(251,191,36,0.6)';
         const badge = document.createElement('div');
-        badge.className = 'node-ownership-badge absolute -top-2 -right-2 bg-gradient-to-br from-amber-400 to-amber-600 text-black text-[7px] font-black px-1.5 py-0.5 rounded shadow-[0_0_10px_rgba(217,119,6,0.8)] z-30 border border-amber-200';
-        badge.textContent = 'OWNED';
+        badge.className = 'node-ownership-badge absolute -top-1 -right-1 bg-amber-500 text-black text-[7px] font-black px-1 rounded z-30';
+        badge.textContent = 'YOU';
         node.appendChild(badge);
+    } else {
+        node.style.borderColor = '';
+        node.style.boxShadow = '';
+    }
+    
+    // 6. จัดการความสว่าง (โหนดว่าง/โดนเผา ให้มืดๆ เทาๆ)
+    if (state.status === 'UNCLAIMED' || state.status === 'BURNED') {
+        node.style.opacity = '0.4';
+        node.style.filter = 'grayscale(100%)';
+    } else {
+        node.style.opacity = '1';
+        node.style.filter = 'none';
     }
 }
 
