@@ -527,15 +527,29 @@
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
         <!-- ========================================== -->
-        <!-- คอลัมน์ซ้าย: ปุ่มคำสั่ง -->
+        <!-- คอลัมน์ซ้าย: ปุ่มคำสั่ง และ HYBRID INPUT -->
         <!-- ========================================== -->
         <div class="lg:col-span-5 space-y-5">
             <span class="text-[10px] font-mono text-stone-400 uppercase tracking-wider block font-bold">// CRYPTOGRAPHIC ACTION HUB</span>
             
             <div class="flex flex-col gap-4 bg-black/40 p-5 rounded-xl border border-stone-800">  
+                
+                <!-- 🛡️ HYBRID MODE: BACK URI INPUT -->
+                <div class="mb-2 bg-black/60 p-4 rounded-xl border border-stone-800 shadow-inner">
+                    <label class="text-[10px] text-stone-400 font-mono block mb-2 uppercase tracking-wider">
+                        REVERSE MEDIA (BACK URI) <span class="text-amber-500 font-bold">OPTIONAL</span>
+                    </label>
+                    <input type="text" id="rebirthBackUriInput" placeholder="เว้นว่างเพื่ออัปโหลด หรือวาง TX ID" class="w-full bg-black border border-stone-700 p-3.5 text-sm font-mono text-stone-200 rounded-lg outline-none focus:border-amber-500 transition-all" />
+                    <p class="text-[9px] font-mono text-stone-500 mt-2 uppercase leading-relaxed">
+                        * หากเว้นว่าง ระบบจะให้เลือกไฟล์อัปโหลด และนำ TX ID มาเติมให้อัตโนมัติ
+                    </p>
+                </div>
+
+                <!-- ⚔️ EXECUTE BUTTON -->
                 <button id="executeForgeBtn" onclick="if(typeof openForgeConsentModal === 'function') openForgeConsentModal('REBIRTH', this)" class="btn-rebirth-bright text-sm py-4 rounded-xl font-black tracking-widest w-full">
                     [SOVEREIGN AWAKENING ♠️]
                 </button>
+
             </div>
             
             <p class="text-[10px] font-mono text-stone-500 uppercase mt-2 pl-2 border-l-2 border-stone-800">
@@ -600,7 +614,7 @@
                     <input id="forgeModalCheckbox" type="checkbox" onchange="toggleForgeButtonState()" class="w-4 h-4 bg-gray-900 border-gray-700 rounded text-red-600 focus:ring-red-600 cursor-pointer">
                 </div>
                 <label for="forgeModalCheckbox" class="font-medium text-stone-300 text-sm cursor-pointer select-none">
-                    ข้าพเจ้ายอมรับพันธสัญญาสูงสุด และตระหนักว่าสิ่งนี้มิใช่สินทรัพย์เพื่อการลงทุน<br>
+                    น<br>
                     <span class="text-stone-500 text-xs">(I explicitly accept the Sovereign Terms & Conditions above.)</span>
                 </label>
             </div>
@@ -794,18 +808,43 @@
         </div>
     </div>
 
-    <div class="mt-8">
-        <div class="p-5 md:p-6 border border-rose-900/50 rounded-2xl bg-black/40 shadow-inner">
-            <span class="text-[10px] font-mono text-rose-400 uppercase tracking-widest block mb-4 pb-4 border-b border-stone-800 leading-relaxed">
-                • Unlocks Sanctified Status & Lifetime Identity Updates | UPDATE IDENTITY: Requires Sanctified status (isSanctified == true). Accepts 4 parameters: Token ID (t), Front URI (front), Back URI (back), Video URI (video).
-            </span>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <button onclick="document.getElementById('novaWarnModal').classList.remove('hidden')" class="btn-gold-master rounded-xl py-4 text-xs md:text-sm shadow-[0_0_20px_rgba(217,119,6,0.3)]">[ ⚡ SANCTIFY NOVA CONSECRATION ]</button>
-                <button onclick="if(typeof executeUpdateIdentity === 'function') executeUpdateIdentity(this)" class="bg-stone-950 border border-rose-700 text-rose-400 font-black font-mono text-xs md:text-sm py-4 rounded-xl uppercase tracking-wider hover:bg-rose-950 transition-all shadow-[0_0_15px_rgba(153,27,27,0.2)]">[ 📜 UPDATE SANCTIFIED IDENTITY ]</button>
-            </div>
+         <div>
+            <label class="text-[10px] text-stone-400 font-mono block mb-2 uppercase tracking-wider">④ Chrono-Map/Pixel Anchor (hiddenProperty)</label>
+            <input type="text" id="novaHiddenInput" maxlength="1024" placeholder="Irys Tx ID (43 chars) or full URI" class="w-full bg-black border border-rose-900/60 p-3.5 text-sm font-mono text-rose-400 rounded-xl outline-none focus:border-rose-500 transition-all" />
         </div>
     </div>
+       <div class="mt-8">
+            <div class="p-5 md:p-6 border border-rose-900/50 rounded-2xl bg-black/40 shadow-inner mb-4">
+             <span class="text-[10px] font-mono text-rose-400 uppercase tracking-widest block mb-4 pb-4 border-b border-stone-800 leading-relaxed">
+              • Unlocks Sanctified Status & Lifetime Identity Updates
+                </span>
+              <button onclick="document.getElementById('novaWarnModal').classList.remove('hidden')" class="w-full btn-gold-master rounded-xl py-4 text-xs md:text-sm shadow-[0_0_20px_rgba(217,119,6,0.3)]">[ ⚡ SANCTIFY NOVA CONSECRATION ]</button>
+                    </div>
+                    <div class="p-5 md:p-6 border border-rose-900/50 rounded-2xl bg-black/40 shadow-inner">
+                        <h3 class="text-sm font-black font-cinzel text-rose-400 mb-4 uppercase tracking-widest border-b border-stone-800 pb-2">📜 UPDATE SANCTIFIED IDENTITY</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label class="text-[10px] text-stone-400 font-mono block mb-2 uppercase tracking-wider">Target Token ID</label>
+                                <input type="number" id="updateTokenIdInput" min="1" max="333" placeholder="Token ID" class="w-full bg-black border border-stone-800 p-3 text-sm font-mono text-amber-500 rounded-xl outline-none focus:border-amber-500 transition-all" />
+                            </div>
+                            <div>
+                                <label class="text-[10px] text-stone-400 font-mono block mb-2 uppercase tracking-wider">Front URI</label>
+                                <input type="text" id="updateFrontUriInput" placeholder="Front URI" class="w-full bg-black border border-stone-800 p-3 text-sm font-mono text-amber-500 rounded-xl outline-none focus:border-amber-500 transition-all" />
+                            </div>
+                            <div>
+                                <label class="text-[10px] text-stone-400 font-mono block mb-2 uppercase tracking-wider">Back URI</label>
+                                <input type="text" id="updateBackUriInput" placeholder="Back URI" class="w-full bg-black border border-stone-800 p-3 text-sm font-mono text-amber-500 rounded-xl outline-none focus:border-amber-500 transition-all" />
+                            </div>
+                            <div>
+                                <label class="text-[10px] text-stone-400 font-mono block mb-2 uppercase tracking-wider">Video URI</label>
+                                <input type="text" id="updateVideoUriInput" placeholder="Video URI" class="w-full bg-black border border-stone-800 p-3 text-sm font-mono text-amber-500 rounded-xl outline-none focus:border-amber-500 transition-all" />
+                            </div>
+                        </div>
+                        <button id="btnSubmitUpdateIdentity" onclick="if(typeof executeUpdateIdentity === 'function') executeUpdateIdentity(this)" class="w-full bg-stone-950 border border-rose-700 text-rose-400 font-black font-mono text-xs md:text-sm py-4 rounded-xl uppercase tracking-wider hover:bg-rose-950 transition-all shadow-[0_0_15px_rgba(153,27,27,0.2)]">[ 📜 SUBMIT IDENTITY UPDATE ]</button>
+              </div>
+         </div>
 </section>
+
 
 <section class="chiaroscuro-bg p-6 md:p-8 rounded-2xl mb-6 relative z-10 border border-rose-900/40">
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-stone-800 pb-4 mb-6 gap-3">
@@ -1328,20 +1367,23 @@ async function fetchImperialManifest() {
         
         clearTimeout(timeoutId);
 
+        // 1. จัดเก็บ IMPERIAL_MANIFEST (รองรับทั้งแบบเพียว และแบบมี .data ครอบ ป้องกันจอดำ)
         if (manifestRes.status === 'fulfilled' && manifestRes.value.ok) {
             const rawData = await manifestRes.value.json();
-            window.IMPERIAL_MANIFEST = (rawData && typeof rawData === 'object' && rawData.data) ? rawData.data : rawData;
+            window.IMPERIAL_MANIFEST = (rawData && typeof rawData === 'object' && rawData.data) ? rawData.data : (rawData || {});
         } else {
             window.IMPERIAL_MANIFEST = {};
         }
 
+        // 2. จัดเก็บ IMAGE_MANIFEST
         if (imageRes.status === 'fulfilled' && imageRes.value.ok) {
             const rawImgData = await imageRes.value.json();
-            window.IMAGE_MANIFEST = (rawImgData && typeof rawImgData === 'object' && rawImgData.data) ? rawImgData.data : rawImgData;
+            window.IMAGE_MANIFEST = (rawImgData && typeof rawImgData === 'object' && rawImgData.data) ? rawImgData.data : (rawImgData || {});
         } else {
             window.IMAGE_MANIFEST = {};
         }
 
+        // 3. แสดงผล Log การโหลดข้อมูลเข้าสู่ระบบ
         if (typeof appendLog === 'function') {
             const nodeCount = window.IMPERIAL_MANIFEST ? Object.keys(window.IMPERIAL_MANIFEST).length : 0;
             appendLog(`Imperial Manifests synchronized successfully. Loaded ${nodeCount} staged nodes.`, "text-emerald-400 font-bold");
@@ -1357,6 +1399,7 @@ async function fetchImperialManifest() {
         return false;
     }
 }
+
 
 // ==============================================================================
 // 🛡️ ANTI-LOCKING STATE MANAGEMENT (NO BLACK SCREEN OVERLAYS)
@@ -1960,6 +2003,18 @@ async function runTx(eventOrBtn, actionName, methodName, args = [], overrides = 
 // ==============================================================================
 // ⚔️ FORGE & MINTING ENGINES (ZERO-BUG MANIFEST PARSING + PLEDGE MODAL)
 // ==============================================================================
+function sanitizeToFullIrysUrl(inputString) {
+    if (!inputString || typeof inputString !== 'string') return "";
+    let cleanId = inputString.trim();
+    if (cleanId === "") return "";
+    
+    // ตัด https://gateway.irys.xyz/ หรือ ar:// ออกให้เหลือแค่ Hash
+    cleanId = cleanId.replace(/^https?:\/\/(gateway\.irys\.xyz|arweave\.net|ar-io\.net)\//i, "");
+    cleanId = cleanId.replace(/^(ar|irys):\/\//i, "");
+    
+    // ประกอบร่างใหม่ให้เป็น Full URL มาตรฐานเดียว
+    return `https://gateway.irys.xyz/${cleanId}`;
+}
 
 function toggleForgeButtonState() {
     const checkbox = document.getElementById('forgeModalCheckbox');
@@ -2009,6 +2064,9 @@ async function closeForgeConsentModal(isConfirmed, type, e) {
     }
 }
 
+// ==============================================================================
+// ⚔️ FORGE ENGINE: SOVEREIGN REBIRTH (HYBRID DUAL-MODE + RECOVERY ARCHITECTURE)
+// ==============================================================================
 async function triggerForge(type, e) {
     if (!secureContract) { showNotification("Action suspended: Authenticate wallet signature first.", "error"); return; }
 
@@ -2044,6 +2102,7 @@ async function triggerForge(type, e) {
             }
         }
 
+        // --- 1. EXTRACT FRONT URI ---
         let strictFrontUri = "";
         if (window.IMPERIAL_MANIFEST && window.IMPERIAL_MANIFEST[String(targetTokenId)]) {
             const manifestData = window.IMPERIAL_MANIFEST[String(targetTokenId)];
@@ -2056,18 +2115,23 @@ async function triggerForge(type, e) {
             return;
         }
 
-        let currentMintPriceWei = 0n;
-        try {
-            currentMintPriceWei = await secureContract.mintPrice();
-        } catch (rpcErr) {
-            await new Promise(r => setTimeout(r, 1500));
-            currentMintPriceWei = await secureContract.mintPrice();
+        // --- 2. 🔱 HYBRID BACK URI FETCHING (DOM INPUT + SESSION RECOVERY) ---
+        const backUriInputEl = document.getElementById('rebirthBackUriInput');
+        const sessionKey = `irys_back_tx_${targetTokenId}`;
+        
+        // Priority 1: Check DOM Input (Manual Entry)
+        let backMediaTxId = backUriInputEl ? backUriInputEl.value.trim() : "";
+
+        // Priority 2: Check Session Storage (Page Reload Recovery)
+        if (!backMediaTxId) {
+            backMediaTxId = sessionStorage.getItem(sessionKey) || "";
+            if (backMediaTxId && backUriInputEl) {
+                backUriInputEl.value = backMediaTxId; // Sync Cache back to DOM
+                if (typeof appendLog === 'function') appendLog(`[SESSION RECOVERY] Recovered cached Irys TX_ID: ${backMediaTxId}.`, "text-cyan-400 font-bold");
+            }
         }
 
-        // 🛡️ IRYS SESSION RECOVERY LOGIC
-        const sessionKey = `irys_back_tx_${targetTokenId}`;
-        let backMediaTxId = sessionStorage.getItem(sessionKey);
-
+        // Priority 3: Upload New Media
         if (!backMediaTxId) {
             const file = await promptUserForFile('image/*,video/*');
             if (!file) {
@@ -2099,30 +2163,47 @@ async function triggerForge(type, e) {
             
             if (!backMediaTxId) throw new Error("Irys payload generation failed: null TxID.");
             
-            // 🛡️ Cache TX_ID to prevent re-upload on wallet rejection
+            // ✅ Double-Anchor: บันทึกทั้งลง Session และอัปเดตลงช่อง Input
             sessionStorage.setItem(sessionKey, backMediaTxId);
+            if (backUriInputEl) backUriInputEl.value = backMediaTxId;
             
-            const sanitizedTxId = sanitizeForDOM(backMediaTxId);
-            if (typeof appendLog === 'function') appendLog(`Back-end media successfully anchored: ${sanitizedTxId}`, "text-emerald-400 font-bold");
+            if (typeof appendLog === 'function') appendLog(`Back-end media successfully anchored: ${backMediaTxId}`, "text-emerald-400 font-bold");
         } else {
-            if (typeof appendLog === 'function') appendLog(`[SESSION RECOVERY] Recovered cached Irys TX_ID: ${backMediaTxId}. Bypassing upload phase.`, "text-cyan-400 font-bold");
+            if (typeof appendLog === 'function') appendLog(`[HYBRID MODE] Back URI established. Bypassing upload phase.`, "text-cyan-400 font-bold");
         }
 
-        const backUriField = document.getElementById('forgeBackUri');
-        if (backUriField) backUriField.value = backMediaTxId;
+        // --- 3. 🛡️ STRICT SANITIZER (URL FORMAT ENFORCEMENT) ---
+        if (typeof sanitizeToFullIrysUrl !== 'function') {
+            throw new Error("ARCHITECT FAULT: sanitizeToFullIrysUrl is missing in global scope.");
+        }
+        const finalFrontUri = sanitizeToFullIrysUrl(strictFrontUri);
+        const finalBackUri = sanitizeToFullIrysUrl(backMediaTxId);
+
+        // --- 4. RPC CALL: EXECUTE ONLY AFTER MEDIA IS SECURED ---
+        let currentMintPriceWei = 0n;
+        try {
+            currentMintPriceWei = await secureContract.mintPrice();
+        } catch (rpcErr) {
+            await new Promise(r => setTimeout(r, 1500));
+            currentMintPriceWei = await secureContract.mintPrice();
+        }
 
         if (typeof appendLog === 'function') appendLog(`Initiating THE SOVEREIGN AWAKENING sequence on-chain at ${ethers.formatEther(currentMintPriceWei)} ETH...`, "text-yellow-400");
         
         const tokenIdBn = BigInt(targetTokenId);
 
+        // ✅ ส่งค่า Final URI ที่เป็น Full URL เข้า Contract
         const receipt = await runTx(
             e, `SOVEREIGN_REBIRTH_#${targetTokenId}`, "SOVEREIGN_REBIRTH",
-            [tokenIdBn.toString(), strictFrontUri, backMediaTxId], { value: currentMintPriceWei.toString() },
+            [tokenIdBn.toString(), finalFrontUri, finalBackUri], { value: currentMintPriceWei.toString() },
             { manageLock: false, manageButton: false } 
         );
 
         if (receipt) {
-            sessionStorage.removeItem(sessionKey); // 🛡️ Clear cache on success
+            // 🛡️ เคลียร์ Cache และ Input เมื่อสำเร็จ 100%
+            sessionStorage.removeItem(sessionKey);
+            if (backUriInputEl) backUriInputEl.value = "";
+            
             if (typeof GLOBAL_NODE_CACHE !== 'undefined' && GLOBAL_NODE_CACHE?.delete) GLOBAL_NODE_CACHE.delete(String(targetTokenId));
             if (typeof syncActiveMatrixNodes === 'function') await syncActiveMatrixNodes();
             if (typeof auditTokenFromLedger === 'function') await auditTokenFromLedger(targetTokenId);
@@ -2149,6 +2230,7 @@ async function triggerForge(type, e) {
         if (typeof unlockSystem === 'function') unlockSystem();
     }
 }
+
 
 async function executeArchitectMint(e) {
     if (isTransactionPending || window.SystemState?._sysLocked) return;
@@ -4375,7 +4457,8 @@ async function executeUpdateIdentity(e) {
         const userAddress = await signer.getAddress();
         const privs = await verifyUserPrivileges(userAddress);
 
-        const targetTokenId = globalSelectedTokenId;
+        const inputTokenId = document.getElementById('updateTokenIdInput')?.value;
+        const targetTokenId = inputTokenId ? inputTokenId : globalSelectedTokenId;
         if (!targetTokenId) {
             showNotification("STRUCTURAL EXCEPTION: Please select a Token ID coordinate on the Matrix first.", "error");
             return;
@@ -4383,11 +4466,12 @@ async function executeUpdateIdentity(e) {
         tokenId = validateTokenRange(targetTokenId);
         if(!tokenId) return;
         
-        // 🛡️ PRE-FLIGHT: SanctifyFirst
+        window.showAggressiveToast = window.showAggressiveToast || function(msg) { showNotification(msg, "error"); };
         try {
-            const isSanctified = await secureContract.isSanctified(tokenId.toString());
-            if (!isSanctified) {
-                showNotification("TRANSACTION REVERTED: SanctifyFirst()", "error");
+            const sanctifiedStatus = await secureContract.isSanctified(tokenId.toString());
+            if (!sanctifiedStatus) {
+                if (e && e.target) e.target.disabled = true;
+                window.showAggressiveToast("TRANSACTION REVERTED: SanctifyFirst()");
                 return;
             }
         } catch (err) {
@@ -4408,9 +4492,9 @@ async function executeUpdateIdentity(e) {
             }
         }
 
-        frontUri = (document.getElementById('forgeFrontUri')?.value || "").trim() || currentLoadedMediaData.front || "";
-        backUri = (document.getElementById('forgeBackUri')?.value || "").trim() || currentLoadedMediaData.back || "";
-        videoUri = (document.getElementById('novaVideoUri')?.value || "").trim() || currentLoadedMediaData.video || "";
+        frontUri = (document.getElementById('updateFrontUriInput')?.value || "").trim();
+        backUri = (document.getElementById('updateBackUriInput')?.value || "").trim();
+        videoUri = (document.getElementById('updateVideoUriInput')?.value || "").trim();
 
         if (typeof isMaliciousURI === 'function' && (isMaliciousURI(frontUri) || isMaliciousURI(backUri) || isMaliciousURI(videoUri))) {
             if (typeof appendLog === 'function') appendLog("SECURITY ALERT: Unsafe URI payload detected and neutralized.", "text-red-500 font-bold");
@@ -4433,6 +4517,7 @@ async function executeUpdateIdentity(e) {
         if (typeof appendLog === 'function') appendLog(`Exempt payload reference alterations applied successfully over node element #${tokenId}.`, "text-emerald-400");
     }
 }
+
 
 async function executeSovereignSupport(e) {
     if (!secureContract || !signer) { showNotification("Action suspended: Authenticate wallet signature first.", "error"); return; }
@@ -4644,9 +4729,9 @@ async function executeContractPause(status, e) {
     }
 }
 
-// ==============================================================================
-// 🌐 MEDIA RESOLVER & RENDERING ENGINE
-// ==============================================================================
+// ====================================================================================================
+// PATCHED FUNCTIONS: extractIrysId, renderToNodeCard, executeUpdateIdentity
+// ====================================================================================================
 
 function extractIrysId(input) {
     if (!input || typeof input !== 'string') return "";
@@ -4654,18 +4739,23 @@ function extractIrysId(input) {
     if (!clean) return "";
 
     if (/^https?:\/\//i.test(clean)) {
-        try {
-            clean = new URL(clean).pathname;
-        } catch (e) {
-            return "";
+        if (clean.includes('gateway.irys.xyz') || clean.includes('arweave.net') || clean.includes('ar-io.net')) {
+            try {
+                clean = new URL(clean).pathname;
+            } catch (e) {
+                return "";
+            }
+        } else {
+            return clean; 
         }
     }
 
     clean = clean.replace(/^(ar|irys):\/\//i, '');
     clean = clean.split(/[?#]/)[0];
     clean = clean.replace(/^\/+/, '');
-    return clean.replace(/[^a-zA-Z0-9_\-\.\/]/g, '');
+    return clean.replace(/[^a-zA-Z0-9_\-\.\/:]/g, '');
 }
+
 
 function buildIrysUrls(txId) {
     const cleanId = extractIrysId(txId);
@@ -5266,6 +5356,17 @@ async function renderToViewport(containerId, path, defaultText, explicitType = n
 
     try {
         const resolvedPath = isRawHash ? `https://gateway.irys.xyz/${safePath}` : safePath;
+        
+        // LAYER 1: DIRECT IMAGE INJECTION (BYPASS FETCH)
+        if (explicitType === 'direct-image') {
+            if (masterController.signal.aborted) return;
+            if (typeof renderMediaToDOM === 'function') {
+                renderMediaToDOM(container, { url: resolvedPath, isBlob: false, type: 'image' }, 'image', masterController.signal);
+            }
+            return;
+        }
+
+        // LAYER 2: ACTIVE STATE RESOLUTION (GATEWAY RACING)
         const urlsToTry = typeof buildIrysUrls === 'function' ? buildIrysUrls(resolvedPath) : [resolvedPath];
         
         if (!urlsToTry || urlsToTry.length === 0) throw new Error("URI_RESOLUTION_FAILED");
@@ -5292,138 +5393,80 @@ async function renderToViewport(containerId, path, defaultText, explicitType = n
 }
 
 async function resolveMediaUrl(urlList, signal, depth = 0, explicitType = null) {
-    const CACHE_NAME = 'eter-v6-asset-vault';
-
     if (!Array.isArray(urlList) || urlList.length === 0) {
         throw new Error('INVALID_URL_LIST');
     }
 
-    for (const url of urlList) {
-        if (signal && signal.aborted) throw new Error('Aborted');
-        const cleanUrl = typeof url === 'string' ? url.split('?')[0] : url;
+    // LAYER 1 Fallback Guard (Should be caught by renderToViewport, but enforced here for safety)
+    if (explicitType === 'direct-image') {
+        return { url: urlList[0], isBlob: false, sourceUrl: urlList[0], type: 'image' };
+    }
 
-        if (typeof url === 'string' && url.includes('.m3u8')) {
-            return { url: cleanUrl, isBlob: false, sourceUrl: url, type: 'video' };
-        }
+    // LAYER 2: GATEWAY RACING & MIME VERIFICATION
+    const timeoutMs = 5000;
+    const raceControllers = [];
 
-        if ('caches' in window) {
+    const fetchPromises = urlList.map(url => {
+        return new Promise(async (resolve, reject) => {
+            const controller = new AbortController();
+            raceControllers.push(controller);
+
+            // Bind to parent signal
+            if (signal) {
+                if (signal.aborted) return reject(new Error('Aborted'));
+                signal.addEventListener('abort', () => controller.abort(), { once: true });
+            }
+
+            // Strict 5000ms timeout
+            const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
             try {
-                const cache = await caches.open(CACHE_NAME);
-                const cachedResponse = await cache.match(cleanUrl);
-                if (cachedResponse) {
-                    let type = 'image';
-                    if (explicitType) {
-                        type = explicitType.includes('video') ? 'video' : 'image';
-                    } else {
-                        const contentType = (cachedResponse.headers.get('content-type') || '').toLowerCase();
-                        const isVideo = contentType.startsWith('video/') || cleanUrl.match(/\.(mp4|webm|mov)$/i);
-                        type = isVideo ? 'video' : 'image';
-                    }
-
-                    const blob = await cachedResponse.blob();
-                    const objUrl = URL.createObjectURL(blob);
-                    if (signal && signal.aborted) { URL.revokeObjectURL(objUrl); throw new Error('Aborted'); }
-                    
-                    if (typeof registerBlobForGc === 'function') registerBlobForGc(cleanUrl, objUrl, type === 'video');
-                    return { url: objUrl, isBlob: true, sourceUrl: url, type: type };
+                const cleanUrl = typeof url === 'string' ? url.split('?')[0] : url;
+                
+                // Fast-path for known video extensions
+                if (/\.(mp4|webm|mov|m3u8)$/i.test(cleanUrl)) {
+                    clearTimeout(timeoutId);
+                    return resolve({ url: url, isBlob: false, sourceUrl: url, type: 'video', winnerController: controller });
                 }
-            } catch (e) { console.warn("[CACHE] Read error:", e); }
-        }
 
-        try {
-            const response = await fetch(url, { 
-                signal, 
-                mode: 'cors',
-                referrerPolicy: 'no-referrer'
-            });
-            
-            if (!response.ok) throw new Error('HTTP ' + response.status);
-            
-            const clone = response.clone();
-            const contentType = (response.headers.get('content-type') || '').toLowerCase();
+                // Execute HEAD request to verify MIME type without downloading binary
+                const response = await fetch(url, {
+                    method: 'HEAD',
+                    signal: controller.signal,
+                    mode: 'cors'
+                });
+                
+                clearTimeout(timeoutId);
 
-            if (contentType.includes('json') || contentType.includes('text')) {
-                const reader = clone.body.getReader();
-                const decoder = new TextDecoder('utf-8');
-                let text = '';
-                let bytesRead = 0;
-                const MAX_BYTES = 51200; 
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
-                try {
-                    while (true) {
-                        const { done, value } = await reader.read();
-                        if (done) break;
-                        bytesRead += value.length;
-                        if (bytesRead > MAX_BYTES) {
-                            await reader.cancel();
-                            throw new Error("OOM_PROTECT_PAYLOAD_TOO_LARGE");
-                        }
-                        text += decoder.decode(value, { stream: true });
-                    }
-                    text += decoder.decode(); 
-                    
-                    const json = JSON.parse(text);
-                    if (json && typeof json === 'object' && !Array.isArray(json)) {
-                        let actualMedia = json.animation_url || json.videoURI || (json.properties && json.properties.video) || json.image || json.frontURI;
-                        if (actualMedia && typeof actualMedia === 'string') {
-                            if (depth >= 3) throw new Error("RECURSION LIMIT EXCEEDED");
+                const contentType = (response.headers.get('content-type') || '').toLowerCase();
+                const isVideo = contentType.startsWith('video/');
+                const type = (isVideo || explicitType === 'video') ? 'video' : 'image';
 
-                            if (actualMedia.startsWith('ar://')) {
-                                actualMedia = actualMedia.replace('ar://', 'https://gateway.irys.xyz/');
-                            } else if (!actualMedia.startsWith('http')) {
-                                actualMedia = `https://gateway.irys.xyz/${typeof extractIrysId === 'function' ? extractIrysId(actualMedia) : actualMedia}`;
-                            }
-
-                            const newUrls = typeof buildIrysUrls === 'function' ? buildIrysUrls(actualMedia) : [actualMedia];
-                            return await resolveMediaUrl(newUrls, signal, depth + 1, explicitType); 
-                        }
-                    }
-                } catch (streamErr) {
-                    console.warn("[Media Resolver] Stream aborted or size exceeded:", streamErr.message);
-                } finally {
-                    reader.releaseLock();
-                }
+                resolve({ url: url, isBlob: false, sourceUrl: url, type: type, winnerController: controller });
+            } catch (err) {
+                clearTimeout(timeoutId);
+                reject(err);
             }
+        });
+    });
 
-            let type = 'image';
-            if (explicitType) {
-                type = explicitType.includes('video') ? 'video' : 'image';
-            } else {
-                const isVideo = contentType.startsWith('video/') || cleanUrl.match(/\.(mp4|webm|mov)$/i);
-                type = isVideo ? 'video' : 'image';
+    try {
+        // Race all gateways. First to respond with valid headers wins.
+        const winner = await Promise.any(fetchPromises);
+        
+        // CRITICAL: Abort all slower/pending requests to prevent memory leaks
+        raceControllers.forEach(ctrl => {
+            if (ctrl !== winner.winnerController) {
+                ctrl.abort();
             }
+        });
 
-            if ('caches' in window) {
-                try {
-                    const cache = await caches.open(CACHE_NAME);
-                    cache.put(cleanUrl, response.clone()).catch(() => {}); 
-                } catch (e) {}
-            }
-            
-            const blob = await response.blob();
-            const objUrl = URL.createObjectURL(blob);
-            
-            if (signal && signal.aborted) { URL.revokeObjectURL(objUrl); throw new Error('Aborted'); }
-            
-            if (typeof registerBlobForGc === 'function') registerBlobForGc(cleanUrl, objUrl, type === 'video');
-            return { url: objUrl, isBlob: true, sourceUrl: url, type: type };
-            
-        } catch (e) {
-            if (e.name === 'AbortError') throw e;
-            console.warn(`[Media Resolver] Fetch blocked by CORS or HTTP Error for ${url}. Falling back to direct URI injection.`);
-            continue;
-        }
+        return { url: winner.url, isBlob: winner.isBlob, sourceUrl: winner.sourceUrl, type: winner.type };
+    } catch (aggregateErr) {
+        throw new Error("All gateways failed or timed out.");
     }
-    
-    const fallbackUrl = typeof urlList[0] === 'string' ? urlList[0].split('?')[0] : urlList[0];
-    let type = 'image';
-    if (explicitType) {
-        type = explicitType.includes('video') ? 'video' : 'image';
-    } else {
-        const isVideoFallback = fallbackUrl.match(/\.(mp4|webm|mov|m3u8)$/i);
-        type = isVideoFallback ? 'video' : 'image';
-    }
-    return { url: fallbackUrl, isBlob: false, sourceUrl: urlList[0], type: type };
 }
 
 function renderMediaToDOM(container, resolvedMedia, mediaType, abortSignal) {
@@ -5732,34 +5775,25 @@ async function auditTokenFromLedger(tokenId) {
         else if (isMintedEver) status = 'BURNED';
 
         if (status === 'UNCLAIMED') {
-            let preMintFrontUri = "";
-            if (window.IMPERIAL_MANIFEST && window.IMPERIAL_MANIFEST[String(tokenId)]) {
-                const manifestData = window.IMPERIAL_MANIFEST[String(tokenId)];
-                preMintFrontUri = typeof manifestData === 'string' ? manifestData.trim() : String(manifestData.irys_id || "").trim();
-            }
-
+            // LAYER 1: STRICT DIRECT STRING EXTRACTION (NO JSON PARSING)
             let displayImageUri = "";
-            const imgManifest = window.IMAGE_MANIFEST || window.IMPERIAL_MANIFEST_IMAGE;
-            if (imgManifest && imgManifest[String(tokenId)]) {
-                const rawImageId = String(imgManifest[String(tokenId)]).trim();
-                if (rawImageId) {
-                    displayImageUri = rawImageId.startsWith('http') ? rawImageId : `https://gateway.irys.xyz/${rawImageId}`;
-                }
-            }
             
-            if (!displayImageUri && preMintFrontUri) {
-                displayImageUri = preMintFrontUri.startsWith('http') ? preMintFrontUri : `https://gateway.irys.xyz/${preMintFrontUri}`;
+            if (window.IMAGE_MANIFEST && window.IMAGE_MANIFEST[String(tokenId)]) {
+                displayImageUri = String(window.IMAGE_MANIFEST[String(tokenId)]).trim();
+            } else if (window.IMPERIAL_MANIFEST && window.IMPERIAL_MANIFEST[String(tokenId)]) {
+                displayImageUri = String(window.IMPERIAL_MANIFEST[String(tokenId)]).trim();
             }
 
-            if (preMintFrontUri !== "") {
-                currentLoadedMediaData.front = preMintFrontUri; 
+            if (displayImageUri !== "") {
+                currentLoadedMediaData.front = displayImageUri; 
                 currentLoadedMediaData.back = "";
                 currentLoadedMediaData.video = "";
 
                 if (typeof autoMapMetadata === 'function') autoMapMetadata(tokenId);
 
                 if (typeof renderToViewport === 'function') {
-                    renderToViewport('previewFrontContainer', displayImageUri, "Obverse aspect currently unassigned.", "image");
+                    // Pass "direct-image" to bypass all fetch/MIME checks
+                    renderToViewport('previewFrontContainer', displayImageUri, "Obverse aspect currently unassigned.", "direct-image");
                     renderToViewport('previewBackContainer', "", "Void element data layer uninitialized.", "video");
                 }
 
@@ -5770,12 +5804,12 @@ async function auditTokenFromLedger(tokenId) {
                     const line1 = document.createTextNode(`CELL NODE ID: ${tokenId} `);
                     const br = document.createElement('br');
 
-                    const safeOwner = mappedNode.owner ? (typeof sanitizeForDOM === 'function' ? sanitizeForDOM(mappedNode.owner) : String(mappedNode.owner)) : "0x0000000000000000000000000000000000000000";
+                    const safeOwner = (mappedNode && mappedNode.owner) ? (typeof sanitizeForDOM === 'function' ? sanitizeForDOM(mappedNode.owner) : String(mappedNode.owner)) : "0x0000000000000000000000000000000000000000";
                     const line2 = document.createTextNode(`ACCREDITED ROOT: ${safeOwner.slice(0,6)}...${safeOwner.slice(-4)} // NOVA RATIFICATION: `);
 
                     const sanctifiedSpan = document.createElement('span');
-                    sanctifiedSpan.className = mappedNode.isSanctified ? 'text-emerald-400 font-bold' : 'text-slate-500';
-                    sanctifiedSpan.textContent = mappedNode.isSanctified ? 'AFFIRMED' : 'DORMANT';
+                    sanctifiedSpan.className = (mappedNode && mappedNode.isSanctified) ? 'text-emerald-400 font-bold' : 'text-slate-500';
+                    sanctifiedSpan.textContent = (mappedNode && mappedNode.isSanctified) ? 'AFFIRMED' : 'DORMANT';
 
                     displayData.append(line1, br, line2, sanctifiedSpan);
                 }
@@ -5789,6 +5823,7 @@ async function auditTokenFromLedger(tokenId) {
             throw new Error("VOID_ELEMENT");
 
         } else {
+            // LAYER 2: ACTIVE STATE (ON-CHAIN RESOLUTION)
             const currentEpoch = Math.floor(Date.now() / 1000);
             const btnBurn = document.getElementById('btnBurnToken');
             if (mappedNode.votingLockUntil && mappedNode.votingLockUntil > currentEpoch) {
@@ -5814,7 +5849,8 @@ async function auditTokenFromLedger(tokenId) {
             if (typeof loadDeedMetadata === 'function') loadDeedMetadata(tokenId);
 
             if (typeof renderToViewport === 'function') {
-                renderToViewport('previewFrontContainer', currentLoadedMediaData.front, "Obverse aspect currently unassigned. Engage rebirth parameters.", "image");
+                // Pass null to trigger Layer 2 Gateway Racing & MIME checking
+                renderToViewport('previewFrontContainer', currentLoadedMediaData.front, "Obverse aspect currently unassigned. Engage rebirth parameters.", null);
             }
 
             const backContainer = document.getElementById('previewBackContainer');
@@ -5822,7 +5858,7 @@ async function auditTokenFromLedger(tokenId) {
                 if (mySession !== currentAuditSession) return;
                 if (mappedNode.back && String(mappedNode.back).trim() !== "") {
                     if (typeof renderToViewport === 'function') {
-                        renderToViewport('previewBackContainer', currentLoadedMediaData.back, "Reverse diagnostic data trace is currently null.", "video");
+                        renderToViewport('previewBackContainer', currentLoadedMediaData.back, "Reverse diagnostic data trace is currently null.", null);
                     }
                 } else {
                     if (backContainer) {
@@ -5857,7 +5893,6 @@ async function auditTokenFromLedger(tokenId) {
                 displayData.append(line1, rankSpan, br, line2, sanctifiedSpan);
             }
             
-            // 🛡️ DIVIDEND CLAIM BUTTON LOGIC
             const claimBtn = document.getElementById('btnClaimReward');
             if (claimBtn) {
                 try {
@@ -5958,7 +5993,9 @@ const matrixThumbnailObserver = new IntersectionObserver((entries, observer) => 
 
                 if (/\.(mp4|webm|mov|m3u8)$/i.test(mediaUrl.split('?')[0])) {
                     img.dataset.resolved = "video_skipped";
-                    img.style.display = 'none';
+                    img.style.visibility = 'hidden';
+                    img.style.opacity = '0';
+
                     const container = img.parentElement;
                     if (container) {
                         const videoIcon = document.createElement('span');
@@ -6049,7 +6086,10 @@ function renderToNodeCard(tokenId) {
     let needsObserver = false;
 
     if (state.status === 'UNCLAIMED') {
-        const localData = window.IMAGE_MANIFEST ? window.IMAGE_MANIFEST[String(tokenId)] : null;
+        let localData = window.IMAGE_MANIFEST ? window.IMAGE_MANIFEST[String(tokenId)] : null;
+        if (!localData && window.IMPERIAL_MANIFEST) {
+            localData = window.IMPERIAL_MANIFEST[String(tokenId)];
+        }
         const localHash = typeof localData === 'object' ? (localData.image || localData.irys_id) : localData;
 
         if (localHash && typeof localHash === 'string' && localHash.trim() !== "") {
@@ -6106,14 +6146,15 @@ function renderToNodeCard(tokenId) {
             img.onerror = null;
         };
 
-        img.onerror = () => {
-            img.onload = null;
-            img.onerror = null;
-            
+        const handleError = () => {
             const currentSrc = img.src || "";
             if (currentSrc.includes('gateway.irys.xyz')) {
                 img.src = currentSrc.replace('gateway.irys.xyz', 'arweave.net');
+            } else if (currentSrc.includes('arweave.net')) {
+                img.src = currentSrc.replace('arweave.net', 'ar-io.net');
             } else {
+                img.onload = null;
+                img.onerror = null;
                 img.remove();
                 const shortAddr = document.createElement('span');
                 shortAddr.className = 'text-[7px] font-bold text-slate-400 bg-black/80 px-1 rounded border border-slate-700';
@@ -6121,6 +6162,7 @@ function renderToNodeCard(tokenId) {
                 mediaContainer.appendChild(shortAddr);
             }
         };
+        img.onerror = handleError;
         
         mediaContainer.appendChild(img);
         node.appendChild(mediaContainer);
