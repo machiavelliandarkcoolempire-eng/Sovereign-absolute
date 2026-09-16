@@ -501,7 +501,7 @@
     </div>
 </div>
 <!-- 🧬 สิ้นสุด Section: ห้อง DNA STUDIO -->
-
+</section>
 <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5 mb-6 relative z-10">
     <div class="chiaroscuro-bg p-5 rounded-2xl border-l-4 border-amber-500">
         <span class="text-[10px] font-mono uppercase text-stone-400 flex justify-between items-center mb-2 tracking-wider">
@@ -515,7 +515,7 @@
     </div>
     <div class="chiaroscuro-bg p-5 rounded-2xl border-l-4 border-rose-700">
         <span class="text-[10px] font-mono uppercase text-stone-400 block mb-2 tracking-wider">SANCTIFIED ACTIVE DEEDS</span>
-        <div id="displaySupply" class="text-2xl md:text-3xl font-black red-vivid font-mono mt-1">0 / 333</div>
+        <div id="matrixActiveCount" class="text-2xl md:text-3xl font-black red-vivid font-mono mt-1">0 / 333</div>
     </div>
     <div class="chiaroscuro-bg p-5 rounded-2xl border-l-4 border-amber-700 sm:col-span-2 lg:col-span-2">
         <span class="text-[10px] font-mono uppercase text-stone-400 block mb-2 tracking-wider">TRIBUTE TARIFF METRICS</span>
@@ -1257,6 +1257,8 @@ let irysContract = null;
 let isTransactionPending = false;
 let walletSessionController = new AbortController();
 
+// ประกาศและผูกเข้า Global Window โดยตรง พร้อมกำหนดค่าให้เป็น Map ทันที
+window.matrixDOMCache = new Map();
 window.NODE_STATE_MAP = new Map();
 window._mediaConfirmActive = false;
 window._actionConfirmActive = false;
@@ -1267,7 +1269,6 @@ const blobGcCache = new Map();
 const GLOBAL_NODE_CACHE = new Map();
 const MAX_NODE_CACHE = 50;
 const PENDING_AUTOMAP_REQUESTS = new Map(); 
-const matrixDOMCache = new Map(); 
 
 let isFetchingProposalsLock = false; 
 let searchDebounceTimer = null;
@@ -1289,14 +1290,14 @@ let currentLoadedMediaData = window.SystemState.currentLoadedMediaData;
 const BASE_MAINNET_CHAIN_ID = '0x2105';
 const GENERAL_ENDPOINTS = [
     'https://base-mainnet.g.alchemy.com/v2/wR5UgtUrkfPjKnqfMhm8k',
-    'https://mainnet.base.org',                                   
+    'https://mainnet.base.org',                                      
     'https://base.llamarpc.com',                                  
     'https://base-rpc.publicnode.com'
 ];
 
 const IRYS_ENDPOINTS = [
     'https://base-mainnet.g.alchemy.com/v2/XOBcrOR6Zzmrgjg9osZWR', 
-    'https://mainnet.base.org',                                   
+    'https://mainnet.base.org',                                     
     'https://base.llamarpc.com',                                  
     'https://base-rpc.publicnode.com'
 ];
@@ -5407,7 +5408,10 @@ async function renderToViewport(containerId, path, defaultText, explicitType = n
         return;
     }
 
-    renderLoadingSkeleton(container);
+    // 🚀 ดักข้าม Skeleton Loader ถ้าเป็นวิดีโอ/รูปยิงตรง เพื่อไม่ให้จอกระพริบสีเทา
+    if (explicitType !== 'direct-video' && explicitType !== 'direct-image') {
+        renderLoadingSkeleton(container);
+    }
 
     try {
         const resolvedPath = isRawHash ? `https://gateway.irys.xyz/${safePath}` : safePath;
@@ -5417,6 +5421,15 @@ async function renderToViewport(containerId, path, defaultText, explicitType = n
             if (masterController.signal.aborted) return;
             if (typeof renderMediaToDOM === 'function') {
                 renderMediaToDOM(container, { url: resolvedPath, isBlob: false, type: 'image' }, 'image', masterController.signal);
+            }
+            return;
+        }
+
+        // 🚀 LAYER 1.5: DIRECT VIDEO INJECTION (เล่นวิดีโอทันที ไม่ต้องรอเช็ก HEAD)
+        if (explicitType === 'direct-video') {
+            if (masterController.signal.aborted) return;
+            if (typeof renderMediaToDOM === 'function') {
+                renderMediaToDOM(container, { url: resolvedPath, isBlob: safePath.startsWith('blob:'), type: 'video' }, 'video', masterController.signal);
             }
             return;
         }
@@ -5452,13 +5465,11 @@ async function resolveMediaUrl(urlList, signal, depth = 0, explicitType = null) 
         throw new Error('INVALID_URL_LIST');
     }
 
-    // 🚀 ฟิกตายตัวตามสั่ง: ถ้ามี explicitType ส่งมา (image หรือ video) บังคับใช้เลย ไม่ต้องยิง HEAD เช็คให้เสียเวลา
-    if (explicitType === 'image' || explicitType === 'video' || explicitType === 'direct-image') {
-        const finalType = explicitType === 'direct-image' ? 'image' : explicitType;
+    if (explicitType === 'image' || explicitType === 'video' || explicitType === 'direct-image' || explicitType === 'direct-video') {
+        const finalType = (explicitType === 'direct-image') ? 'image' : (explicitType === 'direct-video' ? 'video' : explicitType);
         return { url: urlList[0], isBlob: false, sourceUrl: urlList[0], type: finalType };
     }
 
-    // LAYER 2: GATEWAY RACING & MIME VERIFICATION
     const timeoutMs = 5000;
     const raceControllers = [];
 
@@ -5467,25 +5478,21 @@ async function resolveMediaUrl(urlList, signal, depth = 0, explicitType = null) 
             const controller = new AbortController();
             raceControllers.push(controller);
 
-            // Bind to parent signal
             if (signal) {
                 if (signal.aborted) return reject(new Error('Aborted'));
                 signal.addEventListener('abort', () => controller.abort(), { once: true });
             }
 
-            // Strict 5000ms timeout
             const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
             try {
                 const cleanUrl = typeof url === 'string' ? url.split('?')[0] : url;
                 
-                // Fast-path for known video extensions
                 if (/\.(mp4|webm|mov|m3u8)$/i.test(cleanUrl)) {
                     clearTimeout(timeoutId);
                     return resolve({ url: url, isBlob: false, sourceUrl: url, type: 'video', winnerController: controller });
                 }
 
-                // Execute HEAD request to verify MIME type without downloading binary
                 const response = await fetch(url, {
                     method: 'HEAD',
                     signal: controller.signal,
@@ -5509,10 +5516,8 @@ async function resolveMediaUrl(urlList, signal, depth = 0, explicitType = null) 
     });
 
     try {
-        // Race all gateways. First to respond with valid headers wins.
         const winner = await Promise.any(fetchPromises);
         
-        // CRITICAL: Abort all slower/pending requests to prevent memory leaks
         raceControllers.forEach(ctrl => {
             if (ctrl !== winner.winnerController) {
                 ctrl.abort();
@@ -5521,7 +5526,6 @@ async function resolveMediaUrl(urlList, signal, depth = 0, explicitType = null) 
 
         return { url: winner.url, isBlob: winner.isBlob, sourceUrl: winner.sourceUrl, type: winner.type };
     } catch (aggregateErr) {
-        // Fallback เผื่อหลุดมา
         return { url: urlList[0], isBlob: false, sourceUrl: urlList[0], type: 'image' };
     }
 }
@@ -5634,7 +5638,7 @@ function renderMediaToDOM(container, resolvedMedia, mediaType, abortSignal) {
         el.muted = true; 
         el.playsInline = true; 
         el.setAttribute('webkit-playsinline', 'true');
-        el.preload = 'metadata'; 
+        el.preload = 'auto'; // 🚀 บังคับ Preload ไฟล์วิดีโอมารอไว้ใน RAM ทันที
         
         const handlePlay = (videoEl) => {
             if (abortSignal && abortSignal.aborted) return;
@@ -5792,17 +5796,16 @@ function handleSlotClick(slotNum) {
     const targetUri = clickedSlot ? clickedSlot.getAttribute('data-uri') : "";
 
     if (targetUri && targetUri.trim() !== "" && !targetUri.includes("ใส่ลิงก์")) {
-        appendLog(`Loading Template Framework 0${slotNum} onto billboard...`, "text-blue-400");
-        renderToViewport('previewFrontContainer', targetUri, "Loading Template...", "video");
+        if (typeof appendLog === 'function') appendLog(`Loading Template Framework 0${slotNum} onto billboard...`, "text-blue-400");
+        // 🚀 ยิง direct-video เพื่อข้ามการสแกนและแสดงผลวิดีโอทันที
+        renderToViewport('previewFrontContainer', targetUri, "Loading Template...", "direct-video");
     } else {
-        appendLog(`Template Framework 0${slotNum} URI is missing or invalid.`, "text-red-500");
+        if (typeof appendLog === 'function') appendLog(`Template Framework 0${slotNum} URI is missing or invalid.`, "text-red-500");
         if (frontContainer) {
             renderEmptyState(frontContainer, `[ TEMPLATE 0${slotNum} NOT CONFIGURED ]`, "text-slate-500");
         }
     }
 }
-
-
 
 async function auditTokenFromLedger(tokenId) {
     if (typeof resetAdminInputs === 'function') resetAdminInputs();
@@ -6063,22 +6066,21 @@ const matrixThumbnailObserver = new IntersectionObserver((entries, observer) => 
         if (entry.isIntersecting) {
             const img = entry.target;
             
-            // Defensive guard: Ensure target is actually an image element
             if (!img || !(img instanceof HTMLImageElement)) return;
 
-            observer.unobserve(img); // Stop observing once visible
+            observer.unobserve(img);
 
             const mediaUrl = img.dataset.metadataUrl;
             if (mediaUrl && typeof mediaUrl === 'string' && !img.dataset.resolved) {
                 img.dataset.resolved = "true";
-
-                // STRICT IMAGE-ONLY POLICY ENFORCED: Direct injection, no video checks allowed.
                 img.src = mediaUrl;
             }
         }
     });
 }, { rootMargin: "250px" });
 
+
+// 2. RENDER INDIVIDUAL NODE CARD WITH DIRECT MANIFEST PRIMITIVE RESOLUTION
 function renderToNodeCard(tokenId) {
     if (tokenId === null || tokenId === undefined) return;
     
@@ -6088,8 +6090,16 @@ function renderToNodeCard(tokenId) {
     const node = window.matrixDOMCache ? window.matrixDOMCache.get(numId) : document.querySelector(`[data-token-id="${numId}"]`);
     if (!node || !(node instanceof HTMLElement)) return;
     
-    const state = window.NODE_STATE_MAP ? window.NODE_STATE_MAP.get(numId) : null;
-    if (!state) return;
+    // 🛡️ FALLBACK STATE: If RPC state is not populated yet, default to UNCLAIMED so manifest images load immediately
+    let state = window.NODE_STATE_MAP ? window.NODE_STATE_MAP.get(numId) : null;
+    if (!state) {
+        state = {
+            status: 'UNCLAIMED',
+            owner: null,
+            isCurrentUser: false,
+            metadataUrl: null
+        };
+    }
 
     // 1. Clear existing media safely
     const existingMedia = node.querySelector('.node-media-container');
@@ -6107,24 +6117,38 @@ function renderToNodeCard(tokenId) {
     node.style.position = 'relative';
     node.style.overflow = 'hidden';
 
-    // 3. Extract URL strictly based on Layer 1 / Layer 2 specs
+    // 3. DIRECT MANIFEST PRIMITIVE RESOLUTION (image URL / TX_ID String)
     let displayImgUrl = "";
     if (state.status === 'UNCLAIMED') {
-        const strTokenId = String(numId); // Strict string cast for dictionary lookup
-        let localData = (window.IMAGE_MANIFEST && window.IMAGE_MANIFEST[strTokenId]) 
-            ? window.IMAGE_MANIFEST[strTokenId] 
-            : (window.IMPERIAL_MANIFEST ? window.IMPERIAL_MANIFEST[strTokenId] : null);
+        const strTokenId = String(numId);
+        let rawManifestData = (window.IMPERIAL_MANIFEST && window.IMPERIAL_MANIFEST[strTokenId]) 
+            ? window.IMPERIAL_MANIFEST[strTokenId] 
+            : (window.IMAGE_MANIFEST ? window.IMAGE_MANIFEST[strTokenId] : null);
         
-        // STRICT PRIMITIVE BINDING: Must be a string, no object extraction allowed
-        if (localData && typeof localData === 'string' && localData.trim() !== "") {
-            const cleanData = localData.trim();
-            displayImgUrl = cleanData.startsWith('http') ? cleanData : `https://gateway.irys.xyz/${cleanData.replace(/^ar:\/\//i, '')}`;
+        let targetTxOrUrl = "";
+        if (rawManifestData) {
+            if (typeof rawManifestData === 'string') {
+                targetTxOrUrl = rawManifestData.trim();
+            } else if (typeof rawManifestData === 'object' && rawManifestData !== null) {
+                targetTxOrUrl = (rawManifestData.image || rawManifestData.irys_id || rawManifestData.url || rawManifestData.tx_id || "").trim();
+            }
+        }
+
+        if (targetTxOrUrl !== "") {
+            if (targetTxOrUrl.startsWith('http://') || targetTxOrUrl.startsWith('https://')) {
+                displayImgUrl = targetTxOrUrl;
+            } else {
+                const cleanHash = targetTxOrUrl.replace(/^ar:\/\//i, '');
+                displayImgUrl = `https://gateway.irys.xyz/${cleanHash}`;
+            }
         }
     } else if (state.status === 'ACTIVE' || state.status === 'LOCKED') {
         const contractFrontUri = state.metadataUrl;
         if (contractFrontUri && typeof contractFrontUri === 'string' && contractFrontUri.trim() !== "") {
             const cleanContractUri = typeof extractIrysId === 'function' ? extractIrysId(contractFrontUri) : contractFrontUri.trim();
-            displayImgUrl = cleanContractUri.startsWith('http') ? cleanContractUri : `https://gateway.irys.xyz/${cleanContractUri}`;
+            displayImgUrl = cleanContractUri.startsWith('http://') || cleanContractUri.startsWith('https://') 
+                ? cleanContractUri 
+                : `https://gateway.irys.xyz/${cleanContractUri.replace(/^ar:\/\//i, '')}`;
         }
     }
 
@@ -6136,6 +6160,7 @@ function renderToNodeCard(tokenId) {
         const img = document.createElement('img');
         img.className = 'w-full h-full object-cover opacity-70 hover:opacity-100 transition-opacity';
         img.dataset.metadataUrl = displayImgUrl;
+        img.crossOrigin = "anonymous"; // 🛡️ FIX: Prevent Canvas Tainting & Mobile Render Blocks
 
         if (typeof matrixThumbnailObserver !== 'undefined') {
             matrixThumbnailObserver.observe(img);
@@ -6154,7 +6179,6 @@ function renderToNodeCard(tokenId) {
         mediaContainer.appendChild(img);
         node.appendChild(mediaContainer);
         
-        // Elevate number text above image
         const numDiv = node.querySelector('div:not(.node-media-container)');
         if (numDiv && numDiv instanceof HTMLElement) {
             numDiv.style.position = 'relative';
@@ -6188,6 +6212,7 @@ function renderToNodeCard(tokenId) {
     }
 }
 
+
 function bindNodeOwnership(walletAddress) {
     if (!window.NODE_STATE_MAP || window.NODE_STATE_MAP.size === 0) return;
     
@@ -6209,100 +6234,107 @@ function bindNodeOwnership(walletAddress) {
 }
 
 async function syncActiveMatrixNodes() { 
+    // 🛡️ 1. Initialize State Map if missing
+    if (typeof window.NODE_STATE_MAP === 'undefined' || !window.NODE_STATE_MAP) {
+        window.NODE_STATE_MAP = new Map();
+    }
+
     const activeContract = (typeof secureContract !== 'undefined' && secureContract) 
         ? secureContract 
         : (typeof readOnlyContract !== 'undefined' ? readOnlyContract : null); 
         
-    if (!activeContract || typeof activeContract.getAllActiveTokens !== 'function') return; 
-    
-    try { 
-        const activeTokens = await activeContract.getAllActiveTokens();
-        const activeSet = new Set(activeTokens.map(t => Number(t))); 
-        
-        const activeCountEl = document.getElementById('matrixActiveCount');
-        if (activeCountEl) activeCountEl.textContent = activeSet.size.toString();
-        
-        const calls = [];
-        for (let i = 1; i <= 333; i++) {
-            calls.push({ target: CONTRACT_ADDRESS, allowFailure: true, callData: activeContract.interface.encodeFunctionData("genesisMinted", [i.toString()]) });
-            calls.push({ target: CONTRACT_ADDRESS, allowFailure: true, callData: activeContract.interface.encodeFunctionData("tokenVotingLockUntil", [i.toString()]) });
-            calls.push({ target: CONTRACT_ADDRESS, allowFailure: true, callData: activeContract.interface.encodeFunctionData("getDeedData", [i.toString()]) });
-        }
-        
-        const providerTarget = (typeof readOnlyProvider !== 'undefined' && readOnlyProvider) ? readOnlyProvider : (typeof provider !== 'undefined' ? provider : null);
-        if (!providerTarget) throw new Error("[RPC] No valid provider targeting available for Multicall.");
-
-        const results = await debouncedMulticall(providerTarget, calls);
-        if (!results || results.length === 0) throw new Error("[RPC] Multicall yielded null response.");
-
-        const currentEpoch = Math.floor(Date.now() / 1000);
-        const currentUser = (typeof signer !== 'undefined' && signer) ? (await signer.getAddress()).toLowerCase() : null;
-        
-        for (let i = 1; i <= 333; i++) { 
-            const resGen = results[(i-1)*3];
-            const resLock = results[(i-1)*3 + 1];
-            const resDeed = results[(i-1)*3 + 2];
+    // 🛡️ 2. Attempt RPC Sync (DO NOT RETURN ON FAILURE)
+    if (activeContract && typeof activeContract.getAllActiveTokens === 'function') {
+        try { 
+            const activeTokens = await activeContract.getAllActiveTokens();
+            const activeSet = new Set(activeTokens.map(t => Number(t))); 
             
-            let isMintedEver = false;
-            let lockUntil = 0;
-            let owner = null;
-            let frontUri = null;
-
-            try {
-                if (resGen?.success && resGen.returnData !== "0x") {
-                    isMintedEver = activeContract.interface.decodeFunctionResult("genesisMinted", resGen.returnData)[0];
-                }
-                if (resLock?.success && resLock.returnData !== "0x") {
-                    lockUntil = Number(activeContract.interface.decodeFunctionResult("tokenVotingLockUntil", resLock.returnData)[0]);
-                }
-                if (resDeed?.success && resDeed.returnData !== "0x") {
-                    const deedData = activeContract.interface.decodeFunctionResult("getDeedData", resDeed.returnData);
-                    owner = deedData[0];
-                    frontUri = deedData[3];
-                }
-            } catch (decodeErr) {
-                console.warn(`[SYNC] Decoding failed for Node #${i}`, decodeErr);
+            const activeCountEl = document.getElementById('matrixActiveCount');
+            if (activeCountEl) activeCountEl.textContent = activeSet.size.toString();
+            
+            const calls = [];
+            for (let i = 1; i <= 333; i++) {
+                calls.push({ target: CONTRACT_ADDRESS, allowFailure: true, callData: activeContract.interface.encodeFunctionData("genesisMinted", [i.toString()]) });
+                calls.push({ target: CONTRACT_ADDRESS, allowFailure: true, callData: activeContract.interface.encodeFunctionData("tokenVotingLockUntil", [i.toString()]) });
+                calls.push({ target: CONTRACT_ADDRESS, allowFailure: true, callData: activeContract.interface.encodeFunctionData("getDeedData", [i.toString()]) });
             }
+            
+            const providerTarget = (typeof readOnlyProvider !== 'undefined' && readOnlyProvider) ? readOnlyProvider : (typeof provider !== 'undefined' ? provider : null);
+            
+            if (providerTarget) {
+                const results = await debouncedMulticall(providerTarget, calls);
+                if (results && results.length > 0) {
+                    const currentEpoch = Math.floor(Date.now() / 1000);
+                    const currentUser = (typeof signer !== 'undefined' && signer) ? (await signer.getAddress()).toLowerCase() : null;
+                    
+                    for (let i = 1; i <= 333; i++) { 
+                        const resGen = results[(i-1)*3];
+                        const resLock = results[(i-1)*3 + 1];
+                        const resDeed = results[(i-1)*3 + 2];
+                        
+                        let isMintedEver = false;
+                        let lockUntil = 0;
+                        let owner = null;
+                        let frontUri = null;
 
-            const isActive = activeSet.has(i);
-            const isLocked = lockUntil > currentEpoch;
-            const status = isActive ? (isLocked ? 'LOCKED' : 'ACTIVE') : (isMintedEver ? 'BURNED' : 'UNCLAIMED');
+                        try {
+                            if (resGen?.success && resGen.returnData !== "0x") {
+                                isMintedEver = activeContract.interface.decodeFunctionResult("genesisMinted", resGen.returnData)[0];
+                            }
+                            if (resLock?.success && resLock.returnData !== "0x") {
+                                lockUntil = Number(activeContract.interface.decodeFunctionResult("tokenVotingLockUntil", resLock.returnData)[0]);
+                            }
+                            if (resDeed?.success && resDeed.returnData !== "0x") {
+                                const deedData = activeContract.interface.decodeFunctionResult("getDeedData", resDeed.returnData);
+                                owner = deedData[0];
+                                frontUri = deedData[3];
+                            }
+                        } catch (decodeErr) {
+                            console.warn(`[SYNC] Decoding failed for Node #${i}`, decodeErr);
+                        }
 
-            window.NODE_STATE_MAP.set(i, {
-                owner: owner && owner !== ethers.ZeroAddress ? owner : null,
-                isCurrentUser: currentUser && owner ? (currentUser === owner.toLowerCase()) : false,
-                metadataUrl: frontUri,
-                imageUrl: frontUri ? buildIrysUrl(frontUri) : null,
-                status: status
-            });
+                        const isActive = activeSet.has(i);
+                        const isLocked = lockUntil > currentEpoch;
+                        const status = isActive ? (isLocked ? 'LOCKED' : 'ACTIVE') : (isMintedEver ? 'BURNED' : 'UNCLAIMED');
+
+                        window.NODE_STATE_MAP.set(i, {
+                            owner: owner && owner !== ethers.ZeroAddress ? owner : null,
+                            isCurrentUser: currentUser && owner ? (currentUser === owner.toLowerCase()) : false,
+                            metadataUrl: frontUri,
+                            imageUrl: frontUri && typeof buildIrysUrl === 'function' ? buildIrysUrl(frontUri) : null,
+                            status: status
+                        });
+                    } 
+                }
+            }
+        } catch (err) { 
+            console.warn("[SYSTEM EXCEPTION] Matrix RPC sync failed. Falling back to Manifest Layer 1.", err); 
         } 
+    }
 
-        const totalNodes = 333;
-        const chunkSize = 40;
-        let currentIndex = 1;
+    // 🛡️ 3. GUARANTEED DOM RENDER EXECUTION (Runs even if RPC fails or is offline)
+    const totalNodes = 333;
+    const chunkSize = 40;
+    let currentIndex = 1;
 
-        function renderChunk() {
-            const end = Math.min(currentIndex + chunkSize - 1, totalNodes);
-            for (let i = currentIndex; i <= end; i++) {
-                // FIX: Exception Boundary Isolation. Prevents grid freeze on single node failure.
-                try {
-                    renderToNodeCard(i);
-                } catch (renderErr) {
-                    console.error(`[GRID RENDER FAULT] Node #${i} failed to render:`, renderErr);
-                }
-            }
-            currentIndex += chunkSize;
-            if (currentIndex <= totalNodes) {
-                requestAnimationFrame(renderChunk);
+    function renderChunk() {
+        const end = Math.min(currentIndex + chunkSize - 1, totalNodes);
+        for (let i = currentIndex; i <= end; i++) {
+            try {
+                renderToNodeCard(i);
+            } catch (renderErr) {
+                console.error(`[GRID RENDER FAULT] Node #${i} failed to render:`, renderErr);
             }
         }
-        
-        requestAnimationFrame(renderChunk);
-
-    } catch (err) { 
-        console.warn("[SYSTEM EXCEPTION] Matrix sync failed/throttled. Maintaining base state.", err); 
-    } 
+        currentIndex += chunkSize;
+        if (currentIndex <= totalNodes) {
+            requestAnimationFrame(renderChunk);
+        }
+    }
+    
+    requestAnimationFrame(renderChunk);
 }
+
         
 
 function setupMatrixGrid() { 
@@ -6319,13 +6351,12 @@ function setupMatrixGrid() {
     for (let i = 1; i <= 333; i++) {
         const node = document.createElement('div');
         node.id = `node-${i}`;
-        node.setAttribute('data-token-id', String(i)); // Strict string cast
+        node.setAttribute('data-token-id', String(i));
         
         const hoverClass = isTouch ? "active:bg-slate-800" : "hover:bg-slate-800";
         node.className = `matrix-node aspect-square w-full bg-slate-950 border border-slate-800 rounded flex flex-col items-center justify-center font-mono text-[8px] sm:text-[10px] md:text-xs text-slate-500 cursor-pointer p-1 sm:p-2 transition-all duration-300 ${hoverClass}`;
         
-        node.style.contentVisibility = 'auto';
-        node.style.contain = 'paint layout'; // FIX: Prevents 0x0 collapse while maintaining performance
+        node.style.contain = 'paint layout';
         node.style.touchAction = 'manipulation';
         
         const innerDiv = document.createElement('div');
