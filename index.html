@@ -36,10 +36,10 @@
         --gold: #d97706;
         --gold-deep: #78350f;
         --gold-pale: #fef08a;
-        --crimson: #00ff3a;
-        --crimson-deep: #100119;
-        --crimson-dark: #1f0001;
-        --hairline: rgba(251, 191, 36, 0.15);
+        --crimson: #fbbf24; /* Replaced with Gold */
+        --crimson-deep: #1c0d02; /* Replaced with Dark Gold/Amber */
+        --crimson-dark: #2d1400; /* Replaced with Dark Gold/Amber */
+        --hairline: rgba(251, 191, 36, 0.25);
     }
 
     html, body { background-color: var(--midnight) !important; }
@@ -51,13 +51,14 @@
         content: "ETH (Ecosystem Vault Allocation)";
         font-size: 0.75rem;
         letter-spacing: normal;
+        color: #fbbf24;
     }
 
     body {
         font-family: 'JetBrains Mono', monospace;
         background-image:
-            radial-gradient(circle at 15% 10%, rgba(217, 119, 6, 0.12) 0%, transparent 45%),
-            radial-gradient(circle at 85% 5%, rgba(190, 18, 60, 0.1) 0%, transparent 45%),
+            radial-gradient(circle at 15% 10%, rgba(217, 119, 6, 0.15) 0%, transparent 45%),
+            radial-gradient(circle at 85% 5%, rgba(251, 191, 36, 0.12) 0%, transparent 45%),
             radial-gradient(ellipse at 50% 110%, rgba(10, 15, 36, 0.95) 0%, transparent 60%);
         background-attachment: fixed;
         padding: clamp(0.5rem, 2vw, 2rem);
@@ -82,8 +83,8 @@
     /* Enhanced Glassmorphism for Panels */
     .chiaroscuro-bg {
         position: relative;
-        background: linear-gradient(160deg, rgba(15, 20, 35, 0.85) 0%, rgba(5, 8, 20, 0.95) 100%);
-        border: 1px solid rgba(251, 191, 36, 0.15);
+        background: linear-gradient(160deg, rgba(20, 15, 10, 0.85) 0%, rgba(5, 8, 20, 0.95) 100%);
+        border: 1px solid rgba(251, 191, 36, 0.3);
         border-radius: 1.25rem;
         backdrop-filter: blur(20px) saturate(130%);
         -webkit-backdrop-filter: blur(20px) saturate(130%);
@@ -93,113 +94,121 @@
     .chiaroscuro-bg::before {
         content: ''; position: absolute; inset: 0 0 auto 0; height: 1px; border-radius: 1.25rem 1.25rem 0 0;
         background: linear-gradient(90deg, transparent 0%, rgba(251, 191, 36, 0.4) 30%, rgba(254, 240, 138, 0.8) 50%, rgba(251, 191, 36, 0.4) 70%, transparent 100%);
-        opacity: 0.6; pointer-events: none;
+        opacity: 0.8; pointer-events: none;
     }
 
-    .gold-text {
+    /* All Text Classes Converted to Metallic Gold */
+    .gold-text, .crimson-text, .red-vivid {
         background: linear-gradient(135deg, #fffbeb 0%, #fef08a 25%, #fbbf24 50%, #d97706 75%, #78350f 100%);
-        -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
-        filter: drop-shadow(0 2px 10px rgba(217, 119, 6, 0.4));
+        -webkit-background-clip: text; 
+        background-clip: text; 
+        -webkit-text-fill-color: transparent;
+        filter: drop-shadow(0 2px 10px rgba(217, 119, 6, 0.5));
     }
 
-    .crimson-text { color: #d97706; text-shadow: 0 0 15px rgba(190, 18, 60, 0.8); }
-    .red-vivid { color: #fbbf22; text-shadow: 0 0 20px rgba(239, 68, 68, 0.6); }
-    .gold-vivid { color: #fcd34d; text-shadow: 0 0 25px rgba(251, 191, 36, 0.8), 0 2px 4px rgba(0, 0, 0, 0.9); }
+    .gold-vivid { 
+        color: #fcd34d; 
+        text-shadow: 0 0 25px rgba(251, 191, 36, 0.8), 0 2px 4px rgba(0, 0, 0, 0.9); 
+    }
 
-    /* Button Animations */
-    .btn-gold-master, .btn-rebirth-bright, .btn-remint-bright { position: relative; overflow: hidden; isolation: isolate; }
-    .btn-gold-master::after, .btn-rebirth-bright::after, .btn-remint-bright::after {
+    /* Gold Buttons (Including Action & Flip Buttons) */
+    .btn-gold-master, .btn-rebirth-bright, .btn-remint-bright, button { 
+        position: relative; 
+        overflow: hidden; 
+        isolation: isolate; 
+    }
+
+    .btn-gold-master::after, .btn-rebirth-bright::after, .btn-remint-bright::after, button::after {
         content: ''; position: absolute; top: 0; left: -150%; width: 70%; height: 100%;
         background: linear-gradient(100deg, transparent 0%, rgba(255, 255, 255, 0.5) 50%, transparent 100%);
         transform: skewX(-25deg); transition: left 0.7s cubic-bezier(0.4, 0, 0.2, 1); pointer-events: none;
     }
-    .btn-gold-master:hover:not(:disabled)::after, .btn-rebirth-bright:hover:not(:disabled)::after, .btn-remint-bright:hover:not(:disabled)::after { left: 150%; }
 
-    .btn-gold-master {
-        background: linear-gradient(135deg, #78350f 0%, #b45309 25%, #fbbf24 50%, #b45309 75%, #78350f 100%);
-        color: #1a0e00; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em;
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.7), 0 0 25px rgba(217, 119, 6, 0.3), inset 0 1px 1px rgba(255, 251, 235, 0.7);
-        transition: all 0.3s ease; border: 1px solid #fef08a;
+    .btn-gold-master:hover:not(:disabled)::after, 
+    .btn-rebirth-bright:hover:not(:disabled)::after, 
+    .btn-remint-bright:hover:not(:disabled)::after,
+    button:hover:not(:disabled)::after { left: 150%; }
+
+    .btn-gold-master, .btn-rebirth-bright, .btn-remint-bright, button {
+        background: linear-gradient(135deg, #78350f 0%, #b45309 25%, #fbbf24 50%, #b45309 75%, #78350f 100%) !important;
+        color: #1a0e00 !important; 
+        font-weight: 900; 
+        text-transform: uppercase; 
+        letter-spacing: 0.1em;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.7), 0 0 25px rgba(217, 119, 6, 0.4), inset 0 1px 1px rgba(255, 251, 235, 0.7);
+        transition: all 0.3s ease; 
+        border: 1px solid #fef08a !important;
     }
-    .btn-gold-master:hover:not(:disabled) {
+
+    .btn-gold-master:hover:not(:disabled),
+    .btn-rebirth-bright:hover:not(:disabled),
+    button:hover:not(:disabled) {
         transform: translateY(-2px);
-        box-shadow: 0 12px 25px rgba(0, 0, 0, 0.8), 0 0 45px rgba(217, 119, 6, 0.6), inset 0 1px 2px rgba(255, 251, 235, 0.9);
+        box-shadow: 0 12px 25px rgba(0, 0, 0, 0.8), 0 0 45px rgba(217, 119, 6, 0.7), inset 0 1px 2px rgba(255, 251, 235, 0.9);
     }
-    .btn-gold-master:disabled { filter: grayscale(100%); opacity: 0.5; cursor: not-allowed; }
 
-    .btn-rebirth-bright {
-        background: linear-gradient(135deg, #200400 0%, #fbbf24 30%, #fef9c3 50%, #fbbf24 70%, #b45309 100%);
-        color: #1a0e00; font-weight: 900; text-transform: uppercase; letter-spacing: 0.12em;
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.7), 0 0 40px rgba(253, 224, 71, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.8);
-        transition: all 0.3s ease; border: 1px solid #fffbeb;
-    }
-    .btn-rebirth-bright:hover:not(:disabled) {
-        transform: translateY(-2px) scale(1.02);
-        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.8), 0 0 60px rgba(253, 224, 71, 0.8), inset 0 1px 2px rgba(255, 255, 255, 1);
-    }
-    .btn-rebirth-bright:disabled { filter: grayscale(100%); opacity: 0.5; cursor: not-allowed; }
-
-    /* Scrollbar */
+    /* Gold Scrollbar */
     .scroll-dark::-webkit-scrollbar { width: 4px; height: 4px; }
     .scroll-dark::-webkit-scrollbar-track { background: rgba(0,0,0,0.5); border-radius: 4px; }
-    .scroll-dark::-webkit-scrollbar-thumb { background: #00fffd; border-radius: 4px; }
-    .scroll-dark::-webkit-scrollbar-thumb:hover { background: #00dddd; }
+    .scroll-dark::-webkit-scrollbar-thumb { background: #d97706; border-radius: 4px; }
+    .scroll-dark::-webkit-scrollbar-thumb:hover { background: #fbbf24; }
     
     .deed-card-container.dynamic-mode {
-    width: 100%;
-    max-width: 450px; 
-    perspective: 1000px;
-    margin: 0 auto;
-}
+        width: 100%;
+        max-width: 450px; 
+        perspective: 1000px;
+        margin: 0 auto;
+    }
 
-.deed-card-inner {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    transition: transform 1.2s cubic-bezier(0.4, 0, 0.2, 1);
-    transform-style: preserve-3d;
-}
+    .deed-card-inner {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        transition: transform 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+        transform-style: preserve-3d;
+    }
 
-/* ⚠️ สำคัญ: Front ต้องเป็น Relative เพื่อให้ Container กางออกตามขนาดเนื้อหาอัตโนมัติ */
-.deed-card-front {
-    position: relative; 
-    width: 100%;
-    height: auto; 
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
-}
+    .deed-card-front {
+        position: relative; 
+        width: 100%;
+        height: auto; 
+        -webkit-backface-visibility: hidden;
+        backface-visibility: hidden;
+    }
 
-/* Back เป็น Absolute ดึงขนาด 100% ล้อตาม Front */
-.deed-card-back {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
-    transform: rotateY(180deg);
-}
+    .deed-card-back {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        -webkit-backface-visibility: hidden;
+        backface-visibility: hidden;
+        transform: rotateY(180deg);
+    }
 
-
+    /* Preview Slot Gold Theme */
     .preview-slot {
-        background: linear-gradient(180deg, rgba(15, 10, 20, 0.9) 0%, rgba(5, 5, 10, 0.98) 100%);
-        border: 1px solid rgba(136, 19, 55, 0.5); transition: all 0.3s ease;
+        background: linear-gradient(180deg, rgba(25, 18, 5, 0.9) 0%, rgba(5, 5, 5, 0.98) 100%);
+        border: 1px solid rgba(217, 119, 6, 0.5); 
+        transition: all 0.3s ease;
     }
     .preview-slot:hover, .preview-slot.active {
-        border-color: rgba(217, 119, 6, 0.9); box-shadow: 0 0 35px rgba(217, 119, 6, 0.3);
+        border-color: rgba(251, 191, 36, 0.9); 
+        box-shadow: 0 0 35px rgba(217, 119, 6, 0.5);
     }
 
-    /* Scanline Banner */
+    /* Scanline Banner Gold Glow */
     .scanline-bar {
-        position: relative; overflow: hidden; border: 1px solid rgba(251, 191, 36, 0.4);
+        position: relative; overflow: hidden; border: 1px solid rgba(251, 191, 36, 0.5);
         border-radius: 1.25rem;
-        background: linear-gradient(135deg, rgba(20, 15, 5, 0.95) 0%, rgba(5, 5, 5, 0.98) 50%, rgba(20, 5, 10, 0.95) 100%);
-        box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.9), 0 0 40px rgba(217, 119, 6, 0.15);
+        background: linear-gradient(135deg, rgba(25, 18, 5, 0.95) 0%, rgba(5, 5, 5, 0.98) 50%, rgba(25, 15, 5, 0.95) 100%);
+        box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.9), 0 0 40px rgba(217, 119, 6, 0.25);
         transition: all 0.4s ease;
     }
     .scanline-bar:hover {
-        border-color: rgba(251, 191, 36, 0.8); box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.9), 0 0 60px rgba(217, 119, 6, 0.4);
+        border-color: rgba(251, 191, 36, 0.9); 
+        box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.9), 0 0 60px rgba(217, 119, 6, 0.5);
     }
     .scanline-bar::before {
         content: ''; position: absolute; top: -10%; left: 0; width: 100%; height: 2px;
@@ -208,50 +217,52 @@
     }
     @keyframes scanline { 0% { top: -10%; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { top: 100%; opacity: 0; } }
 
-    /* Matrix Nodes */
+    /* Matrix Nodes Gold Glow */
     .matrix-node {
         position: relative; transition: all 0.2s ease;
-        background: radial-gradient(circle at 50% 30%, rgba(30, 41, 59, 0.4) 0%, rgba(5, 5, 15, 0.95) 100%);
-        border: 1px solid #1e293b; color: #475569;
+        background: radial-gradient(circle at 50% 30%, rgba(45, 30, 10, 0.4) 0%, rgba(5, 5, 15, 0.95) 100%);
+        border: 1px solid #3f2a08; color: #fcd34d;
     }
     @media (hover: hover) {
-        .matrix-node:hover { transform: scale(1.15) translateY(-2px); z-index: 20; box-shadow: 0 0 20px rgba(255, 255, 255, 0.2); }
+        .matrix-node:hover { transform: scale(1.15) translateY(-2px); z-index: 20; box-shadow: 0 0 20px rgba(251, 191, 36, 0.4); }
     }
-    .rank-prime { border-color: #d97706 !important; box-shadow: inset 0 0 15px rgba(217, 119, 6, 0.4) !important; }
+    .rank-prime { border-color: #d97706 !important; box-shadow: inset 0 0 15px rgba(217, 119, 6, 0.5) !important; }
     .rank-imperial { 
-        border: 2px solid #ea580c !important; box-shadow: inset 0 0 20px rgba(234, 88, 12, 0.5) !important; 
+        border: 2px solid #fbbf24 !important; 
+        box-shadow: inset 0 0 20px rgba(251, 191, 36, 0.6) !important; 
         animation: imperialPulse 2s ease-in-out infinite;
     }
     @keyframes imperialPulse {
-        0%, 100% { box-shadow: 0 0 15px rgba(234, 88, 12, 0.4), inset 0 0 15px rgba(234, 88, 12, 0.4); }
-        50% { box-shadow: 0 0 30px rgba(234, 88, 12, 0.8), inset 0 0 25px rgba(234, 88, 12, 0.6); }
+        0%, 100% { box-shadow: 0 0 15px rgba(251, 191, 36, 0.4), inset 0 0 15px rgba(251, 191, 36, 0.4); }
+        50% { box-shadow: 0 0 30px rgba(251, 191, 36, 0.8), inset 0 0 25px rgba(251, 191, 36, 0.6); }
     }
 
     .node-active {
-        background: radial-gradient(circle at 50% 30%, rgba(6, 182, 212, 0.6) 0%, rgba(8, 51, 68, 0.4) 100%) !important;
-        border-color: #06b6d4 !important; 
-        color: #cffafe !important; 
-        box-shadow: 0 0 25px rgba(6, 182, 212, 0.9), inset 0 0 15px rgba(6, 182, 212, 0.6) !important;
+        background: radial-gradient(circle at 50% 30%, rgba(217, 119, 6, 0.7) 0%, rgba(120, 53, 15, 0.5) 100%) !important;
+        border-color: #fbbf24 !important; 
+        color: #fffbeb !important; 
+        box-shadow: 0 0 25px rgba(251, 191, 36, 0.9), inset 0 0 15px rgba(251, 191, 36, 0.6) !important;
     }
 
-    /* Input Fields */
+    /* Input Fields Gold Focus */
     input[type="text"], input[type="number"] {
         background-color: rgba(0, 0, 0, 0.6);
-        border: 1px solid rgba(63, 63, 70, 0.8);
+        border: 1px solid rgba(217, 119, 6, 0.5);
         color: #fcd34d;
         transition: all 0.3s ease;
     }
     input[type="text"]:focus, input[type="number"]:focus {
         border-color: #fbbf24;
-        box-shadow: 0 0 15px rgba(251, 191, 36, 0.2);
+        box-shadow: 0 0 15px rgba(251, 191, 36, 0.4);
         outline: none;
     }
     
-    /* Tabs */
-    .tab-btn.active { background: rgba(245,158,11,0.15); border-color: rgba(245,158,11,0.8); color: #fbbf24; }
-    .tab-btn:hover:not(.active) { border-color: rgba(245,158,11,0.5); color: #fcd34d; }
+    /* Tabs Gold Active */
+    .tab-btn.active { background: rgba(245,158,11,0.2); border-color: rgba(245,158,11,0.9); color: #fbbf24; }
+    .tab-btn:hover:not(.active) { border-color: rgba(245,158,11,0.6); color: #fcd34d; }
 
 </style>
+
 </head>
 
 <body class="text-slate-100 font-mono antialiased relative">
@@ -529,7 +540,7 @@
         </div>
         <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full md:w-auto">
             <input type="number" id="gridSearchInput" min="1" max="333" placeholder="ISOLATE NODE (1-333)" class="bg-black border border-stone-800 px-4 py-2.5 text-sm font-mono text-amber-500 rounded-lg outline-none focus:border-amber-500 w-full sm:w-56 transition-all" />
-            <span class="text-[11px] font-mono text-stone-400 uppercase whitespace-nowrap bg-stone-950 px-3 py-2.5 rounded-lg border border-stone-800">ACTIVE: <span id="matrixActiveCount" class="text-amber-500 font-bold text-sm">0</span>/333</span>
+            <span class="text-[11px] font-mono text-stone-400 uppercase whitespace-nowrap bg-stone-950 px-3 py-2.5 rounded-lg border border-stone-800">ACTIVE: <span id="displaySupply" class="text-amber-500 font-bold text-sm">0</span>/333</span>
         </div>
     </div>
     <div id="matrixGridContainer" class="grid grid-cols-5 sm:grid-cols-8 md:grid-cols-12 lg:grid-cols-16 gap-2 md:gap-3 max-h-[500px] overflow-y-auto scroll-dark pr-2 p-3 bg-black/50 rounded-xl border border-stone-900 shadow-inner">
@@ -563,7 +574,7 @@
                     <label class="text-[10px] text-stone-400 font-mono block mb-2 uppercase tracking-wider">
                         REVERSE MEDIA (BACK URI) <span class="text-amber-500 font-bold">OPTIONAL</span>
                     </label>
-                    <input type="text" id="rebirthBackUriInput" placeholder="เว้นว่างเพื่ออัปโหลด หรือวาง TX ID" class="w-full bg-black border border-stone-700 p-3.5 text-sm font-mono text-stone-200 rounded-lg outline-none focus:border-amber-500 transition-all" />
+                    <input type="text" id="rebirthBackUriInput" placeholder="TX ID" class="w-full bg-black border border-stone-700 p-3.5 text-sm font-mono text-stone-200 rounded-lg outline-none focus:border-amber-500 transition-all" />
                     <p class="text-[9px] font-mono text-stone-500 mt-2 uppercase leading-relaxed">
                         automatically populate  TX ID.
                     </p>
@@ -5618,13 +5629,12 @@ function renderMediaToDOM(container, resolvedMedia, mediaType, abortSignal) {
     }
 
     if (isVideo) {
-    el.autoplay = true; 
-    el.loop = true; 
-    el.muted = false; // Allow audio context; fallback play button handles autoplay blocks
-    el.playsInline = true; 
-    el.setAttribute('webkit-playsinline', 'true'); // Retain iOS Safari legacy inline playback
-    el.preload = 'metadata'; // Retain media buffering optimization
-
+        el.autoplay = true; 
+        el.loop = true; 
+        el.muted = true; 
+        el.playsInline = true; 
+        el.setAttribute('webkit-playsinline', 'true');
+        el.preload = 'metadata'; 
         
         const handlePlay = (videoEl) => {
             if (abortSignal && abortSignal.aborted) return;
@@ -6048,41 +6058,40 @@ function filterSovereignGrid() {
     }, 250); 
 }
 
-// ==========================================
-// 1. MATRIX THUMBNAIL OBSERVER (STRICT IMAGE ONLY)
-// ==========================================
 const matrixThumbnailObserver = new IntersectionObserver((entries, observer) => {
     entries.forEach((entry) => {
         if (entry.isIntersecting) {
             const img = entry.target;
-            observer.unobserve(img); // คืน Resource ให้ Browser ทันที
+            
+            // Defensive guard: Ensure target is actually an image element
+            if (!img || !(img instanceof HTMLImageElement)) return;
+
+            observer.unobserve(img); // Stop observing once visible
 
             const mediaUrl = img.dataset.metadataUrl;
-            if (mediaUrl && !img.dataset.resolved) {
+            if (mediaUrl && typeof mediaUrl === 'string' && !img.dataset.resolved) {
                 img.dataset.resolved = "true";
-                img.src = mediaUrl; // Direct Primitive Binding
+
+                // STRICT IMAGE-ONLY POLICY ENFORCED: Direct injection, no video checks allowed.
+                img.src = mediaUrl;
             }
         }
     });
 }, { rootMargin: "250px" });
 
-
-// ==========================================
-// 3. RENDER TO NODE CARD (AUDITED & DEFECT-FREE)
-// ==========================================
 function renderToNodeCard(tokenId) {
-    if (!tokenId) return;
+    if (tokenId === null || tokenId === undefined) return;
     
     const numId = Number(tokenId);
-    const node = window.matrixDOMCache ? window.matrixDOMCache.get(numId) : document.querySelector(`[data-token-id="${tokenId}"]`);
-    if (!node) return;
-    
-    // 🛡️ FIX DEFECT #1: Fallback State เพื่อให้ UNCLAIMED Render ได้แม้อยู่นอก MAP
-    const state = (window.NODE_STATE_MAP && window.NODE_STATE_MAP.has(numId)) 
-        ? window.NODE_STATE_MAP.get(numId) 
-        : { status: 'UNCLAIMED', isCurrentUser: false, metadataUrl: "" };
+    if (isNaN(numId) || numId < 1 || numId > 333) return;
 
-    // 1. Clean up old elements
+    const node = window.matrixDOMCache ? window.matrixDOMCache.get(numId) : document.querySelector(`[data-token-id="${numId}"]`);
+    if (!node || !(node instanceof HTMLElement)) return;
+    
+    const state = window.NODE_STATE_MAP ? window.NODE_STATE_MAP.get(numId) : null;
+    if (!state) return;
+
+    // 1. Clear existing media safely
     const existingMedia = node.querySelector('.node-media-container');
     if (existingMedia) {
         const oldImg = existingMedia.querySelector('img');
@@ -6094,45 +6103,39 @@ function renderToNodeCard(tokenId) {
     const existingBadge = node.querySelector('.node-ownership-badge');
     if (existingBadge) existingBadge.remove();
 
+    // 2. Enforce relative positioning for absolute children
     node.style.position = 'relative';
     node.style.overflow = 'hidden';
 
-    // 2. Extract & Sanitize Gateway URL
+    // 3. Extract URL strictly based on Layer 1 / Layer 2 specs
     let displayImgUrl = "";
     if (state.status === 'UNCLAIMED') {
-        let localData = window.IMAGE_MANIFEST ? window.IMAGE_MANIFEST[String(tokenId)] : null;
-        if (!localData && window.IMPERIAL_MANIFEST) localData = window.IMPERIAL_MANIFEST[String(tokenId)];
+        const strTokenId = String(numId); // Strict string cast for dictionary lookup
+        let localData = (window.IMAGE_MANIFEST && window.IMAGE_MANIFEST[strTokenId]) 
+            ? window.IMAGE_MANIFEST[strTokenId] 
+            : (window.IMPERIAL_MANIFEST ? window.IMPERIAL_MANIFEST[strTokenId] : null);
         
-        let rawHash = "";
-        if (typeof localData === 'string') {
-            rawHash = localData;
-        } else if (localData && typeof localData === 'object') {
-            rawHash = localData.image || localData.irys_id || localData.url || "";
-        }
-
-        // 🛡️ FIX DEFECT #2: บังคับ Resolve Gateway ให้รองรับทั้ง HTTP, ar://, irys:// และ Raw Hash
-        if (rawHash && typeof rawHash === 'string' && rawHash.trim() !== "") {
-            const cleanHash = rawHash.replace(/^(ar|irys):\/\//i, '').trim();
-            displayImgUrl = cleanHash.startsWith('http') ? cleanHash : `https://gateway.irys.xyz/${cleanHash}`;
+        // STRICT PRIMITIVE BINDING: Must be a string, no object extraction allowed
+        if (localData && typeof localData === 'string' && localData.trim() !== "") {
+            const cleanData = localData.trim();
+            displayImgUrl = cleanData.startsWith('http') ? cleanData : `https://gateway.irys.xyz/${cleanData.replace(/^ar:\/\//i, '')}`;
         }
     } else if (state.status === 'ACTIVE' || state.status === 'LOCKED') {
-        const contractFrontUri = state.metadataUrl || "";
-        if (typeof contractFrontUri === 'string' && contractFrontUri.trim() !== "") {
-            let cleanContractUri = typeof extractIrysId === 'function' ? extractIrysId(contractFrontUri) : contractFrontUri;
-            cleanContractUri = cleanContractUri.replace(/^(ar|irys):\/\//i, '').trim();
+        const contractFrontUri = state.metadataUrl;
+        if (contractFrontUri && typeof contractFrontUri === 'string' && contractFrontUri.trim() !== "") {
+            const cleanContractUri = typeof extractIrysId === 'function' ? extractIrysId(contractFrontUri) : contractFrontUri.trim();
             displayImgUrl = cleanContractUri.startsWith('http') ? cleanContractUri : `https://gateway.irys.xyz/${cleanContractUri}`;
         }
     }
 
-    // 3. Render Image Layer
-    if (displayImgUrl) {
+    // 4. Render Image Layer
+    if (displayImgUrl !== "") {
         const mediaContainer = document.createElement('div');
         mediaContainer.className = 'node-media-container absolute inset-0 w-full h-full z-0 bg-slate-950';
 
         const img = document.createElement('img');
         img.className = 'w-full h-full object-cover opacity-70 hover:opacity-100 transition-opacity';
         img.dataset.metadataUrl = displayImgUrl;
-        img.crossOrigin = "anonymous";
 
         if (typeof matrixThumbnailObserver !== 'undefined') {
             matrixThumbnailObserver.observe(img);
@@ -6151,9 +6154,9 @@ function renderToNodeCard(tokenId) {
         mediaContainer.appendChild(img);
         node.appendChild(mediaContainer);
         
-        // Z-Index Adjust for Token Number
+        // Elevate number text above image
         const numDiv = node.querySelector('div:not(.node-media-container)');
-        if (numDiv) {
+        if (numDiv && numDiv instanceof HTMLElement) {
             numDiv.style.position = 'relative';
             numDiv.style.zIndex = '20';
             numDiv.style.background = 'rgba(0,0,0,0.6)';
@@ -6162,7 +6165,7 @@ function renderToNodeCard(tokenId) {
         }
     }
 
-    // 4. Ownership & Visual State
+    // 5. Ownership Badge
     if (state.isCurrentUser) {
         node.style.borderColor = '#fbbf24';
         node.style.boxShadow = '0 0 15px rgba(251,191,36,0.6)';
@@ -6175,6 +6178,7 @@ function renderToNodeCard(tokenId) {
         node.style.boxShadow = '';
     }
     
+    // 6. Status Filters
     if (state.status === 'UNCLAIMED' || state.status === 'BURNED') {
         node.style.opacity = '0.4';
         node.style.filter = 'grayscale(100%)';
@@ -6183,7 +6187,6 @@ function renderToNodeCard(tokenId) {
         node.style.filter = 'none';
     }
 }
-
 
 function bindNodeOwnership(walletAddress) {
     if (!window.NODE_STATE_MAP || window.NODE_STATE_MAP.size === 0) return;
@@ -6281,7 +6284,12 @@ async function syncActiveMatrixNodes() {
         function renderChunk() {
             const end = Math.min(currentIndex + chunkSize - 1, totalNodes);
             for (let i = currentIndex; i <= end; i++) {
-                renderToNodeCard(i);
+                // FIX: Exception Boundary Isolation. Prevents grid freeze on single node failure.
+                try {
+                    renderToNodeCard(i);
+                } catch (renderErr) {
+                    console.error(`[GRID RENDER FAULT] Node #${i} failed to render:`, renderErr);
+                }
             }
             currentIndex += chunkSize;
             if (currentIndex <= totalNodes) {
@@ -6294,6 +6302,53 @@ async function syncActiveMatrixNodes() {
     } catch (err) { 
         console.warn("[SYSTEM EXCEPTION] Matrix sync failed/throttled. Maintaining base state.", err); 
     } 
+}
+        
+
+function setupMatrixGrid() { 
+    const grid = document.getElementById('matrixGridContainer'); 
+    if (!grid) return;
+
+    grid.replaceChildren(); 
+    if (window.matrixDOMCache) window.matrixDOMCache.clear();
+    else window.matrixDOMCache = new Map();
+
+    const fragment = document.createDocumentFragment();
+    const isTouch = typeof IS_TOUCH_DEVICE !== 'undefined' && IS_TOUCH_DEVICE;
+
+    for (let i = 1; i <= 333; i++) {
+        const node = document.createElement('div');
+        node.id = `node-${i}`;
+        node.setAttribute('data-token-id', String(i)); // Strict string cast
+        
+        const hoverClass = isTouch ? "active:bg-slate-800" : "hover:bg-slate-800";
+        node.className = `matrix-node aspect-square w-full bg-slate-950 border border-slate-800 rounded flex flex-col items-center justify-center font-mono text-[8px] sm:text-[10px] md:text-xs text-slate-500 cursor-pointer p-1 sm:p-2 transition-all duration-300 ${hoverClass}`;
+        
+        node.style.contentVisibility = 'auto';
+        node.style.contain = 'paint layout'; // FIX: Prevents 0x0 collapse while maintaining performance
+        node.style.touchAction = 'manipulation';
+        
+        const innerDiv = document.createElement('div');
+        innerDiv.className = "flex justify-center w-full items-center leading-none pointer-events-none"; 
+        
+        const numSpan = document.createElement('span');
+        numSpan.textContent = String(i).padStart(3, '0');
+        innerDiv.appendChild(numSpan);
+
+        node.appendChild(innerDiv);
+        fragment.appendChild(node);
+        window.matrixDOMCache.set(i, node);
+    }
+
+    requestAnimationFrame(() => {
+        grid.appendChild(fragment);
+    });
+
+    const searchInput = document.getElementById('gridSearchInput');
+    if (searchInput && !searchInput.dataset.listenerAttached) {
+        searchInput.addEventListener('input', filterSovereignGrid, { passive: true });
+        searchInput.dataset.listenerAttached = "true";
+    }
 }
 
 function switchStation(station) { 
