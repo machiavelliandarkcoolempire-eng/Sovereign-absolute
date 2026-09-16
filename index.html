@@ -36,7 +36,7 @@
         --gold: #d97706;
         --gold-deep: #78350f;
         --gold-pale: #fef08a;
-        --crimson: #0aa0aa;
+        --crimson: #00ff3a;
         --crimson-deep: #100119;
         --crimson-dark: #1f0001;
         --hairline: rgba(251, 191, 36, 0.15);
@@ -144,19 +144,43 @@
     .scroll-dark::-webkit-scrollbar-track { background: rgba(0,0,0,0.5); border-radius: 4px; }
     .scroll-dark::-webkit-scrollbar-thumb { background: #00fffd; border-radius: 4px; }
     .scroll-dark::-webkit-scrollbar-thumb:hover { background: #00dddd; }
+    
+    .deed-card-container.dynamic-mode {
+    width: 100%;
+    max-width: 450px; 
+    perspective: 1000px;
+    margin: 0 auto;
+}
 
-    /* 3D Card */
-    .deed-card-container { perspective: 1500px; width: 100%; max-width: 340px; aspect-ratio: 9 / 16; margin: 0 auto; }
-    .deed-card-inner {
-        position: relative; width: 100%; height: 100%; text-align: center;
-        transition: transform 0.9s cubic-bezier(0.4, 0, 0.2, 1); transform-style: preserve-3d;
-    }
-    .deed-card-inner.flipped { transform: rotateY(180deg); }
-    .deed-card-front, .deed-card-back {
-        position: absolute; width: 100%; height: 100%; backface-visibility: hidden;
-        border-radius: 1rem; overflow: hidden;
-    }
-    .deed-card-back { transform: rotateY(180deg); }
+.deed-card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transition: transform 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-style: preserve-3d;
+}
+
+/* ⚠️ สำคัญ: Front ต้องเป็น Relative เพื่อให้ Container กางออกตามขนาดเนื้อหาอัตโนมัติ */
+.deed-card-front {
+    position: relative; 
+    width: 100%;
+    height: auto; 
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+}
+
+/* Back เป็น Absolute ดึงขนาด 100% ล้อตาม Front */
+.deed-card-back {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    transform: rotateY(180deg);
+}
+
 
     .preview-slot {
         background: linear-gradient(180deg, rgba(15, 10, 20, 0.9) 0%, rgba(5, 5, 10, 0.98) 100%);
@@ -4866,6 +4890,7 @@ function registerBlobForGc(url, objectUrl, isVideo = false) {
     blobGcCache.set(url, { url: objectUrl, isVideo });
 }
 
+
 let isFlippingLock = false;
 function toggleCardFlip() {
     if (isFlippingLock) return;
@@ -4874,19 +4899,38 @@ function toggleCardFlip() {
 
     isFlippingLock = true;
     const isCurrentlyFlipped = card.classList.contains('flipped');
-    const frontVideo = document.getElementById('previewFrontContainer')?.querySelector('video');
-    const backVideo = document.getElementById('previewBackContainer')?.querySelector('video');
+    
+    // รองรับทั้ง Video และ รูปภาพ
+    const frontMedia = document.getElementById('previewFrontContainer')?.querySelector('video, img');
+    const backMedia = document.getElementById('previewBackContainer')?.querySelector('video, img');
 
-    if (frontVideo) frontVideo.style.transform = 'translateZ(0)';
-    if (backVideo) backVideo.style.transform = 'translateZ(0)';
+    // บังคับ Hardware Acceleration ลดอาการภาพกระตุก
+    if (frontMedia && frontMedia.tagName === 'VIDEO') frontMedia.style.transform = 'translateZ(0)';
+    if (backMedia && backMedia.tagName === 'VIDEO') backMedia.style.transform = 'translateZ(0)';
 
-    const swapVideos = () => {
+    const swapMedia = () => {
         if (!isCurrentlyFlipped) {
-            if (frontVideo) { frontVideo.pause(); frontVideo.style.visibility = 'hidden'; frontVideo.style.opacity = '0'; }
-            if (backVideo) { backVideo.style.visibility = 'visible'; backVideo.style.opacity = '1'; backVideo.play().catch(()=>{}); }
+            if (frontMedia) { 
+                if(frontMedia.tagName === 'VIDEO') frontMedia.pause(); 
+                frontMedia.style.visibility = 'hidden'; 
+                frontMedia.style.opacity = '0'; 
+            }
+            if (backMedia) { 
+                backMedia.style.visibility = 'visible'; 
+                backMedia.style.opacity = '1'; 
+                if(backMedia.tagName === 'VIDEO') backMedia.play().catch(()=>{}); 
+            }
         } else {
-            if (backVideo) { backVideo.pause(); backVideo.style.visibility = 'hidden'; backVideo.style.opacity = '0'; }
-            if (frontVideo) { frontVideo.style.visibility = 'visible'; frontVideo.style.opacity = '1'; frontVideo.play().catch(()=>{}); }
+            if (backMedia) { 
+                if(backMedia.tagName === 'VIDEO') backMedia.pause(); 
+                backMedia.style.visibility = 'hidden'; 
+                backMedia.style.opacity = '0'; 
+            }
+            if (frontMedia) { 
+                frontMedia.style.visibility = 'visible'; 
+                frontMedia.style.opacity = '1'; 
+                if(frontMedia.tagName === 'VIDEO') frontMedia.play().catch(()=>{}); 
+            }
         }
     };
 
@@ -4895,21 +4939,23 @@ function toggleCardFlip() {
         if (e && (e.target !== card || e.propertyName !== 'transform')) return;
         transitionFired = true;
         card.removeEventListener('transitionend', onTransitionEnd);
-        swapVideos();
+        swapMedia();
         isFlippingLock = false;
     };
 
     card.addEventListener('transitionend', onTransitionEnd);
     card.classList.toggle('flipped');
 
+    // Fallback: หาก Event CSS Transition ไม่ทำงาน ให้ปลดล็อกใน 1.2 วินาที
     setTimeout(() => {
         if (!transitionFired) {
             card.removeEventListener('transitionend', onTransitionEnd);
-            swapVideos();
+            swapMedia();
             isFlippingLock = false;
         }
     }, 1200);
 }
+
 
 async function autoMap(tokenId) {
     if (!tokenId) return null;
@@ -5711,12 +5757,15 @@ function handleSlotClick(slotNum) {
 
     const frontContainer = document.getElementById('previewFrontContainer');
     if (frontContainer) {
-        const activeVideo = frontContainer.querySelector('video');
-        if (activeVideo) {
-            activeVideo.pause();
-            activeVideo.removeAttribute('src');
-            try { activeVideo.load(); } catch(e) {}
-        }
+        const activeMedia = frontContainer.querySelectorAll('video, img');
+        activeMedia.forEach(media => {
+            if(media.tagName === 'VIDEO') {
+                media.pause();
+                media.removeAttribute('src');
+                try { media.load(); } catch(e) {}
+            }
+            media.remove();
+        });
         if (frontContainer._hlsInstance) {
             frontContainer._hlsInstance.detachMedia?.();
             frontContainer._hlsInstance.destroy?.();
@@ -5741,6 +5790,8 @@ function handleSlotClick(slotNum) {
         }
     }
 }
+
+
 
 async function auditTokenFromLedger(tokenId) {
     if (typeof resetAdminInputs === 'function') resetAdminInputs();
@@ -5775,7 +5826,6 @@ async function auditTokenFromLedger(tokenId) {
         else if (isMintedEver) status = 'BURNED';
 
         if (status === 'UNCLAIMED') {
-            // LAYER 1: STRICT DIRECT STRING EXTRACTION (NO JSON PARSING)
             let displayImageUri = "";
             
             if (window.IMAGE_MANIFEST && window.IMAGE_MANIFEST[String(tokenId)]) {
@@ -5789,10 +5839,7 @@ async function auditTokenFromLedger(tokenId) {
                 currentLoadedMediaData.back = "";
                 currentLoadedMediaData.video = "";
 
-                if (typeof autoMapMetadata === 'function') autoMapMetadata(tokenId);
-
                 if (typeof renderToViewport === 'function') {
-                    // Pass "direct-image" to bypass all fetch/MIME checks
                     renderToViewport('previewFrontContainer', displayImageUri, "Obverse aspect currently unassigned.", "direct-image");
                     renderToViewport('previewBackContainer', "", "Void element data layer uninitialized.", "video");
                 }
@@ -5823,7 +5870,6 @@ async function auditTokenFromLedger(tokenId) {
             throw new Error("VOID_ELEMENT");
 
         } else {
-            // LAYER 2: ACTIVE STATE (ON-CHAIN RESOLUTION)
             const currentEpoch = Math.floor(Date.now() / 1000);
             const btnBurn = document.getElementById('btnBurnToken');
             if (mappedNode.votingLockUntil && mappedNode.votingLockUntil > currentEpoch) {
@@ -5846,11 +5892,21 @@ async function auditTokenFromLedger(tokenId) {
             currentLoadedMediaData.back = mappedNode.back || "";
             currentLoadedMediaData.video = mappedNode.video || "";
 
-            // ... โค้ดก่อนหน้า ...
-            if (typeof loadDeedMetadata === 'function') loadDeedMetadata(tokenId);
+            const vSlot1 = document.getElementById('vSlot1');
+            const vSlotStatus1 = document.getElementById('vSlotStatus1');
+            if (vSlot1 && vSlotStatus1) {
+                if (mappedNode.video && mappedNode.video.trim() !== "") {
+                    vSlot1.setAttribute('data-uri', mappedNode.video);
+                    vSlotStatus1.textContent = "NOVA VIDEO READY";
+                    vSlotStatus1.className = "text-[9px] text-emerald-400 uppercase block mt-1 font-bold";
+                } else {
+                    vSlot1.setAttribute('data-uri', "");
+                    vSlotStatus1.textContent = "NOVA VIDEO UNASSIGNED";
+                    vSlotStatus1.className = "text-[9px] text-slate-500 uppercase block mt-1 font-bold";
+                }
+            }
 
             if (typeof renderToViewport === 'function') {
-                // 🚀 บังคับส่ง "image" ไปเลย สำหรับด้านหน้า
                 renderToViewport('previewFrontContainer', currentLoadedMediaData.front, "Obverse aspect currently unassigned. Engage rebirth parameters.", "image");
             }
 
@@ -5859,7 +5915,6 @@ async function auditTokenFromLedger(tokenId) {
                 if (mySession !== currentAuditSession) return;
                 if (mappedNode.back && String(mappedNode.back).trim() !== "") {
                     if (typeof renderToViewport === 'function') {
-                        // 🚀 บังคับส่ง "video" ไปเลย สำหรับด้านหลัง
                         renderToViewport('previewBackContainer', currentLoadedMediaData.back, "Reverse diagnostic data trace is currently null.", "video");
                     }
                 } else {
@@ -5872,20 +5927,20 @@ async function auditTokenFromLedger(tokenId) {
                     }
                 }
             }, 300);
-            // ... โค้ดหลังจากนี้ ...
 
             const displayData = document.getElementById('activeDeedMetadataDisplay');
             if(displayData) {
-                const imperialRank = typeof getImperialRankDetailed === 'function' ? getImperialRankDetailed(tokenId) : "UNKNOWN";
-                displayData.textContent = "";
+                let imperialRank = "CITIZEN";
+                if (tokenId >= 1 && tokenId <= 10) imperialRank = "COUNCIL PRIMARCH";
+                else if (tokenId === 50 || tokenId === 100) imperialRank = "COUNCIL VANGUARD";
 
+                displayData.textContent = "";
                 const line1 = document.createTextNode(`CELL NODE ID: ${tokenId} `);
                 const rankSpan = document.createElement('span');
                 rankSpan.className = "text-yellow-500 font-bold tracking-widest";
                 rankSpan.textContent = `[${imperialRank}]`;
 
                 const br = document.createElement('br');
-
                 const safeOwner = mappedNode.owner ? (typeof sanitizeForDOM === 'function' ? sanitizeForDOM(mappedNode.owner) : String(mappedNode.owner)) : "0x0000000000000000000000000000000000000000";
                 const line2 = document.createTextNode(`ACCREDITED ROOT: ${safeOwner.slice(0,6)}...${safeOwner.slice(-4)} // NOVA RATIFICATION: `);
 
@@ -5894,6 +5949,14 @@ async function auditTokenFromLedger(tokenId) {
                 sanctifiedSpan.textContent = mappedNode.isSanctified ? 'AFFIRMED' : 'DORMANT';
 
                 displayData.append(line1, rankSpan, br, line2, sanctifiedSpan);
+
+                if (mappedNode.dna) {
+                    const br2 = document.createElement('br');
+                    const dnaNode = document.createElement('span');
+                    dnaNode.className = "text-rose-400 text-[10px] mt-1 block truncate";
+                    dnaNode.textContent = `🧬 ${mappedNode.dna}`;
+                    displayData.append(br2, dnaNode);
+                }
             }
             
             const claimBtn = document.getElementById('btnClaimReward');
