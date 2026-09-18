@@ -446,7 +446,7 @@
 </section>
 
 <!-- 🧬 เริ่มต้น Section: ห้อง DNA STUDIO -->
-<div id="memberDnaStudio" class="hidden mb-6 relative z-10">
+<section id="memberDnaStudio" class="hidden mb-6 relative z-10">
     <div class="chiaroscuro-bg p-6 md:p-8 rounded-2xl border border-cyan-900/50 shadow-[0_0_40px_rgba(6,182,212,0.15)]">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-stone-800 pb-4 mb-6 gap-3">
             <div>
@@ -499,9 +499,8 @@
             REFRESH ON-CHAIN STRUCTURAL TRACE 🧬
         </button>
     </div>
-</div>
-<!-- 🧬 สิ้นสุด Section: ห้อง DNA STUDIO -->
 </section>
+<!-- 🧬 สิ้นสุด Section: ห้อง DNA STUDIO -->
 <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5 mb-6 relative z-10">
     <div class="chiaroscuro-bg p-5 rounded-2xl border-l-4 border-amber-500">
         <span class="text-[10px] font-mono uppercase text-stone-400 flex justify-between items-center mb-2 tracking-wider">
@@ -514,8 +513,8 @@
         </div>
     </div>
     <div class="chiaroscuro-bg p-5 rounded-2xl border-l-4 border-rose-700">
-        <span class="text-[10px] font-mono uppercase text-stone-400 block mb-2 tracking-wider">SANCTIFIED ACTIVE DEEDS</span>
-        <div id="matrixActiveCount" class="text-2xl md:text-3xl font-black red-vivid font-mono mt-1">0 / 333</div>
+        <span class="text-[10px] font-mono uppercase text-stone-400 block mb-2 tracking-wider">ACTIVE DEEDS</span>
+        <div id="displaySupply" class="text-2xl md:text-3xl font-black red-vivid font-mono mt-1">0 / 333</div>
     </div>
     <div class="chiaroscuro-bg p-5 rounded-2xl border-l-4 border-amber-700 sm:col-span-2 lg:col-span-2">
         <span class="text-[10px] font-mono uppercase text-stone-400 block mb-2 tracking-wider">TRIBUTE TARIFF METRICS</span>
@@ -540,7 +539,7 @@
         </div>
         <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full md:w-auto">
             <input type="number" id="gridSearchInput" min="1" max="333" placeholder="ISOLATE NODE (1-333)" class="bg-black border border-stone-800 px-4 py-2.5 text-sm font-mono text-amber-500 rounded-lg outline-none focus:border-amber-500 w-full sm:w-56 transition-all" />
-            <span class="text-[11px] font-mono text-stone-400 uppercase whitespace-nowrap bg-stone-950 px-3 py-2.5 rounded-lg border border-stone-800">ACTIVE: <span id="displaySupply" class="text-amber-500 font-bold text-sm">0</span>/333</span>
+            <span class="text-[11px] font-mono text-stone-400 uppercase whitespace-nowrap bg-stone-950 px-3 py-2.5 rounded-lg border border-stone-800">ACTIVE: <span id="matrixActiveCount" class="text-amber-500 font-bold text-sm">0</span>/333</span>
         </div>
     </div>
     <div id="matrixGridContainer" class="grid grid-cols-5 sm:grid-cols-8 md:grid-cols-12 lg:grid-cols-16 gap-2 md:gap-3 max-h-[500px] overflow-y-auto scroll-dark pr-2 p-3 bg-black/50 rounded-xl border border-stone-900 shadow-inner">
@@ -604,29 +603,25 @@
             </div>
 
             <div class="mt-5 p-4 md:p-5 bg-gradient-to-br from-stone-950 to-[#15080c] border border-amber-700/40 rounded-xl shadow-[0_0_20px_rgba(217,119,6,0.1)]">
-                <span class="text-[11px] font-mono text-amber-400 font-bold block uppercase mb-3 tracking-widest flex items-center gap-2">♠️ TBA VAULT</span>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-[11px] font-mono">
-                    <div class="p-3 bg-black/80 rounded-lg border border-stone-800 flex flex-col gap-1">
-                        <span class="text-stone-500 uppercase">TBA VAULT FUEL (ETH):</span>
-                        <span id="tbaEthBalance" class="text-amber-500 font-bold text-sm">0.0000 ETH</span>
-                    </div>
-                    <div class="p-3 bg-black/80 rounded-lg border border-stone-800 flex flex-col gap-1">
-                        <span class="text-stone-500 uppercase">NETWORK FLUIDITY (WETH):</span>
-                        <span id="tbaWethBalance" class="text-rose-400 font-bold text-sm">0.0000 WETH</span>
-                    </div>
-                </div>
-                <button id="btnClaimReward" onclick="if(typeof executeClaimReward === 'function') executeClaimReward(this)" class="hidden w-full bg-emerald-950 border border-emerald-700 text-emerald-400 font-black font-mono text-xs py-3 rounded-xl uppercase hover:bg-emerald-900 transition-all mt-3 shadow-[0_0_15px_rgba(16,185,129,0.2)]">CLAIM COUNCIL DIVIDEND</button>
-            </div>
-
-            <div class="mt-5 pt-4 border-t border-stone-800">
-                <label class="text-[10px] text-stone-500 font-mono block mb-2 uppercase tracking-widest">TBA: 0x... (ERC-6551 Address)</label>
-                <div class="flex flex-col sm:flex-row gap-3">
-                    <input type="text" id="tbaAddressDisplay" readonly placeholder="0x0000000000000000000000000000000000000000" class="flex-grow bg-stone-950 border border-stone-800 p-3 text-[11px] font-mono text-amber-400 rounded-lg outline-none select-all text-center sm:text-left" />
-                    <button onclick="navigator.clipboard.writeText(document.getElementById('tbaAddressDisplay').value); if(typeof showNotification === 'function') showNotification('TBA Address Copied!', 'success'); else console.log('Copied');" class="px-6 py-3 bg-stone-900 border border-stone-700 text-stone-300 hover:border-amber-500 hover:text-amber-400 rounded-lg text-[10px] font-mono uppercase font-bold transition-all whitespace-nowrap">COPY TBA</button>
-                </div>
-            </div>
+    <span class="text-[11px] font-mono text-amber-400 font-bold block uppercase mb-3 tracking-widest flex items-center gap-2">♠️ TBA VAULT</span>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-[11px] font-mono">
+        <div class="p-3 bg-black/80 rounded-lg border border-stone-800 flex flex-col gap-1">
+            <span class="text-stone-500 uppercase">TBA VAULT FUEL (ETH):</span>
+            <span id="tbaEthBalance" class="text-amber-500 font-bold text-sm">0.0000 ETH</span>
+        </div>
+        <div class="p-3 bg-black/80 rounded-lg border border-stone-800 flex flex-col gap-1">
+            <span class="text-stone-500 uppercase">NETWORK FLUIDITY (WETH):</span>
+            <span id="tbaWethBalance" class="text-rose-400 font-bold text-sm">0.0000 WETH</span>
         </div>
     </div>
+    <div class="mt-5 pt-4 border-t border-stone-800">
+        <label class="text-[10px] text-stone-500 font-mono block mb-2 uppercase tracking-widest">TBA: 0x... (ERC-6551 Address)</label>
+        <div class="flex flex-col sm:flex-row gap-3">
+            <input type="text" id="tbaAddressDisplay" readonly placeholder="0x0000000000000000000000000000000000000000" class="flex-grow bg-stone-950 border border-stone-800 p-3 text-[11px] font-mono text-amber-400 rounded-lg outline-none select-all text-center sm:text-left" />
+            <button onclick="navigator.clipboard.writeText(document.getElementById('tbaAddressDisplay').value); if(typeof showNotification === 'function') showNotification('TBA Address Copied!', 'success'); else console.log('Copied');" class="px-6 py-3 bg-stone-900 border border-stone-700 text-stone-300 hover:border-amber-500 hover:text-amber-400 rounded-lg text-[10px] font-mono uppercase font-bold transition-all whitespace-nowrap">COPY TBA</button>
+        </div>
+    </div>
+</div>
 
     <!-- ========================================== -->
     <!-- ⚔️ SOVEREIGN FORGE PLEDGE MODAL -->
@@ -649,7 +644,7 @@
                     <input id="forgeModalCheckbox" type="checkbox" onchange="toggleForgeButtonState()" class="w-4 h-4 bg-gray-900 border-gray-700 rounded text-red-600 focus:ring-red-600 cursor-pointer">
                 </div>
                 <label for="forgeModalCheckbox" class="font-medium text-stone-300 text-sm cursor-pointer select-none">
-                    น<br>
+                    <br>
                     <span class="text-stone-500 text-xs">(I explicitly accept the Sovereign Terms & Conditions above.)</span>
                 </label>
             </div>
@@ -1386,34 +1381,6 @@ function clearAllTimers() {
     }
 }
 
-// ==============================================================================
-// 🛡️ SILENT PRELOADER ENGINE (TARGETED BACKGROUND BUFFERING)
-// ==============================================================================
-window._silentVideoCache = null;
-function silentPreloadMedia(url) {
-    if (!url || typeof url !== 'string') return;
-    
-    // เคลียร์ Cache เก่าทิ้งทันทีถ้ามีการคลิกโหนดใหม่ ป้องกัน RAM เต็ม (OOM)
-    if (window._silentVideoCache) {
-        window._silentVideoCache.removeAttribute('src');
-        window._silentVideoCache.load();
-        window._silentVideoCache = null;
-    }
-    
-    // สร้าง Video Element ล่องหนใน Memory เพื่อบังคับให้ Browser ดูดไฟล์มารอ
-    const v = document.createElement('video');
-    v.muted = true; // บังคับ Mute เพื่อให้ Browser ยอมโหลดไฟล์วิดีโออัตโนมัติ
-    v.preload = 'auto'; // สั่งดูดไฟล์ทันที
-    v.decoding = 'async'; // ถอดรหัสแยก Thread ไม่ให้ UI ค้าง
-    v.src = url;
-    
-    window._silentVideoCache = v;
-    
-    if (typeof safeAppendLog === 'function') {
-        safeAppendLog(`[BACKGROUND TASK] Silently buffering 4K media payload for instant playback...`, "text-purple-400");
-    }
-}
-
 window.IMPERIAL_MANIFEST = null;
 window.IMAGE_MANIFEST = null; 
 
@@ -1799,7 +1766,7 @@ async function checkGasSurge() {
         if (rpcTimeoutId !== null) clearTimeout(rpcTimeoutId);
         
         const maxFee = feeData?.maxFeePerGas || feeData?.gasPrice || 0n;
-        const surgeThreshold = ethers.parseUnits('0.5', 'gwei'); 
+        const surgeThreshold = ethers.parseUnits('50', 'gwei'); 
         
         if (maxFee > surgeThreshold) {
             const warn = document.getElementById('gasSurgeWarning');
@@ -1878,104 +1845,50 @@ async function promptUserForFile(acceptType = 'image/*,video/*') {
             window.removeEventListener('focus', handleFocusFallback);
         };
 
-        const validateAndResolve = async (file) => {
-            if (!file) {
-                resolve(null);
-                return;
-            }
-
-            // 🛡️ LAYER 1: HARD LIMIT (PHYSICS GUARD)
-            // บังคับขนาดไฟล์สูงสุด 300MB ป้องกันการโจมตีผ่าน Storage และลดภาระ Irys
-            const MAX_SIZE_BYTES = 500 * 1024 * 1024; 
-            if (file.size > MAX_SIZE_BYTES) {
-                if (typeof showNotification === 'function') {
-                    showNotification("FILE REJECTED: 500 MB", "error");
-                }
-                resolve(null);
-                return;
-            }
-
-            // 🛡️ LAYER 2: DURATION & INTEGRITY GUARD (BROWSER ENGINE)
-            if (file.type.startsWith('video/')) {
-                const video = document.createElement('video');
-                video.preload = 'metadata';
-                video.muted = true; // บังคับ Mute ป้องกัน iOS Block Autoplay Policy
-                video.playsInline = true;
-                
-                // ใช้ไฟล์เต็ม (File Object) สร้าง Pointer เบราว์เซอร์จะอ่านจาก Disk ไม่กิน RAM
-                const objectUrl = window.URL.createObjectURL(file); 
-                
-                // ⏱️ TIMEOUT GUARD: ป้องกันเบราว์เซอร์ค้างหากเจอไฟล์วิดีโอผีดิบ (Corrupted)
-                const timeoutId = setTimeout(() => {
-                    window.URL.revokeObjectURL(objectUrl);
-                    video.removeAttribute('src');
-                    video.load();
-                    if (typeof showNotification === 'function') {
-                        showNotification("FILE REJECTED: หมดเวลาตรวจสอบไฟล์ (ไฟล์อาจเสียหายหรือไม่รองรับ)", "error");
-                    }
-                    resolve(null); 
-                }, 5000); // ให้เวลาเบราว์เซอร์อ่าน Metadata สูงสุด 5 วินาที
-
-                video.onloadedmetadata = function() {
-                    clearTimeout(timeoutId); 
-                    window.URL.revokeObjectURL(objectUrl);
-                    video.removeAttribute('src');
-                    video.load(); // บังคับเคลียร์ Memory ทันที
-                    
-                    // ตรวจสอบความยาว 60 วินาที (อนุโลมเศษทศนิยมให้ถึง 61 วินาที ป้องกันบั๊ก Frame Rate)
-                    if (video.duration > 61) {
-                        if (typeof showNotification === 'function') {
-                            showNotification("FILE REJECTED: ความยาววิดีโอเกินขีดจำกัดสูงสุดที่ 1 นาที", "error");
-                        }
-                        resolve(null);
-                    } else {
-                        resolve(file); // ผ่านทุกด่าน ส่งไฟล์ไปอัปโหลด
-                    }
-                };
-                
-                video.onerror = function() {
-                    clearTimeout(timeoutId); 
-                    window.URL.revokeObjectURL(objectUrl);
-                    video.removeAttribute('src');
-                    video.load();
-                    
-                    if (typeof showNotification === 'function') {
-                        showNotification("FILE REJECTED: รูปแบบวิดีโอผิดปกติ หรือเบราว์เซอร์ไม่รองรับ", "error");
-                    }
-                    resolve(null); // ปฏิเสธไฟล์ที่อ่านไม่ได้เด็ดขาด
-                };
-                
-                video.src = objectUrl;
-            } else {
-                // หากเป็นรูปภาพ (Image) ให้ผ่านได้เลย (เพราะเช็ค 300MB ไปแล้ว)
-                resolve(file);
-            }
-        };
-
-        const handleFileChange = (event) => {
+        const safeResolve = (result) => {
             if (isSettled) return;
             isSettled = true;
             cleanup();
+            resolve(result);
+        };
+
+        const validateAndResolve = async (file) => {
+            if (!file) {
+                safeResolve(null);
+                return;
+            }
+
+            // 🛡️ LAYER 1: HARD LIMIT (PHYSICS GUARD) - 500 MB
+            const MAX_SIZE_MB = 500;
+            const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024; 
+            if (file.size > MAX_SIZE_BYTES) {
+                if (typeof showNotification === 'function') {
+                    showNotification(`FILE REJECTED: ขนาดไฟล์เกิน ${MAX_SIZE_MB} MB`, "error");
+                }
+                safeResolve(null);
+                return;
+            }
+
+            // 🛡️ LAYER 2: OOM CRASH PREVENTION (JETSAM GUARD)
+            // BANNED: Client-side DOM loading for video duration validation via URL.createObjectURL.
+            // Enforcing byte-size limits only. Duration validation must be deferred to backend/indexer.
+            safeResolve(file);
+        };
+
+        const handleFileChange = (event) => {
             validateAndResolve(event.target.files[0] || null);
         };
 
         const handleCancel = () => {
-            if (isSettled) return;
-            isSettled = true;
-            cleanup();
-            resolve(null);
+            safeResolve(null);
         };
 
         const handleFocusFallback = () => {
             setTimeout(() => {
-                if (!isSettled) {
-                    if (fileInput.files.length === 0) {
-                        isSettled = true;
-                        cleanup();
-                        resolve(null);
-                    }
+                if (!isSettled && fileInput.files.length === 0) {
+                    safeResolve(null);
                 }
-            }, 300);
+            }, 1000);
         };
 
         fileInput.addEventListener('change', handleFileChange, { once: true });
@@ -5390,7 +5303,6 @@ async function syncContractStates() {
     }
 }
 
-
 function renderEmptyState(container, text, colorClass = "text-slate-500") {
     container.replaceChildren();
     const span = document.createElement('span');
@@ -5437,7 +5349,10 @@ async function renderToViewport(containerId, path, defaultText, explicitType = n
         return;
     }
 
-    renderLoadingSkeleton(container);
+    // 🚀 ดักข้าม Skeleton Loader ถ้าเป็นวิดีโอ/รูปยิงตรง เพื่อไม่ให้จอกระพริบสีเทา
+    if (explicitType !== 'direct-video' && explicitType !== 'direct-image') {
+        renderLoadingSkeleton(container);
+    }
 
     try {
         const resolvedPath = isRawHash ? `https://gateway.irys.xyz/${safePath}` : safePath;
@@ -5447,6 +5362,15 @@ async function renderToViewport(containerId, path, defaultText, explicitType = n
             if (masterController.signal.aborted) return;
             if (typeof renderMediaToDOM === 'function') {
                 renderMediaToDOM(container, { url: resolvedPath, isBlob: false, type: 'image' }, 'image', masterController.signal);
+            }
+            return;
+        }
+
+        // 🚀 LAYER 1.5: DIRECT VIDEO INJECTION (เล่นวิดีโอทันที ไม่ต้องรอเช็ก HEAD)
+        if (explicitType === 'direct-video') {
+            if (masterController.signal.aborted) return;
+            if (typeof renderMediaToDOM === 'function') {
+                renderMediaToDOM(container, { url: resolvedPath, isBlob: safePath.startsWith('blob:'), type: 'video' }, 'video', masterController.signal);
             }
             return;
         }
@@ -5482,13 +5406,11 @@ async function resolveMediaUrl(urlList, signal, depth = 0, explicitType = null) 
         throw new Error('INVALID_URL_LIST');
     }
 
-    // 🚀 ฟิกตายตัวตามสั่ง: ถ้ามี explicitType ส่งมา (image หรือ video) บังคับใช้เลย ไม่ต้องยิง HEAD เช็คให้เสียเวลา
-    if (explicitType === 'image' || explicitType === 'video' || explicitType === 'direct-image') {
-        const finalType = explicitType === 'direct-image' ? 'image' : explicitType;
+    if (explicitType === 'image' || explicitType === 'video' || explicitType === 'direct-image' || explicitType === 'direct-video') {
+        const finalType = (explicitType === 'direct-image') ? 'image' : (explicitType === 'direct-video' ? 'video' : explicitType);
         return { url: urlList[0], isBlob: false, sourceUrl: urlList[0], type: finalType };
     }
 
-    // LAYER 2: GATEWAY RACING & MIME VERIFICATION
     const timeoutMs = 5000;
     const raceControllers = [];
 
@@ -5497,25 +5419,21 @@ async function resolveMediaUrl(urlList, signal, depth = 0, explicitType = null) 
             const controller = new AbortController();
             raceControllers.push(controller);
 
-            // Bind to parent signal
             if (signal) {
                 if (signal.aborted) return reject(new Error('Aborted'));
                 signal.addEventListener('abort', () => controller.abort(), { once: true });
             }
 
-            // Strict 5000ms timeout
             const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
             try {
                 const cleanUrl = typeof url === 'string' ? url.split('?')[0] : url;
                 
-                // Fast-path for known video extensions
                 if (/\.(mp4|webm|mov|m3u8)$/i.test(cleanUrl)) {
                     clearTimeout(timeoutId);
                     return resolve({ url: url, isBlob: false, sourceUrl: url, type: 'video', winnerController: controller });
                 }
 
-                // Execute HEAD request to verify MIME type without downloading binary
                 const response = await fetch(url, {
                     method: 'HEAD',
                     signal: controller.signal,
@@ -5539,10 +5457,8 @@ async function resolveMediaUrl(urlList, signal, depth = 0, explicitType = null) 
     });
 
     try {
-        // Race all gateways. First to respond with valid headers wins.
         const winner = await Promise.any(fetchPromises);
         
-        // CRITICAL: Abort all slower/pending requests to prevent memory leaks
         raceControllers.forEach(ctrl => {
             if (ctrl !== winner.winnerController) {
                 ctrl.abort();
@@ -5551,7 +5467,6 @@ async function resolveMediaUrl(urlList, signal, depth = 0, explicitType = null) 
 
         return { url: winner.url, isBlob: winner.isBlob, sourceUrl: winner.sourceUrl, type: winner.type };
     } catch (aggregateErr) {
-        // Fallback เผื่อหลุดมา
         return { url: urlList[0], isBlob: false, sourceUrl: urlList[0], type: 'image' };
     }
 }
@@ -5661,37 +5576,11 @@ function renderMediaToDOM(container, resolvedMedia, mediaType, abortSignal) {
     if (isVideo) {
         el.autoplay = true; 
         el.loop = true; 
-        el.muted = true; // ต้องปิดเสียงไว้ก่อนเพื่อให้ Autoplay ทำงานได้ตามกฎ Browser
+        el.muted = true; 
         el.playsInline = true; 
         el.setAttribute('webkit-playsinline', 'true');
-        el.preload = 'auto'; 
-        el.setAttribute('decoding', 'async'); 
+        el.preload = 'auto'; // 🚀 บังคับ Preload ไฟล์วิดีโอมารอไว้ใน RAM ทันที
         
-        // 🛡️ PATCH: สร้างปุ่ม Unmute (เปิดเสียง) แบบมาตรฐานโลก
-        const unmuteBtn = document.createElement('button');
-        unmuteBtn.className = 'absolute bottom-2 right-2 bg-black/70 border border-slate-500 rounded-full w-8 h-8 flex items-center justify-center text-white z-30 hover:bg-amber-600 transition-colors cursor-pointer shadow-[0_0_10px_rgba(0,0,0,0.8)]';
-        unmuteBtn.innerHTML = '🔇'; // ไอคอนเริ่มต้นคือปิดเสียง
-        unmuteBtn.title = "Tap to Unmute";
-        
-        unmuteBtn.onclick = (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            if (el.muted) {
-                el.muted = false;
-                unmuteBtn.innerHTML = '🔊'; // เปลี่ยนเป็นไอคอนเปิดเสียง
-                unmuteBtn.classList.add('border-amber-500', 'text-amber-400');
-            } else {
-                el.muted = true;
-                unmuteBtn.innerHTML = '🔇';
-                unmuteBtn.classList.remove('border-amber-500', 'text-amber-400');
-            }
-        };
-        
-        // นำปุ่มไปแปะไว้ใน Container
-        if (!abortSignal || !abortSignal.aborted) {
-            container.appendChild(unmuteBtn);
-        }
-
         const handlePlay = (videoEl) => {
             if (abortSignal && abortSignal.aborted) return;
             const playPromise = videoEl.play();
@@ -5746,17 +5635,11 @@ function renderMediaToDOM(container, resolvedMedia, mediaType, abortSignal) {
             
             hls.on(Hls.Events.ERROR, (event, data) => {
                 if (data.fatal) {
-                    // 🛡️ PATCH: Ensure absolute detachment before destruction to free memory buffers
-                    if (typeof hls.detachMedia === 'function') hls.detachMedia();
                     hls.destroy();
-                    
                     if (container._hlsInstance === hls) {
                         container._hlsInstance = null;
-                    }
-                    if (el._hlsInstance === hls) {
                         el._hlsInstance = null;
                     }
-                    
                     el.remove(); 
                     
                     if (!abortSignal || !abortSignal.aborted) {
@@ -5854,17 +5737,16 @@ function handleSlotClick(slotNum) {
     const targetUri = clickedSlot ? clickedSlot.getAttribute('data-uri') : "";
 
     if (targetUri && targetUri.trim() !== "" && !targetUri.includes("ใส่ลิงก์")) {
-        appendLog(`Loading Template Framework 0${slotNum} onto billboard...`, "text-blue-400");
-        renderToViewport('previewFrontContainer', targetUri, "Loading Template...", "video");
+        if (typeof appendLog === 'function') appendLog(`Loading Template Framework 0${slotNum} onto billboard...`, "text-blue-400");
+        // 🚀 ยิง direct-video เพื่อข้ามการสแกนและแสดงผลวิดีโอทันที
+        renderToViewport('previewFrontContainer', targetUri, "Loading Template...", "direct-video");
     } else {
-        appendLog(`Template Framework 0${slotNum} URI is missing or invalid.`, "text-red-500");
+        if (typeof appendLog === 'function') appendLog(`Template Framework 0${slotNum} URI is missing or invalid.`, "text-red-500");
         if (frontContainer) {
             renderEmptyState(frontContainer, `[ TEMPLATE 0${slotNum} NOT CONFIGURED ]`, "text-slate-500");
         }
     }
 }
-
-
 
 async function auditTokenFromLedger(tokenId) {
     if (typeof resetAdminInputs === 'function') resetAdminInputs();
@@ -5964,13 +5846,6 @@ async function auditTokenFromLedger(tokenId) {
             currentLoadedMediaData.front = mappedNode.front || "";
             currentLoadedMediaData.back = mappedNode.back || "";
             currentLoadedMediaData.video = mappedNode.video || "";
-
-            // 🛡️ PATCH: สั่งดูดไฟล์วิดีโอ 4K มารอใน Cache ทันทีที่คลิกโหนด!
-            if (currentLoadedMediaData.video && currentLoadedMediaData.video.trim() !== "") {
-                if (typeof silentPreloadMedia === 'function') {
-                    silentPreloadMedia(currentLoadedMediaData.video);
-                }
-            }
 
             const vSlot1 = document.getElementById('vSlot1');
             const vSlotStatus1 = document.getElementById('vSlotStatus1');
@@ -6075,7 +5950,6 @@ async function auditTokenFromLedger(tokenId) {
     }
 }
 
-
 function setTbaBalanceDisplay(eth, weth) { 
     const ethElem = document.getElementById('tbaEthBalance'); 
     const wethElem = document.getElementById('tbaWethBalance'); 
@@ -6145,7 +6019,6 @@ const matrixThumbnailObserver = new IntersectionObserver((entries, observer) => 
         }
     });
 }, { rootMargin: "250px" });
-
 
 // 2. RENDER INDIVIDUAL NODE CARD WITH DIRECT MANIFEST PRIMITIVE RESOLUTION
 function renderToNodeCard(tokenId) {
@@ -6225,7 +6098,8 @@ function renderToNodeCard(tokenId) {
         mediaContainer.className = 'node-media-container absolute inset-0 w-full h-full z-0 bg-slate-950';
 
         const img = document.createElement('img');
-        img.className = 'w-full h-full object-cover opacity-70 hover:opacity-100 transition-opacity';
+        // ปรับ opacity รูปภาพเริ่มต้นให้เห็นภาพในกรอบชัดขึ้นเล็กน้อย (0.7 -> 0.85)
+        img.className = 'w-full h-full object-cover opacity-85 hover:opacity-100 transition-opacity';
         img.dataset.metadataUrl = displayImgUrl;
         img.crossOrigin = "anonymous"; // 🛡️ FIX: Prevent Canvas Tainting & Mobile Render Blocks
 
@@ -6250,53 +6124,45 @@ function renderToNodeCard(tokenId) {
         if (numDiv && numDiv instanceof HTMLElement) {
             numDiv.style.position = 'relative';
             numDiv.style.zIndex = '20';
-            // 🛡️ PATCH: ลดความมืดของพื้นหลังตัวเลข และเปลี่ยนสีตัวเลขให้เรืองแสงถ้าโหนด Active
-            if (state.status === 'ACTIVE' || state.status === 'LOCKED') {
-                numDiv.style.background = 'rgba(0,0,0,0.3)';
-                numDiv.style.color = '#fcd34d'; // สีทองสว่าง
-                numDiv.style.textShadow = '0 0 8px rgba(0,0,0,0.9)';
-            } else {
-                numDiv.style.background = 'rgba(0,0,0,0.7)';
-                numDiv.style.color = '';
-                numDiv.style.textShadow = '';
-            }
+            numDiv.style.background = 'rgba(0,0,0,0.6)';
             numDiv.style.padding = '2px 4px';
             numDiv.style.borderRadius = '4px';
         }
     }
 
-    // 5. Ownership Badge & Active Illumination
+    // 5 & 6. State Handling (ACTIVE/OWNED vs UNCLAIMED) - DETERMINISTIC FIX
+    // ยกเลิกการใช้ Inline Style เพื่อให้ CSS Classes ของคุณ (เช่น .node-active) ทำงานได้สมบูรณ์
+    
+    // เคลียร์ Class แสงสว่างเดิมออกก่อนเสมอ เพื่อป้องกันการซ้ำซ้อน
+    node.classList.remove('node-active', 'shadow-[0_0_15px_rgba(255,255,255,0.8)]', 'border-white', 'text-white', 'z-10');
+
     if (state.isCurrentUser) {
-        node.style.borderColor = '#fbbf24';
-        node.style.boxShadow = '0 0 15px rgba(251,191,36,0.6)';
+        // หากเป็นของคุณ: ใส่แสงสีทองแบบที่คุณมีใน Class
+        node.classList.add('node-active');
+        
         const badge = document.createElement('div');
         badge.className = 'node-ownership-badge absolute -top-1 -right-1 bg-amber-500 text-black text-[7px] font-black px-1 rounded z-30';
         badge.textContent = 'YOU';
         node.appendChild(badge);
-    } else if (state.status === 'ACTIVE' || state.status === 'LOCKED') {
-        // 🛡️ PATCH: ถ้าโหนด Active แต่ไม่ใช่ของเรา ให้ขอบเรืองแสงสีมรกต (Emerald) เพื่อให้เห็นชัดเจนใน Grid
-        node.style.borderColor = '#10b981'; 
-        node.style.boxShadow = 'inset 0 0 10px rgba(16,185,129,0.3)';
-    } else {
-        node.style.borderColor = '';
-        node.style.boxShadow = '';
-    }
-    
-    // 6. Status Filters
-    if (state.status === 'UNCLAIMED' || state.status === 'BURNED') {
-        node.style.opacity = '0.4';
-        node.style.filter = 'grayscale(100%)';
-    } else {
+        
         node.style.opacity = '1';
         node.style.filter = 'none';
-        // 🛡️ PATCH: บังคับให้ภาพของโหนดที่ Active สว่างเต็ม 100% (ลบ opacity-70 ออก)
-        const imgEl = node.querySelector('img');
-        if (imgEl) {
-            imgEl.classList.remove('opacity-70');
-            imgEl.classList.add('opacity-100');
-        }
+
+    } else if (state.status === 'ACTIVE' || state.status === 'LOCKED') {
+        // หากมีคนอื่นมิ้นต์ไปแล้ว (ACTIVE): ใส่แสงเรืองรองสีขาวทันทีโดยไม่ต้อง Hover
+        node.classList.add('shadow-[0_0_15px_rgba(255,255,255,0.8)]', 'border-white', 'text-white', 'z-10');
+        
+        node.style.opacity = '1';
+        node.style.filter = 'none';
+
+    } else {
+       
+        node.style.opacity = '1'; 
+        node.style.filter = 'grayscale(100%)'; 
     }
 }
+
+
 
 function bindNodeOwnership(walletAddress) {
     if (!window.NODE_STATE_MAP || window.NODE_STATE_MAP.size === 0) return;
@@ -6509,16 +6375,27 @@ function revealApp() {
     }
 }
 
+/**
+ * Enforces maximum length constraints on critical input fields to prevent buffer overflow attacks.
+ * @returns {void}
+ */
 function enforceSecurityConstraints() {
-    const targetInput = document.getElementById('propTargetInput');
-    if (targetInput) targetInput.setAttribute('maxlength', '128');
-    const nameInput = document.getElementById('propName');
-    if (nameInput) nameInput.setAttribute('maxlength', '128');
-
-    const dnaInput = document.getElementById('novaDnaName');
-    if (dnaInput) dnaInput.setAttribute('maxlength', '1024');
-    const hiddenInput = document.getElementById('novaHiddenInput');
-    if (hiddenInput) hiddenInput.setAttribute('maxlength', '1024');
+    // FIX: Removed 'propName' as it does not exist in the DOM.
+    const limits = {
+        'propTargetInput': '128',
+        'novaDnaName': '1024',
+        'novaHiddenInput': '1024',
+        'novaDnaX': '10',
+        'novaDnaY': '10',
+        'novaDnaChrono': '64',
+        'rebirthBackUriInput': '128',
+        'architectBackUri': '128'
+    };
+    
+    for (const [id, max] of Object.entries(limits)) {
+        const el = document.getElementById(id);
+        if (el) el.setAttribute('maxlength', max);
+    }
 }
 
 let isSystemBooted = false;
