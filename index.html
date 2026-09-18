@@ -36,9 +36,9 @@
         --gold: #d97706;
         --gold-deep: #78350f;
         --gold-pale: #fef08a;
-        --crimson: #fbbf24;
-        --crimson-deep: #1c0d02;
-        --crimson-dark: #2d1400;
+        --crimson: #fbbf24; 
+        --crimson-deep: #1c0d02; 
+        --crimson-dark: #2d1400; 
         --hairline: rgba(251, 191, 36, 0.25);
     }
 
@@ -46,22 +46,18 @@
     body { visibility: hidden; }
     body.app-ready { visibility: visible; }
     
-    /* บังคับตัวหนังสือและข้อความทุกชนิดให้เป็นสีทองเหมือนตัวเลข */
-    body, p, span, div, label, h1, h2, h3, h4, h5, h6 {
-        color: #fbbf24 !important;
-    }
-
     #displayCouncilPool span { font-size: 0 !important; }
     #displayCouncilPool span::after {
         content: "ETH (Ecosystem Vault Allocation)";
         font-size: 0.75rem;
         letter-spacing: normal;
-        color: #fbbf24 !important;
+        color: #fbbf24;
     }
 
     body {
         font-family: 'JetBrains Mono', monospace;
-        color: #fbbf24;
+        color: #fcd34d; /* บังคับตัวหนังสือพื้นฐานให้เป็นสีทอง */
+        text-shadow: 0 0 8px rgba(251, 191, 36, 0.2);
         background-image:
             radial-gradient(circle at 15% 10%, rgba(217, 119, 6, 0.15) 0%, transparent 45%),
             radial-gradient(circle at 85% 5%, rgba(251, 191, 36, 0.12) 0%, transparent 45%),
@@ -86,6 +82,12 @@
     .font-mono { font-family: 'JetBrains Mono', monospace; }
     .font-cinzel { font-family: 'Cinzel', serif; }
 
+    /* คลาสสำหรับลดความเด่นของข้อความที่ไม่สำคัญ */
+    .text-dimmed {
+        color: rgba(251, 191, 36, 0.4) !important;
+        text-shadow: none !important;
+    }
+
     /* Enhanced Glassmorphism for Panels */
     .chiaroscuro-bg {
         position: relative;
@@ -103,7 +105,7 @@
         opacity: 0.8; pointer-events: none;
     }
 
-    /* Text Classes Metallic Gold Gradient */
+    /* All Text Classes Converted to Metallic Gold */
     .gold-text, .crimson-text, .red-vivid {
         background: linear-gradient(135deg, #fffbeb 0%, #fef08a 25%, #fbbf24 50%, #d97706 75%, #78350f 100%);
         -webkit-background-clip: text; 
@@ -113,11 +115,11 @@
     }
 
     .gold-vivid { 
-        color: #fcd34d !important; 
+        color: #fcd34d; 
         text-shadow: 0 0 25px rgba(251, 191, 36, 0.8), 0 2px 4px rgba(0, 0, 0, 0.9); 
     }
 
-    /* Gold Buttons */
+    /* Gold Buttons (Including Action & Flip Buttons) */
     .btn-gold-master, .btn-rebirth-bright, .btn-remint-bright, button { 
         position: relative; 
         overflow: hidden; 
@@ -196,7 +198,7 @@
     /* Preview Slot Gold Theme */
     .preview-slot {
         background: linear-gradient(180deg, rgba(25, 18, 5, 0.9) 0%, rgba(5, 5, 5, 0.98) 100%);
-        border: 1px solid rgba(217, 119, 6, 0.5); 
+        border: 1px solid rgba(217, 119, 6, 0.3); 
         transition: all 0.3s ease;
     }
     .preview-slot:hover, .preview-slot.active {
@@ -223,42 +225,54 @@
     }
     @keyframes scanline { 0% { top: -10%; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { top: 100%; opacity: 0; } }
 
-    /* Matrix Nodes - Opacity 100% */
+    /* Matrix Nodes - ปรับ Opacity 100% และลดความเด่นของขอบปกติ */
     .matrix-node {
-        position: relative; transition: all 0.2s ease;
-        background: radial-gradient(circle at 50% 30%, rgba(45, 30, 10, 0.6) 0%, rgba(5, 5, 15, 0.98) 100%);
-        border: 1px solid rgba(217, 119, 6, 0.6);
-        color: #fbbf24 !important;
-        opacity: 1 !important;
+        position: relative; 
+        transition: all 0.2s ease;
+        background: radial-gradient(circle at 50% 30%, rgb(45, 30, 10) 0%, rgb(5, 5, 15) 100%);
+        border: 1px solid rgba(217, 119, 6, 0.3); 
+        color: #fcd34d;
+        opacity: 1 !important; 
     }
+    
     @media (hover: hover) {
-        .matrix-node:hover { transform: scale(1.15) translateY(-2px); z-index: 20; box-shadow: 0 0 20px rgba(251, 191, 36, 0.6); }
+        .matrix-node:hover { 
+            transform: scale(1.15) translateY(-2px); 
+            z-index: 20; 
+            box-shadow: 0 0 20px rgba(251, 191, 36, 0.4); 
+            border-color: #fbbf24;
+        }
     }
+    
     .rank-prime { border-color: #d97706 !important; box-shadow: inset 0 0 15px rgba(217, 119, 6, 0.5) !important; }
+    
     .rank-imperial { 
         border: 2px solid #fbbf24 !important; 
         box-shadow: inset 0 0 20px rgba(251, 191, 36, 0.6) !important; 
         animation: imperialPulse 2s ease-in-out infinite;
     }
+    
     @keyframes imperialPulse {
         0%, 100% { box-shadow: 0 0 15px rgba(251, 191, 36, 0.4), inset 0 0 15px rgba(251, 191, 36, 0.4); }
         50% { box-shadow: 0 0 30px rgba(251, 191, 36, 0.8), inset 0 0 25px rgba(251, 191, 36, 0.6); }
     }
 
-    /* Node Mints / Active - Bright Gold Border & High Intensity Glow */
-    .node-active {
-        background: radial-gradient(circle at 50% 30%, rgba(217, 119, 6, 0.9) 0%, rgba(120, 53, 15, 0.7) 100%) !important;
-        border: 2px solid #fef08a !important; 
+    /* โหนดที่มีการ Mint แล้ว ให้สว่างโดดเด่นขั้นสุด */
+    .node-minted, .node-active {
+        background: radial-gradient(circle at 50% 30%, rgb(217, 119, 6) 0%, rgb(120, 53, 15) 100%) !important;
+        border: 2px solid #fbbf24 !important; 
         color: #ffffff !important; 
-        box-shadow: 0 0 30px rgba(251, 191, 36, 1), 0 0 12px rgba(254, 240, 138, 0.9), inset 0 0 20px rgba(251, 191, 36, 0.8) !important;
+        text-shadow: 0 0 10px #fbbf24;
+        box-shadow: 0 0 35px rgba(251, 191, 36, 1), inset 0 0 20px rgba(251, 191, 36, 0.9) !important;
         opacity: 1 !important;
+        z-index: 10;
     }
 
     /* Input Fields Gold Focus */
     input[type="text"], input[type="number"] {
         background-color: rgba(0, 0, 0, 0.6);
         border: 1px solid rgba(217, 119, 6, 0.5);
-        color: #fbbf24 !important;
+        color: #fcd34d;
         transition: all 0.3s ease;
     }
     input[type="text"]:focus, input[type="number"]:focus {
@@ -268,8 +282,8 @@
     }
     
     /* Tabs Gold Active */
-    .tab-btn.active { background: rgba(245,158,11,0.2); border-color: rgba(245,158,11,0.9); color: #fbbf24 !important; }
-    .tab-btn:hover:not(.active) { border-color: rgba(245,158,11,0.6); color: #fcd34d !important; }
+    .tab-btn.active { background: rgba(245,158,11,0.2); border-color: rgba(245,158,11,0.9); color: #fbbf24; }
+    .tab-btn:hover:not(.active) { border-color: rgba(245,158,11,0.6); color: #fcd34d; }
 
 </style>
 
