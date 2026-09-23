@@ -509,9 +509,12 @@
                 <span class="text-stone-500 font-bold uppercase">6. VIDEO URI:</span> 
                 <span id="dna-video" class="text-cyan-300 break-all">AWAITING...</span>
             </div>
-            <div class="bg-black/80 p-3.5 rounded-lg border border-rose-900/30 flex flex-col gap-1 shadow-inner">
-                <span class="text-rose-400 font-bold uppercase">7. IDENTITY DNA:</span> 
-                <span id="dna-dna" class="text-rose-200 break-all font-bold">AWAITING...</span>
+            <div class="bg-black/80 p-3.5 rounded-lg border border-rose-900/30 flex flex-col gap-2 shadow-inner">
+                <span class="text-rose-400 font-bold uppercase border-b border-rose-900/50 pb-2">7. IDENTITY DNA:</span> 
+                <!-- เปลี่ยนเป็น div เพื่อให้รองรับการสร้าง "ช่อง" ย่อย 3 ช่อง -->
+                <div id="dna-dna" class="flex flex-col gap-2 w-full">
+                    <span class="text-rose-200 text-[10px]">AWAITING...</span>
+                </div>
             </div>
             <div class="bg-black/80 p-3.5 rounded-lg border border-rose-900/30 flex flex-col gap-1 shadow-inner">
                 <span class="text-rose-400 font-bold uppercase">8. HIDDEN PROPERTY:</span> 
@@ -3250,23 +3253,32 @@ async function processIdentityDnaInspectionOnChain() {
 function parseSovereignDNA(rawString) {
     if (!rawString || typeof rawString !== 'string' || rawString.trim() === "") return "UNASSIGNED";
     try {
-        // แยกด้วย | และ : เพื่อจัด Format ให้สวยงาม
         const pairs = rawString.split('|');
-        let formattedHTML = `<div class="flex flex-col gap-1 mt-1">`;
-        pairs.forEach(pair => {
+        let formattedHTML = ``;
+        
+        // กำหนดหัวข้อของแต่ละช่องตามที่คุณต้องการ
+        const labels = ["1.1 Identity DNA", "1.2 Pixel Anchor", "1.3 Chrono-Map"];
+        
+        pairs.forEach((pair, index) => {
+            if (pair.trim() === "") return;
+            
             const parts = pair.split(':');
             if (parts.length >= 2) {
-                const key = sanitizeForDOM(parts[0].trim());
                 const val = sanitizeForDOM(parts.slice(1).join(':').trim());
-                formattedHTML += `<div class="flex justify-between border-b border-rose-900/30 pb-0.5"><span class="text-rose-500/70 text-[9px]">${key}</span><span class="text-rose-200 text-[10px]">${val}</span></div>`;
-            } else {
-                formattedHTML += `<div class="text-rose-200 text-[10px]">${sanitizeForDOM(pair)}</div>`;
+                const label = labels[index] || sanitizeForDOM(parts[0].trim());
+                
+                // สร้าง "ช่อง" (Box) แยกให้แต่ละข้อย่อย
+                formattedHTML += `
+                <div class="bg-black/60 p-2.5 rounded border border-rose-900/40 flex flex-col gap-0.5">
+                    <span class="text-rose-500/70 text-[9px] uppercase">${label}:</span>
+                    <span class="text-rose-200 text-[11px] font-bold">${val}</span>
+                </div>`;
             }
         });
-        formattedHTML += `</div>`;
+        
         return formattedHTML;
     } catch (e) {
-        return sanitizeForDOM(rawString); // Fallback
+        return sanitizeForDOM(rawString);
     }
 }
 
