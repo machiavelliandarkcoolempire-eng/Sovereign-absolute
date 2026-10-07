@@ -592,34 +592,44 @@
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-stone-800 pb-4 mb-6 gap-4">
         <div>
             <h2 class="text-xl font-black font-cinzel gold-text uppercase tracking-tight">TOKEN MEDIA PREVIEW</h2>
-            <p class="text-[10px] font-mono text-stone-500 uppercase tracking-wide mt-1">IMAGE • VIDEO • 3D FROM THE SEARCHED ON-CHAIN TOKEN</p>
+            <p class="text-[10px] font-mono text-stone-500 uppercase tracking-wide mt-1">DYNAMIC CANVAS • FLIP CARD • 3D INSPECTION</p>
         </div>
         <span id="mediaPreviewTokenLabel" class="text-[10px] font-mono text-stone-500 uppercase" aria-live="polite">Waiting for token ID</span>
     </div>
+
+    <!-- DYNAMIC CANVAS PREVIEW CONTAINER -->
     <div id="mediaPreviewCanvas" class="hidden rounded-xl border border-stone-800 bg-black/80 p-4 md:p-6" aria-live="polite">
         <div id="mediaPreviewCanvasTitle" class="text-[10px] font-mono font-black uppercase tracking-widest text-amber-400 mb-4"></div>
         <div id="mediaPreviewCanvasContent" class="w-full"></div>
         <p class="text-[9px] font-mono text-stone-500 uppercase mt-4">Rendering uses only the inspected deed's on-chain media fields.</p>
     </div>
+
+    <!-- THREE MODE PREVIEW GRID -->
     <div id="legacyMediaPreviewGrid" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <!-- MODE 1 SLOT -->
         <article class="min-w-0">
-            <h3 class="text-[10px] font-mono font-bold text-amber-400 uppercase tracking-widest mb-2">Front image</h3>
-            <div id="previewFrontContainer" class="preview-slot relative flex items-center justify-center overflow-hidden rounded-xl bg-black p-3" style="aspect-ratio: 4 / 3; min-height: 220px" aria-label="Front image preview">
-                <span class="text-[10px] font-mono text-stone-500 text-center uppercase">Search a token ID to load its front image.</span>
+            <h3 class="text-[10px] font-mono font-bold text-amber-400 uppercase tracking-widest mb-2">MODE 1: IMAGE & VIDEO (FLIP CARD)</h3>
+            <div id="previewFrontContainer" class="preview-slot relative flex items-center justify-center overflow-hidden rounded-xl bg-black p-3" style="aspect-ratio: 4 / 3; min-height: 220px" aria-label="Mode 1 Image and Video Preview">
+                <span class="text-[10px] font-mono text-stone-500 text-center uppercase">Search a token ID to load Image & Video Dynamic Flip Card.</span>
             </div>
         </article>
+
+        <!-- MODE 2 SLOT -->
         <article class="min-w-0">
-            <h3 class="text-[10px] font-mono font-bold text-amber-400 uppercase tracking-widest mb-2">Back image</h3>
-            <div id="previewBackContainer" class="preview-slot relative flex items-center justify-center overflow-hidden rounded-xl bg-black p-3" style="aspect-ratio: 4 / 3; min-height: 220px" aria-label="Back image preview">
-                <span class="text-[10px] font-mono text-stone-500 text-center uppercase">Search a token ID to load its back image.</span>
+            <h3 class="text-[10px] font-mono font-bold text-amber-400 uppercase tracking-widest mb-2">MODE 2: IMAGE & 3D MODEL (FLIP INSPECTION)</h3>
+            <div id="previewBackContainer" class="preview-slot relative flex items-center justify-center overflow-hidden rounded-xl bg-black p-3" style="aspect-ratio: 4 / 3; min-height: 220px" aria-label="Mode 2 Image and 3D Model Preview">
+                <span class="text-[10px] font-mono text-stone-500 text-center uppercase">Search a token ID to load Image & 3D Inspection Canvas.</span>
             </div>
         </article>
+
+        <!-- MODE 3 SLOT -->
         <article class="min-w-0">
-            <h3 class="text-[10px] font-mono font-bold text-amber-400 uppercase tracking-widest mb-2">Video</h3>
-            <div id="previewVideoContainer" class="preview-slot relative flex items-center justify-center overflow-hidden rounded-xl bg-black p-3" style="aspect-ratio: 4 / 3; min-height: 220px" aria-label="Video preview">
-                <span class="text-[10px] font-mono text-stone-500 text-center uppercase">Search a token ID to load its video.</span>
+            <h3 class="text-[10px] font-mono font-bold text-amber-400 uppercase tracking-widest mb-2">MODE 3: 3D CANVAS PREVIEW (NON-FLIP)</h3>
+            <div id="previewVideoContainer" class="preview-slot relative flex items-center justify-center overflow-hidden rounded-xl bg-black p-3" style="aspect-ratio: 4 / 3; min-height: 220px" aria-label="Mode 3 3D Canvas Preview">
+                <span class="text-[10px] font-mono text-stone-500 text-center uppercase">3D Canvas Standalone Viewport Active.</span>
             </div>
         </article>
+
     </div>
      <div class="lg:col-span-12 w-full mt-2">
             <div class="bg-stone-950 border border-rose-900/50 rounded-xl p-5 md:p-6 shadow-inner">
@@ -718,67 +728,139 @@
         </div>
         <div class="space-y-3">
             <label class="text-[10px] text-stone-400 font-mono block uppercase tracking-wider">② Identity DNA Forensic</label>
-            <input type="text" id="novaDnaName" value="SAKSIT" placeholder="IDENTITY NAME" class="w-full bg-black border border-stone-800 p-3 text-sm font-mono text-rose-300 rounded-xl outline-none focus:border-rose-500 transition-all" />
+            <input type="text" id="novaDnaName" placeholder="CODE NAME" class="w-full bg-black border border-stone-800 p-3 text-sm font-mono text-rose-300 rounded-xl outline-none focus:border-rose-500 transition-all" />
             <div class="flex gap-2">
-                <input type="number" id="novaDnaX" value="1014" placeholder="PIXEL X" class="w-1/2 bg-black border border-stone-800 p-3 text-sm font-mono text-rose-300 rounded-xl outline-none focus:border-rose-500 transition-all" />
-                <input type="number" id="novaDnaY" value="1754" placeholder="PIXEL Y" class="w-1/2 bg-black border border-stone-800 p-3 text-sm font-mono text-rose-300 rounded-xl outline-none focus:border-rose-500 transition-all" />
+                <input type="number" id="novaDnaX" placeholder="1014" class="w-1/2 bg-black border border-stone-800 p-3 text-sm font-mono text-rose-300 rounded-xl outline-none focus:border-rose-500 transition-all" />
+                <input type="number" id="novaDnaY" placeholder="1754" class="w-1/2 bg-black border border-stone-800 p-3 text-sm font-mono text-rose-300 rounded-xl outline-none focus:border-rose-500 transition-all" />
             </div>
-            <input type="text" id="novaDnaChrono" value="VERIFIED AT 12S FR 1-6" placeholder="CHRONO-MAP" class="w-full bg-black border border-stone-800 p-3 text-sm font-mono text-rose-300 rounded-xl outline-none focus:border-rose-500 transition-all" />
+            <input type="text" id="novaDnaChrono" placeholder="VERIFIED AT 12S FR 1-6" class="w-full bg-black border border-stone-800 p-3 text-sm font-mono text-rose-300 rounded-xl outline-none focus:border-rose-500 transition-all" />
         </div>
-        <div>
-            <label class="text-[10px] text-stone-400 font-mono block mb-2 uppercase tracking-wider">③ Video URI (video)</label>
-            <input type="text" id="novaVideoUri" placeholder="Irys Tx ID (43 chars) or full URI" class="w-full bg-black border border-stone-800 p-3.5 text-sm font-mono text-amber-400 rounded-xl outline-none focus:border-amber-500 transition-all" />
-        </div>
-        <div>
-            <label class="text-[10px] text-stone-400 font-mono block mb-2 uppercase tracking-wider">④ Hidden (Token URL / Freedom)</label>
-            <input type="text" id="novaHiddenInput" value="TOKEN URI (YOUR_DOMAIN_BACK-END API)" placeholder="Custom Token URL override" class="w-full bg-black border border-rose-900/60 p-3.5 text-sm font-mono text-rose-400 rounded-xl outline-none focus:border-rose-500 transition-all" />
+        <div class="md:col-span-2">
+            <label class="text-[10px] text-stone-400 font-mono block mb-2 uppercase tracking-wider">③ Hidden (Token URL / Freedom)</label>
+            <input type="text" id="novaHiddenInput" placeholder="TOKEN URI (YOUR_DOMAIN_BACK-END API)" class="w-full bg-black border border-rose-900/60 p-3.5 text-sm font-mono text-rose-400 rounded-xl outline-none focus:border-rose-500 transition-all" />
         </div>
     </div>
         
-       <div class="mt-8">
-            <div class="p-5 md:p-6 border border-rose-900/50 rounded-2xl bg-black/40 shadow-inner mb-4">
-             <span class="text-[10px] font-mono text-rose-400 uppercase tracking-widest block mb-4 pb-4 border-b border-stone-800 leading-relaxed">
-              • Unlocks Sanctified Status & Lifetime Identity Updates
-                </span>
-              <button onclick="document.getElementById('novaWarnModal').classList.remove('hidden')" class="w-full btn-gold-master rounded-xl py-4 text-xs md:text-sm shadow-[0_0_20px_rgba(217,119,6,0.3)]">[ ⚡ SANCTIFY NOVA CONSECRATION ]</button>
-                    </div>
-                    <div class="p-5 md:p-6 border border-rose-900/50 rounded-2xl bg-black/40 shadow-inner">
-                        <h3 class="text-sm font-black font-cinzel text-rose-400 mb-4 uppercase tracking-widest border-b border-stone-800 pb-2">📜 UPDATE SANCTIFIED IDENTITY</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                            <div>
-                                <label class="text-[10px] text-stone-400 font-mono block mb-2 uppercase tracking-wider">Target Token ID</label>
-                            <input type="number" id="updateTokenIdInput" min="1" max="5555" placeholder="Token ID" class="w-full bg-black border border-stone-800 p-3 text-sm font-mono text-amber-500 rounded-xl outline-none focus:border-amber-500 transition-all" />
-                            </div>
-                            <div>
-                                <label class="text-[10px] text-stone-400 font-mono block mb-2 uppercase tracking-wider">Front URI</label>
-                                <input type="text" id="updateFrontUriInput" placeholder="Front URI" class="w-full bg-black border border-stone-800 p-3 text-sm font-mono text-amber-500 rounded-xl outline-none focus:border-amber-500 transition-all" />
-                            </div>
-                            <div>
-                                <label class="text-[10px] text-stone-400 font-mono block mb-2 uppercase tracking-wider">Back URI</label>
-                                <input type="text" id="updateBackUriInput" placeholder="Back URI" class="w-full bg-black border border-stone-800 p-3 text-sm font-mono text-amber-500 rounded-xl outline-none focus:border-amber-500 transition-all" />
-                            </div>
-                            <div>
-                                <label class="text-[10px] text-stone-400 font-mono block mb-2 uppercase tracking-wider">Video URI</label>
-                                <input type="text" id="updateVideoUriInput" placeholder="Video URI" class="w-full bg-black border border-stone-800 p-3 text-sm font-mono text-amber-500 rounded-xl outline-none focus:border-amber-500 transition-all" />
-                            </div>
-                        </div>
-                        <button id="btnSubmitUpdateIdentity" onclick="if(typeof executeUpdateIdentity === 'function') executeUpdateIdentity(this)" class="w-full bg-stone-950 border border-rose-700 text-rose-400 font-black font-mono text-xs md:text-sm py-4 rounded-xl uppercase tracking-wider hover:bg-rose-950 transition-all shadow-[0_0_15px_rgba(153,27,27,0.2)]">[ 📜 SUBMIT IDENTITY UPDATE ]</button>
-              </div>
-         </div>
+    <div class="mt-8">
+        <div class="p-5 md:p-6 border border-rose-900/50 rounded-2xl bg-black/40 shadow-inner mb-4">
+            <span class="text-[10px] font-mono text-rose-400 uppercase tracking-widest block mb-4 pb-4 border-b border-stone-800 leading-relaxed">
+            • Unlocks Sanctified Status & Lifetime Identity Updates
+            </span>
+            <button onclick="document.getElementById('novaWarnModal').classList.remove('hidden')" class="w-full btn-gold-master rounded-xl py-4 text-xs md:text-sm shadow-[0_0_20px_rgba(217,119,6,0.3)]">[ ⚡ SANCTIFY NOVA CONSECRATION ]</button>
+        </div>
+        <div class="p-5 md:p-6 border border-rose-900/50 rounded-2xl bg-black/40 shadow-inner">
+            <h3 class="text-sm font-black font-cinzel text-rose-400 mb-4 uppercase tracking-widest border-b border-stone-800 pb-2">📜 UPDATE SANCTIFIED IDENTITY</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="text-[10px] text-stone-400 font-mono block mb-2 uppercase tracking-wider">Target Token ID</label>
+                    <input type="number" id="updateTokenIdInput" min="1" max="5555" placeholder="Token ID" class="w-full bg-black border border-stone-800 p-3 text-sm font-mono text-amber-500 rounded-xl outline-none focus:border-amber-500 transition-all" />
+                </div>
+                <div>
+                    <label class="text-[10px] text-stone-400 font-mono block mb-2 uppercase tracking-wider">Front URI</label>
+                    <input type="text" id="updateFrontUriInput" placeholder="Front URI" class="w-full bg-black border border-stone-800 p-3 text-sm font-mono text-amber-500 rounded-xl outline-none focus:border-amber-500 transition-all" />
+                </div>
+                <div>
+                    <label class="text-[10px] text-stone-400 font-mono block mb-2 uppercase tracking-wider">Back URI</label>
+                    <input type="text" id="updateBackUriInput" placeholder="Back URI" class="w-full bg-black border border-stone-800 p-3 text-sm font-mono text-amber-500 rounded-xl outline-none focus:border-amber-500 transition-all" />
+                </div>
+                <div>
+                    <label class="text-[10px] text-stone-400 font-mono block mb-2 uppercase tracking-wider">Video URI</label>
+                    <input type="text" id="updateVideoUriInput" placeholder="Video URI" class="w-full bg-black border border-stone-800 p-3 text-sm font-mono text-amber-500 rounded-xl outline-none focus:border-amber-500 transition-all" />
+                </div>
+            </div>
+            <button id="btnSubmitUpdateIdentity" onclick="if(typeof executeUpdateIdentity === 'function') executeUpdateIdentity(this)" class="w-full bg-stone-950 border border-rose-700 text-rose-400 font-black font-mono text-xs md:text-sm py-4 rounded-xl uppercase tracking-wider hover:bg-rose-950 transition-all shadow-[0_0_15px_rgba(153,27,27,0.2)]">[ 📜 SUBMIT IDENTITY UPDATE ]</button>
+        </div>
+    </div>
 </section>
 
 <!-- 🛡️ ADMIN SECTOR & ROBOT PANEL -->
-<div id="adminSector" class="hidden border border-yellow-600/50 shadow-[0_0_35px_rgba(234,179,8,0.15)] p-4 rounded-xl mt-4 max-w-4xl mx-auto">
-    <h3 class="text-amber-500 font-mono text-xs mb-2">ARCHITECT GATEWAY ROUTING</h3>
-    <input type="text" id="inputLink1" class="w-full bg-black border border-stone-800 p-2 text-xs text-stone-300 mb-2" placeholder="LinkedIn Gateway" />
-    <input type="text" id="inputLink2" class="w-full bg-black border border-stone-800 p-2 text-xs text-stone-300 mb-2" placeholder="X Gateway" />
-    <input type="text" id="inputLink3" class="w-full bg-black border border-stone-800 p-2 text-xs text-stone-300 mb-2" placeholder="Discord Gateway" />
-    <input type="text" id="inputLinkClubHouse" class="w-full bg-black border border-stone-800 p-2 text-xs text-stone-300 mb-2" placeholder="Clubhouse Gateway" />
-    <button onclick="saveArchitectGateways(event)" class="px-4 py-2 bg-amber-700 text-black font-bold text-xs rounded">SAVE GATEWAYS</button>
+<div id="adminSector" class="hidden border border-yellow-600/50 shadow-[0_0_35px_rgba(234,179,8,0.15)] p-4 md:p-6 rounded-xl mt-8 max-w-4xl mx-auto bg-black/80 relative z-20">
+    <div class="border-b border-stone-800 pb-4 mb-6">
+        <h3 class="text-amber-500 font-mono font-black text-sm md:text-base uppercase tracking-widest flex items-center gap-2">
+            <span>🛡️</span> ARCHITECT GATEWAY & LEDGER CONTROL
+        </h3>
+        <p class="text-[10px] text-stone-500 font-mono uppercase mt-1">Restricted to Sovereign Contract Owner / Architect Only.</p>
+    </div>
+
+    <!-- 0. ARCHITECT MINT PANEL (เพิ่มมาให้ตรงนี้ครับ) -->
+    <div class="mb-6 bg-stone-900/50 p-4 rounded-xl border border-stone-800">
+        <h4 class="text-xs text-amber-400 font-mono font-bold uppercase mb-3 border-b border-stone-800 pb-2">0. Architect Special Mint</h4>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+            <div>
+                <label class="text-[9px] text-stone-500 font-mono block uppercase mb-1">Token ID(s) (e.g. 1 or 1,2,3)</label>
+                <input type="text" id="adminMintTokenIds" class="w-full bg-black border border-stone-700 p-2.5 text-xs text-stone-300 rounded focus:border-amber-500 outline-none transition-colors" placeholder="1" />
+            </div>
+            <div>
+                <label class="text-[9px] text-stone-500 font-mono block uppercase mb-1">Recipient Wallet Address</label>
+                <input type="text" id="adminMintRecipient" class="w-full bg-black border border-stone-700 p-2.5 text-xs text-stone-300 rounded focus:border-amber-500 outline-none transition-colors" placeholder="0x..." />
+            </div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+            <div>
+                <label class="text-[9px] text-stone-500 font-mono block uppercase mb-1">Front Media URI(s)</label>
+                <input type="text" id="adminMintFront" class="w-full bg-black border border-stone-700 p-2.5 text-xs text-stone-300 rounded focus:border-amber-500 outline-none transition-colors" placeholder="https://..." />
+            </div>
+            <div>
+                <label class="text-[9px] text-stone-500 font-mono block uppercase mb-1">Back Media URI(s)</label>
+                <input type="text" id="adminMintBack" class="w-full bg-black border border-stone-700 p-2.5 text-xs text-stone-300 rounded focus:border-amber-500 outline-none transition-colors" placeholder="https://..." />
+            </div>
+        </div>
+        <button onclick="uiExecuteArchitectMint()" class="w-full py-2 bg-amber-950/60 hover:bg-amber-900 text-amber-400 border border-amber-800/60 hover:border-amber-500 text-[10px] font-mono font-bold uppercase tracking-wider rounded transition-all shadow-[0_0_10px_rgba(217,119,6,0.1)]">
+            [ EXECUTE ARCHITECT MINT ]
+        </button>
+    </div>
+
+    <!-- 1. SET PARAMS (MINT FEES) -->
+    <div class="mb-6 bg-stone-900/50 p-4 rounded-xl border border-stone-800">
+        <h4 class="text-xs text-amber-400 font-mono font-bold uppercase mb-3 border-b border-stone-800 pb-2">1. Configure Network Fees (ETH)</h4>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
+            <div>
+                <label class="text-[9px] text-stone-500 font-mono block uppercase mb-1">Public Mint Price (ETH)</label>
+                <input type="number" id="adminMintFee" class="w-full bg-black border border-stone-700 p-2.5 text-xs text-stone-300 rounded focus:border-amber-500 outline-none transition-colors" placeholder="e.g. 0.005" step="0.0001" />
+            </div>
+            <div>
+                <label class="text-[9px] text-stone-500 font-mono block uppercase mb-1">Nova Identity Fee (ETH)</label>
+                <input type="number" id="adminNovaFee" class="w-full bg-black border border-stone-700 p-2.5 text-xs text-stone-300 rounded focus:border-amber-500 outline-none transition-colors" placeholder="e.g. 0.001" step="0.0001" />
+            </div>
+            <div>
+                <label class="text-[9px] text-stone-500 font-mono block uppercase mb-1">Council Mint Price (ETH)</label>
+                <input type="number" id="adminCouncilFee" class="w-full bg-black border border-stone-700 p-2.5 text-xs text-stone-300 rounded focus:border-amber-500 outline-none transition-colors" placeholder="e.g. 0" step="0.0001" />
+            </div>
+        </div>
+        <button onclick="uiExecuteSetParams()" class="w-full py-2 bg-stone-800 hover:bg-amber-900/40 text-amber-500 border border-stone-700 hover:border-amber-500 text-[10px] font-mono font-bold uppercase tracking-wider rounded transition-all shadow-[0_0_10px_rgba(217,119,6,0.1)]">
+            [ EXECUTE SET PARAMS ]
+        </button>
+    </div>
+
+    <!-- 2. SET BASE URI -->
+    <div class="mb-6 bg-stone-900/50 p-4 rounded-xl border border-stone-800">
+        <h4 class="text-xs text-amber-400 font-mono font-bold uppercase mb-3 border-b border-stone-800 pb-2">2. Override Base Contract URI</h4>
+        <div class="mb-3">
+            <label class="text-[9px] text-stone-500 font-mono block uppercase mb-1">New Base URI (API Endpoint)</label>
+            <input type="text" id="adminBaseUri" class="w-full bg-black border border-stone-700 p-2.5 text-xs text-stone-300 rounded focus:border-amber-500 outline-none transition-colors" placeholder="https://api.yourdomain.com/metadata/" />
+        </div>
+        <button onclick="uiExecuteSetBaseURI()" class="w-full py-2 bg-stone-800 hover:bg-amber-900/40 text-amber-500 border border-stone-700 hover:border-amber-500 text-[10px] font-mono font-bold uppercase tracking-wider rounded transition-all shadow-[0_0_10px_rgba(217,119,6,0.1)]">
+            [ OVERRIDE BASE URI ]
+        </button>
+    </div>
+
+    <!-- 3. WITHDRAW TREASURY -->
+    <div class="bg-red-950/20 p-4 rounded-xl border border-red-900/40">
+        <h4 class="text-xs text-red-400 font-mono font-bold uppercase mb-3 border-b border-red-900/40 pb-2">3. Treasury Operations</h4>
+        <p class="text-[10px] text-stone-400 font-mono mb-4 leading-relaxed">
+            Execute a full withdrawal of all native network liquidity (Base ETH) accumulated in the smart contract balance directly to the architect's secure vault address.
+        </p>
+        <button onclick="if(confirm('⚠️ Withdraw all ETH to Architect?')) executeWithdrawTreasury()" class="w-full py-3 bg-red-950/60 hover:bg-red-900 text-red-400 hover:text-white border border-red-800/60 hover:border-red-500 text-[11px] font-mono font-bold uppercase tracking-wider rounded transition-all shadow-[0_0_15px_rgba(220,38,38,0.2)]">
+            [ ⚠️ WITHDRAW TREASURY LIQUIDITY ]
+        </button>
+    </div>
 </div>
+
 <div id="robotPanel" class="hidden mt-4 p-4 border border-blue-600 rounded-xl max-w-4xl mx-auto">
     <span class="text-blue-400 font-mono text-xs">ROBOT AUTOMATION PANEL ACTIVE</span>
 </div>
+
+
 
 <section class="chiaroscuro-bg mt-6 p-5 md:p-6 rounded-2xl border border-slate-800 shadow-inner">
     <span class="text-[11px] font-mono text-slate-500 uppercase block border-b border-slate-800 pb-2 font-bold tracking-wider">// SYSTEM EVENT REAL-TIME TELEMETRY STREAM LOG</span>
@@ -1486,7 +1568,7 @@ function decodeContractError(err) {
     return err.reason || err.message || "Transaction reverted by EVM";
 }
 
-async function promptUserForFile(acceptType = 'image/*,video/*') {
+async function promptUserForFile(acceptType = 'image/*,video/*,audio/*,text/html,.html,.htm,.mp3,.wav,.ogg,.m4a,.aac,.flac,.webm') {
     return new Promise((resolve) => {
         const fileInput = document.createElement('input');
         fileInput.type = 'file';
@@ -1518,6 +1600,7 @@ async function promptUserForFile(acceptType = 'image/*,video/*') {
         requestAnimationFrame(() => fileInput.click());
     });
 }
+
 
 // ==============================================================================
 // ⚔️ TRANSACTION WRAPPER
@@ -2245,22 +2328,37 @@ function checkPendingNova() {
     }
 }
 
+// =======================================================================================
+// 👑 THE IMPERIAL SOVEREIGN DEED - UNIFIED UPLOADER GATEKEEPER (ZERO-BREAKING VERSION)
+// STRICT ROLE ENFORCEMENT & MOBILE BROWSING MIME RESOLVER
+// 1. ARCHITECT / OWNER / ADMIN -> FULL ACCESS (MEDIA + HTML/DAPP)
+// 2. DEED HOLDER               -> PASSIVE MEDIA ONLY (IMAGE/VIDEO/AUDIO)
+// 3. PUBLIC / NON-HOLDER        -> STRICTLY REJECTED (ZERO ACCESS)
+// =======================================================================================
 async function executeArchitectCentralizedUpload(type) {
     if (!secureContract || !signer) { 
         showNotification("Action suspended: Authenticate wallet signature first.", "error"); 
         return; 
     }
     
-    try {
-        const userAddress = await signer.getAddress();
-        const privs = await verifyUserPrivileges(userAddress);
+    let privs;
+    let userAddress;
 
-        if (!privs.isHolder && !privs.isAdmin) {
-            showNotification("SECURITY ENFORCEMENT: Owner, Architect, or Deed Holder privileges required.", "error");
+    try {
+        userAddress = await signer.getAddress();
+        privs = await verifyUserPrivileges(userAddress);
+
+        // [TIER 3 SECURITY REJECTION]: Block Non-Holders / General Public Completely
+        const isArchitectOrOwner = Boolean(privs.isArchitect || privs.isOwner || privs.isAdmin);
+        const isHolder = Boolean(privs.isHolder);
+
+        if (!isArchitectOrOwner && !isHolder) {
+            showNotification("SECURITY ENFORCEMENT: Access strictly restricted to Sovereign Deed Holders.", "error");
+            safeAppendLog(`[SECURITY BLOCK] Unauthorized upload attempt by Non-Holder: ${userAddress}`, "text-red-500 font-bold");
             return;
         }
     } catch (err) {
-        showNotification("System Warning: Failed to verify privileges.", "error");
+        showNotification("System Warning: Failed to verify user privileges.", "error");
         return;
     }
 
@@ -2269,9 +2367,52 @@ async function executeArchitectCentralizedUpload(type) {
         return;
     }
     
-    const file = await promptUserForFile('image/*,video/*');
+    // [DYNAMIC ROLE-BASED ACCEPT FILTER]: Holders get Audio/Video/Image; Architect/Owner gets HTML/DApp
+    const isArchitectOrOwner = Boolean(privs.isArchitect || privs.isOwner || privs.isAdmin);
+    let ALLOWED_MIME_TYPES = 'image/*,video/*,audio/*,.mp3,.wav,.ogg,.m4a,.aac,.flac,.webm';
+    
+    if (isArchitectOrOwner) {
+        ALLOWED_MIME_TYPES += ',text/html,.html,.htm';
+    }
+
+    const file = await promptUserForFile(ALLOWED_MIME_TYPES);
+    
     if (!file) {
         safeAppendLog("[SYSTEM] File selection aborted by user.", "text-yellow-500");
+        return;
+    }
+
+    // [DETERMINISTIC MIME RESOLVER FOR MOBILE BROWSERS]
+    let mimeType = (file.type && file.type.trim() !== "") ? file.type.trim() : "";
+    const ext = file.name ? file.name.split('.').pop().toLowerCase() : '';
+
+    if (!mimeType || mimeType === "application/octet-stream") {
+        const mimeMap = {
+            'html': 'text/html',
+            'htm': 'text/html',
+            'mp3': 'audio/mpeg',
+            'wav': 'audio/wav',
+            'ogg': 'audio/ogg',
+            'm4a': 'audio/mp4',
+            'aac': 'audio/aac',
+            'flac': 'audio/flac',
+            'webm': 'audio/webm',
+            'mp4': 'video/mp4',
+            'png': 'image/png',
+            'jpg': 'image/jpeg',
+            'jpeg': 'image/jpeg',
+            'gif': 'image/gif',
+            'svg': 'image/svg+xml',
+            'json': 'application/json'
+        };
+        mimeType = mimeMap[ext] || "application/octet-stream";
+    }
+
+    // [HARDENED TIER 2 GATEKEEPER]: Absolute Block on HTML/DApp Payloads for Non-Architect Deed Holders
+    const isHtmlPayload = (mimeType === 'text/html' || ext === 'html' || ext === 'htm');
+    if (isHtmlPayload && !isArchitectOrOwner) {
+        showNotification("SECURITY VIOLATION: HTML/DApp payload is strictly restricted to ARCHITECT and OWNER.", "error");
+        safeAppendLog(`[SECURITY ALERT] Intercepted HTML upload attempt by Holder: ${userAddress}`, "text-red-500 font-bold");
         return;
     }
 
@@ -2282,7 +2423,6 @@ async function executeArchitectCentralizedUpload(type) {
         
         safeAppendLog(`Streaming ${type} payload for Token #${window.SystemState.inspectedTokenId} to Irys Datachain...`, "text-blue-400");
         
-        const mimeType = (file.type && file.type.trim() !== "") ? file.type : "application/octet-stream";
         const tags = [{ name: "Content-Type", value: mimeType }];
         
         progress = createProgressController(file.size);
@@ -2296,7 +2436,7 @@ async function executeArchitectCentralizedUpload(type) {
         }
 
         const sanitizedTxId = sanitizeForDOM(txId);
-        safeAppendLog(`Payload successfully anchored: ${sanitizedTxId}`, "text-emerald-400 font-bold");
+        safeAppendLog(`Payload successfully anchored: ${sanitizedTxId} [MIME: ${mimeType}]`, "text-emerald-400 font-bold");
         
         if (type === 'front') {
             const frontUriField = document.getElementById('forgeFrontUri');
@@ -2322,6 +2462,7 @@ async function executeArchitectCentralizedUpload(type) {
         if (progress) progress.hide();
     }
 }
+
 
 async function executeGatewayUnlock(event) {
     if (!secureContract || !signer) {
@@ -3066,18 +3207,21 @@ async function triggerIdentityNova(e) {
             throw new Error("Only the current token owner may execute THE_SOVEREIGN_NOVA.");
         }
 
-        const name = document.getElementById("novaDnaName")?.value.trim() || "SAKSIT";
-        const x = document.getElementById("novaDnaX")?.value.trim() || "1014";
-        const y = document.getElementById("novaDnaY")?.value.trim() || "1754";
-        const chrono = document.getElementById("novaDnaChrono")?.value.trim() || "VERIFIED AT 12S FR 1-6";
-        
-        const dna = `Identity DNA : ${name} | Pixel Anchor : X=${x},Y=${y} | Chrono-Map : ${chrono}`;
+        const name = document.getElementById("novaDnaName")?.value.trim() || "";
+        const x = document.getElementById("novaDnaX")?.value.trim() || "";
+        const y = document.getElementById("novaDnaY")?.value.trim() || "";
+        const chrono = document.getElementById("novaDnaChrono")?.value.trim() || "";
         const hidden = document.getElementById("novaHiddenInput")?.value.trim() || "";
+
+        // ถ้าไม่ได้พิมพ์อะไรใน DNA เลย ให้ค่าเป็น "" (สตริงว่างเพียวๆ ไม่ประกอบร่างข้อความใดๆ)
+        const dna = (name || x || y || chrono) 
+            ? `Identity DNA : ${name} | Pixel Anchor : X=${x},Y=${y} | Chrono-Map : ${chrono}`
+            : "";
 
         if (dna.length > 1024 || hidden.length > 1024) {
             throw new Error("Identity and hidden-property values must be 1,024 characters or fewer.");
         }
-        if (!isValidSovereignInput(dna) || isMaliciousURI(dna) || isMaliciousURI(hidden)) {
+        if ((dna && (!isValidSovereignInput(dna) || isMaliciousURI(dna))) || (hidden && isMaliciousURI(hidden))) {
             throw new Error("Unsafe identity or hidden-property text rejected.");
         }
 
@@ -3090,7 +3234,7 @@ async function triggerIdentityNova(e) {
             e,
             `THE_SOVEREIGN_NOVA_#${tokenId}`,
             "THE_SOVEREIGN_NOVA",
-            [String(tokenId), dna, hidden],
+            [String(tokenId), dna, hidden], // ถ้าไม่ได้พิมพ์อะไร ค่าที่ส่งไปจะเป็น ["<tokenId>", "", ""] ตรงๆ
             { value: fee.toString() },
             {
                 onBroadcast: (tx) => {
@@ -3120,6 +3264,7 @@ async function triggerIdentityNova(e) {
         return null;
     }
 }
+
 
 
 async function executeUpdateIdentity(e) {
@@ -4339,6 +4484,50 @@ const clearDeedMediaPreview = (tokenId, stateLabel = "NO ON-CHAIN MEDIA") => {
     }
 };
 
+// ==========================================
+// UI WRAPPERS FOR ADMIN HTML PANEL
+// ==========================================
+window.uiExecuteArchitectMint = async function() {
+    const tokenIds = document.getElementById("adminMintTokenIds")?.value;
+    const recipient = document.getElementById("adminMintRecipient")?.value;
+    const front = document.getElementById("adminMintFront")?.value;
+    const back = document.getElementById("adminMintBack")?.value;
+    // ส่งต่อเข้าฟังก์ชัน executeArchitectMint เดิมของคุณทันที
+    await window.executeArchitectMint(tokenIds, recipient, front, back);
+};
+
+window.uiExecuteSetParams = async function() {
+    const mintEth = document.getElementById("adminMintFee")?.value;
+    const novaEth = document.getElementById("adminNovaFee")?.value;
+    const councilEth = document.getElementById("adminCouncilFee")?.value;
+    await window.executeSetParams(mintEth, novaEth, councilEth);
+};
+
+window.uiExecuteSetBaseURI = async function() {
+    const uri = document.getElementById("adminBaseUri")?.value;
+    await window.executeSetBaseURI(uri);
+};
+
+// ฟังก์ชันเปิด-ปิดแผง Admin อัตโนมัติ (เช็กจากสิทธิ์)
+async function verifyAndRevealAdminPanel() {
+    try {
+        if (!secureContract || !signer) return;
+        const address = await signer.getAddress();
+        const permissions = await verifyUserPrivileges(address);
+        const adminSector = document.getElementById("adminSector");
+        if (permissions?.isAdmin && adminSector) {
+            adminSector.classList.remove("hidden");
+        } else if (adminSector) {
+            adminSector.classList.add("hidden");
+        }
+    } catch (e) {}
+}
+window.addEventListener("walletConnected", verifyAndRevealAdminPanel);
+
+// ==========================================
+// YOUR ORIGINAL FUNCTIONS (UNTOUCHED)
+// ==========================================
+
 window.inspectTokenFromInput = async function (value) {
     const input = document.getElementById("tokenInspectorInput");
     const raw = value == null ? input?.value : value;
@@ -4602,6 +4791,7 @@ if (document.readyState === "loading") {
 } else {
     initializeContractUi();
 }
+
 </script>
 </body>
 </html>
