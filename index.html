@@ -1817,45 +1817,6 @@ async function triggerForge(type, e) {
     }
 }
 
-// ==============================================================================
-// 🌐 IRYS DECENTRALIZED STORAGE ENGINE
-// ==============================================================================
-
-async function ensureIrysReady(timeoutMs = 60000) {
-    if (typeof irys !== 'undefined' && irys) return true;
-    
-    if (typeof activeRawProvider === 'undefined' || !activeRawProvider) throw new Error("EVM Provider Uninitialized. Please connect Web3 Wallet first.");
-    if (typeof signer === 'undefined' || !signer) throw new Error("EVM Signer Uninitialized. Wallet connection required.");
-    
-    if (typeof window.InitSovereignIrys !== 'function') {
-        throw new Error("Irys Custom Bundle (irys-bundle.js) is missing or failed to load.");
-    }
-
-    updateBridgeStatus("ENGAGING IRYS BRIDGE...", "warning");
-    safeAppendLog("[SYSTEM] Engaging isolated Irys Settlement Bridge via Custom Sovereign Bundle...", "text-blue-400");
-
-    try {
-        const initPromise = (async () => {
-            irys = await window.InitSovereignIrys(signer); 
-            return true;
-        })();
-
-        const timeoutPromise = new Promise((_, reject) => 
-            setTimeout(() => reject(new Error("Irys initialization timeout")), timeoutMs)
-        );
-
-        await Promise.race([initPromise, timeoutPromise]);
-
-        updateBridgeStatus("✅ IRYS PERMANENT BRIDGE ONLINE", "success");
-        safeAppendLog("[SYSTEM] Autonomous Irys permanent settlement bridge successfully engaged.", "text-emerald-400 font-bold");
-        return true;
-    } catch (err) {
-        irys = null;
-        updateBridgeStatus("⚠ BRIDGE ERROR (CHECK LOG)", "error");
-        safeAppendLog(`[IRYS FAULT] Bridge protocol initialization failed: ${err.message}`, "text-rose-500 font-bold");
-        throw err;
-    }
-}
 
 async function withNetworkRetry(fn, retries = 3, delay = 1000) {
     for (let i = 0; i < retries; i++) {
@@ -1867,39 +1828,10 @@ async function withNetworkRetry(fn, retries = 3, delay = 1000) {
     }
 }
 
-function createProgressController(totalBytes) {
-    const shell = document.getElementById('uploadProgressShell');
-    const fill = document.getElementById('uploadProgressFill');
-    const label = document.getElementById('uploadProgressLabel');
-    let lastPaint = 0;
-    let pct = 0;
-
-    function paint(force) {
-        const now = performance.now();
-        if (!force && now - lastPaint < 200) return; 
-        lastPaint = now;
-        if (fill) fill.style.width = pct + '%';
-        if (label) label.textContent = pct + '%';
-        if (shell) shell.setAttribute('aria-valuenow', String(pct));
-    }
-    return {
-        show: () => { if (shell) shell.classList.remove('hidden'); paint(true); },
-        set: (uploadedBytes) => {
-            if (!totalBytes || totalBytes <= 0) return;
-            const next = Math.min(100, Math.round((Number(uploadedBytes) / Number(totalBytes)) * 100));
-            if (next !== pct) { pct = next; paint(false); }
-        },
-        complete: () => { pct = 100; paint(true); },
-        hide: () => {
-            if (shell) shell.classList.add('hidden');
-            if (fill) fill.style.width = '0%';
-            if (label) label.textContent = '0%';
-            pct = 0;
-        }
-    };
-}
-
-async function executeIrysUpload(payload, tags = [], isFile = false, progressCtrl = null, triggerBtn = null) { 
+// ==============================================================================
+// 📡 1. CORE UPLOAD ENGINE (โค้ดเก่าของพี่ + ล้าง Listener กันหลอดโหลดรวน)
+// ==============================================================================
+async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = null, triggerBtn = null) { 
     const activeBtn = toggleButtonLoading(triggerBtn, true);
 
     try {
@@ -1924,22 +1856,6 @@ async function executeIrysUpload(payload, tags = [], isFile = false, progressCtr
         } catch (conversionErr) {
             safeAppendLog(`[IRYS TELEMETRY] Payload mapping failed: ${conversionErr?.message}`, "text-red-500");
             throw new Error(`Payload conversion failed: ${conversionErr?.message}`);
-        }
-
-        // 🎯 1. HARD LIMIT GUARD: บล็อกไฟล์เกิน 500 MB ทันที ป้องกันผู้ใช้เสียค่าแก๊สฟรี
-        const MAX_ALLOWED_SIZE = 500 * 1024 * 1024; // 500 MB
-        if (size > MAX_ALLOWED_SIZE) {
-            throw new Error(`FILE_TOO_LARGE: Payload size exceeds maximum limit of 500 MB (Current: ${(size / (1024 * 1024)).toFixed(2)} MB).`);
-        }
-
-        // 🎯 2. AUTO-TAGGING FOR AUDIO / HTML / MEDIA: ฉีด Content-Type อัตโนมัติถ้าไม่มีการระบุมา
-        let formattedTags = Array.isArray(tags) ? [...tags] : [];
-        if (isFile && payload?.type) {
-            const hasContentType = formattedTags.some(t => String(t?.name || '').toLowerCase() === 'content-type');
-            if (!hasContentType) {
-                formattedTags.push({ name: "Content-Type", value: payload.type });
-                safeAppendLog(`[IRYS TELEMETRY] Auto-injected Content-Type tag: ${payload.type}`, "text-slate-400");
-            }
         }
 
         const priceRaw = await withNetworkRetry(() => irys.getPrice(size));
@@ -2004,6 +1920,10 @@ async function executeIrysUpload(payload, tags = [], isFile = false, progressCtr
                     }
 
                     if (!fundRes || !fundRes.id) throw new Error("No transaction ID returned from bundler.");
+                    
+                    // แสดง TxID ทันทีที่จ่ายเงินผ่าน
+                    safeAppendLog(`[SYSTEM] Funding broadcasted. TxID: ${fundRes.id}`, "text-blue-400");
+                    
                     try { 
                         localStorage.setItem('irys_pending_fund_tx', JSON.stringify({ 
                             id: fundRes.id, ts: Date.now(), amount: diffWithBuffer.toString() 
@@ -2017,7 +1937,13 @@ async function executeIrysUpload(payload, tags = [], isFile = false, progressCtr
                     if (isUserRejection || isInsufficientFunds) {
                         throw new Error(isUserRejection ? "Funding transaction cancelled by user." : "Insufficient ETH balance for funding.");
                     } else {
-                        safeAppendLog(`[IRYS API WARNING] Fund API returned an error, but TX might be on-chain. Forcing balance verification...`, "text-yellow-500");
+                        // ดึง TxID ออกมาโชว์กรณี Irys Node Timeout แต่เงินถูกหักไปแล้ว
+                        const possibleTxId = fundErr?.transactionHash || fundErr?.txId || fundErr?.receipt?.transactionHash || "";
+                        if (possibleTxId) {
+                            safeAppendLog(`[IRYS API TIMEOUT] TX is on-chain. TxID: ${possibleTxId}. Forcing sync...`, "text-yellow-500");
+                        } else {
+                            safeAppendLog(`[IRYS API WARNING] Fund API returned an error, but TX might be on-chain. Forcing balance verification...`, "text-yellow-500");
+                        }
                     }
                 }
             }
@@ -2074,6 +2000,10 @@ async function executeIrysUpload(payload, tags = [], isFile = false, progressCtr
             let listenerAttached = false;
             if (useChunking && typeof irys.uploader?.chunkedUploader !== 'undefined') {
                 if (typeof irys.uploader.chunkedUploader.on === 'function') {
+                    // ล้าง Listener เก่าทิ้งก่อนผูกใหม่ ป้องกันหลอดโหลดรวน
+                    if (typeof irys.uploader.chunkedUploader.removeAllListeners === 'function') {
+                        irys.uploader.chunkedUploader.removeAllListeners('chunkUpload');
+                    }
                     irys.uploader.chunkedUploader.on('chunkUpload', onChunk);
                     listenerAttached = true;
                 }
@@ -2082,48 +2012,28 @@ async function executeIrysUpload(payload, tags = [], isFile = false, progressCtr
             try {
                 while (attempt <= maxRetries) {
                     try {
-                        let uploadPromise;
                         if (useChunking) {
                             safeAppendLog(`[IRYS TELEMETRY] Large file detected (${(size/1024/1024).toFixed(2)} MB). Activating Chunked Uploader...`, "text-blue-400");
                             irys.uploader.chunkedUploader.setChunkSize(chunkSize);
                             irys.uploader.chunkedUploader.setBatchSize(batchSize);
                             
-                            const fileIdentifier = isFile && dataToUpload.name ? `${dataToUpload.name}_${dataToUpload.lastModified}` : 'buffer';
-                            const uploadId = `irys_resume_${fileIdentifier}_${size}`;
+                            const safeName = 'payload';
+                            const uploadId = `irys_resume_${safeName}_${size}`;
                             
                             if (attempt > 0) {
                                 safeAppendLog(`[IRYS TELEMETRY] Resuming upload via ID: ${uploadId}...`, "text-amber-400");
                             } 
                             
-                            uploadPromise = irys.uploader.chunkedUploader.uploadData(dataToUpload, { tags: formattedTags, uploadId });
+                            receipt = await irys.uploader.chunkedUploader.uploadData(dataToUpload, { tags, uploadId });
                             
                         } else {
                             if (progressCtrl) progressCtrl.set(size / 2);
-                            
-                            let finalPayload = dataToUpload;
-                            if (isFile && (dataToUpload instanceof File || dataToUpload instanceof Blob)) {
-                                const ab = await dataToUpload.arrayBuffer();
-                                finalPayload = typeof Buffer !== 'undefined' ? Buffer.from(ab) : new Uint8Array(ab);
-                                safeAppendLog(`[IRYS TELEMETRY] Small file resolved to Polyfill Buffer / Uint8Array.`, "text-slate-400");
-                            }
-                            
-                            uploadPromise = irys.upload(finalPayload, { tags: formattedTags });
+                            receipt = await irys.upload(dataToUpload, { tags });
                         }
-
-                        // 🎯 3. DYNAMIC TIMEOUT: คำนวณเวลาจับ Timeout ผันแปรตามขนาดไฟล์ (ขั้นต่ำ 45s + 6 วินาที ต่อ 1MB)
-                        // สำหรับไฟล์ 500 MB จะเปิดกรอบเวลาให้สูงถึง ~50 นาที เหมาะกับเน็ตมือถือ
-                        const sizeInMb = Math.ceil(size / (1024 * 1024));
-                        const dynamicTimeoutMs = Math.max(45000, sizeInMb * 6000);
-
-                        const timeoutPromise = new Promise((_, reject) => 
-                            setTimeout(() => reject(new Error(`IRYS_GATEWAY_TIMEOUT: Upload timed out after ${(dynamicTimeoutMs / 1000).toFixed(0)} seconds.`)), dynamicTimeoutMs)
-                        );
-
-                        receipt = await Promise.race([uploadPromise, timeoutPromise]);
                         break; 
                     } catch (uploadErr) {
                         const msg = String(uploadErr?.message || uploadErr).toLowerCase();
-                        if (msg.includes('declined') || msg.includes('rejected') || msg.includes('denied') || msg.includes('insufficient') || msg.includes('irys_gateway_timeout') || msg.includes('file_too_large')) {
+                        if (msg.includes('declined') || msg.includes('rejected') || msg.includes('denied') || msg.includes('insufficient')) {
                             throw uploadErr; 
                         }
                         attempt++;
@@ -2162,14 +2072,149 @@ async function executeIrysUpload(payload, tags = [], isFile = false, progressCtr
     }
 }
 
+// ==============================================================================
+// 📡 2. GATEWAY & DOM MAPPER (จัดการปุ่ม, สิทธิ์, และยัดค่าลง Input หน้าเว็บ)
+// ==============================================================================
+async function executeArchitectCentralizedUpload(type) {
+    // แมพ ID ปุ่มให้ตรงกับหน้า HTML (btnUploadFront / btnUploadBack)
+    const btnId = type === 'front' ? 'btnUploadFront' : 'btnUploadBack';
+    const btn = document.getElementById(btnId);
+    if (btn) toggleButtonLoading(btn, true);
 
+    if (!secureContract || !signer) { 
+        showNotification("Action suspended: Authenticate wallet signature first.", "error"); 
+        if (btn) toggleButtonLoading(btn, false);
+        return; 
+    }
+    
+    let privs;
+    let userAddress;
+
+    try {
+        userAddress = await signer.getAddress();
+        privs = await verifyUserPrivileges(userAddress);
+
+        const isArchitectOrOwner = Boolean(privs.isArchitect || privs.isOwner || privs.isAdmin);
+        const isHolder = Boolean(privs.isHolder);
+
+        if (!isArchitectOrOwner && !isHolder) {
+            showNotification("SECURITY ENFORCEMENT: Access strictly restricted to Sovereign Deed Holders.", "error");
+            safeAppendLog(`[SECURITY BLOCK] Unauthorized upload attempt by Non-Holder: ${userAddress}`, "text-red-500 font-bold");
+            if (btn) toggleButtonLoading(btn, false);
+            return;
+        }
+    } catch (err) {
+        showNotification("System Warning: Failed to verify user privileges.", "error");
+        if (btn) toggleButtonLoading(btn, false);
+        return;
+    }
+
+    if (window.SystemState.inspectedTokenId === null || window.SystemState.inspectedTokenId === undefined || isNaN(window.SystemState.inspectedTokenId)) {
+        showNotification("Enter a valid token ID in the Token Inspector first.", "error");
+        if (btn) toggleButtonLoading(btn, false);
+        return;
+    }
+    
+    const isArchitectOrOwner = Boolean(privs.isArchitect || privs.isOwner || privs.isAdmin);
+    
+    let ALLOWED_MIME_TYPES = 'image/*,video/*,audio/*,.mp3,.wav,.ogg,.m4a,.aac,.flac,.webm';
+    if (isArchitectOrOwner) {
+        ALLOWED_MIME_TYPES += ',text/html,.html,.htm';
+    }
+
+    const file = await promptUserForFile(ALLOWED_MIME_TYPES);
+    
+    if (!file) {
+        safeAppendLog("[SYSTEM] File selection aborted by user.", "text-yellow-500");
+        if (btn) toggleButtonLoading(btn, false);
+        return;
+    }
+
+    let mimeType = (file.type && file.type.trim() !== "") ? file.type.trim() : "";
+    const ext = file.name ? file.name.split('.').pop().toLowerCase() : '';
+
+    if (!mimeType || mimeType === "application/octet-stream") {
+        const mimeMap = {
+            'html': 'text/html', 'htm': 'text/html', 'mp3': 'audio/mpeg', 'wav': 'audio/wav',
+            'ogg': 'audio/ogg', 'm4a': 'audio/mp4', 'aac': 'audio/aac', 'flac': 'audio/flac',
+            'webm': 'audio/webm', 'mp4': 'video/mp4', 'png': 'image/png', 'jpg': 'image/jpeg',
+            'jpeg': 'image/jpeg', 'gif': 'image/gif', 'svg': 'image/svg+xml', 'json': 'application/json'
+        };
+        mimeType = mimeMap[ext] || "application/octet-stream";
+    }
+
+    const isHtmlPayload = (mimeType === 'text/html' || ext === 'html' || ext === 'htm');
+    if (isHtmlPayload && !isArchitectOrOwner) {
+        showNotification("SECURITY VIOLATION: HTML/DApp payload is strictly restricted to ARCHITECT and OWNER.", "error");
+        safeAppendLog(`[SECURITY ALERT] Intercepted HTML upload attempt by Holder: ${userAddress}`, "text-red-500 font-bold");
+        if (btn) toggleButtonLoading(btn, false);
+        return;
+    }
+
+    let progress = null;
+    
+    try {
+        if (!irys) await ensureIrysReady();
+        
+        safeAppendLog(`Streaming ${type} payload for Token #${window.SystemState.inspectedTokenId} to Irys Datachain...`, "text-blue-400");
+        
+        const tags = [
+            { name: "Content-Type", value: mimeType },
+            { name: "App-Name", value: "Sovereign-Absolute-V18" },
+            { name: "Token-Id", value: String(window.SystemState.inspectedTokenId) }
+        ];
+        
+        progress = createProgressController(file.size);
+        if (progress) progress.show();
+        
+        // ส่ง btn (ปุ่มที่ถูกกด) เข้าไปให้ executeIrysUpload จัดการสถานะ Loading
+        const response = await executeIrysUpload(file, tags, true, progress, btn);
+        const txId = response?.data?.id || response?.id; 
+        
+        if (!txId || typeof txId !== 'string' || txId.trim() === "") { 
+            throw new Error("Irys payload generation failed: null or invalid TxID."); 
+        }
+
+        const sanitizedTxId = sanitizeForDOM(txId);
+        safeAppendLog(`Payload successfully anchored: ${sanitizedTxId} [MIME: ${mimeType}]`, "text-emerald-400 font-bold");
+        
+        // แมพค่ากลับไปที่ Input Fields หน้าเว็บให้ตรงเป๊ะ
+        if (type === 'front') {
+            const frontUriField = document.getElementById('forgeFrontUri');
+            const updateFrontField = document.getElementById('updateFrontUriInput');
+            if (frontUriField) frontUriField.value = sanitizedTxId;
+            if (updateFrontField) updateFrontField.value = sanitizedTxId;
+            currentLoadedMediaData.front = sanitizedTxId;
+            renderToViewport('previewFrontContainer', sanitizedTxId, "Obverse aspect currently unassigned.", mimeType);
+        } else if (type === 'back') {
+            const backUriField = document.getElementById('forgeBackUri');
+            const updateBackField = document.getElementById('updateBackUriInput');
+            if (backUriField) backUriField.value = sanitizedTxId;
+            if (updateBackField) updateBackField.value = sanitizedTxId;
+            currentLoadedMediaData.back = sanitizedTxId;
+            renderToViewport('previewBackContainer', sanitizedTxId, "Reverse diagnostic data trace is currently null.", mimeType);
+        }
+        showNotification(`${type.toUpperCase()} payload streamed successfully for Token #${window.SystemState.inspectedTokenId}.`, "success");
+    } catch (err) {
+        const errMsg = err?.message || "Unknown error occurred during upload.";
+        safeAppendLog(`Upload failed: ${errMsg}`, "text-red-500");
+        showNotification(`Upload failed: ${errMsg}`, "error");
+    } finally {
+        if (progress) progress.hide();
+        if (btn) toggleButtonLoading(btn, false);
+    }
+}
 
 // ==============================================================================
-// ⚡ CORE EXECUTION: TOP-UP PROTOCOL
+// 📡 3. TOP-UP ENGINE (เติมเงินเข้า Irys)
 // ==============================================================================
-
 async function executeIrysTopUp(amountEthStr, triggerBtn = null) { 
-    const activeBtn = toggleButtonLoading(triggerBtn, true);
+    // ถ้าไม่ได้ส่งปุ่มมา ให้พยายามหาปุ่มที่ถูกกดจาก event
+    let activeBtn = triggerBtn;
+    if (!activeBtn && window.event && window.event.currentTarget) {
+        activeBtn = window.event.currentTarget;
+    }
+    activeBtn = toggleButtonLoading(activeBtn, true);
 
     try {
         await ensureIrysReady();
@@ -2209,6 +2254,7 @@ async function executeIrysTopUp(amountEthStr, triggerBtn = null) {
         } else {
             try {
                 const fundRes = await irys.fund(amountWei.toString());
+                safeAppendLog(`[SYSTEM] Top-up broadcasted. TxID: ${fundRes.id}`, "text-blue-400");
                 try { 
                     localStorage.setItem('irys_pending_fund_tx', JSON.stringify({ 
                         id: fundRes.id || 'pending', ts: Date.now(), amount: amountWei.toString()
@@ -2219,13 +2265,18 @@ async function executeIrysTopUp(amountEthStr, triggerBtn = null) {
                 if (/user rejected|declined|denied|cancelled|user declined/.test(feMsg)) {
                     throw new Error("Top-up transaction cancelled in wallet.");
                 }
-                safeAppendLog(`[IRYS FUND WARNING] Transaction broadcasted but Irys Node response delayed. Polling active...`, "text-yellow-500");
+                const possibleTxId = fundErr?.transactionHash || fundErr?.txId || "";
+                if (possibleTxId) {
+                    safeAppendLog(`[IRYS API TIMEOUT] TX is on-chain. TxID: ${possibleTxId}`, "text-yellow-500");
+                } else {
+                    safeAppendLog(`[IRYS FUND WARNING] Transaction broadcasted but Irys Node response delayed. Polling active...`, "text-yellow-500");
+                }
             }
         }
         
         let isSynced = false;
         let attempts = 0;
-        const maxTopUpAttempts = 12; // Reduced to 60s
+        const maxTopUpAttempts = 12; 
         
         while (!isSynced && attempts < maxTopUpAttempts) {
             if (!irys || typeof signer === 'undefined' || !signer) { 
@@ -2262,8 +2313,88 @@ async function executeIrysTopUp(amountEthStr, triggerBtn = null) {
             showNotification(msg, "error");
         }
     } finally {
-        toggleButtonLoading(activeBtn, false);
+        if (activeBtn) toggleButtonLoading(activeBtn, false);
     }
+}
+
+// ==============================================================================
+// 📡 4. BRIDGE INITIALIZER (เชื่อมต่อ Irys)
+// ==============================================================================
+async function ensureIrysReady(timeoutMs = 60000) {
+    if (typeof irys !== 'undefined' && irys) return true;
+    
+    if (typeof activeRawProvider === 'undefined' || !activeRawProvider) throw new Error("EVM Provider Uninitialized. Please connect Web3 Wallet first.");
+    if (typeof signer === 'undefined' || !signer) throw new Error("EVM Signer Uninitialized. Wallet connection required.");
+    
+    if (typeof window.InitSovereignIrys !== 'function') {
+        throw new Error("Irys Custom Bundle (irys-bundle.js) is missing or failed to load.");
+    }
+
+    updateBridgeStatus("ENGAGING IRYS BRIDGE...", "warning");
+    safeAppendLog("[SYSTEM] Engaging isolated Irys Settlement Bridge via Custom Sovereign Bundle...", "text-blue-400");
+
+    // แมพปุ่ม Connect Irys เพื่อทำ Loading State
+    const btnConnectIrys = document.getElementById('btnConnectIrys');
+    if (btnConnectIrys) toggleButtonLoading(btnConnectIrys, true);
+
+    try {
+        const initPromise = (async () => {
+            irys = await window.InitSovereignIrys(signer); 
+            return true;
+        })();
+
+        const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error("Irys initialization timeout")), timeoutMs)
+        );
+
+        await Promise.race([initPromise, timeoutPromise]);
+
+        updateBridgeStatus("✅ IRYS PERMANENT BRIDGE ONLINE", "success");
+        safeAppendLog("[SYSTEM] Autonomous Irys permanent settlement bridge successfully engaged.", "text-emerald-400 font-bold");
+        return true;
+    } catch (err) {
+        irys = null;
+        updateBridgeStatus("⚠ BRIDGE ERROR (CHECK LOG)", "error");
+        safeAppendLog(`[IRYS FAULT] Bridge protocol initialization failed: ${err.message}`, "text-rose-500 font-bold");
+        throw err;
+    } finally {
+        if (btnConnectIrys) toggleButtonLoading(btnConnectIrys, false);
+    }
+}
+
+// ==============================================================================
+// 📡 5. PROGRESS BAR CONTROLLER (แมพกับหลอดโหลดหน้าเว็บ)
+// ==============================================================================
+function createProgressController(totalBytes) {
+    const shell = document.getElementById('uploadProgressShell');
+    const fill = document.getElementById('uploadProgressFill');
+    const label = document.getElementById('uploadProgressLabel');
+    let lastPaint = 0;
+    let pct = 0;
+
+    function paint(force) {
+        const now = performance.now();
+        if (!force && now - lastPaint < 200) return; 
+        lastPaint = now;
+        if (fill) fill.style.width = pct + '%';
+        if (label) label.textContent = pct + '%';
+        if (shell) shell.setAttribute('aria-valuenow', String(pct));
+    }
+    return {
+        show: () => { if (shell) shell.classList.remove('hidden'); paint(true); },
+        set: (uploadedBytes) => {
+            if (!totalBytes || totalBytes <= 0) return;
+            const next = Math.min(100, Math.round((Number(uploadedBytes) / Number(totalBytes)) * 100));
+            if (next !== pct) { pct = next; paint(false); }
+        },
+        complete: () => { pct = 100; paint(true); },
+        hide: () => {
+            if (shell) shell.classList.add('hidden');
+            if (fill) fill.style.width = '0%';
+            if (label) label.textContent = '0%';
+            pct = 0;
+        }
+    };
 }
 
 // ==============================================================================
@@ -2319,154 +2450,6 @@ function checkPendingNova() {
             localStorage.removeItem('pending_nova_txid');
             localStorage.removeItem('pending_nova_token');
         } catch (purgeErr) {}
-    }
-}
-
-// =======================================================================================
-// 👑 THE IMPERIAL SOVEREIGN DEED - UNIFIED UPLOADER GATEKEEPER (ZERO-BREAKING VERSION)
-// STRICT ROLE ENFORCEMENT & MOBILE BROWSING MIME RESOLVER
-// 1. ARCHITECT / OWNER / ADMIN -> FULL ACCESS (MEDIA + HTML/DAPP)
-// 2. DEED HOLDER               -> PASSIVE MEDIA ONLY (IMAGE/VIDEO/AUDIO)
-// 3. PUBLIC / NON-HOLDER        -> STRICTLY REJECTED (ZERO ACCESS)
-// =======================================================================================
-async function executeArchitectCentralizedUpload(type) {
-    const btnId = type === 'front' ? 'btnUploadFront' : 'btnUploadBack';
-    const btn = document.getElementById(btnId);
-    if (btn) toggleButtonLoading(btn, true);
-
-    if (!secureContract || !signer) { 
-        showNotification("Action suspended: Authenticate wallet signature first.", "error"); 
-        if (btn) toggleButtonLoading(btn, false);
-        return; 
-    }
-    
-    let privs;
-    let userAddress;
-
-    try {
-        userAddress = await signer.getAddress();
-        privs = await verifyUserPrivileges(userAddress);
-
-        const isArchitectOrOwner = Boolean(privs.isArchitect || privs.isOwner || privs.isAdmin);
-        const isHolder = Boolean(privs.isHolder);
-
-        if (!isArchitectOrOwner && !isHolder) {
-            showNotification("SECURITY ENFORCEMENT: Access strictly restricted to Sovereign Deed Holders.", "error");
-            safeAppendLog(`[SECURITY BLOCK] Unauthorized upload attempt by Non-Holder: ${userAddress}`, "text-red-500 font-bold");
-            if (btn) toggleButtonLoading(btn, false);
-            return;
-        }
-    } catch (err) {
-        showNotification("System Warning: Failed to verify user privileges.", "error");
-        if (btn) toggleButtonLoading(btn, false);
-        return;
-    }
-
-    if (window.SystemState.inspectedTokenId === null || window.SystemState.inspectedTokenId === undefined || isNaN(window.SystemState.inspectedTokenId)) {
-        showNotification("Enter a valid token ID in the Token Inspector first.", "error");
-        if (btn) toggleButtonLoading(btn, false);
-        return;
-    }
-    
-    const isArchitectOrOwner = Boolean(privs.isArchitect || privs.isOwner || privs.isAdmin);
-    
-    // [MEDIA ACCESS PERMISSIONS ENFORCEMENT]
-    let ALLOWED_MIME_TYPES = 'image/*,video/*,audio/*,.mp3,.wav,.ogg,.m4a,.aac,.flac,.webm';
-    if (isArchitectOrOwner) {
-        ALLOWED_MIME_TYPES += ',text/html,.html,.htm';
-    }
-
-    const file = await promptUserForFile(ALLOWED_MIME_TYPES);
-    
-    if (!file) {
-        safeAppendLog("[SYSTEM] File selection aborted by user.", "text-yellow-500");
-        if (btn) toggleButtonLoading(btn, false);
-        return;
-    }
-
-    let mimeType = (file.type && file.type.trim() !== "") ? file.type.trim() : "";
-    const ext = file.name ? file.name.split('.').pop().toLowerCase() : '';
-
-    if (!mimeType || mimeType === "application/octet-stream") {
-        const mimeMap = {
-            'html': 'text/html',
-            'htm': 'text/html',
-            'mp3': 'audio/mpeg',
-            'wav': 'audio/wav',
-            'ogg': 'audio/ogg',
-            'm4a': 'audio/mp4',
-            'aac': 'audio/aac',
-            'flac': 'audio/flac',
-            'webm': 'audio/webm',
-            'mp4': 'video/mp4',
-            'png': 'image/png',
-            'jpg': 'image/jpeg',
-            'jpeg': 'image/jpeg',
-            'gif': 'image/gif',
-            'svg': 'image/svg+xml',
-            'json': 'application/json'
-        };
-        mimeType = mimeMap[ext] || "application/octet-stream";
-    }
-
-    const isHtmlPayload = (mimeType === 'text/html' || ext === 'html' || ext === 'htm');
-    if (isHtmlPayload && !isArchitectOrOwner) {
-        showNotification("SECURITY VIOLATION: HTML/DApp payload is strictly restricted to ARCHITECT and OWNER.", "error");
-        safeAppendLog(`[SECURITY ALERT] Intercepted HTML upload attempt by Holder: ${userAddress}`, "text-red-500 font-bold");
-        if (btn) toggleButtonLoading(btn, false);
-        return;
-    }
-
-    let progress = null;
-    
-    try {
-        if (!irys) await ensureIrysReady();
-        
-        safeAppendLog(`Streaming ${type} payload for Token #${window.SystemState.inspectedTokenId} to Irys Datachain...`, "text-blue-400");
-        
-        // [DIRECTIVE 3 ENFORCEMENT]: Protocol Metadata Tagging Injection
-        const tags = [
-            { name: "Content-Type", value: mimeType },
-            { name: "App-Name", value: "Sovereign-Absolute-V18" },
-            { name: "Token-Id", value: String(window.SystemState.inspectedTokenId) }
-        ];
-        
-        progress = createProgressController(file.size);
-        if (progress) progress.show();
-        
-        const response = await executeIrysUpload(file, tags, true, progress, btn);
-        const txId = response?.data?.id || response?.id; 
-        
-        if (!txId || typeof txId !== 'string' || txId.trim() === "") { 
-            throw new Error("Irys payload generation failed: null or invalid TxID."); 
-        }
-
-        const sanitizedTxId = sanitizeForDOM(txId);
-        safeAppendLog(`Payload successfully anchored: ${sanitizedTxId} [MIME: ${mimeType}]`, "text-emerald-400 font-bold");
-        
-        if (type === 'front') {
-            const frontUriField = document.getElementById('forgeFrontUri');
-            const updateFrontField = document.getElementById('updateFrontUriInput');
-            if (frontUriField) frontUriField.value = sanitizedTxId;
-            if (updateFrontField) updateFrontField.value = sanitizedTxId;
-            currentLoadedMediaData.front = sanitizedTxId;
-            renderToViewport('previewFrontContainer', sanitizedTxId, "Obverse aspect currently unassigned.", mimeType);
-        } else if (type === 'back') {
-            const backUriField = document.getElementById('forgeBackUri');
-            const updateBackField = document.getElementById('updateBackUriInput');
-            if (backUriField) backUriField.value = sanitizedTxId;
-            if (updateBackField) updateBackField.value = sanitizedTxId;
-            currentLoadedMediaData.back = sanitizedTxId;
-            renderToViewport('previewBackContainer', sanitizedTxId, "Reverse diagnostic data trace is currently null.", mimeType);
-        }
-        showNotification(`${type.toUpperCase()} payload streamed successfully for Token #${window.SystemState.inspectedTokenId}.`, "success");
-    } catch (err) {
-        const errMsg = err?.message || "Unknown error occurred during upload.";
-        safeAppendLog(`Upload failed: ${errMsg}`, "text-red-500");
-        showNotification(`Upload failed: ${errMsg}`, "error");
-    } finally {
-        if (progress) progress.hide();
-        if (btn) toggleButtonLoading(btn, false);
     }
 }
 
