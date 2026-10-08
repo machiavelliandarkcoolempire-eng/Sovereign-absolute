@@ -758,7 +758,7 @@
 <!-- ========================================== -->
 <!-- ⚙️ ARCHITECT CONSOLE (ADMIN UI) -->
 <!-- ========================================== -->
-<section class="chiaroscuro-bg p-6 md:p-8 rounded-2xl mb-6 relative z-10 border border-fuchsia-900/40">
+<section id="architectConsoleSection" style="display: none;" class="chiaroscuro-bg p-6 md:p-8 rounded-2xl mb-6 relative z-10 border border-fuchsia-900/40">
     <div class="border-b border-stone-800 pb-4 mb-6">
         <h2 class="text-xl font-black font-cinzel text-fuchsia-500 uppercase tracking-wider">⚙️ ARCHITECT CONSOLE</h2>
         <p class="text-[10px] font-mono text-stone-500 uppercase tracking-wide mt-1">RESTRICTED ACCESS • SYSTEM PARAMETERS & MASTER MINT</p>
@@ -795,9 +795,30 @@
             <button onclick="if(typeof uiExecuteSetBaseURI === 'function') uiExecuteSetBaseURI()" class="w-full bg-stone-950 border border-fuchsia-900 text-fuchsia-400 hover:bg-fuchsia-950 text-[10px] font-bold font-mono py-3 rounded-lg uppercase transition-colors">UPDATE BASE URI</button>
         </div>
 
+        <!-- ROLES MANAGEMENT: TRANSFER OWNERSHIP & SET ARCHITECT -->
+        <div class="bg-black/50 p-5 rounded-xl border border-stone-800 space-y-4 lg:col-span-2">
+            <h3 class="text-xs font-bold text-fuchsia-400 font-mono uppercase tracking-widest border-b border-stone-800 pb-2">3. SOVEREIGN ROLES MANAGEMENT</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="text-[9px] text-stone-500 font-mono block mb-1 uppercase">New Contract Owner Address</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="adminNewOwner" placeholder="0x..." class="w-full bg-black border border-stone-800 p-2.5 text-xs font-mono text-fuchsia-300 rounded-lg outline-none focus:border-fuchsia-500" />
+                        <button onclick="if(typeof uiExecuteTransferOwnership === 'function') uiExecuteTransferOwnership()" class="bg-stone-950 border border-fuchsia-900 text-fuchsia-400 hover:bg-fuchsia-950 px-4 text-[10px] font-bold font-mono rounded-lg uppercase transition-colors whitespace-nowrap">TRANSFER</button>
+                    </div>
+                </div>
+                <div>
+                    <label class="text-[9px] text-stone-500 font-mono block mb-1 uppercase">New Architect Address</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="adminNewArchitect" placeholder="0x..." class="w-full bg-black border border-stone-800 p-2.5 text-xs font-mono text-fuchsia-300 rounded-lg outline-none focus:border-fuchsia-500" />
+                        <button onclick="if(typeof uiExecuteSetArchitect === 'function') uiExecuteSetArchitect()" class="bg-stone-950 border border-fuchsia-900 text-fuchsia-400 hover:bg-fuchsia-950 px-4 text-[10px] font-bold font-mono rounded-lg uppercase transition-colors whitespace-nowrap">SET ARCHITECT</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- ARCHITECT MINT -->
         <div class="bg-black/50 p-5 rounded-xl border border-stone-800 space-y-4 lg:col-span-2">
-            <h3 class="text-xs font-bold text-fuchsia-400 font-mono uppercase tracking-widest border-b border-stone-800 pb-2">3. ARCHITECT MASTER MINT</h3>
+            <h3 class="text-xs font-bold text-fuchsia-400 font-mono uppercase tracking-widest border-b border-stone-800 pb-2">4. ARCHITECT MASTER MINT</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="text-[9px] text-stone-500 font-mono block mb-1 uppercase">Token IDs (Comma separated)</label>
@@ -820,6 +841,7 @@
         </div>
     </div>
 </section>
+
 
 <section class="chiaroscuro-bg mt-6 p-5 md:p-6 rounded-2xl border border-slate-800 shadow-inner">
     <span class="text-[11px] font-mono text-slate-500 uppercase block border-b border-slate-800 pb-2 font-bold tracking-wider">// SYSTEM EVENT REAL-TIME TELEMETRY STREAM LOG</span>
@@ -1886,6 +1908,9 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
         let dataToUpload;
         let size = 0;
         
+        // [DETERMINISTIC LOGIC]: Ensure tags array exists to prevent undefined errors
+        let uploadTags = Array.isArray(tags) ? [...tags] : [];
+        
         try {
             if (!isFile) {
                 dataToUpload = String(payload);
@@ -1897,6 +1922,20 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
                 }
                 dataToUpload = payload; 
                 size = payload.size;
+                
+                // [CRITICAL FIX]: MIME-Type Auto-Injection for HTML / Audio
+                // ดึงค่า type จากไฟล์ตรงๆ หากระบบ OS ไม่ทราบค่าให้ fallback เป็น octet-stream
+                const mimeType = payload.type || 'application/octet-stream';
+                
+                // ตรวจสอบว่าใน tags เดิมมีการระบุ Content-Type ไว้แล้วหรือไม่
+                const hasContentType = uploadTags.some(t => t.name.toLowerCase() === 'content-type');
+                
+                // หากยังไม่มี ให้ Inject เข้าไปทันทีเพื่อให้ Arweave Gateway Render หน้าเว็บ/เล่นเสียงได้
+                if (!hasContentType) {
+                    uploadTags.push({ name: "Content-Type", value: mimeType });
+                    safeAppendLog(`[IRYS TELEMETRY] Auto-Injected Content-Type: ${mimeType}`, "text-emerald-400");
+                }
+
                 safeAppendLog(`[IRYS TELEMETRY] File payload mapped directly. Size: ${size} bytes.`, "text-slate-400");
             }
         } catch (conversionErr) {
@@ -2056,11 +2095,13 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
                                 safeAppendLog(`[IRYS TELEMETRY] Resuming upload via ID: ${uploadId}...`, "text-amber-400");
                             } 
                             
-                            receipt = await irys.uploader.chunkedUploader.uploadData(dataToUpload, { tags, uploadId });
+                            // [MODIFIED]: Use uploadTags instead of tags
+                            receipt = await irys.uploader.chunkedUploader.uploadData(dataToUpload, { tags: uploadTags, uploadId });
                             
                         } else {
                             if (progressCtrl) progressCtrl.set(size / 2);
-                            receipt = await irys.upload(dataToUpload, { tags });
+                            // [MODIFIED]: Use uploadTags instead of tags
+                            receipt = await irys.upload(dataToUpload, { tags: uploadTags });
                         }
                         break; 
                     } catch (uploadErr) {
@@ -4471,7 +4512,7 @@ const adminUriArray = (input, count, kind) => {
 };
 
 // ==============================================================================
-// 7. EXECUTE: ARCHITECT CONSOLE ISOLATION
+// 7. EXECUTE: ARCHITECT CONSOLE ISOLATION & ROLE MANAGEMENT
 // ==============================================================================
 window.ARCHITECT_CORE = {
     mintAdmin: async (tokenIds, to, fronts, backs) => {
@@ -4503,6 +4544,25 @@ window.ARCHITECT_CORE = {
         
         if(address !== architect && address !== owner) throw new Error("Unauthorized");
         return await secureContract.withdrawTreasury();
+    },
+    setArchitect: async (newArchitect) => {
+        if (!secureContract || !provider) throw new Error("Not connected");
+        const signer = await provider.getSigner();
+        const address = await signer.getAddress();
+        const architect = await secureContract.architect();
+        const owner = await secureContract.owner();
+        
+        if(address !== architect && address !== owner) throw new Error("Unauthorized");
+        return await secureContract.setArchitect(newArchitect);
+    },
+    transferOwnership: async (newOwner) => {
+        if (!secureContract || !provider) throw new Error("Not connected");
+        const signer = await provider.getSigner();
+        const address = await signer.getAddress();
+        const owner = await secureContract.owner();
+        
+        if(address !== owner) throw new Error("Owner privilege required");
+        return await secureContract.transferOwnership(newOwner);
     }
 };
 
@@ -4543,6 +4603,38 @@ window.executeWithdrawTreasury = async function () {
         return await window.runTx(null, "WITHDRAW_TREASURY", "withdrawTreasury", []);
     } catch (error) {
         showNotification(`withdrawTreasury failed: ${friendlyError(error)}`, "error");
+        return null;
+    }
+};
+
+window.executeSetArchitect = async function (newArchitect) {
+    try {
+        await requireArchitect();
+        const target = String(newArchitect || "").trim();
+        if (!isValidAddress(target)) throw new Error("Provide a valid architect wallet address.");
+        const receipt = await window.runTx(null, `SET_ARCHITECT_${target}`, "setArchitect", [target]);
+        if (receipt) await window.syncContractStates();
+        return receipt;
+    } catch (error) {
+        showNotification(`setArchitect failed: ${friendlyError(error)}`, "error");
+        return null;
+    }
+};
+
+window.executeTransferOwnership = async function (newOwner) {
+    try {
+        if (!secureContract || !signer) throw new Error("Connect contract-owner wallet first.");
+        const address = await signer.getAddress();
+        const owner = await secureContract.owner();
+        if (address !== owner) throw new Error("Only contract owner can transfer ownership.");
+        
+        const target = String(newOwner || "").trim();
+        if (!isValidAddress(target)) throw new Error("Provide a valid owner wallet address.");
+        const receipt = await window.runTx(null, `TRANSFER_OWNERSHIP_${target}`, "transferOwnership", [target]);
+        if (receipt) await window.syncContractStates();
+        return receipt;
+    } catch (error) {
+        showNotification(`transferOwnership failed: ${friendlyError(error)}`, "error");
         return null;
     }
 };
@@ -4638,6 +4730,18 @@ window.uiExecuteSetBaseURI = async function() {
     await window.executeSetBaseURI(elUri.value);
 };
 
+window.uiExecuteSetArchitect = async function() {
+    const elArchitect = document.getElementById("adminNewArchitect");
+    if (!elArchitect) return;
+    await window.executeSetArchitect(elArchitect.value);
+};
+
+window.uiExecuteTransferOwnership = async function() {
+    const elOwner = document.getElementById("adminNewOwner");
+    if (!elOwner) return;
+    await window.executeTransferOwnership(elOwner.value);
+};
+
 const initializeContractUi = async () => {
     clearInspectorOutputs();
     const inspectorInput = document.getElementById("tokenInspectorInput");
@@ -4649,7 +4753,25 @@ const initializeContractUi = async () => {
     });
     await window.syncContractStates();
     
-    // FIX: ASYNC DESYNC - Await the inspection if a value is present
+    // [CRITICAL FIX]: ARCHITECT CONSOLE VISIBILITY CONTROL
+    const consoleSection = document.getElementById("architectConsoleSection");
+    if (consoleSection) {
+        try {
+            if (typeof secureContract !== 'undefined' && secureContract && typeof signer !== 'undefined' && signer) {
+                const address = await signer.getAddress();
+                const architect = await secureContract.architect();
+                const owner = await secureContract.owner();
+                if (address === architect || address === owner) {
+                    consoleSection.style.display = "block";
+                } else {
+                    consoleSection.style.display = "none";
+                }
+            }
+        } catch (error) {
+            console.warn("[VISIBILITY] Not authorized or disconnected.");
+        }
+    }
+    
     if (inspectorInput && inspectorInput.value) {
         await window.inspectTokenFromInput(inspectorInput.value);
     }
@@ -4660,7 +4782,6 @@ if (document.readyState === "loading") {
 } else {
     initializeContractUi();
 }
-
 </script>
 </body>
 </html>
