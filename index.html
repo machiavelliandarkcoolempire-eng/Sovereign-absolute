@@ -755,6 +755,72 @@
     </div>
 </section>
 
+<!-- ========================================== -->
+<!-- ⚙️ ARCHITECT CONSOLE (ADMIN UI) -->
+<!-- ========================================== -->
+<section class="chiaroscuro-bg p-6 md:p-8 rounded-2xl mb-6 relative z-10 border border-fuchsia-900/40">
+    <div class="border-b border-stone-800 pb-4 mb-6">
+        <h2 class="text-xl font-black font-cinzel text-fuchsia-500 uppercase tracking-wider">⚙️ ARCHITECT CONSOLE</h2>
+        <p class="text-[10px] font-mono text-stone-500 uppercase tracking-wide mt-1">RESTRICTED ACCESS • SYSTEM PARAMETERS & MASTER MINT</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- SET PARAMS -->
+        <div class="bg-black/50 p-5 rounded-xl border border-stone-800 space-y-4">
+            <h3 class="text-xs font-bold text-fuchsia-400 font-mono uppercase tracking-widest border-b border-stone-800 pb-2">1. TRIBUTE TARIFFS (ETH)</h3>
+            <div class="grid grid-cols-3 gap-3">
+                <div>
+                    <label class="text-[9px] text-stone-500 font-mono block mb-1 uppercase">Mint Fee</label>
+                    <input type="number" id="adminMintFee" step="0.001" placeholder="0.00" class="w-full bg-black border border-stone-800 p-2.5 text-xs font-mono text-fuchsia-300 rounded-lg outline-none focus:border-fuchsia-500" />
+                </div>
+                <div>
+                    <label class="text-[9px] text-stone-500 font-mono block mb-1 uppercase">Nova Fee</label>
+                    <input type="number" id="adminNovaFee" step="0.001" placeholder="0.00" class="w-full bg-black border border-stone-800 p-2.5 text-xs font-mono text-fuchsia-300 rounded-lg outline-none focus:border-fuchsia-500" />
+                </div>
+                <div>
+                    <label class="text-[9px] text-stone-500 font-mono block mb-1 uppercase">Council Fee</label>
+                    <input type="number" id="adminCouncilFee" step="0.001" placeholder="0.00" class="w-full bg-black border border-stone-800 p-2.5 text-xs font-mono text-fuchsia-300 rounded-lg outline-none focus:border-fuchsia-500" />
+                </div>
+            </div>
+            <button onclick="if(typeof uiExecuteSetParams === 'function') uiExecuteSetParams()" class="w-full bg-stone-950 border border-fuchsia-900 text-fuchsia-400 hover:bg-fuchsia-950 text-[10px] font-bold font-mono py-3 rounded-lg uppercase transition-colors">UPDATE PARAMETERS</button>
+        </div>
+
+        <!-- SET BASE URI -->
+        <div class="bg-black/50 p-5 rounded-xl border border-stone-800 space-y-4">
+            <h3 class="text-xs font-bold text-fuchsia-400 font-mono uppercase tracking-widest border-b border-stone-800 pb-2">2. BASE URI</h3>
+            <div>
+                <label class="text-[9px] text-stone-500 font-mono block mb-1 uppercase">Global Base URI</label>
+                <input type="text" id="adminBaseUri" placeholder="ipfs://... or https://..." class="w-full bg-black border border-stone-800 p-2.5 text-xs font-mono text-fuchsia-300 rounded-lg outline-none focus:border-fuchsia-500" />
+            </div>
+            <button onclick="if(typeof uiExecuteSetBaseURI === 'function') uiExecuteSetBaseURI()" class="w-full bg-stone-950 border border-fuchsia-900 text-fuchsia-400 hover:bg-fuchsia-950 text-[10px] font-bold font-mono py-3 rounded-lg uppercase transition-colors">UPDATE BASE URI</button>
+        </div>
+
+        <!-- ARCHITECT MINT -->
+        <div class="bg-black/50 p-5 rounded-xl border border-stone-800 space-y-4 lg:col-span-2">
+            <h3 class="text-xs font-bold text-fuchsia-400 font-mono uppercase tracking-widest border-b border-stone-800 pb-2">3. ARCHITECT MASTER MINT</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="text-[9px] text-stone-500 font-mono block mb-1 uppercase">Token IDs (Comma separated)</label>
+                    <input type="text" id="adminMintTokenIds" placeholder="e.g. 1, 2, 3" class="w-full bg-black border border-stone-800 p-2.5 text-xs font-mono text-fuchsia-300 rounded-lg outline-none focus:border-fuchsia-500" />
+                </div>
+                <div>
+                    <label class="text-[9px] text-stone-500 font-mono block mb-1 uppercase">Recipient Address</label>
+                    <input type="text" id="adminMintRecipient" placeholder="0x..." class="w-full bg-black border border-stone-800 p-2.5 text-xs font-mono text-fuchsia-300 rounded-lg outline-none focus:border-fuchsia-500" />
+                </div>
+                <div>
+                    <label class="text-[9px] text-stone-500 font-mono block mb-1 uppercase">Front URIs (Comma separated or 1 for all)</label>
+                    <input type="text" id="adminMintFront" placeholder="Front URI" class="w-full bg-black border border-stone-800 p-2.5 text-xs font-mono text-fuchsia-300 rounded-lg outline-none focus:border-fuchsia-500" />
+                </div>
+                <div>
+                    <label class="text-[9px] text-stone-500 font-mono block mb-1 uppercase">Back URIs (Comma separated or 1 for all)</label>
+                    <input type="text" id="adminMintBack" placeholder="Back URI" class="w-full bg-black border border-stone-800 p-2.5 text-xs font-mono text-fuchsia-300 rounded-lg outline-none focus:border-fuchsia-500" />
+                </div>
+            </div>
+            <button onclick="if(typeof uiExecuteArchitectMint === 'function') uiExecuteArchitectMint()" class="w-full bg-fuchsia-950/60 border border-fuchsia-700 text-fuchsia-200 hover:bg-fuchsia-900 text-xs font-bold font-mono py-3.5 rounded-lg uppercase transition-colors shadow-[0_0_15px_rgba(192,38,211,0.3)]">EXECUTE MASTER MINT</button>
+        </div>
+    </div>
+</section>
+
 <section class="chiaroscuro-bg mt-6 p-5 md:p-6 rounded-2xl border border-slate-800 shadow-inner">
     <span class="text-[11px] font-mono text-slate-500 uppercase block border-b border-slate-800 pb-2 font-bold tracking-wider">// SYSTEM EVENT REAL-TIME TELEMETRY STREAM LOG</span>
     <div id="systemLogBox" class="mt-4 text-[10px] md:text-[11px] font-mono h-32 overflow-y-auto scroll-dark text-slate-400 space-y-1.5 select-text bg-black/50 p-3 rounded-xl border border-stone-900">
@@ -981,7 +1047,6 @@ window.SystemState = {
     _fallbackTxLock: false 
 };
 
-let globalSelectedTokenId = window.SystemState.inspectedTokenId;
 let currentLoadedMediaData = window.SystemState.currentLoadedMediaData;
 
 const BASE_MAINNET_CHAIN_ID = '0x2105';
@@ -1617,54 +1682,6 @@ async function closeForgeConsentModal(isConfirmed, type, e) {
 // ==============================================================================
 // ⚡ GAS-OPTIMIZED AWAKENING PAYLOAD
 // ==============================================================================
-async function prepareAwakeningPayload(qty) {
-    if (qty > 20) throw new Error("MaxBatchExceeded");
-    
-    let currentTracker = 0n;
-    try {
-        currentTracker = Number(await secureContract._sequenceTracker()); 
-    } catch (e) {
-        currentTracker = Number(await secureContract.activeDeedsCount()); 
-    }
-    
-    const standardPrice = await secureContract.mintPrice();
-    const councilPrice = await secureContract.councilMintPrice();
-    
-    let expectedValue = 0n;
-    const fronts = [];
-    const backs = [];
-
-    for (let i = 0; i < qty; i++) {
-        currentTracker++;
-        
-        while (true) {
-            try {
-                const owner = await secureContract.ownerOf(currentTracker);
-                if (owner !== "0x0000000000000000000000000000000000000000") {
-                    currentTracker++;
-                } else {
-                    break;
-                }
-            } catch (e) {
-                break;
-            }
-        }
-
-        const isCouncil = await secureContract.SOVEREIGNTY_COUNCIL(currentTracker);
-        if (isCouncil) {
-            expectedValue += councilPrice; 
-        } else {
-            expectedValue += standardPrice; 
-        }
-        
-        fronts.push(DEFAULT_FRONT_URI);
-        // ⚡ OPTIMIZATION: ส่ง String ว่าง ("") ลง On-chain เพื่อประหยัด Gas 
-        // เพราะ Frontend จะใช้ Deterministic Mapper ดึง 3D จาก GitHub เอง
-        backs.push(""); 
-    }
-
-    return { expectedValue, fronts, backs };
-}
 
 async function simulatePublicMintTokenIds(contract, quantity) {
     let nextId = 1n; 
@@ -1712,6 +1729,31 @@ async function simulatePublicMintTokenIds(contract, quantity) {
     return tokenIds;
 }
 
+async function prepareAwakeningPayload(qty) {
+    if (qty > 20) throw new Error("MaxBatchExceeded");
+    
+    const standardPrice = await secureContract.mintPrice();
+    const councilPrice = await secureContract.councilMintPrice();
+    
+    // Unify sequence tracking by relying entirely on the deterministic token scanner
+    const tokenIds = await simulatePublicMintTokenIds(secureContract, qty);
+    let expectedValue = 0n;
+
+    for (let i = 0; i < tokenIds.length; i++) {
+        const isCouncil = await secureContract.SOVEREIGNTY_COUNCIL(tokenIds[i]);
+        if (isCouncil) {
+            expectedValue += councilPrice; 
+        } else {
+            expectedValue += standardPrice; 
+        }
+    }
+
+    const fronts = Array(qty).fill(DEFAULT_FRONT_URI);
+    const backs = Array(qty).fill(""); 
+
+    return { expectedValue, fronts, backs, tokenIds };
+}
+
 async function triggerForge(type, e) {
     if (!secureContract || !signer) {
         showNotification("Connect a wallet on Base mainnet to mint a deed.", "error");
@@ -1726,7 +1768,7 @@ async function triggerForge(type, e) {
 
     try {
         const payload = await prepareAwakeningPayload(quantity);
-        const tokenIds = await simulatePublicMintTokenIds(secureContract, quantity);
+        const tokenIds = payload.tokenIds; // Extract unified tokenIds from payload
         
         showNotification(
             `Minting ${quantity} deed(s). Total ${fromWei(payload.expectedValue)} ETH.`,
@@ -2423,12 +2465,18 @@ async function executeGatewayUnlock(event) {
     }
 }
 
+// ==============================================================================
+// [PATCHED] FORENSIC LAB REFRESH (STRICT ACCESS CONTROL)
+// ==============================================================================
 async function processIdentityDnaInspectionOnChain() {
     const tokenId = window.SystemState.inspectedTokenId;
     if (!tokenId) return;
 
     const activeContract = secureContract || readOnlyContract;
-    if (!activeContract) return;
+    if (!activeContract || !signer) {
+        showNotification("Wallet connection required for Forensic Lab access.", "error");
+        return;
+    }
 
     try {
         const [
@@ -2443,6 +2491,17 @@ async function processIdentityDnaInspectionOnChain() {
           sovereignTba
         ] = await activeContract.getDeedData(tokenId.toString());
         
+        // [DETERMINISTIC FIX]: Enforce Owner/Architect verification on refresh
+        const userAddress = (await signer.getAddress()).toLowerCase();
+        const ownerOnChain = String(sovereignOwner).toLowerCase();
+        const privs = await verifyUserPrivileges(userAddress);
+        
+        if (userAddress !== ownerOnChain && !privs.isArchitect) {
+            showNotification("ACCESS DENIED: UNAUTHORIZED ENTITY", "error");
+            safeAppendLog(`SECURITY BLOCK: Unauthorized refresh attempt on Node #${tokenId}.`, "text-red-500 font-bold");
+            return;
+        }
+
         document.getElementById('dna-owner').textContent = sovereignOwner;
         document.getElementById('dna-active').textContent = sovereignActive ? "TRUE (ACTIVE)" : "FALSE (DORMANT)";
         document.getElementById('dna-sanctified').textContent = absoluteSovereigntyStatus ? "TRUE (SANCTIFIED)" : "FALSE (UNVERIFIED)";
@@ -2468,11 +2527,16 @@ async function processIdentityDnaInspectionOnChain() {
 function renderDNA(sovereignIdentityString) {
     if (!sovereignIdentityString) return "NO DATA";
     const parts = sovereignIdentityString.split('|').map(s => s.trim());
+    
+    const safePart0 = sanitizeForDOM(parts[0] || '');
+    const safePart1 = sanitizeForDOM(parts[1] || '');
+    const safePart2 = sanitizeForDOM(parts[2] || '');
+    
     return `
         <div class="dna-block">
-            <p>- ${parts[0] || ''}</p>
-            <p>- ${parts[1] || ''}</p>
-            <p>- ${parts[2] || ''}</p>
+            <p>- ${safePart0}</p>
+            <p>- ${safePart1}</p>
+            <p>- ${safePart2}</p>
         </div>
     `;
 }
@@ -2914,22 +2978,10 @@ async function closeNovaWarn(isConfirmed) {
 
 
 // ==============================================================================
-// 🛡️ [FIXED] NOVA EXECUTION (DYNAMIC NOVA FEE VALIDATION)
+// 🛡️ [FIXED] NOVA EXECUTION (DYNAMIC NOVA FEE VALIDATION & PIPELINE OPTIMIZED)
 // ==============================================================================
-async function executeNova(tokenId, DNA_STRING, HIDDEN_STRING) {
-    // [CHECK-5.1] Strict Array Destructuring
-    const [
-      sovereignOwner,
-      sovereignActive,
-      absoluteSovereigntyStatus,
-      sovereignFront,
-      sovereignBack,
-      sovereignVideo,
-      sovereignIdentity,
-      sovereignHidden,
-      sovereignTba
-    ] = await secureContract.getDeedData(tokenId);
-    
+// [PIPELINE FIX]: รับค่า absoluteSovereigntyStatus มาจาก triggerIdentityNova โดยตรง ไม่ต้องดึง RPC ซ้ำ
+async function executeNova(tokenId, DNA_STRING, HIDDEN_STRING, absoluteSovereigntyStatus) {
     // [CHECK-4.1] State-Based Fee Calculation
     const isCouncil = await secureContract.SOVEREIGNTY_COUNCIL(tokenId);
     const currentNovaFee = await secureContract.novaFee(); // ดึงค่าจาก State ห้ามฮาร์ดโค้ด 1.55
@@ -2945,33 +2997,32 @@ async function executeNova(tokenId, DNA_STRING, HIDDEN_STRING) {
     );
 }
 
-
+// ==============================================================================
+// [PATCHED] NOVA ASCENSION & IDENTITY UPDATES (STRICT TARGETING & PIPELINE SYNC)
+// ==============================================================================
 async function triggerIdentityNova(e) {
     if (!secureContract || !signer) {
         showNotification("Connect the deed-owning wallet before running Nova.", "error");
         return null;
     }
 
-    const tokenId = validateTokenRange(
-        document.getElementById("novaTokenId")?.value ||
-        document.getElementById("tokenInspectorInput")?.value ||
-        window.SystemState.actionTargetTokenId ||
-        window.SystemState.inspectedTokenId
-    );
+    // [DETERMINISTIC FIX]: Strict 1-to-1 mapping. No aggressive fallbacks.
+    const rawInput = document.getElementById("novaTokenId")?.value;
+    if (!rawInput) {
+        showNotification("Please enter a Token ID in the Nova section.", "error");
+        return null;
+    }
+    const tokenId = validateTokenRange(rawInput);
     if (!tokenId) return null;
 
     try {
         const address = await signer.getAddress();
+        
+        // [PIPELINE FIX]: ดึงค่าทั้งหมดทีเดียวและส่งต่อไปยัง executeNova เพื่อลด RPC Load 50%
         const [
           sovereignOwner,
           sovereignActive,
-          absoluteSovereigntyStatus,
-          sovereignFront,
-          sovereignBack,
-          sovereignVideo,
-          sovereignIdentity,
-          sovereignHidden,
-          sovereignTba
+          absoluteSovereigntyStatus
         ] = await secureContract.getDeedData(String(tokenId));
         
         if (String(sovereignOwner).toLowerCase() !== address.toLowerCase()) {
@@ -2995,7 +3046,8 @@ async function triggerIdentityNova(e) {
             throw new Error("Unsafe identity or hidden-property text rejected.");
         }
 
-        const receipt = await executeNova(tokenId, dna, hidden);
+        // [PIPELINE FIX]: ส่ง absoluteSovereigntyStatus ไปให้ executeNova
+        const receipt = await executeNova(tokenId, dna, hidden, absoluteSovereigntyStatus);
         if (!receipt) return null;
 
         try {
@@ -3012,8 +3064,6 @@ async function triggerIdentityNova(e) {
         return null;
     }
 }
-
-
 
 async function executeUpdateIdentity(e) {
     if (!secureContract || !signer) {
@@ -3145,6 +3195,9 @@ function validateTokenRange(id) {
     return num;
 }
 
+// ==============================================================================
+// [PATCHED] REAL-TIME EVENTS (ANTI-DOM HIJACKING)
+// ==============================================================================
 function setupRealTimeEvents() {
     if (!secureContract || !provider) return;
 
@@ -3155,13 +3208,17 @@ function setupRealTimeEvents() {
             appendLog(message, "text-emerald-400");
             GLOBAL_NODE_CACHE.clear();
             await syncContractStates();
+            
+            // [DETERMINISTIC FIX]: Use inspectTokenFromInput instead of auditTokenFromLedger
+            // This updates the visual display without wiping the user's input fields.
             if (window.SystemState.inspectedTokenId && String(tokenId) === String(window.SystemState.inspectedTokenId)) {
-                await auditTokenFromLedger(window.SystemState.inspectedTokenId);
+                await window.inspectTokenFromInput(window.SystemState.inspectedTokenId);
             }
         } catch (error) {
             appendLog(`[EVENT] Refresh failed: ${error.message}`, "text-amber-500");
         }
     };
+    
     secureContract.on("SovereignForged", async (owner, tokenId) => {
         await refreshToken(tokenId, `Deed #${tokenId} minted to ${owner}.`);
     });
@@ -3797,7 +3854,7 @@ async function refreshTbaBalances(tbaAddress, sessionRef) {
 }
 
 // ==============================================================================
-// 🎛️ TRANSMISSION STATION TAB SWITCHER
+// [PATCHED] TRANSMISSION STATION TAB SWITCHER (STATE SYNC)
 // ==============================================================================
 function switchStation(station) { 
     const tabFront = document.getElementById("tabFront"); 
@@ -3809,17 +3866,19 @@ function switchStation(station) {
 
     const isFront = station === 'front';
     
-    // สลับสถานะปุ่ม (Active/Inactive)
     tabFront.classList.toggle("active", isFront);
     tabBack.classList.toggle("active", !isFront);
     
-    // สลับการแสดงผลหน้าต่าง (Show/Hide)
     stationFront.classList.toggle("hidden", !isFront);
     stationBack.classList.toggle("hidden", isFront);
 
-    // อัปเดต ARIA สำหรับ Screen Reader
     tabFront.setAttribute("aria-selected", String(isFront));
     tabBack.setAttribute("aria-selected", String(!isFront));
+    
+    // [DETERMINISTIC FIX]: Force sync of radio buttons and labels
+    if (typeof onTypeToggle === 'function') {
+        onTypeToggle(station);
+    }
 }
 
 function onTypeToggle(station) { 
@@ -3854,7 +3913,18 @@ function revealApp() {
     }
 }
 
+// ==============================================================================
+// [PATCHED] SYSTEM BOOT & EVENT LISTENER MEMORY STABILIZATION
+// ==============================================================================
+
 let isSystemBooted = false;
+
+// [DETERMINISTIC FIX]: Declare handler globally to maintain absolute memory reference
+if (!window._sovereignResizeHandler) {
+    window._sovereignResizeHandler = () => {
+        // Removed absolute height forcing to prevent mobile layout thrashing
+    };
+}
 
 window.addEventListener('load', async () => {
     if (isSystemBooted) return;
@@ -3863,20 +3933,21 @@ window.addEventListener('load', async () => {
     revealApp(); 
     
     if (window.visualViewport) {
-        if (window._sovereignResizeHandler) {
-            window.visualViewport.removeEventListener("resize", window._sovereignResizeHandler);
-            window.visualViewport.removeEventListener("scroll", window._sovereignResizeHandler);
-        }
+        // Safely remove existing listeners using the stable reference
+        window.visualViewport.removeEventListener("resize", window._sovereignResizeHandler);
+        window.visualViewport.removeEventListener("scroll", window._sovereignResizeHandler);
 
-        window._sovereignResizeHandler = () => {
-            // Removed absolute height forcing to prevent mobile layout thrashing
-        };
-
+        // Attach listeners
         window.visualViewport.addEventListener("resize", window._sovereignResizeHandler, { passive: true });
         window.visualViewport.addEventListener("scroll", window._sovereignResizeHandler, { passive: true });
     }
     
-    try { loadArchitectGateways(); } catch (e) { console.warn("[BOOT] Gateways skip:", e); }
+    try { 
+        loadArchitectGateways(); 
+    } catch (e) { 
+        console.warn("[BOOT] Gateways skip:", e); 
+    }
+    
     if (CONTRACT_ADDRESS && CONTRACT_ABI) { 
         try {
             await bootSystemRPCs(CONTRACT_ADDRESS, CONTRACT_ABI);
@@ -3935,7 +4006,10 @@ const clearInspectorOutputs = () => {
         "inspector-tba"].forEach((id) => setOutput(id, "—"));
 };
 
-// [FIX LAYER 3]: NON-BLOCKING PORTFOLIO RENDERING
+// ==============================================================================
+// [PATCHED] PORTFOLIO & TBA DEPLOYMENT (VAULT SYNC FIX)
+// ==============================================================================
+
 window.refreshWalletPortfolio = async function () {
     const status = document.getElementById("walletPortfolioStatus");
     const list = document.getElementById("walletPortfolioIds");
@@ -3958,9 +4032,10 @@ window.refreshWalletPortfolio = async function () {
             chip.type = "button";
             chip.className = "px-3 py-2 rounded-lg text-[10px] font-mono bg-stone-900 text-amber-500 hover:bg-stone-800";
             chip.textContent = `#${id}`;
-            chip.addEventListener("click", () => {
+            chip.addEventListener("click", async () => {
                 window.SystemState.actionTargetTokenId = id; 
-                window.inspectTokenFromInput(id);
+                // [DETERMINISTIC FIX]: Call auditTokenFromLedger to sync Vault & TBA
+                await window.auditTokenFromLedger(id);
             });
             list.appendChild(chip);
             
@@ -3970,6 +4045,61 @@ window.refreshWalletPortfolio = async function () {
     } catch (error) {
         status.textContent = `Wallet deed lookup failed: ${friendlyError(error)}`;
         return [];
+    }
+};
+
+window.deployTBAForToken = async function (tokenId) {
+    const id = validateTokenRange(tokenId ?? document.getElementById("tokenInspectorInput")?.value);
+    if (!id || !secureContract || !signer) {
+        showNotification("Connect the deed-owning wallet and inspect a token before deploying its TBA.", "error");
+        return null;
+    }
+    const button = document.getElementById("btnDeployInspectorTBA");
+    try {
+        const address = await signer.getAddress();
+        const [
+          sovereignOwner,
+          sovereignActive,
+          absoluteSovereigntyStatus,
+          sovereignFront,
+          sovereignBack,
+          sovereignVideo,
+          sovereignIdentity,
+          sovereignHidden,
+          sovereignTba
+        ] = await secureContract.getDeedData(String(id));
+        
+        if (asString(sovereignOwner).toLowerCase() !== address.toLowerCase()) {
+            throw new Error("Only the current deed owner may deploy its TBA.");
+        }
+        if (!Boolean(sovereignActive)) throw new Error("This token has no active deed.");
+        const predicted = asString(await secureContract.getTBA(String(id)));
+        const rpc = activeProvider();
+        if (predicted && predicted.toLowerCase() !== ZERO_ADDRESS && rpc) {
+            const code = await rpc.getCode(predicted);
+            if (code && code !== "0x") {
+                showNotification(`TBA already deployed at ${predicted}.`, "success");
+                await window.auditTokenFromLedger(id);
+                return null;
+            }
+        }
+        const method = secureContract.deployTBA;
+        if (typeof method?.estimateGas !== "function") {
+            throw new Error("Ethers v6 does not expose deployTBA gas estimation.");
+        }
+        const estimate = await method.estimateGas(String(id));
+        const gasLimit = ((BigInt(estimate.toString()) * 120n + 99n) / 100n).toString();
+        const receipt = await window.runTx(button, `DEPLOY_TBA_#${id}`, "deployTBA", [String(id)], { gasLimit });
+        if (receipt) {
+            GLOBAL_NODE_CACHE?.delete?.(String(id));
+            // [DETERMINISTIC FIX]: Call auditTokenFromLedger to reveal new TBA in Vault
+            await window.auditTokenFromLedger(id);
+            await window.refreshWalletPortfolio();
+        }
+        return receipt;
+    } catch (error) {
+        showNotification(`TBA deployment unavailable: ${friendlyError(error)}`, "error");
+        return null;
     }
 };
 
@@ -4078,9 +4208,19 @@ const renderFlipCanvas = (content, frontUri, backUri, backType, title) => {
 // 🛡️ SECURE MEDIA PREVIEW RENDERER (XSS & CRASH PROOF)
 // ==============================================================================
 const renderDeedMediaPreview = async (data, tokenId) => {
+    const canvas = document.getElementById("mediaPreviewCanvas");
+    const legacyGrid = document.getElementById("legacyMediaPreviewGrid");
+    const mediaLabel = document.getElementById("mediaPreviewTokenLabel");
     const content = document.getElementById("mediaPreviewCanvasContent");
     const title = document.getElementById("mediaPreviewCanvasTitle");
+    
     if (!content || !title) return;
+
+    // เปิดหน้าจอ Dynamic Canvas (โชว์ปุ่ม Flip Card) และซ่อนตาราง 3 ช่องแบบเก่า
+    if (canvas) canvas.classList.remove("hidden");
+    if (legacyGrid) legacyGrid.classList.add("hidden");
+    if (mediaLabel) mediaLabel.textContent = `DEED #${tokenId} • ACTIVE ON-CHAIN MEDIA`;
+
     content.replaceChildren();
 
     const front = (data?.sovereignFront || "").trim();
@@ -4113,7 +4253,7 @@ const renderDeedMediaPreview = async (data, tokenId) => {
 
     let imageFront = front || DEFAULT_FRONT_URI;
     
-    // 🛡️ CRASH-PROOF: เติม ?. กัน TypeError กรณี data ส่งมาเป็น null/undefined
+    // 🛡️ CRASH-PROOF: ดึง 3D ตามสถานะของ Token
     const deterministic3DModel = await resolveDeterministic3DAsset(tokenId, data?.absoluteSovereigntyStatus);
 
     if (imageFront && video) {
@@ -4161,7 +4301,21 @@ window.inspectTokenFromInput = async function (value) {
     const requestSequence = ++inspectorRequestSequence;
     if (input) input.value = String(id);
     
+    // 1. อัปเดต Global State
     window.SystemState.inspectedTokenId = id;
+    window.SystemState.actionTargetTokenId = id;
+
+    // 2. ซิงค์เลข Token ไปยังแท่นอัปโหลด (Transmission Station) ทันที
+    const uploadTargetDisplay = document.getElementById("uploadTargetDisplay");
+    const targetBridgeFieldLabel = document.getElementById("targetBridgeFieldLabel");
+    if (uploadTargetDisplay) uploadTargetDisplay.textContent = `LOCKED TOKEN ID: #${id}`;
+    if (targetBridgeFieldLabel) targetBridgeFieldLabel.textContent = `TARGET TOKEN: #${id}`;
+
+    // 3. ซิงค์เลข Token ไปยังช่องกรอก Nova และ Update Identity
+    const updateInput = document.getElementById("updateTokenIdInput");
+    if (updateInput) updateInput.value = String(id);
+    const novaInput = document.getElementById("novaTokenId");
+    if (novaInput) novaInput.value = String(id);
     
     clearInspectorOutputs();
     clearDeedMediaPreview(id, "LOADING");
@@ -4191,12 +4345,20 @@ window.inspectTokenFromInput = async function (value) {
         if (requestSequence !== inspectorRequestSequence) return null;
         
         const isActive = Boolean(sovereignActive);
+        
+        // 4. แสดงผล Media Preview & Flip Card (ส่งค่า absoluteSovereigntyStatus ไปด้วย)
         if (isActive) {
-            await renderDeedMediaPreview({sovereignFront, sovereignBack, sovereignVideo}, id);
+            await renderDeedMediaPreview({
+                sovereignFront, 
+                sovereignBack, 
+                sovereignVideo, 
+                absoluteSovereigntyStatus
+            }, id);
         } else {
             clearDeedMediaPreview(id, "DORMANT / UNMINTED");
         }
         
+        // 5. แสดงผลข้อมูลในช่อง Token Inspector
         setOutput("inspector-owner", sovereignOwner);
         setOutput("inspector-active", isActive ? "Yes" : "No");
         setOutput("inspector-absolute", Boolean(absoluteSovereigntyStatus) ? "Yes" : "No");
@@ -4207,8 +4369,20 @@ window.inspectTokenFromInput = async function (value) {
         setOutput("inspector-hidden", sovereignHidden);
         
         let tbaLabel = isActive ? (sovereignTba || "Unavailable") : "No active token";
-        if (requestSequence !== inspectorRequestSequence) return null;
         setOutput("inspector-tba", tbaLabel);
+        
+        // 6. ซิงค์ข้อมูลและยอดเงินไปยังห้องนิรภัย TBA Vault ทันที
+        const info = document.getElementById("activeDeedMetadataDisplay");
+        const tbaField = document.getElementById("tbaAddressDisplay");
+        if (info) {
+            info.textContent = isActive 
+                ? `DEED #${id} • OWNER ${asString(sovereignOwner)} • ${Boolean(absoluteSovereigntyStatus) ? "ABSOLUTE SOVEREIGNTY" : "NOVA LOCKED"}`
+                : `NO ACTIVE DEED RECORD FOR #${id}.`;
+        }
+        if (tbaField) tbaField.value = tbaLabel;
+        if (typeof refreshTbaBalances === "function") {
+            await refreshTbaBalances(isActive ? sovereignTba : null, window.currentAuditSession);
+        }
         
         if (status) status.textContent = isActive ? `On-chain record loaded for deed #${id}.` : `Deed #${id} has no active on-chain media record.`;
         return {
@@ -4226,69 +4400,27 @@ window.inspectTokenFromInput = async function (value) {
         if (requestSequence !== inspectorRequestSequence) return null;
         clearInspectorOutputs();
         clearDeedMediaPreview(id, "DORMANT / UNMINTED");
+        
+        // รีเซ็ตค่า TBA Vault กรณี Token นั้นยังไม่ถูก Mint (Revert: NonexistentToken)
+        const info = document.getElementById("activeDeedMetadataDisplay");
+        const tbaField = document.getElementById("tbaAddressDisplay");
+        if (info) info.textContent = `NO ACTIVE DEED RECORD FOR #${id}.`;
+        if (tbaField) tbaField.value = "No active token";
+        if (typeof setTbaBalanceDisplay === "function") setTbaBalanceDisplay("0.0000", "0.0000");
+
         if (status) status.textContent = `Deed #${id} is dormant or unavailable.`;
         return null;
     }
+};
+
+window.auditTokenFromLedger = async function (tokenId) {
+    return await window.inspectTokenFromInput(tokenId);
 };
 
 window.selectInspectorToken = function (tokenId) {
     const input = document.getElementById("tokenInspectorInput");
     if (input) input.value = String(tokenId);
     return window.inspectTokenFromInput(tokenId);
-};
-
-window.deployTBAForToken = async function (tokenId) {
-    const id = validateTokenRange(tokenId ?? document.getElementById("tokenInspectorInput")?.value);
-    if (!id || !secureContract || !signer) {
-        showNotification("Connect the deed-owning wallet and inspect a token before deploying its TBA.", "error");
-        return null;
-    }
-    const button = document.getElementById("btnDeployInspectorTBA");
-    try {
-        const address = await signer.getAddress();
-        const [
-          sovereignOwner,
-          sovereignActive,
-          absoluteSovereigntyStatus,
-          sovereignFront,
-          sovereignBack,
-          sovereignVideo,
-          sovereignIdentity,
-          sovereignHidden,
-          sovereignTba
-        ] = await secureContract.getDeedData(String(id));
-        
-        if (asString(sovereignOwner).toLowerCase() !== address.toLowerCase()) {
-            throw new Error("Only the current deed owner may deploy its TBA.");
-        }
-        if (!Boolean(sovereignActive)) throw new Error("This token has no active deed.");
-        const predicted = asString(await secureContract.getTBA(String(id)));
-        const rpc = activeProvider();
-        if (predicted && predicted.toLowerCase() !== ZERO_ADDRESS && rpc) {
-            const code = await rpc.getCode(predicted);
-            if (code && code !== "0x") {
-                showNotification(`TBA already deployed at ${predicted}.`, "success");
-                await window.inspectTokenFromInput(id);
-                return null;
-            }
-        }
-        const method = secureContract.deployTBA;
-        if (typeof method?.estimateGas !== "function") {
-            throw new Error("Ethers v6 does not expose deployTBA gas estimation.");
-        }
-        const estimate = await method.estimateGas(String(id));
-        const gasLimit = ((BigInt(estimate.toString()) * 120n + 99n) / 100n).toString();
-        const receipt = await window.runTx(button, `DEPLOY_TBA_#${id}`, "deployTBA", [String(id)], { gasLimit });
-        if (receipt) {
-            GLOBAL_NODE_CACHE?.delete?.(String(id));
-            await window.inspectTokenFromInput(id);
-            await window.refreshWalletPortfolio();
-        }
-        return receipt;
-    } catch (error) {
-        showNotification(`TBA deployment unavailable: ${friendlyError(error)}`, "error");
-        return null;
-    }
 };
 
 window.auditTokenFromLedger = async function (tokenId) {
@@ -4455,24 +4587,55 @@ window.executeArchitectMint = async function (tokenIdInput, recipientInput, fron
     }
 };
 
+// ==============================================================================
+// [PATCHED] ARCHITECT UI EXECUTION WRAPPERS (STRICT DOM VALIDATION)
+// ==============================================================================
+
 window.uiExecuteArchitectMint = async function() {
-    const tokenIds = document.getElementById("adminMintTokenIds")?.value;
-    const recipient = document.getElementById("adminMintRecipient")?.value;
-    const front = document.getElementById("adminMintFront")?.value;
-    const back = document.getElementById("adminMintBack")?.value;
-    await window.executeArchitectMint(tokenIds, recipient, front, back);
+    const elTokenIds = document.getElementById("adminMintTokenIds");
+    const elRecipient = document.getElementById("adminMintRecipient");
+    const elFront = document.getElementById("adminMintFront");
+    const elBack = document.getElementById("adminMintBack");
+
+    if (!elTokenIds || !elRecipient || !elFront || !elBack) {
+        if (typeof showNotification === 'function') {
+            showNotification("ADMIN_UI_ERROR: Architect Mint DOM nodes missing.", "error");
+        }
+        console.error("[DETERMINISTIC HALT] uiExecuteArchitectMint: Required DOM elements are undefined.");
+        return null;
+    }
+
+    await window.executeArchitectMint(elTokenIds.value, elRecipient.value, elFront.value, elBack.value);
 };
 
 window.uiExecuteSetParams = async function() {
-    const mintEth = document.getElementById("adminMintFee")?.value;
-    const novaEth = document.getElementById("adminNovaFee")?.value;
-    const councilEth = document.getElementById("adminCouncilFee")?.value;
-    await window.executeSetParams(mintEth, novaEth, councilEth);
+    const elMint = document.getElementById("adminMintFee");
+    const elNova = document.getElementById("adminNovaFee");
+    const elCouncil = document.getElementById("adminCouncilFee");
+
+    if (!elMint || !elNova || !elCouncil) {
+        if (typeof showNotification === 'function') {
+            showNotification("ADMIN_UI_ERROR: Set Params DOM nodes missing.", "error");
+        }
+        console.error("[DETERMINISTIC HALT] uiExecuteSetParams: Required DOM elements are undefined.");
+        return null;
+    }
+
+    await window.executeSetParams(elMint.value, elNova.value, elCouncil.value);
 };
 
 window.uiExecuteSetBaseURI = async function() {
-    const uri = document.getElementById("adminBaseUri")?.value;
-    await window.executeSetBaseURI(uri);
+    const elUri = document.getElementById("adminBaseUri");
+    
+    if (!elUri) {
+        if (typeof showNotification === 'function') {
+            showNotification("ADMIN_UI_ERROR: Base URI DOM node missing.", "error");
+        }
+        console.error("[DETERMINISTIC HALT] uiExecuteSetBaseURI: Required DOM element is undefined.");
+        return null;
+    }
+
+    await window.executeSetBaseURI(elUri.value);
 };
 
 const initializeContractUi = async () => {
