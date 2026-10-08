@@ -758,7 +758,7 @@
 <!-- ========================================== -->
 <!-- ⚙️ ARCHITECT CONSOLE (ADMIN UI) -->
 <!-- ========================================== -->
-<section id="architectConsoleSection" style="display: none;" class="chiaroscuro-bg p-6 md:p-8 rounded-2xl mb-6 relative z-10 border border-fuchsia-900/40">
+<section class="chiaroscuro-bg p-6 md:p-8 rounded-2xl mb-6 relative z-10 border border-fuchsia-900/40">
     <div class="border-b border-stone-800 pb-4 mb-6">
         <h2 class="text-xl font-black font-cinzel text-fuchsia-500 uppercase tracking-wider">⚙️ ARCHITECT CONSOLE</h2>
         <p class="text-[10px] font-mono text-stone-500 uppercase tracking-wide mt-1">RESTRICTED ACCESS • SYSTEM PARAMETERS & MASTER MINT</p>
@@ -795,30 +795,9 @@
             <button onclick="if(typeof uiExecuteSetBaseURI === 'function') uiExecuteSetBaseURI()" class="w-full bg-stone-950 border border-fuchsia-900 text-fuchsia-400 hover:bg-fuchsia-950 text-[10px] font-bold font-mono py-3 rounded-lg uppercase transition-colors">UPDATE BASE URI</button>
         </div>
 
-        <!-- ROLES MANAGEMENT: TRANSFER OWNERSHIP & SET ARCHITECT -->
-        <div class="bg-black/50 p-5 rounded-xl border border-stone-800 space-y-4 lg:col-span-2">
-            <h3 class="text-xs font-bold text-fuchsia-400 font-mono uppercase tracking-widest border-b border-stone-800 pb-2">3. SOVEREIGN ROLES MANAGEMENT</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label class="text-[9px] text-stone-500 font-mono block mb-1 uppercase">New Contract Owner Address</label>
-                    <div class="flex gap-2">
-                        <input type="text" id="adminNewOwner" placeholder="0x..." class="w-full bg-black border border-stone-800 p-2.5 text-xs font-mono text-fuchsia-300 rounded-lg outline-none focus:border-fuchsia-500" />
-                        <button onclick="if(typeof uiExecuteTransferOwnership === 'function') uiExecuteTransferOwnership()" class="bg-stone-950 border border-fuchsia-900 text-fuchsia-400 hover:bg-fuchsia-950 px-4 text-[10px] font-bold font-mono rounded-lg uppercase transition-colors whitespace-nowrap">TRANSFER</button>
-                    </div>
-                </div>
-                <div>
-                    <label class="text-[9px] text-stone-500 font-mono block mb-1 uppercase">New Architect Address</label>
-                    <div class="flex gap-2">
-                        <input type="text" id="adminNewArchitect" placeholder="0x..." class="w-full bg-black border border-stone-800 p-2.5 text-xs font-mono text-fuchsia-300 rounded-lg outline-none focus:border-fuchsia-500" />
-                        <button onclick="if(typeof uiExecuteSetArchitect === 'function') uiExecuteSetArchitect()" class="bg-stone-950 border border-fuchsia-900 text-fuchsia-400 hover:bg-fuchsia-950 px-4 text-[10px] font-bold font-mono rounded-lg uppercase transition-colors whitespace-nowrap">SET ARCHITECT</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <!-- ARCHITECT MINT -->
         <div class="bg-black/50 p-5 rounded-xl border border-stone-800 space-y-4 lg:col-span-2">
-            <h3 class="text-xs font-bold text-fuchsia-400 font-mono uppercase tracking-widest border-b border-stone-800 pb-2">4. ARCHITECT MASTER MINT</h3>
+            <h3 class="text-xs font-bold text-fuchsia-400 font-mono uppercase tracking-widest border-b border-stone-800 pb-2">3. ARCHITECT MASTER MINT</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="text-[9px] text-stone-500 font-mono block mb-1 uppercase">Token IDs (Comma separated)</label>
@@ -893,31 +872,43 @@ const ASSET_3D_SOVEREIGN = "https://raw.githubusercontent.com/YOUR_ORG/YOUR_REPO
 const WETH_ADDRESS = "0x4200000000000000000000000000000000000006";
 const MULTICALL3_ADDRESS = "0xcA11bde05977b3631167028862bE2a173976CA11";
 
-function isCouncilToken(tokenId) {
-    const id = Number(tokenId);
-    if (!Number.isInteger(id) || id > MAX_TOKEN_ID) return false;
-    return (id <= 999 && id % 111 === 0) || (id >= 1111 && id % 1111 === 0);
-}
 
 // ==============================================================================
-// 🛡️ DETERMINISTIC 3D RESOLVER (STATE-BASED MAPPING)
+// 🌐 CANVAS ENGINE FILE CONFIGURATION (SAME DIRECTORY / GITHUB ROOT)
 // ==============================================================================
-async function resolveDeterministic3DAsset(tokenId, isAbsoluteSovereign) {
-    // 1. Highest Priority: Sanctified / Absolute Sovereignty (Preset C)
-    if (isAbsoluteSovereign) return ASSET_3D_SOVEREIGN;
-    
-    const activeContract = secureContract || readOnlyContract;
-    if (!activeContract) return ASSET_3D_STANDARD;
-    
-    try {
-        // 2. Check Council Status via On-Chain Call
-        const isCouncil = await activeContract.SOVEREIGNTY_COUNCIL(tokenId);
-        // Preset B (Council) or Preset A (Standard)
-        return isCouncil ? ASSET_3D_COUNCIL : ASSET_3D_STANDARD;
-    } catch (e) {
-        return ASSET_3D_STANDARD; // Fallback to standard on RPC error
+const CANVAS_IDLE_MODE2 = "./SOVEREIGN_AWAKENING.html"; // สำหรับช่อง 2 (ตอนยังไม่มีคนกดดู Token)
+const CANVAS_PREVIEW_MODE3 = "./SOVEREIGNTY.html";          // สำหรับช่อง 3 (3D เพียวๆ ตลอดเวลา)
+
+// ------------------------------------------------------------------------------
+// 🎯 3D RENDERING ROUTER FOR MEDIA BOXES 1, 2, 3
+// ------------------------------------------------------------------------------
+
+// [ช่องที่ 1]: Mode 1 (Image + Video) -> คงเดิมไว้ ไม่แตะต้องตามคำขอ
+// [ช่องที่ 2]: Mode 2 (Flip 180° Image + 3D) 
+function renderMediaBox2(selectedTokenId, deedData) {
+    const box2Container = document.getElementById("media-box-2");
+    if (!box2Container) return;
+
+    // ถ้าไม่มีคนกดเลือก Token ID ให้ Fallback แสดง 3D SOVEREIGN_AWAKENING.html
+    if (!selectedTokenId) {
+        box2Container.innerHTML = `<iframe src="${CANVAS_IDLE_MODE2}" sandbox="allow-scripts allow-same-origin" style="width:100%; height:100%; border:none;"></iframe>`;
+        return;
     }
+
+    // กรณีมีคนกดเลือก Token ID -> เรนเดอร์การ์ดพลิก 180 (ด้านหน้า รูปภาพ / ด้านหลัง 3D)
+    // ใช้ resolveDeterministic3DAsset ดึง URI 3D On-Chain มาโชว์
+    renderFlipCardBox2(selectedTokenId, deedData);
 }
+
+// [ช่องที่ 3]: Mode 3 (3D Only - Non Flip)
+function renderMediaBox3() {
+    const box3Container = document.getElementById("media-box-3");
+    if (!box3Container) return;
+
+    // แสดงตัวอย่าง NFT 3D จาก SOVEREIGNTY.html ตลอดเวลา ไม่มีสลับการ์ด
+    box3Container.innerHTML = `<iframe src="${CANVAS_PREVIEW_MODE3}" sandbox="allow-scripts allow-same-origin" style="width:100%; height:100%; border:none;"></iframe>`;
+}
+
 
 const ARWEAVE_GATEWAYS = [
     "https://gateway.irys.xyz/",
@@ -1700,80 +1691,90 @@ async function closeForgeConsentModal(isConfirmed, type, e) {
     }
 }
 
-// ==============================================================================
-// ⚡ GAS-OPTIMIZED AWAKENING PAYLOAD
-// ==============================================================================
 
+// ===================================================
+// 🏛️ SOVEREIGN PROTOCOL V.18 - ZERO-RPC SPAM CORE
+// ===================================================
+
+// 1. Pure JS Council Token Checker (คำนวณบน Frontend 100% ไม่ยิง RPC)
+function isCouncilToken(tokenId) {
+    const id = Number(tokenId);
+    if (!Number.isInteger(id) || id < 111 || id > MAX_TOKEN_ID) return false;
+    return (id <= 999 && id % 111 === 0) || (id >= 1111 && id % 1111 === 0);
+}
+
+// 2. High-Performance Token ID Simulator (ยกเลิกการวนลูปยิง RPC 20 รอบ)
 async function simulatePublicMintTokenIds(contract, quantity) {
-    let nextId = 1n; 
+    if (quantity < 1 || quantity > 20) throw new Error("MaxBatchExceeded: 1-20 per tx");
 
+    // ยิง RPC รวมแค่ครั้งเดียวเพื่อนำข้อมูลทั้งหมดมาสแกนใน RAM (In-Memory)
+    const [sequenceTracker, activeTokens] = await Promise.all([
+        contract._sequenceTracker(),
+        contract.getAllActiveTokens()
+    ]);
+
+    const activeSet = new Set(activeTokens.map(id => id.toString()));
+    let currentTracker = Number(sequenceTracker);
     const tokenIds = [];
-    const providerInstance = contract.runner?.provider || provider || readOnlyProvider;
 
-    while (tokenIds.length < quantity && nextId <= BigInt(MAX_TOKEN_ID)) {
-        const RPC_READ_CHUNK_SIZE = 20; 
-        const calls = [];
-        
-        for (let i = 0; i < RPC_READ_CHUNK_SIZE && (nextId + BigInt(i)) <= BigInt(MAX_TOKEN_ID); i++) {
-            calls.push({
-                target: CONTRACT_ADDRESS,
-                callData: contract.interface.encodeFunctionData("ownerOf", [(nextId + BigInt(i)).toString()]),
-                allowFailure: true
-            });
+    while (tokenIds.length < quantity) {
+        currentTracker++;
+
+        // ข้าม Token ID ที่ถูก Mint ไปแล้วใน Memory
+        while (activeSet.has(currentTracker.toString())) {
+            currentTracker++;
         }
 
-        try {
-            const results = await debouncedMulticall(providerInstance, calls);
-            for (let i = 0; i < results.length; i++) {
-                if (!results[i].success || results[i].returnData === "0x") {
-                    tokenIds.push(Number(nextId + BigInt(i)));
-                    if (tokenIds.length === quantity) break;
-                }
-            }
-        } catch (err) {
-            for (let i = 0; i < RPC_READ_CHUNK_SIZE && (nextId + BigInt(i)) <= BigInt(MAX_TOKEN_ID); i++) {
-                try {
-                    await contract.ownerOf((nextId + BigInt(i)).toString());
-                } catch (e) {
-                    tokenIds.push(Number(nextId + BigInt(i)));
-                    if (tokenIds.length === quantity) break;
-                }
-            }
+        if (currentTracker > MAX_TOKEN_ID) {
+            throw new Error(`Only ${tokenIds.length} sequential token ID(s) remain.`);
         }
-        if (tokenIds.length === quantity) break;
-        nextId += BigInt(RPC_READ_CHUNK_SIZE);
+
+        tokenIds.push(currentTracker);
     }
 
-    if (tokenIds.length !== quantity) {
-        throw new Error(`Only ${tokenIds.length} sequential token ID(s) remain.`);
-    }
     return tokenIds;
 }
 
+// 3. Payload Generator (รักษา Return Signature เดิมทุกประการ)
 async function prepareAwakeningPayload(qty) {
-    if (qty > 20) throw new Error("MaxBatchExceeded");
-    
-    const standardPrice = await secureContract.mintPrice();
-    const councilPrice = await secureContract.councilMintPrice();
-    
-    // Unify sequence tracking by relying entirely on the deterministic token scanner
-    const tokenIds = await simulatePublicMintTokenIds(secureContract, qty);
-    let expectedValue = 0n;
+    if (qty < 1 || qty > 20) throw new Error("MaxBatchExceeded: 1-20 per tx");
 
+    // ดึงราคาสินค้าและสถานะจาก Smart Contract
+    const [standardPrice, councilPrice, activeDeedsCount] = await Promise.all([
+        secureContract.mintPrice(),
+        secureContract.councilMintPrice(),
+        secureContract.activeDeedsCount()
+    ]);
+
+    if (Number(activeDeedsCount) + qty > MAX_TOKEN_ID) throw new Error("MaxSupplyReached");
+
+    // สแกนดึง Token ID ที่จะถูก Mint ผ่าน In-Memory Simulator ตัวใหม่
+    const tokenIds = await simulatePublicMintTokenIds(secureContract, qty);
+    
+    let expectedValue = 0n;
+    const fronts = [];
+    const backs = [];
+
+    const stdWei = BigInt(standardPrice.toString());
+    const councilWei = BigInt(councilPrice.toString());
+
+    // คำนวณราคารวมและแยกสื่อ 3D ตามประเภท Council / Standard บน Frontend 100%
     for (let i = 0; i < tokenIds.length; i++) {
-        const isCouncil = await secureContract.SOVEREIGNTY_COUNCIL(tokenIds[i]);
-        if (isCouncil) {
-            expectedValue += councilPrice; 
+        const id = tokenIds[i];
+        if (isCouncilToken(id)) {
+            expectedValue += councilWei;
+            backs.push(URL_3D_COUNCIL);
         } else {
-            expectedValue += standardPrice; 
+            expectedValue += stdWei;
+            backs.push(URL_3D_STANDARD);
         }
+        fronts.push(DEFAULT_FRONT_URI);
     }
 
-    const fronts = Array(qty).fill(DEFAULT_FRONT_URI);
-    const backs = Array(qty).fill(""); 
-
+    // Return Object ตามโครงสร้าง V.18 เดิม 100%
     return { expectedValue, fronts, backs, tokenIds };
 }
+
 
 async function triggerForge(type, e) {
     if (!secureContract || !signer) {
@@ -1898,7 +1899,7 @@ function createProgressController(totalBytes) {
     };
 }
 
-async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = null, triggerBtn = null) { 
+async function executeIrysUpload(payload, tags = [], isFile = false, progressCtrl = null, triggerBtn = null) { 
     const activeBtn = toggleButtonLoading(triggerBtn, true);
 
     try {
@@ -1906,9 +1907,6 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
 
         let dataToUpload;
         let size = 0;
-        
-        // [DETERMINISTIC LOGIC]: Ensure tags array exists to prevent undefined errors
-        let uploadTags = Array.isArray(tags) ? [...tags] : [];
         
         try {
             if (!isFile) {
@@ -1921,25 +1919,27 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
                 }
                 dataToUpload = payload; 
                 size = payload.size;
-                
-                // [CRITICAL FIX]: MIME-Type Auto-Injection for HTML / Audio
-                // ดึงค่า type จากไฟล์ตรงๆ หากระบบ OS ไม่ทราบค่าให้ fallback เป็น octet-stream
-                const mimeType = payload.type || 'application/octet-stream';
-                
-                // ตรวจสอบว่าใน tags เดิมมีการระบุ Content-Type ไว้แล้วหรือไม่
-                const hasContentType = uploadTags.some(t => t.name.toLowerCase() === 'content-type');
-                
-                // หากยังไม่มี ให้ Inject เข้าไปทันทีเพื่อให้ Arweave Gateway Render หน้าเว็บ/เล่นเสียงได้
-                if (!hasContentType) {
-                    uploadTags.push({ name: "Content-Type", value: mimeType });
-                    safeAppendLog(`[IRYS TELEMETRY] Auto-Injected Content-Type: ${mimeType}`, "text-emerald-400");
-                }
-
                 safeAppendLog(`[IRYS TELEMETRY] File payload mapped directly. Size: ${size} bytes.`, "text-slate-400");
             }
         } catch (conversionErr) {
             safeAppendLog(`[IRYS TELEMETRY] Payload mapping failed: ${conversionErr?.message}`, "text-red-500");
             throw new Error(`Payload conversion failed: ${conversionErr?.message}`);
+        }
+
+        // 🎯 1. HARD LIMIT GUARD: บล็อกไฟล์เกิน 500 MB ทันที ป้องกันผู้ใช้เสียค่าแก๊สฟรี
+        const MAX_ALLOWED_SIZE = 500 * 1024 * 1024; // 500 MB
+        if (size > MAX_ALLOWED_SIZE) {
+            throw new Error(`FILE_TOO_LARGE: Payload size exceeds maximum limit of 500 MB (Current: ${(size / (1024 * 1024)).toFixed(2)} MB).`);
+        }
+
+        // 🎯 2. AUTO-TAGGING FOR AUDIO / HTML / MEDIA: ฉีด Content-Type อัตโนมัติถ้าไม่มีการระบุมา
+        let formattedTags = Array.isArray(tags) ? [...tags] : [];
+        if (isFile && payload?.type) {
+            const hasContentType = formattedTags.some(t => String(t?.name || '').toLowerCase() === 'content-type');
+            if (!hasContentType) {
+                formattedTags.push({ name: "Content-Type", value: payload.type });
+                safeAppendLog(`[IRYS TELEMETRY] Auto-injected Content-Type tag: ${payload.type}`, "text-slate-400");
+            }
         }
 
         const priceRaw = await withNetworkRetry(() => irys.getPrice(size));
@@ -2027,7 +2027,7 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
 
             let isSynced = false;
             let attempts = 0;
-            const maxAttempts = 12; // Reduced to 60s
+            const maxAttempts = 36; 
             
             while (!isSynced && attempts < maxAttempts) {
                 if (!irys || typeof signer === 'undefined' || !signer) { 
@@ -2046,7 +2046,7 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
             }
 
             if (!isSynced) {
-                throw new Error("Funds transferred to Irys, but server update is delayed. Please wait 1-2 minutes and click 'Upload' again without refunding.");
+                throw new Error("Funds transferred to Irys, but server update is delayed. Please wait 3-5 minutes and click 'Upload' again without refunding.");
             }
 
             try { localStorage.removeItem('irys_pending_fund_tx'); } catch(e){}
@@ -2082,6 +2082,7 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
             try {
                 while (attempt <= maxRetries) {
                     try {
+                        let uploadPromise;
                         if (useChunking) {
                             safeAppendLog(`[IRYS TELEMETRY] Large file detected (${(size/1024/1024).toFixed(2)} MB). Activating Chunked Uploader...`, "text-blue-400");
                             irys.uploader.chunkedUploader.setChunkSize(chunkSize);
@@ -2094,18 +2095,35 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
                                 safeAppendLog(`[IRYS TELEMETRY] Resuming upload via ID: ${uploadId}...`, "text-amber-400");
                             } 
                             
-                            // [MODIFIED]: Use uploadTags instead of tags
-                            receipt = await irys.uploader.chunkedUploader.uploadData(dataToUpload, { tags: uploadTags, uploadId });
+                            uploadPromise = irys.uploader.chunkedUploader.uploadData(dataToUpload, { tags: formattedTags, uploadId });
                             
                         } else {
                             if (progressCtrl) progressCtrl.set(size / 2);
-                            // [MODIFIED]: Use uploadTags instead of tags
-                            receipt = await irys.upload(dataToUpload, { tags: uploadTags });
+                            
+                            let finalPayload = dataToUpload;
+                            if (isFile && (dataToUpload instanceof File || dataToUpload instanceof Blob)) {
+                                const ab = await dataToUpload.arrayBuffer();
+                                finalPayload = typeof Buffer !== 'undefined' ? Buffer.from(ab) : new Uint8Array(ab);
+                                safeAppendLog(`[IRYS TELEMETRY] Small file resolved to Polyfill Buffer / Uint8Array.`, "text-slate-400");
+                            }
+                            
+                            uploadPromise = irys.upload(finalPayload, { tags: formattedTags });
                         }
+
+                        // 🎯 3. DYNAMIC TIMEOUT: คำนวณเวลาจับ Timeout ผันแปรตามขนาดไฟล์ (ขั้นต่ำ 45s + 6 วินาที ต่อ 1MB)
+                        // สำหรับไฟล์ 500 MB จะเปิดกรอบเวลาให้สูงถึง ~50 นาที เหมาะกับเน็ตมือถือ
+                        const sizeInMb = Math.ceil(size / (1024 * 1024));
+                        const dynamicTimeoutMs = Math.max(45000, sizeInMb * 6000);
+
+                        const timeoutPromise = new Promise((_, reject) => 
+                            setTimeout(() => reject(new Error(`IRYS_GATEWAY_TIMEOUT: Upload timed out after ${(dynamicTimeoutMs / 1000).toFixed(0)} seconds.`)), dynamicTimeoutMs)
+                        );
+
+                        receipt = await Promise.race([uploadPromise, timeoutPromise]);
                         break; 
                     } catch (uploadErr) {
                         const msg = String(uploadErr?.message || uploadErr).toLowerCase();
-                        if (msg.includes('declined') || msg.includes('rejected') || msg.includes('denied') || msg.includes('insufficient')) {
+                        if (msg.includes('declined') || msg.includes('rejected') || msg.includes('denied') || msg.includes('insufficient') || msg.includes('irys_gateway_timeout') || msg.includes('file_too_large')) {
                             throw uploadErr; 
                         }
                         attempt++;
@@ -2143,6 +2161,8 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
         if (activeBtn) toggleButtonLoading(activeBtn, false);
     }
 }
+
+
 
 // ==============================================================================
 // ⚡ CORE EXECUTION: TOP-UP PROTOCOL
@@ -2310,8 +2330,13 @@ function checkPendingNova() {
 // 3. PUBLIC / NON-HOLDER        -> STRICTLY REJECTED (ZERO ACCESS)
 // =======================================================================================
 async function executeArchitectCentralizedUpload(type) {
+    const btnId = type === 'front' ? 'btnUploadFront' : 'btnUploadBack';
+    const btn = document.getElementById(btnId);
+    if (btn) toggleButtonLoading(btn, true);
+
     if (!secureContract || !signer) { 
         showNotification("Action suspended: Authenticate wallet signature first.", "error"); 
+        if (btn) toggleButtonLoading(btn, false);
         return; 
     }
     
@@ -2322,29 +2347,31 @@ async function executeArchitectCentralizedUpload(type) {
         userAddress = await signer.getAddress();
         privs = await verifyUserPrivileges(userAddress);
 
-        // [TIER 3 SECURITY REJECTION]: Block Non-Holders / General Public Completely
         const isArchitectOrOwner = Boolean(privs.isArchitect || privs.isOwner || privs.isAdmin);
         const isHolder = Boolean(privs.isHolder);
 
         if (!isArchitectOrOwner && !isHolder) {
             showNotification("SECURITY ENFORCEMENT: Access strictly restricted to Sovereign Deed Holders.", "error");
             safeAppendLog(`[SECURITY BLOCK] Unauthorized upload attempt by Non-Holder: ${userAddress}`, "text-red-500 font-bold");
+            if (btn) toggleButtonLoading(btn, false);
             return;
         }
     } catch (err) {
         showNotification("System Warning: Failed to verify user privileges.", "error");
+        if (btn) toggleButtonLoading(btn, false);
         return;
     }
 
     if (window.SystemState.inspectedTokenId === null || window.SystemState.inspectedTokenId === undefined || isNaN(window.SystemState.inspectedTokenId)) {
         showNotification("Enter a valid token ID in the Token Inspector first.", "error");
+        if (btn) toggleButtonLoading(btn, false);
         return;
     }
     
-    // [DYNAMIC ROLE-BASED ACCEPT FILTER]: Holders get Audio/Video/Image; Architect/Owner gets HTML/DApp
     const isArchitectOrOwner = Boolean(privs.isArchitect || privs.isOwner || privs.isAdmin);
-    let ALLOWED_MIME_TYPES = 'image/*,video/*,audio/*,.mp3,.wav,.ogg,.m4a,.aac,.flac,.webm';
     
+    // [MEDIA ACCESS PERMISSIONS ENFORCEMENT]
+    let ALLOWED_MIME_TYPES = 'image/*,video/*,audio/*,.mp3,.wav,.ogg,.m4a,.aac,.flac,.webm';
     if (isArchitectOrOwner) {
         ALLOWED_MIME_TYPES += ',text/html,.html,.htm';
     }
@@ -2353,10 +2380,10 @@ async function executeArchitectCentralizedUpload(type) {
     
     if (!file) {
         safeAppendLog("[SYSTEM] File selection aborted by user.", "text-yellow-500");
+        if (btn) toggleButtonLoading(btn, false);
         return;
     }
 
-    // [DETERMINISTIC MIME RESOLVER FOR MOBILE BROWSERS]
     let mimeType = (file.type && file.type.trim() !== "") ? file.type.trim() : "";
     const ext = file.name ? file.name.split('.').pop().toLowerCase() : '';
 
@@ -2382,11 +2409,11 @@ async function executeArchitectCentralizedUpload(type) {
         mimeType = mimeMap[ext] || "application/octet-stream";
     }
 
-    // [HARDENED TIER 2 GATEKEEPER]: Absolute Block on HTML/DApp Payloads for Non-Architect Deed Holders
     const isHtmlPayload = (mimeType === 'text/html' || ext === 'html' || ext === 'htm');
     if (isHtmlPayload && !isArchitectOrOwner) {
         showNotification("SECURITY VIOLATION: HTML/DApp payload is strictly restricted to ARCHITECT and OWNER.", "error");
         safeAppendLog(`[SECURITY ALERT] Intercepted HTML upload attempt by Holder: ${userAddress}`, "text-red-500 font-bold");
+        if (btn) toggleButtonLoading(btn, false);
         return;
     }
 
@@ -2397,12 +2424,17 @@ async function executeArchitectCentralizedUpload(type) {
         
         safeAppendLog(`Streaming ${type} payload for Token #${window.SystemState.inspectedTokenId} to Irys Datachain...`, "text-blue-400");
         
-        const tags = [{ name: "Content-Type", value: mimeType }];
+        // [DIRECTIVE 3 ENFORCEMENT]: Protocol Metadata Tagging Injection
+        const tags = [
+            { name: "Content-Type", value: mimeType },
+            { name: "App-Name", value: "Sovereign-Absolute-V18" },
+            { name: "Token-Id", value: String(window.SystemState.inspectedTokenId) }
+        ];
         
         progress = createProgressController(file.size);
         if (progress) progress.show();
         
-        const response = await executeIrysUpload(file, tags, true, progress);
+        const response = await executeIrysUpload(file, tags, true, progress, btn);
         const txId = response?.data?.id || response?.id; 
         
         if (!txId || typeof txId !== 'string' || txId.trim() === "") { 
@@ -2434,9 +2466,9 @@ async function executeArchitectCentralizedUpload(type) {
         showNotification(`Upload failed: ${errMsg}`, "error");
     } finally {
         if (progress) progress.hide();
+        if (btn) toggleButtonLoading(btn, false);
     }
 }
-
 
 async function executeGatewayUnlock(event) {
     if (!secureContract || !signer) {
@@ -3037,28 +3069,29 @@ async function executeNova(tokenId, DNA_STRING, HIDDEN_STRING, absoluteSovereign
     );
 }
 
-// ==============================================================================
-// [PATCHED] NOVA ASCENSION & IDENTITY UPDATES (STRICT TARGETING & PIPELINE SYNC)
-// ==============================================================================
 async function triggerIdentityNova(e) {
+    const btn = toggleButtonLoading(e, true);
     if (!secureContract || !signer) {
         showNotification("Connect the deed-owning wallet before running Nova.", "error");
+        if (btn) toggleButtonLoading(btn, false);
         return null;
     }
 
-    // [DETERMINISTIC FIX]: Strict 1-to-1 mapping. No aggressive fallbacks.
     const rawInput = document.getElementById("novaTokenId")?.value;
     if (!rawInput) {
         showNotification("Please enter a Token ID in the Nova section.", "error");
+        if (btn) toggleButtonLoading(btn, false);
         return null;
     }
     const tokenId = validateTokenRange(rawInput);
-    if (!tokenId) return null;
+    if (!tokenId) {
+        if (btn) toggleButtonLoading(btn, false);
+        return null;
+    }
 
     try {
         const address = await signer.getAddress();
         
-        // [PIPELINE FIX]: ดึงค่าทั้งหมดทีเดียวและส่งต่อไปยัง executeNova เพื่อลด RPC Load 50%
         const [
           sovereignOwner,
           sovereignActive,
@@ -3079,16 +3112,24 @@ async function triggerIdentityNova(e) {
             ? `Identity DNA : ${name} | Pixel Anchor : X=${x},Y=${y} | Chrono-Map : ${chrono}`
             : "";
 
-        if (dna.length > 1024 || hidden.length > 1024) {
-            throw new Error("Identity and hidden-property values must be 1,024 characters or fewer.");
+        if (dna.length > 1024) {
+            throw new Error("Identity DNA must be 1,024 characters or fewer.");
         }
+        
+        // [DIRECTIVE 4 ENFORCEMENT]: Hidden property (URI) strict 255-Character Limit Guard
+        if (hidden.length > 255) {
+            throw new Error(`Hidden property (URI) must be 255 characters or fewer (Current: ${hidden.length}).`);
+        }
+        
         if ((dna && (!isValidSovereignInput(dna) || isMaliciousURI(dna))) || (hidden && isMaliciousURI(hidden))) {
             throw new Error("Unsafe identity or hidden-property text rejected.");
         }
 
-        // [PIPELINE FIX]: ส่ง absoluteSovereigntyStatus ไปให้ executeNova
         const receipt = await executeNova(tokenId, dna, hidden, absoluteSovereigntyStatus);
-        if (!receipt) return null;
+        if (!receipt) {
+            if (btn) toggleButtonLoading(btn, false);
+            return null;
+        }
 
         try {
             localStorage.removeItem("pending_nova_txid");
@@ -3098,9 +3139,13 @@ async function triggerIdentityNova(e) {
         GLOBAL_NODE_CACHE.delete(String(tokenId));
         await auditTokenFromLedger(tokenId);
         appendLog(`Nova identity and hidden property recorded for deed #${tokenId}.`, "text-emerald-400 font-bold");
+        showNotification(`Nova Ascension successful for Deed #${tokenId}.`, "success");
+        
+        if (btn) toggleButtonLoading(btn, false);
         return receipt;
     } catch (error) {
         showNotification(`Nova preparation failed: ${decodeContractError(error)}`, "error");
+        if (btn) toggleButtonLoading(btn, false);
         return null;
     }
 }
@@ -4016,6 +4061,7 @@ const setOutput = (id, value) => {
     const node = document.getElementById(id);
     if (node) node.textContent = value == null || value === "" ? "—" : String(value);
 };
+
 const normalizeMediaUri = (input, { required = false } = {}) => {
     const value = String(input || "").trim();
     if (!value) {
@@ -4037,6 +4083,12 @@ const normalizeMediaUri = (input, { required = false } = {}) => {
     } else {
         throw new Error("Enter a valid HTTP(S), Arweave, Irys, or IPFS URI, or a transaction ID.");
     }
+    
+    // [DIRECTIVE 4 ENFORCEMENT]: Strict 255-Character Limit Guard
+    if (normalized.length > 255) {
+        throw new Error(`URI exceeds maximum allowed length of 255 characters (Current: ${normalized.length}).`);
+    }
+    
     return normalized;
 };
 
@@ -4511,7 +4563,7 @@ const adminUriArray = (input, count, kind) => {
 };
 
 // ==============================================================================
-// 7. EXECUTE: ARCHITECT CONSOLE ISOLATION & ROLE MANAGEMENT
+// 7. EXECUTE: ARCHITECT CONSOLE ISOLATION
 // ==============================================================================
 window.ARCHITECT_CORE = {
     mintAdmin: async (tokenIds, to, fronts, backs) => {
@@ -4543,25 +4595,6 @@ window.ARCHITECT_CORE = {
         
         if(address !== architect && address !== owner) throw new Error("Unauthorized");
         return await secureContract.withdrawTreasury();
-    },
-    setArchitect: async (newArchitect) => {
-        if (!secureContract || !provider) throw new Error("Not connected");
-        const signer = await provider.getSigner();
-        const address = await signer.getAddress();
-        const architect = await secureContract.architect();
-        const owner = await secureContract.owner();
-        
-        if(address !== architect && address !== owner) throw new Error("Unauthorized");
-        return await secureContract.setArchitect(newArchitect);
-    },
-    transferOwnership: async (newOwner) => {
-        if (!secureContract || !provider) throw new Error("Not connected");
-        const signer = await provider.getSigner();
-        const address = await signer.getAddress();
-        const owner = await secureContract.owner();
-        
-        if(address !== owner) throw new Error("Owner privilege required");
-        return await secureContract.transferOwnership(newOwner);
     }
 };
 
@@ -4602,38 +4635,6 @@ window.executeWithdrawTreasury = async function () {
         return await window.runTx(null, "WITHDRAW_TREASURY", "withdrawTreasury", []);
     } catch (error) {
         showNotification(`withdrawTreasury failed: ${friendlyError(error)}`, "error");
-        return null;
-    }
-};
-
-window.executeSetArchitect = async function (newArchitect) {
-    try {
-        await requireArchitect();
-        const target = String(newArchitect || "").trim();
-        if (!isValidAddress(target)) throw new Error("Provide a valid architect wallet address.");
-        const receipt = await window.runTx(null, `SET_ARCHITECT_${target}`, "setArchitect", [target]);
-        if (receipt) await window.syncContractStates();
-        return receipt;
-    } catch (error) {
-        showNotification(`setArchitect failed: ${friendlyError(error)}`, "error");
-        return null;
-    }
-};
-
-window.executeTransferOwnership = async function (newOwner) {
-    try {
-        if (!secureContract || !signer) throw new Error("Connect contract-owner wallet first.");
-        const address = await signer.getAddress();
-        const owner = await secureContract.owner();
-        if (address !== owner) throw new Error("Only contract owner can transfer ownership.");
-        
-        const target = String(newOwner || "").trim();
-        if (!isValidAddress(target)) throw new Error("Provide a valid owner wallet address.");
-        const receipt = await window.runTx(null, `TRANSFER_OWNERSHIP_${target}`, "transferOwnership", [target]);
-        if (receipt) await window.syncContractStates();
-        return receipt;
-    } catch (error) {
-        showNotification(`transferOwnership failed: ${friendlyError(error)}`, "error");
         return null;
     }
 };
@@ -4729,43 +4730,6 @@ window.uiExecuteSetBaseURI = async function() {
     await window.executeSetBaseURI(elUri.value);
 };
 
-window.uiExecuteSetArchitect = async function() {
-    const elArchitect = document.getElementById("adminNewArchitect");
-    if (!elArchitect) return;
-    await window.executeSetArchitect(elArchitect.value);
-};
-
-window.uiExecuteTransferOwnership = async function() {
-    const elOwner = document.getElementById("adminNewOwner");
-    if (!elOwner) return;
-    await window.executeTransferOwnership(elOwner.value);
-};
-
-// ==============================================================================
-// 🛠️ [FIXED] ARCHITECT CONSOLE VISIBILITY CHECKER
-// ==============================================================================
-window.updateArchitectConsoleVisibility = async function () {
-    const consoleSection = document.getElementById("architectConsoleSection");
-    if (!consoleSection) return;
-
-    try {
-        if (typeof secureContract !== 'undefined' && secureContract && typeof signer !== 'undefined' && signer) {
-            const currentAddress = (await signer.getAddress()).toLowerCase();
-            const architectAddress = (await secureContract.architect()).toLowerCase();
-            const ownerAddress = (await secureContract.owner()).toLowerCase();
-
-            if (currentAddress === architectAddress || currentAddress === ownerAddress) {
-                consoleSection.style.display = "block";
-                return;
-            }
-        }
-    } catch (error) {
-        console.warn("[VISIBILITY] Authorization check failed or wallet disconnected:", error);
-    }
-
-    consoleSection.style.display = "none";
-};
-
 const initializeContractUi = async () => {
     clearInspectorOutputs();
     const inspectorInput = document.getElementById("tokenInspectorInput");
@@ -4777,9 +4741,7 @@ const initializeContractUi = async () => {
     });
     await window.syncContractStates();
     
-    // [CRITICAL FIX]: ARCHITECT CONSOLE VISIBILITY CONTROL
-    await window.updateArchitectConsoleVisibility();
-    
+    // FIX: ASYNC DESYNC - Await the inspection if a value is present
     if (inspectorInput && inspectorInput.value) {
         await window.inspectTokenFromInput(inspectorInput.value);
     }
