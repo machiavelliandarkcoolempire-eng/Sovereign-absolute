@@ -4758,9 +4758,9 @@ const initializeContractUi = async () => {
     if (consoleSection) {
         try {
             if (typeof secureContract !== 'undefined' && secureContract && typeof signer !== 'undefined' && signer) {
-                const address = await signer.getAddress();
-                const architect = await secureContract.architect();
-                const owner = await secureContract.owner();
+                const address = (await signer.getAddress()).toLowerCase();
+                const architect = (await secureContract.architect()).toLowerCase();
+                const owner = (await secureContract.owner()).toLowerCase();
                 if (address === architect || address === owner) {
                     consoleSection.style.display = "block";
                 } else {
