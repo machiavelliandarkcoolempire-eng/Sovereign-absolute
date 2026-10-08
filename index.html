@@ -758,7 +758,7 @@
 <!-- ========================================== -->
 <!-- ⚙️ ARCHITECT CONSOLE (ADMIN UI) -->
 <!-- ========================================== -->
-<section class="chiaroscuro-bg p-6 md:p-8 rounded-2xl mb-6 relative z-10 border border-fuchsia-900/40">
+<section id="architectConsoleSection" class="hidden chiaroscuro-bg p-6 md:p-8 rounded-2xl mb-6 relative z-10 border border-fuchsia-900/40">
     <div class="border-b border-stone-800 pb-4 mb-6">
         <h2 class="text-xl font-black font-cinzel text-fuchsia-500 uppercase tracking-wider">⚙️ ARCHITECT CONSOLE</h2>
         <p class="text-[10px] font-mono text-stone-500 uppercase tracking-wide mt-1">RESTRICTED ACCESS • SYSTEM PARAMETERS & MASTER MINT</p>
@@ -1069,12 +1069,14 @@ const GENERAL_ENDPOINTS = [
     'https://base-rpc.publicnode.com'
 ];
 
+// [แก้ไขเนื้อผ้า]: เปลี่ยน API Key ให้ตรงกับ DEDICATED_BASE_RPC ในไฟล์ index.js แบบ 100%
 const IRYS_ENDPOINTS = [
-    'https://base-mainnet.g.alchemy.com/v2/XOBcrOR6Zzmrgjg9osZWR', 
+    'https://base-mainnet.g.alchemy.com/v2/wR5UgtUrkfPjKnqfMhm8k', 
     'https://mainnet.base.org',                                     
     'https://base.llamarpc.com',                                  
     'https://base-rpc.publicnode.com'
 ];
+
 
 window.IRYS_ENDPOINTS = IRYS_ENDPOINTS;
 window.GENERAL_ENDPOINTS = GENERAL_ENDPOINTS;
@@ -1829,8 +1831,56 @@ async function withNetworkRetry(fn, retries = 3, delay = 1000) {
 }
 
 // ==============================================================================
-// 📡 1. CORE UPLOAD ENGINE (โค้ดเก่าของพี่ + ล้าง Listener กันหลอดโหลดรวน)
+// 📡 4. BRIDGE INITIALIZER (เชื่อมต่อ Irys)
 // ==============================================================================
+async function ensureIrysReady(timeoutMs = 60000) {
+    if (typeof irys !== 'undefined' && irys) return true;
+    
+    if (typeof activeRawProvider === 'undefined' || !activeRawProvider) throw new Error("EVM Provider Uninitialized. Please connect Web3 Wallet first.");
+    if (typeof signer === 'undefined' || !signer) throw new Error("EVM Signer Uninitialized. Wallet connection required.");
+    
+    if (typeof window.InitSovereignIrys !== 'function') {
+        throw new Error("Irys Custom Bundle (irys-bundle.js) is missing or failed to load.");
+    }
+
+    updateBridgeStatus("ENGAGING IRYS BRIDGE...", "warning");
+    
+    // [ตั้งให้เรียกใช้]: ดึง RPC จากอาร์เรย์ที่แก้แล้วมาอ้างอิง เพื่อยืนยันว่าตรงกับที่ถูกฝังใน index.js
+    const activeIrysRpc = IRYS_ENDPOINTS[0];
+    safeAppendLog(`[SYSTEM] Engaging isolated Irys Settlement Bridge via Dedicated RPC: ${activeIrysRpc}`, "text-blue-400");
+
+    const btnConnectIrys = document.getElementById('btnConnectIrys');
+    if (btnConnectIrys) toggleButtonLoading(btnConnectIrys, true);
+
+    try {
+        const initPromise = (async () => {
+            // เรียกใช้ฟังก์ชันเดิม ไม่ต้องยัดพารามิเตอร์เพิ่ม เพราะ index.js จัดการด้วยตัวเองอยู่แล้ว
+            irys = await window.InitSovereignIrys(signer); 
+            return true;
+        })();
+
+        const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error("Irys initialization timeout")), timeoutMs)
+        );
+
+        await Promise.race([initPromise, timeoutPromise]);
+
+        updateBridgeStatus("✅ IRYS PERMANENT BRIDGE ONLINE", "success");
+        safeAppendLog("[SYSTEM] Autonomous Irys permanent settlement bridge successfully engaged.", "text-emerald-400 font-bold");
+        return true;
+    } catch (err) {
+        irys = null;
+        updateBridgeStatus("⚠ BRIDGE ERROR (CHECK LOG)", "error");
+        safeAppendLog(`[IRYS FAULT] Bridge protocol initialization failed: ${err.message}`, "text-rose-500 font-bold");
+        throw err;
+    } finally {
+        if (btnConnectIrys) toggleButtonLoading(btnConnectIrys, false);
+    }
+}
+
+
+
+
 async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = null, triggerBtn = null) { 
     const activeBtn = toggleButtonLoading(triggerBtn, true);
 
@@ -1901,9 +1951,23 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
                 localStorage.removeItem('irys_pending_fund_tx');
             }
 
+            // 🛡️ [DEFECT 3 FIX]: ตรวจสอบสถานะ On-Chain ก่อนเชื่อ LocalStorage ป้องกัน UI ค้าง
             if (pendingFundTx && pendingFundTx !== 'pending') {
-                safeAppendLog("Resuming pending funding transaction polling...", "text-yellow-400");
-            } else {
+                try {
+                    const txReceipt = await provider.getTransactionReceipt(pendingFundTx);
+                    if (txReceipt && txReceipt.status === 0) {
+                        localStorage.removeItem('irys_pending_fund_tx');
+                        pendingFundTx = null;
+                        safeAppendLog("[SYSTEM] Previous funding TX reverted on-chain. Requesting new signature...", "text-amber-400");
+                    } else {
+                        safeAppendLog("Resuming pending funding transaction polling...", "text-yellow-400");
+                    }
+                } catch (e) {
+                    safeAppendLog("Resuming pending funding transaction polling...", "text-yellow-400");
+                }
+            }
+
+            if (!pendingFundTx || pendingFundTx === 'pending') {
                 try {
                     let fundRes;
                     try {
@@ -1921,7 +1985,6 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
 
                     if (!fundRes || !fundRes.id) throw new Error("No transaction ID returned from bundler.");
                     
-                    // แสดง TxID ทันทีที่จ่ายเงินผ่าน
                     safeAppendLog(`[SYSTEM] Funding broadcasted. TxID: ${fundRes.id}`, "text-blue-400");
                     
                     try { 
@@ -1937,7 +2000,6 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
                     if (isUserRejection || isInsufficientFunds) {
                         throw new Error(isUserRejection ? "Funding transaction cancelled by user." : "Insufficient ETH balance for funding.");
                     } else {
-                        // ดึง TxID ออกมาโชว์กรณี Irys Node Timeout แต่เงินถูกหักไปแล้ว
                         const possibleTxId = fundErr?.transactionHash || fundErr?.txId || fundErr?.receipt?.transactionHash || "";
                         if (possibleTxId) {
                             safeAppendLog(`[IRYS API TIMEOUT] TX is on-chain. TxID: ${possibleTxId}. Forcing sync...`, "text-yellow-500");
@@ -2000,7 +2062,6 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
             let listenerAttached = false;
             if (useChunking && typeof irys.uploader?.chunkedUploader !== 'undefined') {
                 if (typeof irys.uploader.chunkedUploader.on === 'function') {
-                    // ล้าง Listener เก่าทิ้งก่อนผูกใหม่ ป้องกันหลอดโหลดรวน
                     if (typeof irys.uploader.chunkedUploader.removeAllListeners === 'function') {
                         irys.uploader.chunkedUploader.removeAllListeners('chunkUpload');
                     }
@@ -2012,13 +2073,16 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
             try {
                 while (attempt <= maxRetries) {
                     try {
-                        if (useChunking) {
+                        if (useChunking && typeof irys.uploader?.chunkedUploader !== 'undefined') {
                             safeAppendLog(`[IRYS TELEMETRY] Large file detected (${(size/1024/1024).toFixed(2)} MB). Activating Chunked Uploader...`, "text-blue-400");
                             irys.uploader.chunkedUploader.setChunkSize(chunkSize);
                             irys.uploader.chunkedUploader.setBatchSize(batchSize);
                             
-                            const safeName = 'payload';
-                            const uploadId = `irys_resume_${safeName}_${size}`;
+                            // 🛡️ [DEFECT 2 FIX]: สร้าง Unique ID ป้องกันไฟล์วิดีโอพังจากการ Resume ผิดไฟล์
+                            const safeName = (isFile && payload.name) ? payload.name.replace(/[^a-zA-Z0-9]/g, '_') : 'payload';
+                            const lastMod = (isFile && payload.lastModified) ? payload.lastModified : Date.now();
+                            const targetToken = window.SystemState.inspectedTokenId || 'unknown';
+                            const uploadId = `irys_resume_node${targetToken}_${safeName}_${size}_${lastMod}`;
                             
                             if (attempt > 0) {
                                 safeAppendLog(`[IRYS TELEMETRY] Resuming upload via ID: ${uploadId}...`, "text-amber-400");
@@ -2205,11 +2269,7 @@ async function executeArchitectCentralizedUpload(type) {
     }
 }
 
-// ==============================================================================
-// 📡 3. TOP-UP ENGINE (เติมเงินเข้า Irys)
-// ==============================================================================
 async function executeIrysTopUp(amountEthStr, triggerBtn = null) { 
-    // ถ้าไม่ได้ส่งปุ่มมา ให้พยายามหาปุ่มที่ถูกกดจาก event
     let activeBtn = triggerBtn;
     if (!activeBtn && window.event && window.event.currentTarget) {
         activeBtn = window.event.currentTarget;
@@ -2249,9 +2309,23 @@ async function executeIrysTopUp(amountEthStr, triggerBtn = null) {
             localStorage.removeItem('irys_pending_fund_tx');
         }
 
+        // 🛡️ [DEFECT 3 FIX]: ตรวจสอบสถานะ On-Chain ก่อนเชื่อ LocalStorage ป้องกัน UI ค้าง
         if (pendingFundTx && pendingFundTx !== 'pending') {
-            safeAppendLog("Resuming pending funding transaction polling...", "text-yellow-400");
-        } else {
+            try {
+                const txReceipt = await provider.getTransactionReceipt(pendingFundTx);
+                if (txReceipt && txReceipt.status === 0) {
+                    localStorage.removeItem('irys_pending_fund_tx');
+                    pendingFundTx = null;
+                    safeAppendLog("[SYSTEM] Previous top-up TX reverted on-chain. Requesting new signature...", "text-amber-400");
+                } else {
+                    safeAppendLog("Resuming pending funding transaction polling...", "text-yellow-400");
+                }
+            } catch (e) {
+                safeAppendLog("Resuming pending funding transaction polling...", "text-yellow-400");
+            }
+        }
+
+        if (!pendingFundTx || pendingFundTx === 'pending') {
             try {
                 const fundRes = await irys.fund(amountWei.toString());
                 safeAppendLog(`[SYSTEM] Top-up broadcasted. TxID: ${fundRes.id}`, "text-blue-400");
@@ -2314,51 +2388,6 @@ async function executeIrysTopUp(amountEthStr, triggerBtn = null) {
         }
     } finally {
         if (activeBtn) toggleButtonLoading(activeBtn, false);
-    }
-}
-
-// ==============================================================================
-// 📡 4. BRIDGE INITIALIZER (เชื่อมต่อ Irys)
-// ==============================================================================
-async function ensureIrysReady(timeoutMs = 60000) {
-    if (typeof irys !== 'undefined' && irys) return true;
-    
-    if (typeof activeRawProvider === 'undefined' || !activeRawProvider) throw new Error("EVM Provider Uninitialized. Please connect Web3 Wallet first.");
-    if (typeof signer === 'undefined' || !signer) throw new Error("EVM Signer Uninitialized. Wallet connection required.");
-    
-    if (typeof window.InitSovereignIrys !== 'function') {
-        throw new Error("Irys Custom Bundle (irys-bundle.js) is missing or failed to load.");
-    }
-
-    updateBridgeStatus("ENGAGING IRYS BRIDGE...", "warning");
-    safeAppendLog("[SYSTEM] Engaging isolated Irys Settlement Bridge via Custom Sovereign Bundle...", "text-blue-400");
-
-    // แมพปุ่ม Connect Irys เพื่อทำ Loading State
-    const btnConnectIrys = document.getElementById('btnConnectIrys');
-    if (btnConnectIrys) toggleButtonLoading(btnConnectIrys, true);
-
-    try {
-        const initPromise = (async () => {
-            irys = await window.InitSovereignIrys(signer); 
-            return true;
-        })();
-
-        const timeoutPromise = new Promise((_, reject) => 
-            setTimeout(() => reject(new Error("Irys initialization timeout")), timeoutMs)
-        );
-
-        await Promise.race([initPromise, timeoutPromise]);
-
-        updateBridgeStatus("✅ IRYS PERMANENT BRIDGE ONLINE", "success");
-        safeAppendLog("[SYSTEM] Autonomous Irys permanent settlement bridge successfully engaged.", "text-emerald-400 font-bold");
-        return true;
-    } catch (err) {
-        irys = null;
-        updateBridgeStatus("⚠ BRIDGE ERROR (CHECK LOG)", "error");
-        safeAppendLog(`[IRYS FAULT] Bridge protocol initialization failed: ${err.message}`, "text-rose-500 font-bold");
-        throw err;
-    } finally {
-        if (btnConnectIrys) toggleButtonLoading(btnConnectIrys, false);
     }
 }
 
@@ -2835,6 +2864,9 @@ async function handleAccountsChangedEvent(accounts) {
         if (walletInfo) walletInfo.classList.remove('hidden');
         if (hdrAddress) hdrAddress.textContent = `${accounts[0].slice(0, 6)}...${accounts[0].slice(-4)}`;
     }
+    
+    const adminConsole = document.getElementById('architectConsoleSection');
+    if (adminConsole) adminConsole.classList.add('hidden');
 
     const connectBtn = document.getElementById('btnConnect');
     if (connectBtn) {
@@ -2987,6 +3019,9 @@ async function connectWallet(e) {
 
         if (privs.isAdmin) {
             appendLog("Architect sovereign privileges validated.", "text-yellow-400 font-black");
+            document.getElementById('architectConsoleSection')?.classList.remove('hidden'); // เปิด Console
+        } else {
+            document.getElementById('architectConsoleSection')?.classList.add('hidden'); // ปิด Console
         }
         
         await ensureIrysReady(60000).catch(e => console.warn("Irys init deferred:", e));
