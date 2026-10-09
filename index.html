@@ -1922,7 +1922,7 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
             throw new Error("Ethers library binding missing from execution context.");
         }
 
-        let dataToUpload;
+                let dataToUpload;
         let size = 0;
         
         try {
@@ -1936,10 +1936,23 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
                 if (!(payload instanceof File) && !(payload instanceof Blob)) {
                     throw new TypeError("Payload must be a File or Blob when isFile is true.");
                 }
-                dataToUpload = payload; 
+                
+                // ---------------------------------------------------------
+                // 🎯 [การแก้ไข]: แปลง Browser File ให้เป็น Buffer อย่างสมบูรณ์
+                // ---------------------------------------------------------
+                // 1. สั่งให้ Browser อ่านข้อมูลดิบจากไฟล์ (ArrayBuffer)
+                const fileArrayBuffer = await payload.arrayBuffer();
+                
+                // 2. นำข้อมูลดิบมาใส่ใน window.Buffer (ถ้ามี Polyfill) หรือ Uint8Array
+                dataToUpload = (typeof window !== 'undefined' && window.Buffer) 
+                    ? window.Buffer.from(fileArrayBuffer) 
+                    : new Uint8Array(fileArrayBuffer);
+                
                 size = payload.size;
+                // ---------------------------------------------------------
+                
                 if (typeof safeAppendLog === 'function') {
-                    safeAppendLog(`[IRYS TELEMETRY] File payload mapped directly. Size: ${size} bytes.`, "text-slate-400");
+                    safeAppendLog(`[IRYS TELEMETRY] File payload successfully converted to Buffer. Size: ${size} bytes.`, "text-slate-400");
                 }
             }
         } catch (conversionErr) {
@@ -2266,8 +2279,8 @@ async function executeIrysTopUp(amountEthStr = null, triggerBtn = null) {
             await ensureIrysReady();
         }
         
-        const irys = window.irys;
-        if (!irys) {
+        const irysInstance = window.irys || (typeof irys !== 'undefined' ? irys : null);
+        if (!irysInstance) {
             throw new Error("Irys instance is not initialized on global scope.");
         }
 
@@ -2276,7 +2289,7 @@ async function executeIrysTopUp(amountEthStr = null, triggerBtn = null) {
             throw new Error("Ethers library binding missing from execution context.");
         }
 
-        const initialBalanceRaw = await irys.getLoadedBalance();
+        const initialBalanceRaw = await irysInstance.getLoadedBalance();
         const initialBalance = BigInt(initialBalanceRaw.toString());
         
         let amountWei;
@@ -2314,7 +2327,7 @@ async function executeIrysTopUp(amountEthStr = null, triggerBtn = null) {
         // 🛡️ ON-CHAIN STATUS VERIFICATION
         if (pendingFundTx && pendingFundTx !== 'pending') {
             try {
-                const activeProvider = window.provider || (window.signer ? window.signer.provider : null);
+                const activeProvider = window.provider || (window.signer ? window.signer.provider : (typeof signer !== 'undefined' && signer ? signer.provider : null));
                 if (activeProvider) {
                     const txReceipt = await activeProvider.getTransactionReceipt(pendingFundTx);
                     if (txReceipt && txReceipt.status === 0) {
@@ -2343,7 +2356,7 @@ async function executeIrysTopUp(amountEthStr = null, triggerBtn = null) {
 
         if (!pendingFundTx || pendingFundTx === 'pending') {
             try {
-                const fundRes = await irys.fund(amountWei.toString());
+                const fundRes = await irysInstance.fund(amountWei.toString());
                 if (typeof safeAppendLog === 'function') {
                     safeAppendLog(`[SYSTEM] Top-up broadcasted. TxID: ${fundRes.id}`, "text-blue-400");
                 }
@@ -2375,13 +2388,16 @@ async function executeIrysTopUp(amountEthStr = null, triggerBtn = null) {
         const maxTopUpAttempts = 12; 
         
         while (!isSynced && attempts < maxTopUpAttempts) {
-            const activeSigner = window.signer;
-            if (!window.irys || !activeSigner) { 
+            // 🎯 แก้จุดหลุด Scope ป้องกัน Wallet session severed
+            const activeSigner = window.signer || (typeof signer !== 'undefined' ? signer : null);
+            const currentIrys = window.irys || (typeof irys !== 'undefined' ? irys : null);
+
+            if (!currentIrys || !activeSigner) { 
                 throw new Error("Wallet session severed during sync protocol."); 
             }
             await new Promise(resolve => setTimeout(resolve, 5000));
             try {
-                const currentBalanceRaw = await irys.getLoadedBalance();
+                const currentBalanceRaw = await currentIrys.getLoadedBalance();
                 const currentBalance = BigInt(currentBalanceRaw.toString());
                 if (typeof safeAppendLog === 'function') {
                     safeAppendLog(`[SYNC CHECK] Current Irys Balance: ${ethersLib.formatEther(currentBalance)} ETH`, "text-slate-500");
@@ -2417,8 +2433,6 @@ async function executeIrysTopUp(amountEthStr = null, triggerBtn = null) {
         }
     }
 }
-
-
 
 // ==============================================================================
 // 📡 2. GATEWAY & DOM MAPPER (CENTRALIZED UPLOAD)
