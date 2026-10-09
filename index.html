@@ -647,19 +647,19 @@
                 <label class="flex items-center cursor-pointer"><input type="radio" name="frontType" value="html" class="accent-fuchsia-500 w-4 h-4" onchange="if(typeof onTypeToggle === 'function') onTypeToggle('front')" /> <span class="text-fuchsia-500 font-bold ml-1.5">HTML (ADMIN)</span></label>
             </span>
             
-            <div class="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
-                <button id="btnConnectIrys" onclick="if(typeof ensureIrysReady === 'function') ensureIrysReady()" type="button" class="w-full sm:w-auto px-5 py-3 bg-slate-900 border border-blue-800 text-blue-400 font-mono text-xs font-bold hover:bg-blue-950 hover:text-blue-300 transition-colors shadow-[0_0_15px_rgba(30,58,138,0.4)] rounded-lg">
-                    ⚡ ENGAGE IRYS BRIDGE
+            <div class="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">   <button id="btnConnectIrys" onclick="if(typeof ensureIrysReady === 'function') ensureIrysReady()" type="button" class="w-full sm:w-auto px-5 py-3 bg-slate-900 border border-blue-800 text-blue-400 font-mono text-xs font-bold hover:bg-blue-950 hover:text-blue-300 transition-colors shadow-[0_0_15px_rgba(30,58,138,0.4)] rounded-lg">
+        ⚡ ENGAGE IRYS BRIDGE
+        </button>
+        <div class="relative w-full sm:w-36">
+                 <input id="irysTopUpAmount" type="number" step="0.0001" min="0.0001" placeholder="0.001" value="0.001" class="w-full px-3 py-2.5 bg-black border border-blue-900/80 text-blue-300 font-mono text-xs rounded-lg focus:outline-none focus:border-blue-500 text-center font-bold shadow-inner" />
+                 <span class="absolute right-2 top-2.5 text-[10px] font-mono text-blue-500/70 pointer-events-none">ETH</span>
+                 </div>
+                 <button onclick="if(typeof executeIrysTopUp === 'function') executeIrysTopUp(document.getElementById('irysTopUpAmount')?.value)" type="button" class="w-full sm:w-auto px-5 py-3 bg-blue-950 border border-blue-900 text-blue-300 hover:bg-blue-900 text-[10px] font-mono font-bold uppercase rounded-lg shadow-[0_0_10px_rgba(30,58,138,0.3)] transition-colors">           TOP-UP BALANCE
                 </button>
-                <button onclick="if(typeof executeIrysTopUp === 'function') executeIrysTopUp('0.001')" type="button" class="w-full sm:w-auto px-5 py-3 bg-blue-950 border border-blue-900 text-blue-300 hover:bg-blue-900 text-[10px] font-mono font-bold uppercase rounded-lg shadow-[0_0_10px_rgba(30,58,138,0.3)] transition-colors">
-                    TOP-UP (0.001 ETH)
-                </button>
-                <button id="btnUploadFront" onclick="if(typeof executeArchitectCentralizedUpload === 'function') executeArchitectCentralizedUpload('front')" type="button" class="w-full sm:w-auto px-5 py-3 bg-amber-700 hover:bg-amber-600 text-black font-black text-[11px] font-mono uppercase rounded-lg transition-all shadow-[0_0_15px_rgba(217,119,6,0.3)]">
-                    STREAM PAYLOAD
-                </button>
+                <button id="btnUploadFront" onclick="if(typeof executeArchitectCentralizedUpload === 'function') executeArchitectCentralizedUpload('front')" type="button" class="w-full sm:w-auto px-5 py-3 bg-amber-700 hover:bg-amber-600 text-black font-black text-[11px] font-mono uppercase rounded-lg transition-all shadow-[0_0_15px_rgba(217,119,6,0.3)]">       STREAM PAYLOAD    </button>
+                </div>
             </div>
-        </div>
-        <div>
+           <div>
             <label class="text-[10px] text-stone-400 font-mono block mb-2 uppercase tracking-wider">FRONT <span id="frontTypeLabel" class="text-amber-500 font-bold">IMAGE</span> SOURCE REFERENCE URI</label>
             <input type="text" id="forgeFrontUri" placeholder="e.g. Irys Tx ID (43 chars) or full URL" class="w-full bg-black border border-stone-800 p-3.5 text-sm font-mono text-stone-200 rounded-xl outline-none focus:border-amber-500 transition-all" />
             <p class="text-[10px] font-mono text-stone-500 mt-2 uppercase">MAPS CODE TARGET TO → <span id="frontMapTarget" class="text-amber-500 font-bold">frontURI / imageURI</span></p>
@@ -2235,13 +2235,30 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
 }
 
 /**
- * Executes a deterministic account top-up operation for Irys.
+ * Executes a deterministic account top-up operation for Irys (Dynamic Input Enabled).
+ * @param {string|null} amountEthStr - Amount of ETH to top-up. Defaults to DOM input if null.
+ * @param {HTMLElement|null} triggerBtn - Button element for UI loading state toggle.
  */
-async function executeIrysTopUp(amountEthStr, triggerBtn = null) { 
+async function executeIrysTopUp(amountEthStr = null, triggerBtn = null) { 
     let activeBtn = triggerBtn;
     if (!activeBtn && typeof window !== 'undefined' && window.event && window.event.currentTarget) {
         activeBtn = window.event.currentTarget;
     }
+
+    // 🛡️ DYNAMIC DOM FALLBACK & VALIDATION
+    let targetAmount = amountEthStr;
+    if (!targetAmount || typeof targetAmount !== 'string' || targetAmount.trim() === '') {
+        const domInput = document.getElementById('irysTopUpAmount');
+        targetAmount = domInput ? domInput.value : '0.001';
+    }
+
+    targetAmount = String(targetAmount).trim();
+    if (!targetAmount || isNaN(targetAmount) || Number(targetAmount) <= 0) {
+        if (typeof showNotification === 'function') showNotification("Invalid ETH amount specified.", "error");
+        if (typeof safeAppendLog === 'function') safeAppendLog("[TOP-UP REJECTED] Amount must be a positive number.", "text-red-500 font-bold");
+        return;
+    }
+
     activeBtn = typeof toggleButtonLoading === 'function' ? toggleButtonLoading(activeBtn, true) : activeBtn;
 
     try {
@@ -2264,13 +2281,13 @@ async function executeIrysTopUp(amountEthStr, triggerBtn = null) {
         
         let amountWei;
         try {
-            amountWei = ethersLib.parseEther(String(amountEthStr).trim());
+            amountWei = ethersLib.parseEther(targetAmount);
         } catch (parseErr) {
             throw new Error("Invalid ETH amount format.");
         }
         
         if (typeof safeAppendLog === 'function') {
-            safeAppendLog(`Initiating Irys Top-up: ${amountEthStr} ETH...`, "text-blue-400");
+            safeAppendLog(`Initiating Dynamic Irys Top-up: ${targetAmount} ETH...`, "text-blue-400");
         }
         
         let pendingFundTx = null;
@@ -2400,6 +2417,7 @@ async function executeIrysTopUp(amountEthStr, triggerBtn = null) {
         }
     }
 }
+
 
 
 // ==============================================================================
