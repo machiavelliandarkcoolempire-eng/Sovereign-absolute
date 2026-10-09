@@ -2403,15 +2403,20 @@ async function executeIrysTopUp(amountEthStr, triggerBtn = null) {
 
 
 // ==============================================================================
-// 📡 2. GATEWAY & DOM MAPPER (HARDENED MIME CHECK)
+// 📡 2. GATEWAY & DOM MAPPER (CENTRALIZED UPLOAD)
 // ==============================================================================
 async function executeArchitectCentralizedUpload(type) {
     const btnId = type === 'front' ? 'btnUploadFront' : 'btnUploadBack';
     const btn = document.getElementById(btnId);
     if (btn && typeof toggleButtonLoading === 'function') toggleButtonLoading(btn, true);
 
-    if (!window.secureContract || !window.signer) { 
+    // ✅ ปรับปรุงการตรวจสอบตัวแปรประเภท Signer / Contract อย่างปลอดภัย ป้องกัน ReferenceError
+    const activeSigner = window.signer || (typeof signer !== 'undefined' ? signer : null);
+    const activeContract = window.secureContract || (typeof secureContract !== 'undefined' ? secureContract : null);
+
+    if (!activeContract || !activeSigner) { 
         if (typeof showNotification === 'function') showNotification("Action suspended: Authenticate wallet signature first.", "error"); 
+        if (typeof safeAppendLog === 'function') safeAppendLog("[SECURITY BLOCK] Wallet signature or contract uninitialized.", "text-red-500 font-bold");
         if (btn) toggleButtonLoading(btn, false);
         return; 
     }
@@ -2420,8 +2425,8 @@ async function executeArchitectCentralizedUpload(type) {
     let userAddress;
 
     try {
-        userAddress = await window.signer.getAddress();
-        privs = typeof verifyUserPrivileges === 'function' ? await verifyUserPrivileges(userAddress) : { isHolder: true }; // Fallback
+        userAddress = await activeSigner.getAddress();
+        privs = typeof verifyUserPrivileges === 'function' ? await verifyUserPrivileges(userAddress) : { isHolder: true };
         
         const isArchitectOrOwner = Boolean(privs.isArchitect || privs.isOwner || privs.isAdmin);
         const isHolder = Boolean(privs.isHolder);
@@ -2433,7 +2438,8 @@ async function executeArchitectCentralizedUpload(type) {
             return;
         }
 
-        if (window.SystemState.inspectedTokenId === null || window.SystemState.inspectedTokenId === undefined || isNaN(window.SystemState.inspectedTokenId)) {
+        const inspectedId = window.SystemState?.inspectedTokenId;
+        if (inspectedId === null || inspectedId === undefined || isNaN(inspectedId)) {
             if (typeof showNotification === 'function') showNotification("Enter a valid token ID in the Token Inspector first.", "error");
             if (btn) toggleButtonLoading(btn, false);
             return;
@@ -2452,7 +2458,6 @@ async function executeArchitectCentralizedUpload(type) {
             return;
         }
 
-        // [FIXED] การบังคับ Normalize MIME Type เพื่อป้องกัน Browser คืนค่าว่าง
         let mimeType = (file.type && file.type.trim() !== "") ? file.type.trim() : "";
         const ext = file.name ? file.name.split('.').pop().toLowerCase() : '';
 
@@ -2478,12 +2483,12 @@ async function executeArchitectCentralizedUpload(type) {
         let progress = null;
         if (!window.irys) await ensureIrysReady();
         
-        if (typeof safeAppendLog === 'function') safeAppendLog(`Streaming ${type} payload for Token #${window.SystemState.inspectedTokenId} to Irys Datachain...`, "text-blue-400");
+        if (typeof safeAppendLog === 'function') safeAppendLog(`Streaming ${type} payload for Token #${inspectedId} to Irys Datachain...`, "text-blue-400");
         
         const tags = [
             { name: "Content-Type", value: mimeType },
             { name: "App-Name", value: "Sovereign-Absolute-V18" },
-            { name: "Token-Id", value: String(window.SystemState.inspectedTokenId) }
+            { name: "Token-Id", value: String(inspectedId) }
         ];
         
         progress = typeof createProgressController === 'function' ? createProgressController(file.size) : null;
@@ -2504,17 +2509,21 @@ async function executeArchitectCentralizedUpload(type) {
             const updateFrontField = document.getElementById('updateFrontUriInput');
             if (frontUriField) frontUriField.value = sanitizedTxId;
             if (updateFrontField) updateFrontField.value = sanitizedTxId;
-            window.SystemState.currentLoadedMediaData.front = sanitizedTxId;
+            if (window.SystemState && window.SystemState.currentLoadedMediaData) {
+                window.SystemState.currentLoadedMediaData.front = sanitizedTxId;
+            }
             if (typeof renderToViewport === 'function') renderToViewport('previewFrontContainer', sanitizedTxId, "Obverse aspect currently unassigned.", mimeType);
         } else if (type === 'back') {
             const backUriField = document.getElementById('forgeBackUri');
             const updateBackField = document.getElementById('updateBackUriInput');
             if (backUriField) backUriField.value = sanitizedTxId;
             if (updateBackField) updateBackField.value = sanitizedTxId;
-            window.SystemState.currentLoadedMediaData.back = sanitizedTxId;
+            if (window.SystemState && window.SystemState.currentLoadedMediaData) {
+                window.SystemState.currentLoadedMediaData.back = sanitizedTxId;
+            }
             if (typeof renderToViewport === 'function') renderToViewport('previewBackContainer', sanitizedTxId, "Reverse diagnostic data trace is currently null.", mimeType);
         }
-        if (typeof showNotification === 'function') showNotification(`${type.toUpperCase()} payload streamed successfully for Token #${window.SystemState.inspectedTokenId}.`, "success");
+        if (typeof showNotification === 'function') showNotification(`${type.toUpperCase()} payload streamed successfully for Token #${inspectedId}.`, "success");
 
     } catch (err) {
         const errMsg = err?.message || "Unknown error occurred during upload.";
