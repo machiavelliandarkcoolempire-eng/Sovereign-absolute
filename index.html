@@ -1534,6 +1534,9 @@ function decodeContractError(err) {
     return err.reason || err.message || "Transaction reverted by EVM";
 }
 
+// ==============================================================================
+// 🛠️ 1. FILE PROMPT MODULE (PRODUCTION-GRADE)
+// ==============================================================================
 async function promptUserForFile(acceptType = 'image/*,video/*,audio/*,text/html,.html,.htm,.mp3,.wav,.ogg,.m4a,.aac,.flac,.webm') {
     return new Promise((resolve) => {
         const fileInput = document.createElement('input');
@@ -1545,6 +1548,7 @@ async function promptUserForFile(acceptType = 'image/*,video/*,audio/*,text/html
         const safeResolve = (result) => {
             if (isSettled) return;
             isSettled = true;
+            fileInput.value = ''; // ป้องกัน Browser จำค่าไฟล์เดิม
             if (fileInput.parentNode) document.body.removeChild(fileInput);
             resolve(result);
         };
@@ -1556,17 +1560,29 @@ async function promptUserForFile(acceptType = 'image/*,video/*,audio/*,text/html
             const MAX_SIZE_BYTES = 500 * 1024 * 1024; // 500 MB Limit
             if (file.size > MAX_SIZE_BYTES) {
                 if (typeof showNotification === 'function') showNotification(`FILE REJECTED: ขนาดไฟล์เกิน 500 MB`, "error");
+                if (typeof safeAppendLog === 'function') safeAppendLog(`[SECURITY BLOCK] File size exceeds 500MB limit.`, "text-red-500 font-bold");
                 return safeResolve(null);
             }
             safeResolve(file);
         };
 
+        // Fallback สำหรับเบราว์เซอร์ที่รองรับ oncancel
         fileInput.oncancel = () => safeResolve(null);
+        
         document.body.appendChild(fileInput);
         requestAnimationFrame(() => fileInput.click());
+        
+        // Window Focus Fallback (ป้องกันกรณี Browser ไม่ Trigger oncancel)
+        window.addEventListener('focus', function onFocus() {
+            setTimeout(() => {
+                if (!isSettled && fileInput.files.length === 0) {
+                    safeResolve(null);
+                }
+                window.removeEventListener('focus', onFocus);
+            }, 500);
+        }, { once: true });
     });
 }
-
 
 // ==============================================================================
 // ⚔️ TRANSACTION WRAPPER
@@ -1831,10 +1847,13 @@ async function withNetworkRetry(fn, retries = 3, delay = 1000) {
 }
 
 // ==============================================================================
-// 📡 4. BRIDGE INITIALIZER (เชื่อมต่อ Irys)
+// 📡 4. BRIDGE INITIALIZER (เชื่อมต่อ Irys) [FIXED: Global Scope Sync]
 // ==============================================================================
 async function ensureIrysReady(timeoutMs = 60000) {
-    if (typeof irys !== 'undefined' && irys) return true;
+    if (typeof irys !== 'undefined' && irys) {
+        window.irys = irys; 
+        return true;
+    }
     
     if (typeof activeRawProvider === 'undefined' || !activeRawProvider) throw new Error("EVM Provider Uninitialized. Please connect Web3 Wallet first.");
     if (typeof signer === 'undefined' || !signer) throw new Error("EVM Signer Uninitialized. Wallet connection required.");
@@ -1843,19 +1862,18 @@ async function ensureIrysReady(timeoutMs = 60000) {
         throw new Error("Irys Custom Bundle (irys-bundle.js) is missing or failed to load.");
     }
 
-    updateBridgeStatus("ENGAGING IRYS BRIDGE...", "warning");
+    if (typeof updateBridgeStatus === 'function') updateBridgeStatus("ENGAGING IRYS BRIDGE...", "warning");
     
-    // [ตั้งให้เรียกใช้]: ดึง RPC จากอาร์เรย์ที่แก้แล้วมาอ้างอิง เพื่อยืนยันว่าตรงกับที่ถูกฝังใน index.js
-    const activeIrysRpc = IRYS_ENDPOINTS[0];
-    safeAppendLog(`[SYSTEM] Engaging isolated Irys Settlement Bridge via Dedicated RPC: ${activeIrysRpc}`, "text-blue-400");
+    const activeIrysRpc = (typeof IRYS_ENDPOINTS !== 'undefined' && IRYS_ENDPOINTS[0]) ? IRYS_ENDPOINTS[0] : "";
+    if (typeof safeAppendLog === 'function') safeAppendLog(`[SYSTEM] Engaging isolated Irys Settlement Bridge via Dedicated RPC: ${activeIrysRpc}`, "text-blue-400");
 
-    const btnConnectIrys = document.getElementById('btnConnectIrys');
-    if (btnConnectIrys) toggleButtonLoading(btnConnectIrys, true);
+    const btnConnectIrys = typeof document !== 'undefined' ? document.getElementById('btnConnectIrys') : null;
+    if (btnConnectIrys && typeof toggleButtonLoading === 'function') toggleButtonLoading(btnConnectIrys, true);
 
     try {
         const initPromise = (async () => {
-            // เรียกใช้ฟังก์ชันเดิม ไม่ต้องยัดพารามิเตอร์เพิ่ม เพราะ index.js จัดการด้วยตัวเองอยู่แล้ว
             irys = await window.InitSovereignIrys(signer); 
+            window.irys = irys; // 👉 ซิงค์ State ลง Global Object ทันทีเพื่อกัน Error
             return true;
         })();
 
@@ -1865,16 +1883,17 @@ async function ensureIrysReady(timeoutMs = 60000) {
 
         await Promise.race([initPromise, timeoutPromise]);
 
-        updateBridgeStatus("✅ IRYS PERMANENT BRIDGE ONLINE", "success");
-        safeAppendLog("[SYSTEM] Autonomous Irys permanent settlement bridge successfully engaged.", "text-emerald-400 font-bold");
+        if (typeof updateBridgeStatus === 'function') updateBridgeStatus("✅ IRYS PERMANENT BRIDGE ONLINE", "success");
+        if (typeof safeAppendLog === 'function') safeAppendLog("[SYSTEM] Autonomous Irys permanent settlement bridge successfully engaged.", "text-emerald-400 font-bold");
         return true;
     } catch (err) {
         irys = null;
-        updateBridgeStatus("⚠ BRIDGE ERROR (CHECK LOG)", "error");
-        safeAppendLog(`[IRYS FAULT] Bridge protocol initialization failed: ${err.message}`, "text-rose-500 font-bold");
+        window.irys = null;
+        if (typeof updateBridgeStatus === 'function') updateBridgeStatus("⚠ BRIDGE ERROR (CHECK LOG)", "error");
+        if (typeof safeAppendLog === 'function') safeAppendLog(`[IRYS FAULT] Bridge protocol initialization failed: ${err.message}`, "text-rose-500 font-bold");
         throw err;
     } finally {
-        if (btnConnectIrys) toggleButtonLoading(btnConnectIrys, false);
+        if (btnConnectIrys && typeof toggleButtonLoading === 'function') toggleButtonLoading(btnConnectIrys, false);
     }
 }
 
@@ -2124,15 +2143,27 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
                 }
             }
 
+            // นำไปแทนที่บล็อก try-catch ช่วงบรรทัดที่ 400 เป็นต้นไป (ส่วนการ Upload) ใน executeIrysUpload เดิม
             try {
                 while (attempt <= maxRetries) {
                     try {
-                        if (useChunking && typeof irys.uploader?.chunkedUploader !== 'undefined') {
+                        // [FIXED] ตรวจสอบ Method ก่อนเรียกใช้เสมอ ป้องกัน Type Error (Cannot read properties of undefined)
+                        const hasChunkedAPI = useChunking && 
+                                              irys.uploader?.chunkedUploader && 
+                                              typeof irys.uploader.chunkedUploader.uploadData === 'function';
+
+                        if (hasChunkedAPI) {
                             if (typeof safeAppendLog === 'function') {
                                 safeAppendLog(`[IRYS TELEMETRY] Large file detected (${(size/1024/1024).toFixed(2)} MB). Activating Chunked Uploader...`, "text-blue-400");
                             }
-                            irys.uploader.chunkedUploader.setChunkSize(chunkSize);
-                            irys.uploader.chunkedUploader.setBatchSize(batchSize);
+                            
+                            // Safe Binding: เรียก setChunkSize เฉพาะเมื่อฟังก์ชันมีอยู่จริง (รองรับ Backward Compatibility)
+                            if (typeof irys.uploader.chunkedUploader.setChunkSize === 'function') {
+                                irys.uploader.chunkedUploader.setChunkSize(chunkSize);
+                            }
+                            if (typeof irys.uploader.chunkedUploader.setBatchSize === 'function') {
+                                irys.uploader.chunkedUploader.setBatchSize(batchSize);
+                            }
                             
                             const safeName = (isFile && payload.name) ? payload.name.replace(/[^a-zA-Z0-9]/g, '_') : 'payload';
                             const lastMod = (isFile && payload.lastModified) ? payload.lastModified : Date.now();
@@ -2146,6 +2177,10 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
                             receipt = await irys.uploader.chunkedUploader.uploadData(dataToUpload, { tags, uploadId });
                             
                         } else {
+                            // Fallback Standard Upload
+                            if (useChunking && typeof safeAppendLog === 'function') {
+                                safeAppendLog(`[IRYS TELEMETRY] Chunked API unavailable in this SDK iteration. Forcing standard byte-stream upload...`, "text-amber-400");
+                            }
                             if (progressCtrl && typeof progressCtrl.set === 'function') progressCtrl.set(size / 2);
                             receipt = await irys.upload(dataToUpload, { tags });
                         }
@@ -2368,16 +2403,15 @@ async function executeIrysTopUp(amountEthStr, triggerBtn = null) {
 
 
 // ==============================================================================
-// 📡 2. GATEWAY & DOM MAPPER (จัดการปุ่ม, สิทธิ์, และยัดค่าลง Input หน้าเว็บ)
+// 📡 2. GATEWAY & DOM MAPPER (HARDENED MIME CHECK)
 // ==============================================================================
 async function executeArchitectCentralizedUpload(type) {
-    // แมพ ID ปุ่มให้ตรงกับหน้า HTML (btnUploadFront / btnUploadBack)
     const btnId = type === 'front' ? 'btnUploadFront' : 'btnUploadBack';
     const btn = document.getElementById(btnId);
-    if (btn) toggleButtonLoading(btn, true);
+    if (btn && typeof toggleButtonLoading === 'function') toggleButtonLoading(btn, true);
 
-    if (!secureContract || !signer) { 
-        showNotification("Action suspended: Authenticate wallet signature first.", "error"); 
+    if (!window.secureContract || !window.signer) { 
+        if (typeof showNotification === 'function') showNotification("Action suspended: Authenticate wallet signature first.", "error"); 
         if (btn) toggleButtonLoading(btn, false);
         return; 
     }
@@ -2386,72 +2420,65 @@ async function executeArchitectCentralizedUpload(type) {
     let userAddress;
 
     try {
-        userAddress = await signer.getAddress();
-        privs = await verifyUserPrivileges(userAddress);
-
+        userAddress = await window.signer.getAddress();
+        privs = typeof verifyUserPrivileges === 'function' ? await verifyUserPrivileges(userAddress) : { isHolder: true }; // Fallback
+        
         const isArchitectOrOwner = Boolean(privs.isArchitect || privs.isOwner || privs.isAdmin);
         const isHolder = Boolean(privs.isHolder);
 
         if (!isArchitectOrOwner && !isHolder) {
-            showNotification("SECURITY ENFORCEMENT: Access strictly restricted to Sovereign Deed Holders.", "error");
-            safeAppendLog(`[SECURITY BLOCK] Unauthorized upload attempt by Non-Holder: ${userAddress}`, "text-red-500 font-bold");
+            if (typeof showNotification === 'function') showNotification("SECURITY ENFORCEMENT: Access strictly restricted to Sovereign Deed Holders.", "error");
+            if (typeof safeAppendLog === 'function') safeAppendLog(`[SECURITY BLOCK] Unauthorized upload attempt by Non-Holder: ${userAddress}`, "text-red-500 font-bold");
             if (btn) toggleButtonLoading(btn, false);
             return;
         }
-    } catch (err) {
-        showNotification("System Warning: Failed to verify user privileges.", "error");
-        if (btn) toggleButtonLoading(btn, false);
-        return;
-    }
 
-    if (window.SystemState.inspectedTokenId === null || window.SystemState.inspectedTokenId === undefined || isNaN(window.SystemState.inspectedTokenId)) {
-        showNotification("Enter a valid token ID in the Token Inspector first.", "error");
-        if (btn) toggleButtonLoading(btn, false);
-        return;
-    }
-    
-    const isArchitectOrOwner = Boolean(privs.isArchitect || privs.isOwner || privs.isAdmin);
-    
-    let ALLOWED_MIME_TYPES = 'image/*,video/*,audio/*,.mp3,.wav,.ogg,.m4a,.aac,.flac,.webm';
-    if (isArchitectOrOwner) {
-        ALLOWED_MIME_TYPES += ',text/html,.html,.htm';
-    }
+        if (window.SystemState.inspectedTokenId === null || window.SystemState.inspectedTokenId === undefined || isNaN(window.SystemState.inspectedTokenId)) {
+            if (typeof showNotification === 'function') showNotification("Enter a valid token ID in the Token Inspector first.", "error");
+            if (btn) toggleButtonLoading(btn, false);
+            return;
+        }
 
-    const file = await promptUserForFile(ALLOWED_MIME_TYPES);
-    
-    if (!file) {
-        safeAppendLog("[SYSTEM] File selection aborted by user.", "text-yellow-500");
-        if (btn) toggleButtonLoading(btn, false);
-        return;
-    }
+        let ALLOWED_MIME_TYPES = 'image/*,video/*,audio/*,.mp3,.wav,.ogg,.m4a,.aac,.flac,.webm';
+        if (isArchitectOrOwner) {
+            ALLOWED_MIME_TYPES += ',text/html,.html,.htm';
+        }
 
-    let mimeType = (file.type && file.type.trim() !== "") ? file.type.trim() : "";
-    const ext = file.name ? file.name.split('.').pop().toLowerCase() : '';
+        const file = await promptUserForFile(ALLOWED_MIME_TYPES);
+        
+        if (!file) {
+            if (typeof safeAppendLog === 'function') safeAppendLog("[SYSTEM] File selection aborted by user.", "text-yellow-500");
+            if (btn) toggleButtonLoading(btn, false);
+            return;
+        }
 
-    if (!mimeType || mimeType === "application/octet-stream") {
+        // [FIXED] การบังคับ Normalize MIME Type เพื่อป้องกัน Browser คืนค่าว่าง
+        let mimeType = (file.type && file.type.trim() !== "") ? file.type.trim() : "";
+        const ext = file.name ? file.name.split('.').pop().toLowerCase() : '';
+
         const mimeMap = {
             'html': 'text/html', 'htm': 'text/html', 'mp3': 'audio/mpeg', 'wav': 'audio/wav',
             'ogg': 'audio/ogg', 'm4a': 'audio/mp4', 'aac': 'audio/aac', 'flac': 'audio/flac',
-            'webm': 'audio/webm', 'mp4': 'video/mp4', 'png': 'image/png', 'jpg': 'image/jpeg',
+            'webm': 'video/webm', 'mp4': 'video/mp4', 'png': 'image/png', 'jpg': 'image/jpeg',
             'jpeg': 'image/jpeg', 'gif': 'image/gif', 'svg': 'image/svg+xml', 'json': 'application/json'
         };
-        mimeType = mimeMap[ext] || "application/octet-stream";
-    }
 
-    const isHtmlPayload = (mimeType === 'text/html' || ext === 'html' || ext === 'htm');
-    if (isHtmlPayload && !isArchitectOrOwner) {
-        showNotification("SECURITY VIOLATION: HTML/DApp payload is strictly restricted to ARCHITECT and OWNER.", "error");
-        safeAppendLog(`[SECURITY ALERT] Intercepted HTML upload attempt by Holder: ${userAddress}`, "text-red-500 font-bold");
-        if (btn) toggleButtonLoading(btn, false);
-        return;
-    }
+        if (!mimeType || mimeType === "application/octet-stream" || mimeType === "public.html") {
+            mimeType = mimeMap[ext] || "application/octet-stream";
+        }
 
-    let progress = null;
-    
-    try {
-        if (!irys) await ensureIrysReady();
+        const isHtmlPayload = (mimeType === 'text/html' || ext === 'html' || ext === 'htm');
+        if (isHtmlPayload && !isArchitectOrOwner) {
+            if (typeof showNotification === 'function') showNotification("SECURITY VIOLATION: HTML/DApp payload is strictly restricted to ARCHITECT and OWNER.", "error");
+            if (typeof safeAppendLog === 'function') safeAppendLog(`[SECURITY ALERT] Intercepted HTML upload attempt by Holder: ${userAddress}`, "text-red-500 font-bold");
+            if (btn) toggleButtonLoading(btn, false);
+            return;
+        }
+
+        let progress = null;
+        if (!window.irys) await ensureIrysReady();
         
-        safeAppendLog(`Streaming ${type} payload for Token #${window.SystemState.inspectedTokenId} to Irys Datachain...`, "text-blue-400");
+        if (typeof safeAppendLog === 'function') safeAppendLog(`Streaming ${type} payload for Token #${window.SystemState.inspectedTokenId} to Irys Datachain...`, "text-blue-400");
         
         const tags = [
             { name: "Content-Type", value: mimeType },
@@ -2459,10 +2486,9 @@ async function executeArchitectCentralizedUpload(type) {
             { name: "Token-Id", value: String(window.SystemState.inspectedTokenId) }
         ];
         
-        progress = createProgressController(file.size);
+        progress = typeof createProgressController === 'function' ? createProgressController(file.size) : null;
         if (progress) progress.show();
         
-        // ส่ง btn (ปุ่มที่ถูกกด) เข้าไปให้ executeIrysUpload จัดการสถานะ Loading
         const response = await executeIrysUpload(file, tags, true, progress, btn);
         const txId = response?.data?.id || response?.id; 
         
@@ -2471,36 +2497,34 @@ async function executeArchitectCentralizedUpload(type) {
         }
 
         const sanitizedTxId = sanitizeForDOM(txId);
-        safeAppendLog(`Payload successfully anchored: ${sanitizedTxId} [MIME: ${mimeType}]`, "text-emerald-400 font-bold");
+        if (typeof safeAppendLog === 'function') safeAppendLog(`Payload successfully anchored: ${sanitizedTxId} [MIME: ${mimeType}]`, "text-emerald-400 font-bold");
         
-        // แมพค่ากลับไปที่ Input Fields หน้าเว็บให้ตรงเป๊ะ
         if (type === 'front') {
             const frontUriField = document.getElementById('forgeFrontUri');
             const updateFrontField = document.getElementById('updateFrontUriInput');
             if (frontUriField) frontUriField.value = sanitizedTxId;
             if (updateFrontField) updateFrontField.value = sanitizedTxId;
-            currentLoadedMediaData.front = sanitizedTxId;
-            renderToViewport('previewFrontContainer', sanitizedTxId, "Obverse aspect currently unassigned.", mimeType);
+            window.SystemState.currentLoadedMediaData.front = sanitizedTxId;
+            if (typeof renderToViewport === 'function') renderToViewport('previewFrontContainer', sanitizedTxId, "Obverse aspect currently unassigned.", mimeType);
         } else if (type === 'back') {
             const backUriField = document.getElementById('forgeBackUri');
             const updateBackField = document.getElementById('updateBackUriInput');
             if (backUriField) backUriField.value = sanitizedTxId;
             if (updateBackField) updateBackField.value = sanitizedTxId;
-            currentLoadedMediaData.back = sanitizedTxId;
-            renderToViewport('previewBackContainer', sanitizedTxId, "Reverse diagnostic data trace is currently null.", mimeType);
+            window.SystemState.currentLoadedMediaData.back = sanitizedTxId;
+            if (typeof renderToViewport === 'function') renderToViewport('previewBackContainer', sanitizedTxId, "Reverse diagnostic data trace is currently null.", mimeType);
         }
-        showNotification(`${type.toUpperCase()} payload streamed successfully for Token #${window.SystemState.inspectedTokenId}.`, "success");
+        if (typeof showNotification === 'function') showNotification(`${type.toUpperCase()} payload streamed successfully for Token #${window.SystemState.inspectedTokenId}.`, "success");
+
     } catch (err) {
         const errMsg = err?.message || "Unknown error occurred during upload.";
-        safeAppendLog(`Upload failed: ${errMsg}`, "text-red-500");
-        showNotification(`Upload failed: ${errMsg}`, "error");
+        if (typeof safeAppendLog === 'function') safeAppendLog(`Upload failed: ${errMsg}`, "text-red-500");
+        if (typeof showNotification === 'function') showNotification(`Upload failed: ${errMsg}`, "error");
     } finally {
         if (progress) progress.hide();
         if (btn) toggleButtonLoading(btn, false);
     }
 }
-
-
 
 // ==============================================================================
 // 📡 5. PROGRESS BAR CONTROLLER (แมพกับหลอดโหลดหน้าเว็บ)
