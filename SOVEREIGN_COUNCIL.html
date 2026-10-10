@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>THE IMPERIAL SOVEREIGN DEED - Sacred Gold Crystal [PRODUCTION READY]</title>
+    <!-- Web Font for Elder Futhark Runes -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Runic&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            width: 100vw; height: 100vh;
+            overflow: hidden;
+            background-color: #050402;
+            font-family: sans-serif;
+        }
+        #canvas-container { width: 100%; height: 100%; outline: none; }
+        /* ===== COUNCIL ON-CHAIN HUD ===== */
+        #deed-badge { position: fixed; top: 12px; left: 12px; z-index: 50; display: none; align-items: center; gap: 8px;
+            padding: 6px 10px; border-radius: 10px; border: 1px solid rgba(255,200,60,.6);
+            background: rgba(10,7,2,.88); font: 700 11px/1 monospace; color: #cbb98a; letter-spacing: .08em; }
+        #deed-badge b { color: #ffd34d; letter-spacing: .12em; }
+        #deed-dot { width: 8px; height: 8px; border-radius: 50%; background: #ffd34d; }
+        #onchain-panel { position: fixed; left: 50%; bottom: 12px; transform: translateX(-50%); z-index: 50; display: none;
+            width: min(94vw, 340px); padding: 10px; border-radius: 14px; border: 1px solid rgba(255,200,60,.45);
+            background: rgba(10,7,2,.88); font: 11px/1.3 monospace; color: #cbb98a; }
+        #onchain-panel .row { display: flex; justify-content: space-between; align-items: center; gap: 8px;
+            padding: 5px 8px; margin-top: 4px; border-radius: 6px; background: rgba(255,200,60,.06); }
+        #onchain-panel .row:first-child { margin-top: 0; }
+        #onchain-panel .tag { color: #ffd34d; border: 1px solid rgba(255,200,60,.5); border-radius: 4px; padding: 0 4px; font-size: 9px; margin-left: 4px; }
+        #onchain-panel .vault { border: 1px solid rgba(255,200,60,.35); background: rgba(255,170,0,.08); border-radius: 8px; padding: 6px 8px; margin-top: 6px; }
+        #onchain-panel .eth { color: #7dffb0; font-weight: 700; }
+        #onchain-panel .val { color: #ffe08a; font-weight: 700; }
+        #onchain-status { margin-top: 4px; font-size: 9px; color: #8a7a55; text-align: center; }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
+    <!-- Core Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    
+    <!-- Post-Processing Pipeline -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+</head>
+<body>
+
+    <div id="canvas-container" role="img" aria-label="3D Sacred Gold Crystal with Vertical Runes">
+        <noscript>
+            <div style="color: #ffd700; text-align: center; padding: 20px;">
+                WebGL requires JavaScript to be enabled in your browser.
+            </div>
+        </noscript>
+    </div>
+
+    <div id="deed-badge"><span id="deed-dot"></span><span>DEED: <b id="deed-badge-id">#---</b></span></div>
+    <div id="onchain-panel">
+        <div class="row"><span>ID:</span><span class="val"><span id="oc-id">-</span><span class="tag" id="oc-tag">COUNCIL</span></span></div>
+        <div class="row"><span>OWNER:</span><span class="val" id="oc-owner">...</span></div>
+        <div class="vault">
+            <div class="row" style="background:none;padding:0;margin:0"><span class="val" id="oc-vault-label">TBA TREASURY</span><span class="eth" id="oc-eth">0.0000 ETH</span></div>
+            <div class="row" style="background:none;padding:4px 0 0;margin:4px 0 0;border-top:1px solid rgba(255,200,60,.2)"><span id="oc-vault-addr-label">VAULT ADDR:</span><span class="val" id="oc-vault-addr">...</span></div>
+        </div>
+        <div id="onchain-status">LOADING ON-CHAIN DATA...</div>
+    </div>
+
+    <script>
+        // 1. SAFE RENDERER INITIALIZATION
+        function initRenderer(containerId) {
+            const container = document.getElementById(containerId);
+            if (!container) return null;
+
+            let rendererInstance;
+            try {
+                rendererInstance = new THREE.WebGLRenderer({ 
+                    antialias: true, 
+                    powerPreference: "high-performance",
+                    failIfMajorPerformanceCaveat: false 
+                });
+            } catch (error) {
+                console.error("[WebGL Error]", error);
+                return null;
+            }
+
+            rendererInstance.setSize(window.innerWidth, window.innerHeight);
+            rendererInstance.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            // [RULE: Tone Mapping] ป้องกันสี Clipping 
+            rendererInstance.toneMapping = THREE.ACESFilmicToneMapping;
+            rendererInstance.toneMappingExposure = 1.15; 
+            
+            container.appendChild(rendererInstance.domElement);
+            return rendererInstance;
+        }
+
+        const renderer = initRenderer('canvas-container');
+
+        // 2. SCENE ARCHITECTURE 
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x050402);
+        scene.fog = new THREE.FogExp2(0x050402, 0.04);
+
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(0, 0, 7.5);
+
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.04;
+        controls.minDistance = 3;
+        controls.maxDistance = 15;
+
+        // 3. MICRO-SURFACE NOISE (Procedural Generator)
+        function createNoiseTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512; // Optimize จาก 1024 เป็น 512 เพื่อลด VRAM โดยไม่เสีย Detail ในระดับ Micro
+            canvas.height = 512;
+            const ctx = canvas.getContext('2d');
+            const imgData = ctx.createImageData(512, 512);
+            const data = imgData.data;
+            
+            for (let i = 0; i < data.length; i += 4) {
+                const val = Math.floor(Math.random() * 255);
+                data[i] = val; data[i+1] = val; data[i+2] = val; data[i+3] = 255;
+            }
+            ctx.putImageData(imgData, 0, 0);
+            
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.wrapS = THREE.RepeatWrapping;
+            texture.wrapT = THREE.RepeatWrapping;
+            texture.repeat.set(5, 5);
+            return texture;
+        }
+        const noiseTexture = createNoiseTexture();
+
+        // 4. PERFECT UV MASK ALIGNMENT
+        function createSymbolMask(rendererInstance) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 2048;
+            canvas.height = 2048;
+            const ctx = canvas.getContext('2d');
+
+            const word1 = ['ᚨ', 'ᛒ', 'ᛋ', 'ᛟ', 'ᛚ', 'ᚢ', 'ᛏ', 'ᛖ'];
+            const word2 = ['ᛋ', 'ᚢ', 'ᚹ', 'ᛖ', 'ᚱ', 'ᛖ', 'ᛁ', 'ᚾ', 'ᛏ', 'ᛁ'];
+
+            function renderVerticalRunes() {
+                ctx.fillStyle = '#000000';
+                ctx.fillRect(0, 0, 2048, 2048);
+
+                ctx.fillStyle = '#ffffff';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.font = '700 72px "Noto Sans Runic", sans-serif';
+
+                // X = 512 และ X = 1536 ตกจุดกึ่งกลาง UV Facet ของ Octahedron พอดี
+                const columnXPositions = [512, 1536];
+                const stepY = 80;
+                const totalUnits = word1.length + 1.5 + word2.length;
+                const startY = 1024 - (totalUnits * stepY) / 2 + stepY / 2;
+
+                columnXPositions.forEach((cx) => {
+                    let currentY = startY;
+                    for (let i = 0; i < word1.length; i++) {
+                        ctx.fillText(word1[i], cx, currentY);
+                        currentY += stepY;
+                    }
+                    currentY += stepY * 1.5;
+                    for (let i = 0; i < word2.length; i++) {
+                        ctx.fillText(word2[i], cx, currentY);
+                        currentY += stepY;
+                    }
+                });
+            }
+
+            renderVerticalRunes();
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.anisotropy = rendererInstance.capabilities.getMaxAnisotropy();
+            texture.wrapS = THREE.RepeatWrapping;
+            texture.wrapT = THREE.RepeatWrapping;
+            
+            if (document.fonts) {
+                document.fonts.ready.then(() => { renderVerticalRunes(); texture.needsUpdate = true; });
+            }
+            return texture;
+        }
+        const symbolMask = createSymbolMask(renderer);
+
+        // 5. OPTICS & PHYSICS PBR (CORRECTED)
+        const crystalGeo = new THREE.OctahedronGeometry(1.6, 0);
+        crystalGeo.scale(0.85, 2.2, 0.85);
+
+        const outerMat = new THREE.MeshPhysicalMaterial({
+            color: 0x1a1205,
+            metalness: 0.0,         // [RULE: Strict 0.0] แก้วโปร่งแสงตามหลัก PBR ต้องไม่มีค่าโลหะ
+            roughness: 0.8,
+            roughnessMap: noiseTexture,
+            bumpMap: noiseTexture,
+            bumpScale: 0.005,       // ลด Bump ลงเล็กน้อยเพื่อรักษาความคมของอักขระ
+            
+            clearcoat: 1.0,         // [RULE: 1.0] เงาสะท้อนระดับไมครอน
+            clearcoatRoughness: 0.05,
+            
+            transmission: 0.85,     // ปล่อยแสงทะลุ 85%
+            thickness: 3.2,
+            ior: 1.8,               // IOR ของอัญมณีคุณภาพสูง (แก้วคริสตัล)
+            transparent: true,
+            side: THREE.DoubleSide,
+            
+            emissiveMap: symbolMask,
+            emissive: new THREE.Color(0xffb700),
+            emissiveIntensity: 6.0,
+        });
+
+        const crystal = new THREE.Mesh(crystalGeo, outerMat);
+        scene.add(crystal);
+
+        // CORE
+        const coreGeo = new THREE.OctahedronGeometry(0.38, 0);
+        coreGeo.scale(0.85, 2.2, 0.85);
+        const coreMat = new THREE.MeshStandardMaterial({ 
+            color: 0x2b1a00,
+            emissive: 0xffaa00,
+            emissiveIntensity: 3,
+            roughness: 0.15,
+            metalness: 0.95
+        });
+        const innerCore = new THREE.Mesh(coreGeo, coreMat);
+        crystal.add(innerCore);
+
+        // 6. LIGHTING ARCHITECTURE (Inverse-Square Control)
+        const ambientLight = new THREE.AmbientLight(0x281a0a, 0.6); // ลด Ambient เพื่อดึง Contrast
+        scene.add(ambientLight);
+
+        const mainLight = new THREE.DirectionalLight(0xfff5cc, 2.0);
+        mainLight.position.set(5, 10, 5);
+        scene.add(mainLight);
+
+        const rimLight1 = new THREE.SpotLight(0xffaa00, 4.0, 0, Math.PI / 4, 0.5, 2);
+        rimLight1.position.set(-5, 0, -5);
+        rimLight1.lookAt(0, 0, 0);
+        scene.add(rimLight1);
+        
+        const rimLight2 = new THREE.SpotLight(0xffe066, 2.5, 0, Math.PI / 4, 0.5, 2);
+        rimLight2.position.set(5, -5, -2);
+        rimLight2.lookAt(0, 0, 0);
+        scene.add(rimLight2);
+
+        const internalLight = new THREE.PointLight(0xff8c00, 1.2, 3);
+        crystal.add(internalLight);
+
+        // 7. POST-PROCESSING (OPTIMIZED BLOOM)
+        const renderScene = new THREE.RenderPass(scene, camera);
+        const bloomPass = new THREE.UnrealBloomPass(
+            new THREE.Vector2(window.innerWidth, window.innerHeight),
+            1.2,    // Strength: พอดี ไม่ฟุ้งกลืนขอบ
+            0.4,    // Radius
+            0.85    // Threshold: [RULE] > 0.75 บังคับให้ Bloom เฉพาะ Core และ รูน เท่านั้น ขอบคริสตัลจะคมชัด
+        );
+
+        const composer = new THREE.EffectComposer(renderer);
+        composer.addPass(renderScene);
+        composer.addPass(bloomPass);
+
+        // 7.5 GOLD PARTICLE RINGS (เทียบเท่าวงแหวนของคริสตัล Standard)
+        function makeRing(radius, count, size, tiltX, tiltZ, color) {
+            const pos = new Float32Array(count * 3);
+            for (let i = 0; i < count; i++) {
+                const a = (i / count) * Math.PI * 2 + (Math.random() - 0.5) * 0.04;
+                const r = radius + (Math.random() - 0.5) * 0.35;
+                pos[i * 3]     = Math.cos(a) * r;
+                pos[i * 3 + 1] = (Math.random() - 0.5) * 0.12;
+                pos[i * 3 + 2] = Math.sin(a) * r;
+            }
+            const geo = new THREE.BufferGeometry();
+            geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+            const mat = new THREE.PointsMaterial({ color: color, size: size, transparent: true, opacity: 0.9, depthWrite: false });
+            const pts = new THREE.Points(geo, mat);
+            pts.rotation.x = tiltX;
+            pts.rotation.z = tiltZ;
+            scene.add(pts);
+            return pts;
+        }
+        const ringA = makeRing(2.6, 900, 0.035, 0.35, 0.15, 0xffd34d);
+        const ringB = makeRing(3.1, 700, 0.03, -0.45, -0.2, 0xffb700);
+
+        // 8. ANIMATION LOOP
+        const clock = new THREE.Clock();
+        function animate() {
+            requestAnimationFrame(animate);
+            const time = clock.getElapsedTime();
+
+            crystal.rotation.y += 0.005;
+            ringA.rotation.y += 0.0025;
+            ringB.rotation.y -= 0.0018;
+            
+            // Resonance
+            const pulse = (Math.sin(time * 2.0) + 1) * 0.5; 
+            outerMat.emissiveIntensity = 2.0 + (pulse * 4.0); 
+            internalLight.intensity = 1.0 + (pulse * 1.5);
+            coreMat.emissiveIntensity = 1.5 + (pulse * 2.0);
+
+            controls.update();
+            composer.render();
+        }
+        animate();
+
+        // 9. RESIZE HANDLER
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            composer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+
+    <script>
+    // ==========================================================
+    // COUNCIL (111–999) ON-CHAIN HUD — อ่านอย่างเดียว ไม่มีการเซ็นธุรกรรม
+    // เลข Token มาจาก ?token= แล้วถูกตรวจว่าเป็น Council 111–999 เท่านั้น
+    // ==========================================================
+    (function () {
+        const CONTRACT = "0x06040F2e5301B2616491E113962A84d372b8f600"; // V18
+        const RPC = "https://mainnet.base.org";
+        const ABI = [
+            "function getDeedData(uint256 t) view returns (address sovereignOwner, bool sovereignActive, bool absoluteSovereigntyStatus, string sovereignFront, string sovereignBack, string sovereignVideo, string sovereignIdentity, string sovereignHidden, address sovereignTba)"
+        ];
+        const raw = new URLSearchParams(location.search).get("token") || "";
+        const id = /^\d{3}$/.test(raw) ? Number(raw) : 0;
+        const valid = id >= 111 && id <= 999 && id % 111 === 0;
+        if (!valid) return; // ไม่มี token ที่ถูกต้อง = ไม่แสดงแผง (ใช้เป็นภาพคริสตัลเฉยๆ)
+
+        const $ = (k) => document.getElementById(k);
+        const short = (a) => a && a.length >= 42 ? a.slice(0, 6) + "..." + a.slice(38) : "-";
+        $("deed-badge").style.display = "flex";
+        $("onchain-panel").style.display = "block";
+        $("deed-badge-id").textContent = "#" + id;
+        $("oc-id").textContent = "#" + id;
+
+        async function load() {
+            if (typeof ethers === "undefined") { $("onchain-status").textContent = "ETHERS NOT LOADED"; return; }
+            const provider = new ethers.JsonRpcProvider(RPC);
+            const contract = new ethers.Contract(CONTRACT, ABI, provider);
+            let d = null, err = null;
+            for (let i = 0; i < 3; i++) {
+                try { d = await contract.getDeedData(String(id)); err = null; break; }
+                catch (e) { err = e; await new Promise((r) => setTimeout(r, 1200 * (i + 1))); }
+            }
+            if (!d) { $("onchain-status").textContent = "RPC ERROR — RELOAD TO RETRY"; console.warn(err); return; }
+            const owner = d[0], active = Boolean(d[1]), tba = d[8];
+            $("oc-owner").textContent = short(owner);
+            $("oc-tag").textContent = active ? "COUNCIL" : "INACTIVE";
+            let eth = "0.0000", deployed = false;
+            if (tba && tba !== ethers.ZeroAddress) {
+                try { eth = parseFloat(ethers.formatEther(await provider.getBalance(tba))).toFixed(4); } catch (_) {}
+                try { const c = await provider.getCode(tba); deployed = !!c && c !== "0x"; } catch (_) {}
+                $("oc-vault-addr").textContent = short(tba);
+            } else {
+                $("oc-vault-addr").textContent = "-";
+            }
+            $("oc-eth").textContent = eth + " ETH";
+            $("oc-vault-label").textContent = deployed ? "TBA TREASURY" : "TBA RESERVED";
+            $("oc-vault-addr-label").textContent = deployed ? "VAULT ADDR:" : "NOT DEPLOYED:";
+            $("onchain-status").textContent = "ON-CHAIN DATA SYNCED";
+        }
+        load();
+    })();
+    </script>
+</body>
+</html>

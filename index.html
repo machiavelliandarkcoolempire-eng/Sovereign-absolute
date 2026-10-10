@@ -869,6 +869,8 @@ const DEFAULT_FRONT_URI = "https://gateway.irys.xyz/h7htGqvcxcaBF7RGj94s1GBucfAK
 const ASSET_3D_STANDARD = "https://raw.githubusercontent.com/YOUR_ORG/YOUR_REPO/main/3d-standard.glb";
 const ASSET_3D_COUNCIL = "https://raw.githubusercontent.com/YOUR_ORG/YOUR_REPO/main/3d-council.glb";
 const ASSET_3D_SOVEREIGN = "https://raw.githubusercontent.com/YOUR_ORG/YOUR_REPO/main/3d-sovereign.glb";
+const URL_3D_STANDARD = ASSET_3D_STANDARD;
+const URL_3D_COUNCIL = ASSET_3D_COUNCIL;
 const WETH_ADDRESS = "0x4200000000000000000000000000000000000006";
 const MULTICALL3_ADDRESS = "0xcA11bde05977b3631167028862bE2a173976CA11";
 
@@ -876,39 +878,20 @@ const MULTICALL3_ADDRESS = "0xcA11bde05977b3631167028862bE2a173976CA11";
 // ==============================================================================
 // 🌐 CANVAS ENGINE FILE CONFIGURATION (SAME DIRECTORY / GITHUB ROOT)
 // ==============================================================================
-const CANVAS_IDLE_MODE2 = "./SOVEREIGN_AWAKENING.html"; // สำหรับช่อง 2 (ตอนยังไม่มีคนกดดู Token)
-const CANVAS_PREVIEW_MODE3 = "./SOVEREIGNTY.html";          // สำหรับช่อง 3 (3D เพียวๆ ตลอดเวลา)
-
-// ------------------------------------------------------------------------------
-// 🎯 3D RENDERING ROUTER FOR MEDIA BOXES 1, 2, 3
-// ------------------------------------------------------------------------------
-
-// [ช่องที่ 1]: Mode 1 (Image + Video) -> คงเดิมไว้ ไม่แตะต้องตามคำขอ
-// [ช่องที่ 2]: Mode 2 (Flip 180° Image + 3D) 
-function renderMediaBox2(selectedTokenId, deedData) {
-    const box2Container = document.getElementById("media-box-2");
-    if (!box2Container) return;
-
-    // ถ้าไม่มีคนกดเลือก Token ID ให้ Fallback แสดง 3D SOVEREIGN_AWAKENING.html
-    if (!selectedTokenId) {
-        box2Container.innerHTML = `<iframe src="${CANVAS_IDLE_MODE2}" sandbox="allow-scripts allow-same-origin" style="width:100%; height:100%; border:none;"></iframe>`;
-        return;
-    }
-
-    // กรณีมีคนกดเลือก Token ID -> เรนเดอร์การ์ดพลิก 180 (ด้านหน้า รูปภาพ / ด้านหลัง 3D)
-    // ใช้ resolveDeterministic3DAsset ดึง URI 3D On-Chain มาโชว์
-    renderFlipCardBox2(selectedTokenId, deedData);
+// 👉 ใส่ที่อยู่ GitHub Pages ของท่านตรงนี้ (ต้องลงท้ายด้วย /) เช่น "https://ชื่อท่าน.github.io/ชื่อrepo/"
+// ถ้าปล่อย "./" = ดึงจากโฟลเดอร์เดียวกับ index.html
+const CANVAS_BASE = "./";
+const CANVAS_IDLE_MODE2 = CANVAS_BASE + "SOVEREIGN_AWAKENING.html"; // สำหรับช่อง 2 (ตอนยังไม่มีคนกดดู Token)
+const CANVAS_PREVIEW_MODE3 = CANVAS_BASE + "SOVEREIGNTY.html";  // ช่อง 3: แสดงตลอด ไม่เปลี่ยนตาม token
+// ยาน Council: มีไฟล์เฉพาะ 5 ใบตามเอกสาร handoff (SHIP_1111/2222/3333/4444/5555.html)
+const SHIP_TOKEN_IDS = [1111, 2222, 3333, 4444, 5555];
+function pick3DFile(tokenId) {
+    const id = Number(tokenId);
+    if (SHIP_TOKEN_IDS.includes(id)) return `${CANVAS_BASE}SHIP_${id}.html`;
+    // Council 111–999 = คริสตัลทอง (ไฟล์ C_rings.html เปลี่ยนชื่อเป็น SOVEREIGN_COUNCIL.html ก่อนอัปโหลด)
+    if (isCouncilToken(id)) return CANVAS_BASE + "SOVEREIGN_COUNCIL.html?token=" + id;
+    return CANVAS_BASE + "SOVEREIGN_AWAKENING.html";
 }
-
-// [ช่องที่ 3]: Mode 3 (3D Only - Non Flip)
-function renderMediaBox3() {
-    const box3Container = document.getElementById("media-box-3");
-    if (!box3Container) return;
-
-    // แสดงตัวอย่าง NFT 3D จาก SOVEREIGNTY.html ตลอดเวลา ไม่มีสลับการ์ด
-    box3Container.innerHTML = `<iframe src="${CANVAS_PREVIEW_MODE3}" sandbox="allow-scripts allow-same-origin" style="width:100%; height:100%; border:none;"></iframe>`;
-}
-
 
 const ARWEAVE_GATEWAYS = [
     "https://gateway.irys.xyz/",
@@ -1826,7 +1809,7 @@ async function triggerForge(type, e) {
             GLOBAL_NODE_CACHE.clear();
             appendLog(`THE_SOVEREIGN_AWAKENING minted ${tokenIds.map((id) => `#${id}`).join(", ")}.`, "text-emerald-400 font-bold");
             await syncContractStates();
-            await window.inspectTokenFromInput?.(tokenIds[0]);
+            await window.inspectTokenFromInput?.(tokenIds[0], { expectActive: true });
         }
         return receipt;
     } catch (error) {
@@ -3490,8 +3473,9 @@ function setupRealTimeEvents() {
             
             // [DETERMINISTIC FIX]: Use inspectTokenFromInput instead of auditTokenFromLedger
             // This updates the visual display without wiping the user's input fields.
-            if (window.SystemState.inspectedTokenId && String(tokenId) === String(window.SystemState.inspectedTokenId)) {
-                await window.inspectTokenFromInput(window.SystemState.inspectedTokenId);
+            const noneInspected = !window.SystemState.inspectedTokenId;
+            if (noneInspected || String(tokenId) === String(window.SystemState.inspectedTokenId)) {
+                await window.inspectTokenFromInput(tokenId, { expectActive: true });
             }
         } catch (error) {
             appendLog(`[EVENT] Refresh failed: ${error.message}`, "text-amber-500");
@@ -4379,7 +4363,7 @@ window.deployTBAForToken = async function (tokenId) {
         if (receipt) {
             GLOBAL_NODE_CACHE?.delete?.(String(id));
             // [DETERMINISTIC FIX]: Call auditTokenFromLedger to reveal new TBA in Vault
-            await window.auditTokenFromLedger(id);
+            await window.auditTokenFromLedger(id, { expectActive: true });
             await window.refreshWalletPortfolio();
         }
         return receipt;
@@ -4491,86 +4475,144 @@ const renderFlipCanvas = (content, frontUri, backUri, backType, title) => {
 };
 
 // ==============================================================================
-// 🛡️ SECURE MEDIA PREVIEW RENDERER (XSS & CRASH PROOF)
+// 🎴 3-BOX MEDIA PREVIEW (BOX1 = IMAGE+VIDEO FLIP, BOX2 = IMAGE+3D FLIP, BOX3 = 3D ONLY)
 // ==============================================================================
-const renderDeedMediaPreview = async (data, tokenId) => {
-    const canvas = document.getElementById("mediaPreviewCanvas");
-    const legacyGrid = document.getElementById("legacyMediaPreviewGrid");
-    const mediaLabel = document.getElementById("mediaPreviewTokenLabel");
-    const content = document.getElementById("mediaPreviewCanvasContent");
-    const title = document.getElementById("mediaPreviewCanvasTitle");
-    
-    if (!content || !title) return;
+const _mkIframe = (src) => {
+    const f = document.createElement("iframe");
+    f.src = src;
+    f.setAttribute("sandbox", "allow-scripts allow-same-origin");
+    f.setAttribute("loading", "lazy");
+    f.style.cssText = "width:100%;height:100%;border:none;background:#000;";
+    return f;
+};
 
-    // เปิดหน้าจอ Dynamic Canvas (โชว์ปุ่ม Flip Card) และซ่อนตาราง 3 ช่องแบบเก่า
-    if (canvas) canvas.classList.remove("hidden");
-    if (legacyGrid) legacyGrid.classList.add("hidden");
+// ไฟล์ 3D ล็อกเลข token ไว้ในตัวเอง (ไม่อ่านจาก URL) จึงเลือกไฟล์ตามเลข token เท่านั้น
+const _canvasUrl = (base, tokenId) => (tokenId ? pick3DFile(tokenId) : base);
+
+let _faceSeq = 0;
+// สร้างการ์ดพลิก 180° ในกล่อง host: หน้า = รูปภาพเสมอ, หลัง = video | 3D
+function buildFlipCard(host, frontUri, back, labels) {
+    if (!host) return;
+    host.replaceChildren();
+    host.style.padding = "0";
+    host.style.perspective = "1400px";
+
+    const card = document.createElement("div");
+    card.style.cssText = "position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform 700ms cubic-bezier(.2,.7,.2,1);";
+
+    const face = (rot) => {
+        const d = document.createElement("div");
+        d.style.cssText = `position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;overflow:hidden;border-radius:0.75rem;background:#000;transform:rotateY(${rot}deg);`;
+        const vp = document.createElement("div");
+        vp.id = `flipface-${++_faceSeq}`;
+        vp.className = "flex h-full w-full items-center justify-center overflow-hidden";
+        d.appendChild(vp);
+        card.appendChild(d);
+        return { d, vp };
+    };
+
+    const f = face(0), b = face(180);
+
+    // หน้า: รูปภาพเสมอ
+    renderToViewport(f.vp.id, frontUri || DEFAULT_FRONT_URI, "NO FRONT IMAGE", "direct-image");
+
+    // หลัง
+    if (back.kind === "iframe") {
+        b.vp.appendChild(_mkIframe(back.src));
+    } else if (back.kind === "video") {
+        renderToViewport(b.vp.id, back.uri, "NO VIDEO", "direct-video");
+    } else {
+        renderToViewport(b.vp.id, back.uri, "NO BACK IMAGE", "direct-image");
+    }
+
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.textContent = labels.toBack;
+    btn.style.cssText = "position:absolute;left:50%;bottom:8px;transform:translateX(-50%);z-index:30;padding:6px 14px;border-radius:8px;border:1px solid #b45309;background:rgba(0,0,0,.85);color:#fcd34d;font:700 10px monospace;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;";
+    let flipped = false;
+    b.d.style.pointerEvents = "none";
+    btn.addEventListener("click", () => {
+        flipped = !flipped;
+        card.style.transform = flipped ? "rotateY(180deg)" : "rotateY(0deg)";
+        btn.textContent = flipped ? labels.toFront : labels.toBack;
+        f.d.style.pointerEvents = flipped ? "none" : "auto";
+        b.d.style.pointerEvents = flipped ? "auto" : "none";
+    });
+
+    host.append(card, btn);
+}
+
+// กล่อง 3: 3D เพียวๆ ไม่พลิก แสดงตลอด
+function renderMediaBox3() {
+    const host = document.getElementById("previewVideoContainer");
+    if (!host) return;
+    // วาดครั้งเดียว แล้วไม่แตะอีก (ไม่ให้รีโหลดทุกครั้งที่ค้นหา token)
+    if (host.dataset.mode3Ready === "1") return;
+    host.replaceChildren();
+    host.style.padding = "0";
+    host.style.perspective = "none";
+    host.appendChild(_mkIframe(CANVAS_PREVIEW_MODE3));
+    host.dataset.mode3Ready = "1";
+}
+
+// สถานะเริ่มต้น (ยังไม่เลือก token)
+function initMediaBoxes() {
+    const g = document.getElementById("mediaPreviewCanvas");
+    if (g) g.classList.add("hidden");
+    const grid = document.getElementById("legacyMediaPreviewGrid");
+    if (grid) grid.classList.remove("hidden");
+
+    buildFlipCard(document.getElementById("previewFrontContainer"), DEFAULT_FRONT_URI,
+        { kind: "video", uri: "" }, { toBack: "SHOW VIDEO", toFront: "SHOW IMAGE" });
+    const box2 = document.getElementById("previewBackContainer");
+    if (box2) {
+        box2.replaceChildren();
+        box2.style.padding = "0";
+        box2.style.perspective = "none";
+        box2.appendChild(_mkIframe(CANVAS_IDLE_MODE2));
+    }
+    renderMediaBox3();
+}
+
+const renderDeedMediaPreview = async (data, tokenId) => {
+    const mediaLabel = document.getElementById("mediaPreviewTokenLabel");
+    const canvas = document.getElementById("mediaPreviewCanvas");
+    const grid = document.getElementById("legacyMediaPreviewGrid");
+    if (canvas) canvas.classList.add("hidden");
+    if (grid) grid.classList.remove("hidden");
     if (mediaLabel) mediaLabel.textContent = `DEED #${tokenId} • ACTIVE ON-CHAIN MEDIA`;
 
-    content.replaceChildren();
-
     const front = (data?.sovereignFront || "").trim();
-    const back = (data?.sovereignBack || "").trim();
     const video = (data?.sovereignVideo || "").trim();
 
-    const [frontType, backType] = await Promise.all([
-        front ? guessMediaTypeAdvanced(front) : Promise.resolve('image'),
-        back ? guessMediaTypeAdvanced(back) : Promise.resolve('image')
-    ]);
-
-    // 🚨 [SECURITY ENFORCEMENT 1]: Block XSS/HTML/GLB on Front URI
-    if (front && (frontType === 'video' || frontType === 'model' || is3DMediaUri(front))) {
-        title.textContent = "⚠ SECURITY OVERRIDE: INVALID FRONT MEDIA";
-        content.innerHTML = `<div style="width:100%;height:400px;background:#000;border-radius:0.75rem;display:flex;align-items:center;justify-content:center;color:#ef4444;font-family:monospace;font-size:12px;text-align:center;padding:20px;border:1px solid #ef4444;box-shadow:inset 0 0 20px rgba(239,68,68,0.5);"><b>[ SECURITY OVERRIDE ]</b><br/><br/>FRONT URI MUST BE A STATIC IMAGE.<br/>MALICIOUS PAYLOAD REJECTED.</div>`;
-        return;
+    // หน้าการ์ดต้องเป็นรูปภาพนิ่งเท่านั้น (กัน video/3D/html หลุดมาที่ Front)
+    const frontIsUnsafe = !front || isVideoMediaUri(front) || is3DMediaUri(front);
+    const imageFront = frontIsUnsafe ? DEFAULT_FRONT_URI : front;
+    if (front && frontIsUnsafe && typeof safeAppendLog === "function") {
+        safeAppendLog(`[SECURITY] Front URI of #${tokenId} is not a still image. Using default image.`, "text-red-500 font-bold");
     }
 
-    // 🚨 [SECURITY ENFORCEMENT 2]: Intercept Back URI
-    let safeBackImage = "";
-    if (back) {
-        if (backType === 'model' || is3DMediaUri(back)) {
-            if (typeof safeAppendLog === 'function') {
-                safeAppendLog(`[SECURITY OVERRIDE] External 3D payload detected on Node #${tokenId}. Forcing Deterministic GitHub Asset.`, "text-red-500 font-bold");
-            }
-        } else {
-            safeBackImage = back;
-        }
-    }
+    // กล่อง 1: รูป (หน้า) + วิดีโอ (หลัง)
+    buildFlipCard(document.getElementById("previewFrontContainer"), imageFront,
+        { kind: "video", uri: video }, { toBack: "SHOW VIDEO", toFront: "SHOW IMAGE" });
 
-    let imageFront = front || DEFAULT_FRONT_URI;
-    
-    // 🛡️ CRASH-PROOF: ดึง 3D ตามสถานะของ Token
-    const deterministic3DModel = await resolveDeterministic3DAsset(tokenId, data?.absoluteSovereigntyStatus);
+    // กล่อง 2: รูป (หน้า) + 3D (หลัง)
+    buildFlipCard(document.getElementById("previewBackContainer"), imageFront,
+        { kind: "iframe", src: _canvasUrl(CANVAS_IDLE_MODE2, tokenId) }, { toBack: "SHOW 3D", toFront: "SHOW IMAGE" });
 
-    if (imageFront && video) {
-        title.textContent = "SOVEREIGN FLIP CARD DYNAMIC CANVAS";
-        renderFlipCanvas(content, imageFront, video, "video", "FRONT IMAGE + VIDEO");
-    } else if (imageFront && safeBackImage) {
-        title.textContent = "SOVEREIGN FLIP CARD (STATIC REVERSE)";
-        renderFlipCanvas(content, imageFront, safeBackImage, "image", "FRONT + BACK IMAGE");
-    } else {
-        title.textContent = "🔄 FLIP INSPECTION CANVAS (SECURE 3D)";
-        renderFlipCanvas(content, imageFront, deterministic3DModel, "model", "IMAGE + SECURE 3D MODEL");
+    // กล่อง 3: 3D เพียวๆ
+    renderMediaBox3();
+
+    if (typeof currentLoadedMediaData !== "undefined" && currentLoadedMediaData) {
+        currentLoadedMediaData.front = imageFront;
+        currentLoadedMediaData.video = video;
     }
 };
 
 const clearDeedMediaPreview = (tokenId, stateLabel = "NO ON-CHAIN MEDIA") => {
     const mediaLabel = document.getElementById("mediaPreviewTokenLabel");
-    const canvas = document.getElementById("mediaPreviewCanvas");
-    const content = document.getElementById("mediaPreviewCanvasContent");
-    const legacyGrid = document.getElementById("legacyMediaPreviewGrid");
-
     if (mediaLabel) mediaLabel.textContent = tokenId ? `DEED #${tokenId} • ${stateLabel}` : stateLabel;
-    canvas?.classList.add("hidden");
-    if (content) content.replaceChildren();
-    legacyGrid?.classList.remove("hidden");
-
-    if (typeof renderToViewport === "function") {
-        renderToViewport("previewFrontContainer", "", "NO FRONT IMAGE", "direct-image");
-        renderToViewport("previewBackContainer", "", "NO BACK IMAGE", "direct-image");
-        renderToViewport("previewVideoContainer", "", "NO VIDEO", "direct-video");
-    }
-
+    initMediaBoxes();
     if (typeof currentLoadedMediaData !== "undefined" && currentLoadedMediaData) {
         currentLoadedMediaData.front = "";
         currentLoadedMediaData.back = "";
@@ -4578,7 +4620,14 @@ const clearDeedMediaPreview = (tokenId, stateLabel = "NO ON-CHAIN MEDIA") => {
     }
 };
 
-window.inspectTokenFromInput = async function (value) {
+window.addEventListener("DOMContentLoaded", () => { try { initMediaBoxes(); } catch (e) { console.warn("[MEDIA INIT]", e); } });
+
+// ==============================================================================
+// 🎯 SOVEREIGN TOKEN INSPECTOR & TBA VAULT SYNC (PRODUCTION HARDENED)
+// ==============================================================================
+
+window.inspectTokenFromInput = async function (value, opts) {
+    const expectActive = opts && opts.expectActive === true;
     const input = document.getElementById("tokenInspectorInput");
     const raw = value == null ? input?.value : value;
     const id = validateTokenRange(raw);
@@ -4591,20 +4640,17 @@ window.inspectTokenFromInput = async function (value) {
     window.SystemState.inspectedTokenId = id;
     window.SystemState.actionTargetTokenId = id;
 
-    // 2. ซิงค์เลข Token ไปยังแท่นอัปโหลด (Transmission Station) ทันที
+    // 2. ซิงค์ไปยัง Transmission Station และ Input อื่นๆ
     const uploadTargetDisplay = document.getElementById("uploadTargetDisplay");
     const targetBridgeFieldLabel = document.getElementById("targetBridgeFieldLabel");
     if (uploadTargetDisplay) uploadTargetDisplay.textContent = `LOCKED TOKEN ID: #${id}`;
     if (targetBridgeFieldLabel) targetBridgeFieldLabel.textContent = `TARGET TOKEN: #${id}`;
 
-    // 3. ซิงค์เลข Token ไปยังช่องกรอก Nova และ Update Identity
     const updateInput = document.getElementById("updateTokenIdInput");
     if (updateInput) updateInput.value = String(id);
     const novaInput = document.getElementById("novaTokenId");
     if (novaInput) novaInput.value = String(id);
     
-    clearInspectorOutputs();
-    clearDeedMediaPreview(id, "LOADING");
     const status = document.getElementById("inspectorStatus");
     if (status) status.textContent = `Reading deed #${id} from Base mainnet…`;
     
@@ -4614,93 +4660,122 @@ window.inspectTokenFromInput = async function (value) {
         clearDeedMediaPreview(id, "RPC NOT READY");
         return null;
     }
+
+    let deedData = null;
     
+    // 3. ดึงข้อมูล On-chain จาก Smart Contract
     try {
-        const [
-          sovereignOwner,
-          sovereignActive,
-          absoluteSovereigntyStatus,
-          sovereignFront,
-          sovereignBack,
-          sovereignVideo,
-          sovereignIdentity,
-          sovereignHidden,
-          sovereignTba
-        ] = await contract.getDeedData(String(id)); 
-        
+        // อ่านซ้ำเมื่อ RPC node ยังตามไม่ทัน (หลัง mint / deployTBA) แทนที่จะสรุปว่า "ไม่มีเหรียญ" ทันที
+        const maxTries = expectActive ? 6 : 2;
+        let result = null, lastErr = null;
+        for (let attempt = 0; attempt < maxTries; attempt++) {
+            try {
+                result = await contract.getDeedData(String(id));
+                lastErr = null;
+                if (!expectActive || Boolean(result[1])) break;
+            } catch (e) { lastErr = e; }
+            if (requestSequence !== inspectorRequestSequence) return null;
+            if (attempt < maxTries - 1) await new Promise((r) => setTimeout(r, 1500));
+        }
         if (requestSequence !== inspectorRequestSequence) return null;
-        
-        const isActive = Boolean(sovereignActive);
-        
-        // 4. แสดงผล Media Preview & Flip Card (ส่งค่า absoluteSovereigntyStatus ไปด้วย)
-        if (isActive) {
-            await renderDeedMediaPreview({
-                sovereignFront, 
-                sovereignBack, 
-                sovereignVideo, 
-                absoluteSovereigntyStatus
-            }, id);
-        } else {
-            clearDeedMediaPreview(id, "DORMANT / UNMINTED");
-        }
-        
-        // 5. แสดงผลข้อมูลในช่อง Token Inspector
-        setOutput("inspector-owner", sovereignOwner);
-        setOutput("inspector-active", isActive ? "Yes" : "No");
-        setOutput("inspector-absolute", Boolean(absoluteSovereigntyStatus) ? "Yes" : "No");
-        setOutput("inspector-front", isActive ? sovereignFront : "");
-        setOutput("inspector-back", isActive ? sovereignBack : "");
-        setOutput("inspector-video", isActive ? sovereignVideo : "");
-        setOutput("inspector-identity", sovereignIdentity);
-        setOutput("inspector-hidden", sovereignHidden);
-        
-        let tbaLabel = isActive ? (sovereignTba || "Unavailable") : "No active token";
-        setOutput("inspector-tba", tbaLabel);
-        
-        // 6. ซิงค์ข้อมูลและยอดเงินไปยังห้องนิรภัย TBA Vault ทันที
-        const info = document.getElementById("activeDeedMetadataDisplay");
-        const tbaField = document.getElementById("tbaAddressDisplay");
-        if (info) {
-            info.textContent = isActive 
-                ? `DEED #${id} • OWNER ${asString(sovereignOwner)} • ${Boolean(absoluteSovereigntyStatus) ? "ABSOLUTE SOVEREIGNTY" : "NOVA LOCKED"}`
-                : `NO ACTIVE DEED RECORD FOR #${id}.`;
-        }
-        if (tbaField) tbaField.value = tbaLabel;
-        if (typeof refreshTbaBalances === "function") {
-            await refreshTbaBalances(isActive ? sovereignTba : null, window.currentAuditSession);
-        }
-        
-        if (status) status.textContent = isActive ? `On-chain record loaded for deed #${id}.` : `Deed #${id} has no active on-chain media record.`;
-        return {
-          sovereignOwner,
-          sovereignActive,
-          absoluteSovereigntyStatus,
-          sovereignFront,
-          sovereignBack,
-          sovereignVideo,
-          sovereignIdentity,
-          sovereignHidden,
-          sovereignTba
+        if (!result) throw lastErr || new Error("EMPTY_DEED_READ");
+
+        deedData = {
+            sovereignOwner: result[0],
+            sovereignActive: Boolean(result[1]),
+            absoluteSovereigntyStatus: Boolean(result[2]),
+            sovereignFront: result[3],
+            sovereignBack: result[4],
+            sovereignVideo: result[5],
+            sovereignIdentity: result[6],
+            sovereignHidden: result[7],
+            sovereignTba: result[8]
         };
-    } catch (error) {
+    } catch (contractErr) {
+        // ดักจับเฉพาะกรณีที่โทเคนไม่มีอยู่จริงบนบล็อกเชน (NonexistentToken)
         if (requestSequence !== inspectorRequestSequence) return null;
+        // เฉพาะ revert จริงจาก contract เท่านั้นที่แปลว่าไม่มีเหรียญ; error เครือข่าย/RPC ห้ามล้างหน้าจอ
+        const isRealRevert = contractErr && contractErr.code === "CALL_EXCEPTION";
+        if (!isRealRevert) {
+            console.warn("[INSPECTOR] RPC read failed:", contractErr);
+            if (status) status.textContent = `RPC read failed for #${id}. Press SEARCH again.`;
+            showNotification(`Could not read deed #${id} from RPC (not a missing token). Try again.`, "error");
+            return null;
+        }
         clearInspectorOutputs();
         clearDeedMediaPreview(id, "DORMANT / UNMINTED");
         
-        // รีเซ็ตค่า TBA Vault กรณี Token นั้นยังไม่ถูก Mint (Revert: NonexistentToken)
         const info = document.getElementById("activeDeedMetadataDisplay");
         const tbaField = document.getElementById("tbaAddressDisplay");
         if (info) info.textContent = `NO ACTIVE DEED RECORD FOR #${id}.`;
         if (tbaField) tbaField.value = "No active token";
         if (typeof setTbaBalanceDisplay === "function") setTbaBalanceDisplay("0.0000", "0.0000");
-
-        if (status) status.textContent = `Deed #${id} is dormant or unavailable.`;
+        if (status) status.textContent = `Deed #${id} is dormant or unminted.`;
         return null;
     }
+
+    // 4. แสดงข้อมูลบน UI และ TBA Vault (แยกขาดจากส่วนมีเดีย ไม่ให้โดนล้างทับ)
+    const isActive = deedData.sovereignActive;
+    const info = document.getElementById("activeDeedMetadataDisplay");
+    const tbaField = document.getElementById("tbaAddressDisplay");
+
+    // ตรวจสอบที่อยู่ TBA ถ้าใน getDeedData เป็น 0 ให้ดึงผ่าน getTBA อีกครั้ง
+    let tbaAddress = deedData.sovereignTba;
+    if (!tbaAddress || tbaAddress === ethers.ZeroAddress) {
+        try {
+            tbaAddress = await contract.getTBA(String(id));
+        } catch (_) {}
+    }
+    const hasTba = tbaAddress && tbaAddress !== ethers.ZeroAddress;
+    const tbaLabel = hasTba ? tbaAddress : (isActive ? "Awaiting Deployment" : "No active token");
+
+    setOutput("inspector-owner", deedData.sovereignOwner);
+    setOutput("inspector-active", isActive ? "Yes" : "No");
+    setOutput("inspector-absolute", deedData.absoluteSovereigntyStatus ? "Yes" : "No");
+    setOutput("inspector-front", isActive ? deedData.sovereignFront : "");
+    setOutput("inspector-back", isActive ? deedData.sovereignBack : "");
+    setOutput("inspector-video", isActive ? deedData.sovereignVideo : "");
+    setOutput("inspector-identity", deedData.sovereignIdentity);
+    setOutput("inspector-hidden", deedData.sovereignHidden);
+    setOutput("inspector-tba", tbaLabel);
+
+    if (info) {
+        info.textContent = isActive 
+            ? `DEED #${id} • OWNER ${asString(deedData.sovereignOwner)} • ${deedData.absoluteSovereigntyStatus ? "ABSOLUTE SOVEREIGNTY" : "NOVA LOCKED"}`
+            : `NO ACTIVE DEED RECORD FOR #${id}.`;
+    }
+    if (tbaField) {
+        tbaField.value = hasTba ? tbaAddress : tbaLabel;
+    }
+
+    // ดึงยอดเงิน ETH / WETH ในกระเป๋า TBA
+    if (hasTba && typeof refreshTbaBalances === "function") {
+        refreshTbaBalances(tbaAddress, window.currentAuditSession).catch(() => {});
+    } else if (typeof setTbaBalanceDisplay === "function") {
+        setTbaBalanceDisplay("0.0000", "0.0000");
+    }
+
+    if (status) status.textContent = isActive ? `On-chain record loaded for deed #${id}.` : `Deed #${id} is unactivated.`;
+
+    // 5. แสดงผล Media Preview (ครอบ try...catch แยกเฉพาะ ไม่ให้ฉุดข้อมูลหลักพัง)
+    if (isActive) {
+        try {
+            await renderDeedMediaPreview(deedData, id);
+        } catch (mediaErr) {
+            console.warn("[MEDIA RENDER WARNING]", mediaErr);
+            // แสดงสถานะภาพไม่พร้อมใช้งาน แต่ไม่ล้างข้อมูลเหรียญและ TBA ทิ้ง
+            clearDeedMediaPreview(id, "MEDIA LOAD FAILED");
+        }
+    } else {
+        clearDeedMediaPreview(id, "DORMANT / UNMINTED");
+    }
+
+    return deedData;
 };
 
-window.auditTokenFromLedger = async function (tokenId) {
-    return await window.inspectTokenFromInput(tokenId);
+// ชี้ท่อส่งข้อมูล auditTokenFromLedger ให้ใช้ตัวเดียวกัน ป้องกันการเขียน DOM ขัดแย้งกัน
+window.auditTokenFromLedger = async function (tokenId, opts) {
+    return await window.inspectTokenFromInput(tokenId, opts);
 };
 
 window.selectInspectorToken = function (tokenId) {
@@ -4709,32 +4784,16 @@ window.selectInspectorToken = function (tokenId) {
     return window.inspectTokenFromInput(tokenId);
 };
 
-window.auditTokenFromLedger = async function (tokenId) {
+// (ตัวเดิมที่ซ้ำกับด้านบนถูกถอดออก: มันเขียนทับแล้วสั่ง "NO ACTIVE DEED" / "No active token" ทันทีที่อ่านพลาดครั้งเดียว)
+window.auditTokenFromLedger = async function (tokenId, opts) {
     const id = validateTokenRange(tokenId);
     if (!id) return null;
     window.SystemState.inspectedTokenId = id;
-    const addressInput = document.getElementById("updateTokenIdInput");
-    if (addressInput) addressInput.value = String(id);
+    const updateInput = document.getElementById("updateTokenIdInput");
+    if (updateInput) updateInput.value = String(id);
     const novaInput = document.getElementById("novaTokenId");
     if (novaInput) novaInput.value = String(id);
-
-    const data = await window.inspectTokenFromInput(id);
-    const info = document.getElementById("activeDeedMetadataDisplay");
-    const tbaField = document.getElementById("tbaAddressDisplay");
-    if (!data) {
-        if (info) info.textContent = `NO ACTIVE DEED RECORD FOR #${id}.`;
-        if (tbaField) tbaField.value = "No active token";
-        if (typeof setTbaBalanceDisplay === "function") setTbaBalanceDisplay("0.0000", "0.0000");
-        return null;
-    }
-
-    if (info) info.textContent = `DEED #${id} • OWNER ${asString(data.sovereignOwner)} • ${Boolean(data.absoluteSovereigntyStatus) ? "ABSOLUTE SOVEREIGNTY" : "NOVA LOCKED"}`;
-    const tbaAddress = asString(await (secureContract || readOnlyContract)?.getTBA(String(id)));
-    if (tbaField) tbaField.value = tbaAddress || "Unavailable";
-    if (typeof refreshTbaBalances === "function") {
-        await refreshTbaBalances(tbaAddress);
-    }
-    return data;
+    return await window.inspectTokenFromInput(id, opts);
 };
 
 const requireArchitect = async () => {
@@ -4864,7 +4923,7 @@ window.executeArchitectMint = async function (tokenIdInput, recipientInput, fron
         if (receipt) {
             GLOBAL_NODE_CACHE?.clear?.();
             await window.syncContractStates();
-            await window.inspectTokenFromInput(tokenIds[0]);
+            await window.inspectTokenFromInput(tokenIds[0], { expectActive: true });
         }
         return receipt;
     } catch (error) {
