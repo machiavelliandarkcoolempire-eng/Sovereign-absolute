@@ -1,0 +1,2564 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-950 text-slate-100 selection:bg-cyan-500 selection:text-black">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Procedural 3D Sport Spacecraft Generator</title>
+    
+    <!-- WEB2 & WEB3 DEPENDENCIES -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        orbitron: ['Orbitron', 'sans-serif'],
+                        inter: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            cyan: '#00f0ff',
+                            blue: '#0066ff',
+                            purple: '#7000ff',
+                            amber: '#ffaa00',
+                            dark: '#050814',
+                        }
+                    },
+                    boxShadow: {
+                        'neon-cyan': '0 0 25px rgba(0, 240, 255, 0.4), inset 0 0 10px rgba(0, 240, 255, 0.2)',
+                        'neon-purple': '0 0 25px rgba(112, 0, 255, 0.4)',
+                        'neon-gold': '0 0 30px rgba(255, 170, 0, 0.5)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Orbitron:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+            touch-action: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        .glass-panel {
+            background: rgba(5, 12, 28, 0.82);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(0, 240, 255, 0.25);
+        }
+
+        .scanlines {
+            background: linear-gradient(
+                rgba(18, 16, 16, 0) 50%, 
+                rgba(0, 0, 0, 0.25) 50%
+            );
+            background-size: 100% 4px;
+            pointer-events: none;
+        }
+
+        @media (max-width: 640px) {
+            #retro-hud-overlay {
+                display: none;
+            }
+        }
+
+        .panel-transition {
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease;
+        }
+    </style>
+<style>
+#deed-badge{position:fixed!important;top:12px!important;left:16px!important;z-index:2147483647!important;display:flex!important;visibility:visible!important;opacity:1!important;transform:none!important;pointer-events:auto}
+#input-contract-address,#input-token-id{pointer-events:none}
+#ship-model-selector{display:none!important}
+</style>
+</head>
+<body class="h-full w-full bg-slate-950 text-slate-100 relative overflow-hidden">
+
+    <!-- CANVAS LAYER -->
+    <div id="canvas-container" class="absolute inset-0 z-0 pointer-events-auto"></div>
+
+    <div class="scanlines absolute inset-0 z-10 opacity-20"></div>
+
+    <div id="warp-flash" class="fixed inset-0 z-[60] pointer-events-none opacity-0 transition-opacity duration-300 bg-black"></div>
+
+    <!-- RETRO TEXT HUD -->
+    <div id="retro-hud-overlay" class="fixed top-16 left-4 sm:left-6 z-[50] font-mono text-xs sm:text-sm font-bold tracking-widest pointer-events-none space-y-1 drop-shadow-[0_0_10px_rgba(0,240,255,0.8)]">
+        <p class="text-cyan-400 flex items-center gap-2">
+            <span class="inline-block w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+            SYSTEM: ONLINE
+        </p>
+        <p class="text-cyan-400">SECTOR: <span id="hud-sector-name" class="text-cyan-200">DEEP COSMOS</span></p>
+        <p class="text-cyan-400">VELOCITY: <span id="hud-velocity-state" class="text-cyan-300">CRUISING</span></p>
+        <p id="hud-anomaly-alert" class="text-fuchsia-400 animate-pulse hidden font-extrabold text-sm">
+            ⚠ WORMHOLE IMMINENT
+        </p>
+    </div>
+
+    <!-- PURE CINEMATIC MODE TOGGLE -->
+    <button id="toggle-ui-btn" class="fixed top-20 right-4 sm:right-6 sm:top-24 z-[70] glass-panel w-10 h-10 flex items-center justify-center rounded-xl text-amber-400 hover:bg-cyan-900/60 transition-all border border-amber-400/50 active:scale-95 shadow-neon-gold" title="Cinematic View">
+        <i id="toggle-ui-icon" class="fa-solid fa-eye-slash text-lg"></i>
+    </button>
+
+    <!-- FLOATING BUTTON -->
+    <button id="open-config-btn" class="fixed top-4 right-4 sm:right-6 z-[65] glass-panel w-12 h-12 hidden items-center justify-center rounded-xl text-cyan-400 hover:bg-cyan-900/60 transition-all border border-cyan-400 shadow-neon-cyan animate-pulse">
+        <i class="fa-solid fa-sliders text-xl"></i>
+    </button>
+
+    <!-- Token ID แบบถาวร (ลดขนาดให้กะทัดรัดพอดีตา อยู่นอก main-hud-wrapper) -->
+    <div id="deed-badge" class="fixed top-3 left-4 sm:left-6 z-[99] pointer-events-auto glass-panel px-2.5 py-1.5 rounded-lg border border-amber-400/60 shadow-neon-gold flex items-center gap-2 bg-slate-950/90 backdrop-blur-md">
+        <div class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></div>
+        <div class="font-mono text-[11px] tracking-wider text-slate-300 flex items-center gap-1.5">
+            <span class="text-slate-400 font-bold">DEED:</span>
+            <span class="text-amber-400 font-black tracking-widest" id="deed-badge-id">#3333</span>
+            <span class="text-slate-600">|</span>
+            <span class="text-emerald-400 font-mono text-[10px]">FPS: <strong id="fps-counter">--</strong></span>
+        </div>
+    </div>
+
+    <!-- ================= MAIN UI LAYER ================= -->
+    <div id="main-hud-wrapper" class="absolute inset-0 z-20 pointer-events-none transition-opacity duration-500">
+        
+        <!-- TOP LEFT -->
+        <header class="absolute top-14 left-4 sm:left-6 right-20 sm:right-auto pointer-events-auto flex items-center gap-2">
+
+
+            <div class="flex items-center gap-2">
+                <button id="audio-toggle-btn" class="glass-panel hover:bg-cyan-950/40 text-cyan-300 p-2.5 rounded-xl border border-cyan-500/30 transition-all flex items-center justify-center w-10 h-10" title="Soundtrack">
+                    <i id="audio-icon" class="fa-solid fa-volume-xmark"></i>
+                </button>
+                <button id="info-modal-open-btn" class="glass-panel hover:bg-purple-950/40 text-purple-300 p-2.5 rounded-xl border border-purple-500/30 transition-all flex items-center justify-center w-10 h-10" title="NFT Trait Seed">
+                    <i class="fa-solid fa-link"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- CONFIG PANEL -->
+        <aside id="orbit-control-panel" class="absolute top-4 right-4 sm:right-6 w-[calc(100vw-2rem)] sm:w-80 max-h-[85vh] overflow-y-auto glass-panel rounded-2xl p-4 pointer-events-auto space-y-4 shadow-2xl border-cyan-400/50 panel-transition origin-top-right z-[60]">
+            
+            <button id="close-config-btn" class="absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-full bg-slate-900/80 text-slate-400 hover:text-red-400 hover:bg-red-900/30 border border-slate-700 hover:border-red-500 transition-all z-10" title="Close Panel">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+
+            <h3 class="font-orbitron text-xs font-bold text-cyan-300 tracking-wider flex items-center border-b border-cyan-500/20 pb-2 pr-8">
+                <i class="fa-solid fa-sliders text-cyan-400 mr-2"></i> CRAFT CONFIGURATION
+            </h3>
+
+            <div class="bg-black/40 rounded-xl p-3 border border-slate-800">
+                <h4 class="text-[10px] text-emerald-400 font-mono mb-2 flex justify-between">
+                    <span>ON-CHAIN TRAITS</span>
+                    <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                </h4>
+                <div id="onchain-traits-container" class="space-y-1 font-mono text-[11px]">
+                    <div class="text-slate-400 italic">Unlinked...</div>
+                </div>
+            </div>
+
+            <div>
+                <label class="text-[10px] font-orbitron text-amber-300 uppercase block mb-1 flex items-center justify-between">
+                    <span>SELECT ARCHITECTURE</span>
+                    <i class="fa-solid fa-crown text-amber-400"></i>
+                </label>
+                <div class="grid grid-cols-3 gap-1.5" id="ship-model-selector">
+                    <button data-ship="0" class="ship-select-btn px-2 py-2 rounded-lg bg-cyan-950 border-2 border-cyan-400 text-cyan-300 text-[10px] font-orbitron font-bold truncate transition-all shadow-neon-cyan">F-22 RAPTOR</button>
+                    <button data-ship="1" class="ship-select-btn px-2 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-400 hover:text-cyan-300 text-[10px] font-orbitron font-bold truncate transition-all">SU-57 FELON</button>
+                    <button data-ship="2" class="ship-select-btn px-2 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-400 hover:text-cyan-300 text-[10px] font-orbitron font-bold truncate transition-all">PHANTOM GT-02</button>
+                    <button data-ship="3" class="ship-select-btn px-2 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-400 hover:text-cyan-300 text-[10px] font-orbitron font-bold truncate transition-all">SOLARIS FX-47</button>
+                    <button data-ship="4" class="ship-select-btn px-2 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-400 hover:text-cyan-300 text-[10px] font-orbitron font-bold truncate transition-all">VOID WING B-9</button>
+                </div>
+            </div>
+
+            <div>
+                <label class="text-[10px] font-orbitron text-slate-300 uppercase block mb-1">Thruster Energy</label>
+                <div class="grid grid-cols-4 gap-1.5" id="engine-color-group">
+                    <button data-color="0x00f0ff" class="engine-color-btn h-8 rounded-lg bg-cyan-500/20 border-2 border-cyan-400 flex items-center justify-center text-cyan-300"><i class="fa-solid fa-fire text-sm"></i></button>
+                    <button data-color="0xff3300" class="engine-color-btn h-8 rounded-lg bg-red-500/20 border border-slate-700 flex items-center justify-center text-red-400"><i class="fa-solid fa-fire text-sm"></i></button>
+                    <button data-color="0xa855f7" class="engine-color-btn h-8 rounded-lg bg-purple-500/20 border border-slate-700 flex items-center justify-center text-purple-400"><i class="fa-solid fa-fire text-sm"></i></button>
+                    <button data-color="0xeab308" class="engine-color-btn h-8 rounded-lg bg-amber-500/20 border border-slate-700 flex items-center justify-center text-amber-400"><i class="fa-solid fa-fire text-sm"></i></button>
+                </div>
+            </div>
+
+            <div>
+                <label class="text-[10px] font-orbitron text-slate-300 uppercase block mb-1">Camera Presets</label>
+                <div class="grid grid-cols-3 gap-1.5">
+                    <button id="cam-preset-orbit" class="px-2 py-1.5 rounded bg-slate-900 border border-slate-700 text-[11px] text-slate-300 hover:border-cyan-400 transition-all">ORBIT</button>
+                    <button id="cam-preset-engine" class="px-2 py-1.5 rounded bg-slate-900 border border-slate-700 text-[11px] text-slate-300 hover:border-cyan-400 transition-all">TAIL</button>
+                    <button id="cam-preset-cockpit" class="px-2 py-1.5 rounded bg-slate-900 border border-slate-700 text-[11px] text-slate-300 hover:border-cyan-400 transition-all">FRONT</button>
+                </div>
+            </div>
+            
+            <div class="pt-2">
+                <label class="text-[10px] font-orbitron text-slate-300 uppercase block mb-1">Sector Atmosphere</label>
+                <div class="flex flex-col gap-1.5">
+                    <button data-sector="deep-space" class="sector-btn w-full py-1.5 rounded-lg bg-cyan-950 text-cyan-300 border border-cyan-400 text-[11px] font-bold">DEEP COSMOS</button>
+                    <button data-sector="crimson-nebula" class="sector-btn w-full py-1.5 rounded-lg bg-slate-900 text-slate-400 border border-slate-800 hover:border-slate-600 text-[11px]">CRIMSON NEBULA</button>
+                    <button data-sector="black-hole-singularity" class="sector-btn w-full py-1.5 rounded-lg bg-slate-900 text-slate-400 border border-slate-800 hover:border-slate-600 text-[11px]">BLACK HOLE VOID</button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- HYPERDRIVE -->
+        <div class="absolute bottom-20 left-1/2 transform -translate-x-1/2 pointer-events-auto z-[50]">
+            <button id="hyperdrive-btn" class="whitespace-nowrap glass-panel hover:bg-cyan-500 hover:text-black text-cyan-300 px-6 sm:px-8 py-3 sm:py-4 rounded-full border-2 border-cyan-400 font-orbitron text-sm sm:text-base font-bold transition-all shadow-neon-cyan flex items-center gap-3 active:scale-95 group">
+                <i class="fa-solid fa-bolt text-amber-400 group-hover:text-black text-xl animate-pulse"></i>
+                <span class="tracking-widest whitespace-nowrap">WARP DRIVE</span>
+            </button>
+        </div>
+
+        <!-- FOOTER -->
+        <footer class="absolute bottom-4 left-4 sm:left-6 right-4 sm:right-6 pointer-events-none flex justify-between items-end">
+            <div class="pointer-events-auto flex items-center gap-2">
+                <button id="toggle-orbit-btn" class="glass-panel px-3 py-2 rounded-xl border border-cyan-500/30 text-cyan-300 text-xs font-orbitron flex items-center gap-2 hover:bg-cyan-950/40 transition-all">
+                    <i class="fa-solid fa-arrows-spin text-cyan-400"></i>
+                    <span id="orbit-status-text">AUTO: OFF</span>
+                </button>
+            </div>
+            <div class="pointer-events-auto flex items-center gap-2">
+                <button id="snapshot-btn" class="glass-panel px-4 py-2 rounded-xl border border-purple-500/30 text-purple-300 text-xs font-orbitron flex items-center gap-2 hover:bg-purple-950/40 transition-all" title="Capture High-Res Viewport">
+                    <i class="fa-solid fa-camera"></i>
+                    <span class="hidden sm:inline">CAPTURE</span>
+                </button>
+            </div>
+        </footer>
+    </div>
+
+    <!-- MODAL -->
+    <div id="metadata-modal" class="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md hidden transition-opacity duration-300 pointer-events-auto">
+        <div id="modal-content-box" class="glass-panel max-w-lg w-full rounded-2xl p-6 border border-cyan-400/40 relative shadow-2xl space-y-4" onclick="event.stopPropagation()">
+            <button id="info-modal-close-btn" class="absolute top-4 right-4 text-slate-400 hover:text-cyan-400 text-xl w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-800 transition-colors">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-cyan-500/20 border border-cyan-400 flex items-center justify-center text-cyan-300 font-orbitron font-bold">
+                    WEB3
+                </div>
+                <div>
+                    <h2 class="font-orbitron font-bold text-lg text-cyan-300">NFT TRAIT SEED</h2>
+                    <p class="text-xs text-slate-400">Connect to Base Mainnet</p>
+                </div>
+            </div>
+
+            <div class="space-y-3 font-mono text-xs">
+                <div>
+                    <label class="block text-slate-400 mb-1">CONTRACT ADDRESS:</label>
+                    <input id="input-contract-address" type="text" value="0x06040F2e5301B2616491E113962A84d372b8f600" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-cyan-300 focus:outline-none focus:border-cyan-400">
+                </div>
+                <div>
+                    <label class="block text-slate-400 mb-1">TOKEN ID:</label>
+                    <input id="input-token-id" type="text" placeholder="1" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-cyan-300 focus:outline-none focus:border-cyan-400">
+                </div>
+            </div>
+
+            <button id="modal-connect-btn" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-black font-orbitron font-bold text-sm tracking-wider transition-all shadow-neon-cyan">
+                SYNC ON-CHAIN DATA
+            </button>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="toast-notification" class="fixed top-20 right-5 z-[80] glass-panel px-4 py-3 rounded-xl border border-cyan-400/50 text-cyan-300 text-xs font-orbitron transform translate-x-full opacity-0 transition-all duration-300 flex items-center gap-3 pointer-events-none">
+        <i class="fa-solid fa-circle-info text-amber-400 text-base"></i>
+        <span id="toast-text">System Initialized</span>
+    </div>
+
+    <script>
+        // ========================================================
+        // WEB3 ENGINE (ETHERS.JS)
+        // ========================================================
+        const LOCKED_TOKEN_ID = 3333;
+        const LOCKED_SHIP_INDEX = 2;
+        const SOVEREIGN_ABI = [
+            "function ownerOf(uint256 tokenId) view returns (address)",
+            "function SOVEREIGNTY_COUNCIL(uint256 tokenId) view returns (bool)",
+            "function getDeedData(uint256 t) view returns (address sovereignOwner, bool sovereignActive, bool absoluteSovereigntyStatus, string sovereignFront, string sovereignBack, string sovereignVideo, string sovereignIdentity, string sovereignHidden, address sovereignTba)"
+        ];
+
+        async function fetchSmartContractData(contractAddress, tokenId) {
+    const cleanAddr = (contractAddress || '').trim();
+    const cleanTokenId = String(LOCKED_TOKEN_ID);
+
+    if (!cleanAddr || !ethers.isAddress(cleanAddr)) {
+        showToast("ERROR: Invalid Contract Address");
+        return;
+    }
+    if (!cleanTokenId || isNaN(cleanTokenId)) {
+        showToast("ERROR: Invalid Token ID");
+        return;
+    }
+
+    showToast("Connecting to Base Mainnet...");
+    
+    try {
+        const provider = new ethers.JsonRpcProvider("https://mainnet.base.org");
+        const contract = new ethers.Contract(cleanAddr, SOVEREIGN_ABI, provider);
+
+        // ดึงข้อมูล 9 พารามิเตอร์จาก getDeedData ใน Smart Contract
+        const deedData = await contract.getDeedData(cleanTokenId);
+        
+        const ownerAddress = deedData[0] || null;          // sovereignOwner
+        const isActive = deedData[1];                      // sovereignActive
+        const isAbsoluteSovereign = deedData[2];           // absoluteSovereigntyStatus
+        const dnaString = deedData[6] || "";               // sovereignIdentity
+        const tbaAddress = deedData[8] || null;            // sovereignTba (Index 8)
+
+        // สแกนดึงยอดคงเหลือ ETH ในคลัง TBA (ERC-6551)
+        let tbaBalanceEth = "0.0000";
+        if (tbaAddress && tbaAddress !== ethers.ZeroAddress) {
+            try {
+                const balanceWei = await provider.getBalance(tbaAddress);
+                tbaBalanceEth = parseFloat(ethers.formatEther(balanceWei)).toFixed(4);
+            } catch (balanceErr) {
+                console.warn("TBA Balance Fetch Warning:", balanceErr);
+            }
+        }
+
+        // getTBA() in the contract returns the *computed* address even before deployTBA() runs,
+        // so deployment is detected by checking for bytecode at that address.
+        let tbaDeployed = false;
+        if (tbaAddress && tbaAddress !== ethers.ZeroAddress) {
+            try {
+                const tbaCode = await provider.getCode(tbaAddress);
+                tbaDeployed = !!tbaCode && tbaCode !== '0x';
+            } catch (codeErr) {
+                console.warn("TBA Code Check Warning:", codeErr);
+            }
+        }
+        let isCouncil = false;
+        try {
+            isCouncil = !!(await contract.SOVEREIGNTY_COUNCIL(cleanTokenId));
+        } catch (councilErr) {
+            console.warn("Council Check Warning:", councilErr);
+        }
+
+        if (ownerAddress && ownerAddress.length >= 10) {
+            showToast(`Owner Verified: ${ownerAddress.substring(0, 6)}...`);
+        }
+
+        state.contractAddress = cleanAddr;
+        state.tokenId = cleanTokenId;
+        state.isSovereign = !!isAbsoluteSovereign;   // visual only
+        state.tbaBalance = parseFloat(tbaBalanceEth) || 0; // visual only
+
+        // FNV-1a Hash Calculation
+        const seedText = dnaString.length > 0 ? dnaString : `${cleanAddr.toLowerCase()}:${cleanTokenId}`;
+        let tokenSeed = 2166136261;
+        for (let i = 0; i < seedText.length; i++) {
+            tokenSeed = Math.imul(tokenSeed ^ seedText.charCodeAt(i), 16777619);
+        }
+        tokenSeed >>>= 0;
+        
+        // Synchronize State
+        state.nftSeed = tokenSeed;
+        state.shipSeed = tokenSeed;
+        state.worldSeed = tokenSeed;
+
+        // เปลี่ยนสีไฟไอพ่นตามสถานะ Absolute Sovereign / Active
+        if (isAbsoluteSovereign) {
+            state.engineColor = 0xffd700; // สีทองสำหรับ Sovereign
+        } else if (!isActive) {
+            state.engineColor = 0x8b1a1a; // แดงหรี่สำหรับยานที่ไม่ Active (มองเห็นได้บนพื้นดำ)
+        }
+
+        // Rebuild Environment & Render Ship
+        rebuildEnvironmentForSector(tokenSeed);
+        renderSelectedShipModel(state.activeShipIndex);
+        
+        // อัปเดต UI พร้อมข้อมูล TBA Treasury
+        updateOnChainUI(ownerAddress, tbaAddress, isAbsoluteSovereign, tbaBalanceEth, isActive, tbaDeployed, isCouncil);
+        
+        showToast("On-Chain & TBA Data Synced");
+
+    } catch (error) {
+        console.error("Web3 Error:", error);
+        showToast("ERROR: Token not found or Network issue");
+    }
+}
+
+        function updateOnChainUI(ownerAddress = null, tbaAddress = null, isAbsolute = false, tbaBalanceEth = "0.0000", isActive = true, tbaDeployed = true, isCouncil = false) {
+    const container = document.getElementById('onchain-traits-container');
+    if (!container) return;
+
+    if (state.contractAddress && state.tokenId) {
+        const activeSeed = state.nftSeed !== null ? state.nftSeed : state.worldSeed;
+        
+        let ownerHtml = '';
+        if (ownerAddress && ownerAddress.length >= 42) {
+            ownerHtml = `
+                <div class="flex justify-between items-center bg-slate-900/50 px-2 py-1 rounded mt-1">
+                    <span class="text-slate-400">OWNER:</span>
+                    <span class="text-cyan-300 font-bold text-[9px]">${ownerAddress.substring(0, 6)}...${ownerAddress.substring(38)}</span>
+                </div>
+            `;
+        }
+
+        // ส่วนแสดงผลข้อมูล TBA Vault & ETH Balance
+        let tbaHtml = '';
+        if (tbaAddress && tbaAddress !== ethers.ZeroAddress) {
+            tbaHtml = `
+                <div class="bg-cyan-950/60 border border-cyan-500/30 p-2 rounded-lg mt-2 space-y-1">
+                    <div class="flex justify-between items-center">
+                        <span class="text-cyan-400 font-bold text-[10px] flex items-center gap-1">
+                            <i class="fa-solid fa-vault text-amber-400"></i> ${tbaDeployed ? 'TBA TREASURY' : 'TBA RESERVED'}
+                        </span>
+                        <span class="text-emerald-400 font-bold font-mono text-[11px]">${tbaBalanceEth} ETH</span>
+                    </div>
+                    <div class="flex justify-between items-center pt-0.5 border-t border-cyan-900/50">
+                        <span class="text-slate-400 text-[9px]">${tbaDeployed ? 'VAULT ADDR:' : 'NOT DEPLOYED:'}</span>
+                        <span class="text-slate-300 font-mono text-[9px]">${tbaAddress.substring(0, 6)}...${tbaAddress.substring(38)}</span>
+                    </div>
+                </div>
+            `;
+        } else {
+            tbaHtml = `
+                <div class="flex justify-between items-center bg-slate-900/50 px-2 py-1 rounded mt-1">
+                    <span class="text-slate-500 text-[9px]">TBA STATUS:</span>
+                    <span class="text-slate-400 text-[9px] italic">NOT DEPLOYED</span>
+                </div>
+            `;
+        }
+
+        let statusBadge = isAbsolute 
+            ? `<span class="text-amber-400 text-[9px] font-bold border border-amber-500/50 px-1 rounded bg-amber-950/30">${isCouncil ? 'COUNCIL' : 'SOVEREIGN'}</span>`
+            : (isActive ? `<span class="text-emerald-400 text-[9px] font-bold">ACTIVE</span>` : `<span class="text-red-400 text-[9px] font-bold">INACTIVE</span>`);
+
+        container.innerHTML = `
+            <div class="flex justify-between items-center bg-slate-900/50 px-2 py-1 rounded">
+                <span class="text-slate-400">ID:</span>
+                <span class="text-amber-300 font-bold">#${escapeHTML(state.tokenId)} ${statusBadge}</span>
+            </div>
+            <div class="flex justify-between items-center bg-slate-900/50 px-2 py-1 rounded mt-1">
+                <span class="text-slate-400">SEED:</span>
+                <span class="text-purple-300 font-bold">0x${activeSeed.toString(16).toUpperCase()}</span>
+            </div>
+            ${ownerHtml}
+            ${tbaHtml}
+        `;
+    } else {
+        container.innerHTML = `<div class="text-slate-500 text-[10px] italic">No token linked. Default procedural generation active.</div>`;
+    }
+}
+
+        
+        // ========================================================
+        // 3D ENGINE STATE & CONFIG
+        // ========================================================
+        const state = {
+            activeShipIndex: 0,
+            engineColor: 0x00f0ff,
+            sector: 'deep-space',
+            autoRotate: false, 
+            audioEnabled: false,
+            uiVisible: true,
+            
+            timeSinceLastWarp: 0,
+            warpCycleDuration: 35, 
+            isWormholeActive: false,
+            isWarping: false,
+            baseFov: 50,
+            cameraAnimFrame: null,
+            toastTimeout: null,
+            
+            contractAddress: '',
+            tokenId: '',
+
+            shipGroup: null,
+            thrusterMaterial: null,
+            engineParticles: null,
+            starField: null,
+            starMaterial: null,
+            stardustField: null,
+            stardustMaterial: null,
+            squareParticlesField: null,
+            squareParticlesMaterial: null,
+            nebulaGroup: null,
+            
+            celestialGroups: [],
+            instancedAsteroids: null,
+            asteroidData: [],
+            worldSeed: Math.floor(Math.random() * 0x7fffffff),
+            nftSeed: null,
+            animRandom: null, // Deterministic animation randomizer
+            
+            wireframeGateway: null,
+            slipstreamRays: null,
+            slipstreamRings: [],
+            dimensionCore: null,
+            wormholeFront: null,
+            wormholeBack: null,
+            
+            mainSun: null,
+            fillLight: null,
+            fog: null
+        };
+
+        const SECTOR_CONFIGS = {
+            'deep-space': {
+                name: 'DEEP COSMOS',
+                bgColor: 0x030611,
+                fogColor: 0x030611,
+                fogDensity: 0.00035,
+                sunColor: 0xfff0dd,
+                fillColor: 0x00f0ff,
+                palette: [0x00f0ff, 0x8b5cf6, 0x93c5fd, 0xffffff],
+                nebulaColors: [0x064e63, 0x312e81, 0x164e63],
+                wormholeColor: 0x39e7ff,
+                planetColors: [0x2563eb, 0x14b8a6, 0xc084fc, 0xe2e8f0]
+            },
+            'crimson-nebula': {
+                name: 'CRIMSON NEBULA',
+                bgColor: 0x120306,
+                fogColor: 0x120306,
+                fogDensity: 0.0007,
+                sunColor: 0xffaa77,
+                fillColor: 0xff2255,
+                palette: [0xff477e, 0xff9f68, 0xc026d3, 0xffd166],
+                nebulaColors: [0x701a36, 0x7c2d12, 0x581c87],
+                wormholeColor: 0xff6b8a,
+                planetColors: [0xb91c1c, 0xd97706, 0x9333ea, 0xfda4af]
+            },
+            'black-hole-singularity': {
+                name: 'BLACK HOLE SINGULARITY',
+                bgColor: 0x010103,
+                fogColor: 0x020205,
+                fogDensity: 0.0005,
+                sunColor: 0xffaa00,
+                fillColor: 0x7000ff,
+                palette: [0x7c3aed, 0x22d3ee, 0xffaa00, 0xffffff],
+                nebulaColors: [0x2e1065, 0x164e63, 0x713f12],
+                wormholeColor: 0xb45cff,
+                planetColors: [0x4c1d95, 0x0e7490, 0x92400e, 0x64748b]
+            }
+        };
+
+        let scene, camera, renderer, controls, clock;
+        let frameCounter = 0;
+        let lastFpsTimestamp = performance.now();
+        let isMobileView = window.innerWidth < 700;
+
+        function createSeededRandom(seed) {
+            let value = seed >>> 0;
+            return function() {
+                value += 0x6D2B79F5;
+                let t = value;
+                t = Math.imul(t ^ (t >>> 15), t | 1);
+                t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+                return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+            };
+        }
+
+        function randomBetween(random, min, max) {
+            return min + random() * (max - min);
+        }
+
+        function deriveSceneSeed(baseSeed, namespace) {
+            let hash = (baseSeed >>> 0) || 2166136261;
+            const text = String(namespace);
+            for (let i = 0; i < text.length; i++) {
+                hash = Math.imul(hash ^ text.charCodeAt(i), 16777619);
+            }
+            return hash >>> 0;
+        }
+
+        function escapeHTML(value) {
+            return String(value).replace(/[&<>"']/g, char => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;'
+            }[char]));
+        }
+
+        function initWebGL() {
+            const container = document.getElementById('canvas-container');
+
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(SECTOR_CONFIGS[state.sector].bgColor);
+            state.fog = new THREE.FogExp2(SECTOR_CONFIGS[state.sector].fogColor, SECTOR_CONFIGS[state.sector].fogDensity);
+            scene.fog = state.fog;
+
+            camera = new THREE.PerspectiveCamera(state.baseFov, window.innerWidth / window.innerHeight, 0.1, 3500);
+            camera.position.set(0, 3, 13);
+
+            renderer = new THREE.WebGLRenderer({ 
+                antialias: true, 
+                alpha: false, 
+                powerPreference: "high-performance",
+                preserveDrawingBuffer: false 
+            });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, isMobileView ? 1.35 : 1.75));
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 1.25;
+            container.appendChild(renderer.domElement);
+
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.maxDistance = 80;
+            controls.minDistance = 2.5;
+            controls.enablePan = true;
+            controls.autoRotate = state.autoRotate;
+            controls.autoRotateSpeed = 0.8;
+            controls.minPolarAngle = 0;
+            controls.maxPolarAngle = Math.PI;
+            controls.target.set(0,0,0);
+
+            clock = new THREE.Clock();
+            state.animRandom = createSeededRandom(state.worldSeed + 8888);
+            state.shipSeed = state.worldSeed;
+
+            setupLighting();
+            buildEnvironmentMap();
+            createStarfield();
+            createSoftStardust();
+            createSquarePixelParticles();
+            createNebulaClouds();
+            createRandomizedPlanets();
+            createRandomizedAsteroidBelt();
+            createQuantumSlipstream();
+
+            state.shipGroup = new THREE.Group();
+            scene.add(state.shipGroup);
+
+            renderSelectedShipModel(state.activeShipIndex);
+
+            window.addEventListener('resize', onWindowResize, false);
+            setupUIEventListeners();
+            updateOnChainUI();
+
+            animate();
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            const currentIsMobile = window.innerWidth < 700;
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, currentIsMobile ? 1.35 : 1.75));
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            if (state.starMaterial) {
+                state.starMaterial.uniforms.pixelRatio.value = renderer.getPixelRatio();
+            }
+            
+            // Deterministic Fix: Rebuild environment if viewport crosses the 700px threshold
+            if (isMobileView !== currentIsMobile) {
+                isMobileView = currentIsMobile;
+                rebuildEnvironmentForSector(state.shipSeed);
+            }
+        }
+
+        function setupLighting() {
+            const config = SECTOR_CONFIGS[state.sector];
+            state.mainSun = new THREE.DirectionalLight(config.sunColor, 3.2);
+            state.mainSun.position.set(15, 25, -20);
+            scene.add(state.mainSun);
+
+            state.fillLight = new THREE.DirectionalLight(config.fillColor, 1.4);
+            state.fillLight.position.set(-10, -6, 10);
+            scene.add(state.fillLight);
+
+            const ambientLight = new THREE.AmbientLight(0x0f172a, 0.9);
+            scene.add(ambientLight);
+        }
+
+        function createStarfield() {
+            const random = createSeededRandom(state.worldSeed + 11);
+            const starGeometry = new THREE.BufferGeometry();
+            const starCount = isMobileView ? 2500 : 5000;
+            const starPositions = new Float32Array(starCount * 3);
+            const starPhases = new Float32Array(starCount);
+            const starSizes = new Float32Array(starCount);
+            const starColors = new Float32Array(starCount * 3);
+            const palette = SECTOR_CONFIGS[state.sector].palette.map(color => new THREE.Color(color));
+
+            for (let i = 0; i < starCount; i++) {
+                const r = randomBetween(random, 350, 950);
+                const theta = random() * 2 * Math.PI;
+                const phi = Math.acos(2 * random() - 1);
+                
+                starPositions[i * 3] = r * Math.sin(phi) * Math.cos(theta);
+                starPositions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
+                starPositions[i * 3 + 2] = r * Math.cos(phi);
+                starPhases[i] = random() * Math.PI * 2;
+                starSizes[i] = randomBetween(random, 0.6, 1.8);
+                const color = palette[Math.floor(random() * palette.length)];
+                starColors[i * 3] = color.r;
+                starColors[i * 3 + 1] = color.g;
+                starColors[i * 3 + 2] = color.b;
+            }
+
+            starGeometry.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
+            starGeometry.setAttribute('phase', new THREE.BufferAttribute(starPhases, 1));
+            starGeometry.setAttribute('aSize', new THREE.BufferAttribute(starSizes, 1));
+            starGeometry.setAttribute('aColor', new THREE.BufferAttribute(starColors, 3));
+
+            state.starMaterial = new THREE.ShaderMaterial({
+                uniforms: {
+                    time: { value: 0 },
+                    beat: { value: 0 },
+                    pixelRatio: { value: renderer.getPixelRatio() }
+                },
+                vertexShader: `
+                    attribute float phase;
+                    attribute float aSize;
+                    attribute vec3 aColor;
+                    uniform float time;
+                    uniform float beat;
+                    uniform float pixelRatio;
+                    varying float vAlpha;
+                    varying vec3 vColor;
+                    void main() {
+                        vAlpha = min(1.0, 0.45 + 0.55 * abs(sin(time * 0.8 + phase)) + 0.25 * beat);
+                        vColor = aColor;
+                        vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+                        gl_PointSize = aSize * pixelRatio * (300.0 / max(80.0, -mvPosition.z)) * (1.0 + 0.35 * beat);
+                        gl_Position = projectionMatrix * mvPosition;
+                    }
+                `,
+                fragmentShader: `
+                    varying float vAlpha;
+                    varying vec3 vColor;
+                    void main() {
+                        float dist = length(gl_PointCoord - vec2(0.5));
+                        if (dist > 0.5) discard;
+                        gl_FragColor = vec4(vColor, (0.5 - dist) * 2.0 * vAlpha);
+                    }
+                `,
+                transparent: true,
+                blending: THREE.AdditiveBlending,
+                depthWrite: false
+            });
+
+            state.starField = new THREE.Points(starGeometry, state.starMaterial);
+            scene.add(state.starField);
+        }
+
+        function createSoftStardust() {
+            const random = createSeededRandom(state.worldSeed + 23);
+            const count = isMobileView ? 1200 : 2500;
+            const dustGeo = new THREE.BufferGeometry();
+            const positions = new Float32Array(count * 3);
+            const colors = new Float32Array(count * 3);
+            const sizes = new Float32Array(count);
+            const palette = SECTOR_CONFIGS[state.sector].palette.map(color => new THREE.Color(color));
+
+            const canvas = document.createElement('canvas');
+            canvas.width = 64; canvas.height = 64;
+            const ctx = canvas.getContext('2d');
+            const grad = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+            grad.addColorStop(0, 'rgba(255,255,255,1)');
+            grad.addColorStop(0.3, 'rgba(0,240,255,0.8)');
+            grad.addColorStop(0.7, 'rgba(112,0,255,0.3)');
+            grad.addColorStop(1, 'rgba(0,0,0,0)');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, 64, 64);
+            const pTexture = new THREE.CanvasTexture(canvas);
+
+            for(let i = 0; i < count; i++) {
+                positions[i*3] = randomBetween(random, -65, 65);
+                positions[i*3+1] = randomBetween(random, -45, 45);
+                positions[i*3+2] = randomBetween(random, -200, 40);
+
+                sizes[i] = randomBetween(random, 0.8, 2.4);
+
+                const c = palette[Math.floor(random() * palette.length)];
+                colors[i*3] = c.r;
+                colors[i*3+1] = c.g;
+                colors[i*3+2] = c.b;
+            }
+
+            dustGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            dustGeo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            dustGeo.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+
+            state.stardustMaterial = new THREE.PointsMaterial({
+                size: isMobileView ? 1.1 : 1.6,
+                map: pTexture,
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.85,
+                blending: THREE.AdditiveBlending,
+                depthWrite: false
+            });
+
+            state.stardustField = new THREE.Points(dustGeo, state.stardustMaterial);
+            scene.add(state.stardustField);
+        }
+
+        function createSquarePixelParticles() {
+            const random = createSeededRandom(state.worldSeed + 37);
+            const particleCount = isMobileView ? 120 : 250;
+            const geo = new THREE.BufferGeometry();
+            const positions = new Float32Array(particleCount * 3);
+            const palette = SECTOR_CONFIGS[state.sector].palette;
+
+            for (let i = 0; i < particleCount; i++) {
+                positions[i * 3] = randomBetween(random, -80, 80);
+                positions[i * 3 + 1] = randomBetween(random, -50, 50);
+                positions[i * 3 + 2] = randomBetween(random, -220, 50);
+            }
+
+            geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+            const canvas = document.createElement('canvas');
+            canvas.width = 32; canvas.height = 32;
+            const ctx = canvas.getContext('2d');
+            const color = palette[Math.floor(random() * palette.length)];
+            ctx.fillStyle = `#${color.toString(16).padStart(6, '0')}`;
+            ctx.fillRect(4, 4, 24, 24);
+            const squareTex = new THREE.CanvasTexture(canvas);
+
+            state.squareParticlesMaterial = new THREE.PointsMaterial({
+                size: isMobileView ? 1.2 : 1.7,
+                map: squareTex,
+                transparent: true,
+                opacity: 0.65,
+                blending: THREE.AdditiveBlending,
+                depthWrite: false
+            });
+
+            state.squareParticlesField = new THREE.Points(geo, state.squareParticlesMaterial);
+            scene.add(state.squareParticlesField);
+        }
+
+        function createNebulaClouds() {
+            const random = createSeededRandom(state.worldSeed + 53);
+            const config = SECTOR_CONFIGS[state.sector];
+            state.nebulaGroup = new THREE.Group();
+            const cloudCount = isMobileView ? 5 : 8;
+            const textures = config.nebulaColors.map(hex => {
+                const canvas = document.createElement('canvas');
+                canvas.width = canvas.height = 256;
+                const ctx = canvas.getContext('2d');
+                const color = `#${hex.toString(16).padStart(6, '0')}`;
+                const glow = ctx.createRadialGradient(128, 128, 4, 128, 128, 122);
+                glow.addColorStop(0, `${color}bb`);
+                glow.addColorStop(0.28, `${color}70`);
+                glow.addColorStop(1, `${color}00`);
+                ctx.fillStyle = glow;
+                ctx.fillRect(0, 0, 256, 256);
+                return new THREE.CanvasTexture(canvas);
+            });
+
+            for (let i = 0; i < cloudCount; i++) {
+                const texture = textures[Math.floor(random() * textures.length)];
+                const material = new THREE.SpriteMaterial({
+                    map: texture,
+                    transparent: true,
+                    opacity: randomBetween(random, 0.08, 0.18),
+                    depthWrite: false,
+                    blending: THREE.AdditiveBlending,
+                    color: 0xffffff
+                });
+                const cloud = new THREE.Sprite(material);
+                cloud.position.set(
+                    randomBetween(random, -120, 120),
+                    randomBetween(random, -80, 80),
+                    randomBetween(random, -350, -120)
+                );
+                const scale = randomBetween(random, 60, 140);
+                cloud.scale.set(scale * randomBetween(random, 1.15, 2.0), scale, 1);
+                state.nebulaGroup.add(cloud);
+            }
+            scene.add(state.nebulaGroup);
+        }
+
+        function createQuantumSlipstream() {
+            const config = SECTOR_CONFIGS[state.sector];
+            const wormholeColor = config.wormholeColor;
+            const random = createSeededRandom(state.worldSeed + 777);
+            
+            state.wireframeGateway = new THREE.Group();
+            const gwGeo = new THREE.CylinderGeometry(40, 40, 200, 32, 20, true);
+            const gwMat = new THREE.MeshBasicMaterial({
+                color: wormholeColor,
+                wireframe: true,
+                transparent: true,
+                opacity: 0,
+                blending: THREE.AdditiveBlending
+            });
+            const gwMesh = new THREE.Mesh(gwGeo, gwMat);
+            gwMesh.rotation.x = Math.PI / 2;
+            state.wireframeGateway.add(gwMesh);
+            
+            const gwGlowMat = new THREE.MeshBasicMaterial({
+                color: config.palette[0],
+                transparent: true,
+                opacity: 0,
+                side: THREE.BackSide,
+                blending: THREE.AdditiveBlending
+            });
+            const gwGlowMesh = new THREE.Mesh(gwGeo, gwGlowMat);
+            gwGlowMesh.rotation.x = Math.PI / 2;
+            gwGlowMesh.scale.setScalar(0.98);
+            state.wireframeGateway.add(gwGlowMesh);
+            
+            state.wireframeGateway.position.set(0, 0, 3000); 
+            scene.add(state.wireframeGateway);
+
+            const rayGeo = new THREE.BufferGeometry();
+            const rayCount = 150;
+            const rayPos = new Float32Array(rayCount * 2 * 3);
+            for(let i=0; i<rayCount; i++) {
+                const angle = random() * Math.PI * 2;
+                const radius = 15 + random() * 20;
+                const zStart = -100 - random() * 200;
+                const zEnd = zStart + 50 + random() * 100;
+                
+                rayPos[i*6] = Math.cos(angle) * radius;
+                rayPos[i*6+1] = Math.sin(angle) * radius;
+                rayPos[i*6+2] = zStart;
+                
+                rayPos[i*6+3] = Math.cos(angle) * radius;
+                rayPos[i*6+4] = Math.sin(angle) * radius;
+                rayPos[i*6+5] = zEnd;
+            }
+            rayGeo.setAttribute('position', new THREE.BufferAttribute(rayPos, 3));
+            const rayMat = new THREE.LineBasicMaterial({
+                color: config.palette[1],
+                transparent: true,
+                opacity: 0,
+                blending: THREE.AdditiveBlending
+            });
+            state.slipstreamRays = new THREE.LineSegments(rayGeo, rayMat);
+            scene.add(state.slipstreamRays);
+
+            state.slipstreamRings = [];
+            for(let i=0; i<8; i++) {
+                const ringGeo = new THREE.TorusGeometry(10 + i*3, 0.2, 8, 64);
+                const ringMat = new THREE.MeshBasicMaterial({
+                    color: config.palette[i % config.palette.length],
+                    transparent: true,
+                    opacity: 0,
+                    blending: THREE.AdditiveBlending
+                });
+                const ring = new THREE.Mesh(ringGeo, ringMat);
+                ring.position.z = 3000;
+                state.slipstreamRings.push(ring);
+                scene.add(ring);
+            }
+
+            const coreGeo = new THREE.SphereGeometry(8, 32, 32);
+            const coreMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0 });
+            state.dimensionCore = new THREE.Mesh(coreGeo, coreMat);
+            state.dimensionCore.position.set(0, 0, 3000);
+            scene.add(state.dimensionCore);
+
+            state.wormholeFront = new THREE.Group();
+            state.wormholeBack = new THREE.Group();
+            
+            for(let i=0; i<3; i++) {
+                const diskGeo = new THREE.RingGeometry(8 + i*2, 12 + i*4, 64);
+                const diskMat = new THREE.MeshBasicMaterial({
+                    color: config.palette[i],
+                    side: THREE.DoubleSide,
+                    transparent: true,
+                    opacity: 0,
+                    blending: THREE.AdditiveBlending
+                });
+                const diskF = new THREE.Mesh(diskGeo, diskMat);
+                const diskB = new THREE.Mesh(diskGeo, diskMat);
+                state.wormholeFront.add(diskF);
+                state.wormholeBack.add(diskB);
+            }
+            state.wormholeFront.position.set(0, 0, 3000);
+            state.wormholeBack.position.set(0, 0, 3000);
+            scene.add(state.wormholeFront);
+            scene.add(state.wormholeBack);
+        }
+
+        function disposeSceneObject(root) {
+            if (!root) return;
+            scene.remove(root);
+            root.traverse(child => {
+                if (child.geometry) child.geometry.dispose();
+                if (child.material) {
+                    const materials = Array.isArray(child.material) ? child.material : [child.material];
+                    materials.forEach(material => {
+                        if (material.map) material.map.dispose();
+                        material.dispose();
+                    });
+                }
+            });
+        }
+
+        function rebuildEnvironmentForSector(seedOverride) {
+            const roots = [
+                state.starField,
+                state.stardustField,
+                state.squareParticlesField,
+                state.nebulaGroup,
+                state.wireframeGateway,
+                state.slipstreamRays,
+                state.dimensionCore,
+                state.wormholeFront,
+                state.wormholeBack,
+                state.instancedAsteroids,
+                ...state.slipstreamRings,
+                ...state.celestialGroups
+            ];
+            [...new Set(roots)].forEach(disposeSceneObject);
+            
+            state.starField = null;
+            state.stardustField = null;
+            state.squareParticlesField = null;
+            state.nebulaGroup = null;
+            state.celestialGroups = [];
+            state.slipstreamRings = [];
+            state.instancedAsteroids = null;
+            state.asteroidData = [];
+            
+            // Deterministic: same base seed -> same world for a given sector (no Math.random here)
+            const seedBase = Number.isInteger(seedOverride) ? seedOverride : state.shipSeed;
+            state.worldSeed = deriveSceneSeed(seedBase, state.sector);
+            state.animRandom = createSeededRandom(state.worldSeed + 8888);
+
+            const config = SECTOR_CONFIGS[state.sector];
+            scene.background = new THREE.Color(config.bgColor);
+            state.fog.color.setHex(config.fogColor);
+            state.fog.density = config.fogDensity;
+            state.mainSun.color.setHex(config.sunColor);
+            state.fillLight.color.setHex(config.fillColor);
+            buildEnvironmentMap();
+            
+            createStarfield();
+            createSoftStardust();
+            createSquarePixelParticles();
+            createNebulaClouds();
+            createRandomizedPlanets();
+            createRandomizedAsteroidBelt();
+            createQuantumSlipstream();
+            
+            state.timeSinceLastWarp = 0;
+            state.isWormholeActive = false;
+            state.isWarping = false;
+        }
+
+        function generatePlanetTexture(c1, c2, random) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512; canvas.height = 256;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = `#${c1.getHexString()}`;
+            ctx.fillRect(0, 0, 512, 256);
+            for (let band = 0; band < 16; band++) {
+                const y = random() * 256;
+                const h = randomBetween(random, 6, 28);
+                ctx.fillStyle = `#${c2.getHexString()}${Math.floor(randomBetween(random, 40, 180)).toString(16).padStart(2, '0')}`;
+                ctx.fillRect(0, y, 512, h);
+            }
+            const tex = new THREE.CanvasTexture(canvas);
+            tex.wrapS = THREE.RepeatWrapping;
+            return tex;
+        }
+
+        function generateMoonTexture(random) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512; canvas.height = 256;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#8b939c';
+            ctx.fillRect(0, 0, 512, 256);
+            
+            for (let i = 0; i < 45; i++) {
+                const cx = random() * 512;
+                const cy = random() * 256;
+                const r = randomBetween(random, 4, 22);
+                ctx.beginPath();
+                ctx.arc(cx, cy, r, 0, Math.PI * 2);
+                ctx.fillStyle = '#5c636e';
+                ctx.fill();
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = '#b0b8c4';
+                ctx.stroke();
+            }
+            const tex = new THREE.CanvasTexture(canvas);
+            tex.wrapS = THREE.RepeatWrapping;
+            return tex;
+        }
+
+        function createRandomizedPlanets() {
+            const random = createSeededRandom(state.worldSeed + 107);
+            const config = SECTOR_CONFIGS[state.sector];
+            const colorPool = config.planetColors.map(hex => new THREE.Color(hex));
+            state.celestialGroups = [];
+
+            const sunGroup = new THREE.Group();
+            const sunRadius = randomBetween(random, 16, 22);
+            const sunMesh = new THREE.Mesh(
+                new THREE.SphereGeometry(sunRadius, 32, 32),
+                new THREE.MeshBasicMaterial({ color: config.sunColor })
+            );
+            sunGroup.add(sunMesh);
+
+            const coronaMesh = new THREE.Mesh(
+                new THREE.SphereGeometry(sunRadius * 1.3, 32, 32),
+                new THREE.ShaderMaterial({
+                    uniforms: { glowColor: { value: new THREE.Color(config.sunColor) } },
+                    vertexShader: `
+                        varying vec3 vNormal;
+                        void main() {
+                            vNormal = normalize(normalMatrix * normal);
+                            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                        }
+                    `,
+                    fragmentShader: `
+                        uniform vec3 glowColor;
+                        varying vec3 vNormal;
+                        void main() {
+                            float intensity = pow(0.65 - dot(vNormal, vec3(0, 0, 1.0)), 2.2);
+                            gl_FragColor = vec4(glowColor, intensity * 0.85);
+                        }
+                    `,
+                    transparent: true,
+                    blending: THREE.AdditiveBlending,
+                    side: THREE.BackSide,
+                    depthWrite: false
+                })
+            );
+            sunGroup.add(coronaMesh);
+
+            const sunX = randomBetween(random, -20, 20);
+            const sunY = randomBetween(random, 35, 50);
+            const sunZ = randomBetween(random, -180, -260);
+            sunGroup.position.set(sunX, sunY, sunZ);
+            sunGroup.userData = { spinSpeed: 0.002, basePos: new THREE.Vector3(sunX, sunY, sunZ) };
+            state.celestialGroups.push(sunGroup);
+            scene.add(sunGroup);
+
+            const saturnGroup = new THREE.Group();
+            const saturnRadius = randomBetween(random, 8.5, 12.0);
+            const saturnTex = generatePlanetTexture(colorPool[0], colorPool[1], random);
+            const saturnMat = new THREE.MeshStandardMaterial({ map: saturnTex, roughness: 0.6, metalness: 0.1 });
+            const saturnMesh = new THREE.Mesh(new THREE.SphereGeometry(saturnRadius, 36, 28), saturnMat);
+            saturnGroup.add(saturnMesh);
+
+            const ringGeo = new THREE.RingGeometry(saturnRadius * 1.4, saturnRadius * 2.6, 64);
+            const ringMat = new THREE.MeshBasicMaterial({
+                color: config.palette[0],
+                side: THREE.DoubleSide,
+                transparent: true,
+                opacity: 0.75,
+                blending: THREE.AdditiveBlending
+            });
+            const ringMesh = new THREE.Mesh(ringGeo, ringMat);
+            ringMesh.rotation.x = Math.PI / 2.2;
+            ringMesh.rotation.y = 0.25;
+            saturnGroup.add(ringMesh);
+
+            const saturnX = randomBetween(random, 40, 70);
+            const saturnY = randomBetween(random, -10, 15);
+            const saturnZ = randomBetween(random, -120, -180);
+            saturnGroup.position.set(saturnX, saturnY, saturnZ);
+            saturnGroup.userData = { spinSpeed: 0.008, basePos: new THREE.Vector3(saturnX, saturnY, saturnZ) };
+            state.celestialGroups.push(saturnGroup);
+            scene.add(saturnGroup);
+
+            const moonGroup = new THREE.Group();
+            const moonRadius = randomBetween(random, 5.0, 7.5);
+            const moonTex = generateMoonTexture(random);
+            const moonMat = new THREE.MeshStandardMaterial({ map: moonTex, roughness: 0.85 });
+            const moonMesh = new THREE.Mesh(new THREE.SphereGeometry(moonRadius, 32, 24), moonMat);
+            moonGroup.add(moonMesh);
+
+            const moonX = randomBetween(random, -70, -40);
+            const moonY = randomBetween(random, 5, 25);
+            const moonZ = randomBetween(random, -100, -150);
+            moonGroup.position.set(moonX, moonY, moonZ);
+            moonGroup.userData = { spinSpeed: 0.005, basePos: new THREE.Vector3(moonX, moonY, moonZ) };
+            state.celestialGroups.push(moonGroup);
+            scene.add(moonGroup);
+
+            const extraGroup = new THREE.Group();
+            const extraRadius = randomBetween(random, 6.0, 10.0);
+            const extraTex = generatePlanetTexture(colorPool[2] || colorPool[0], colorPool[3] || colorPool[1], random);
+            const extraMesh = new THREE.Mesh(new THREE.SphereGeometry(extraRadius, 32, 24), new THREE.MeshStandardMaterial({ map: extraTex, roughness: 0.7 }));
+            extraGroup.add(extraMesh);
+            
+            const extraX = randomBetween(random, -25, 25);
+            const extraY = randomBetween(random, -35, -15);
+            const extraZ = randomBetween(random, -200, -280);
+            extraGroup.position.set(extraX, extraY, extraZ);
+            extraGroup.userData = { spinSpeed: 0.006, basePos: new THREE.Vector3(extraX, extraY, extraZ) };
+            state.celestialGroups.push(extraGroup);
+            scene.add(extraGroup);
+        }
+
+        function resetUniversePositions() {
+            state.celestialGroups.forEach(planet => {
+                if (planet.userData && planet.userData.basePos) {
+                    planet.position.copy(planet.userData.basePos);
+                }
+            });
+
+            if (state.instancedAsteroids && state.asteroidData) {
+                const dummy = new THREE.Object3D();
+                for (let i = 0; i < state.asteroidData.length; i++) {
+                    const ast = state.asteroidData[i];
+                    // Deterministic Fix: Use seeded randomizer instead of Math.random()
+                    ast.pos.set((state.animRandom() - 0.5) * 120, (state.animRandom() - 0.5) * 80, (state.animRandom() - 0.5) * 200 - 100);
+                    dummy.position.copy(ast.pos);
+                    dummy.rotation.copy(ast.rot);
+                    dummy.scale.copy(ast.scale);
+                    dummy.updateMatrix();
+                    state.instancedAsteroids.setMatrixAt(i, dummy.matrix);
+                }
+                state.instancedAsteroids.instanceMatrix.needsUpdate = true;
+            }
+        }
+
+        function createRandomizedAsteroidBelt() {
+            const random = createSeededRandom(state.worldSeed + 149);
+            const count = isMobileView ? 42 : 88;
+            const palette = SECTOR_CONFIGS[state.sector].palette;
+            
+            const geo = new THREE.IcosahedronGeometry(0.8, 0); 
+            const mat = new THREE.MeshStandardMaterial({
+                color: palette[Math.floor(random() * palette.length)],
+                roughness: 0.8,
+                metalness: 0.2,
+                flatShading: true 
+            });
+            
+            state.instancedAsteroids = new THREE.InstancedMesh(geo, mat, count);
+            
+            const dummy = new THREE.Object3D();
+            state.asteroidData = [];
+
+            for (let i = 0; i < count; i++) {
+                const posX = randomBetween(random, -60, 60);
+                const posY = randomBetween(random, -40, 40);
+                const posZ = randomBetween(random, -200, 0);
+
+                const scaleX = randomBetween(random, 0.4, 1.5);
+                const scaleY = randomBetween(random, 0.4, 1.5);
+                const scaleZ = randomBetween(random, 0.4, 1.5);
+                
+                const rotX = random() * Math.PI;
+                const rotY = random() * Math.PI;
+                const rotZ = random() * Math.PI;
+
+                const pos = new THREE.Vector3(posX, posY, posZ);
+                const rot = new THREE.Euler(rotX, rotY, rotZ);
+                const scale = new THREE.Vector3(scaleX, scaleY, scaleZ);
+
+                dummy.position.copy(pos);
+                dummy.rotation.copy(rot);
+                dummy.scale.copy(scale);
+                dummy.updateMatrix();
+
+                state.instancedAsteroids.setMatrixAt(i, dummy.matrix);
+
+                state.asteroidData.push({
+                    pos: pos,
+                    rot: rot,
+                    scale: scale,
+                    rotSpeedX: randomBetween(random, -0.02, 0.02),
+                    rotSpeedY: randomBetween(random, -0.02, 0.02),
+                    moveSpeedZ: randomBetween(random, 0, 10)
+                });
+            }
+
+            scene.add(state.instancedAsteroids);
+        }
+        
+        // ========================================================
+        // 3D SPACE FIGHTER MODEL GENERATOR (5 MODELS: F-22 / SU-57 / PHANTOM / FX-47 / B-9)
+        // ========================================================
+
+        // ---------- Geometry helpers for the fighter models ----------
+        function mirrorPts(pts, side) {
+            const out = pts.map(([x, z]) => [x * side, z]);
+            return side < 0 ? out.reverse() : out;
+        }
+
+        // Extrudes a top-down polygon [[x, z], ...] into a thin plate lying in the XZ plane (nose = -Z)
+        function addPlanform(pts, thickness, mat, y, edgeColor) {
+            const shape = new THREE.Shape();
+            pts.forEach(([x, z], i) => { if (i === 0) shape.moveTo(x, -z); else shape.lineTo(x, -z); });
+            shape.closePath();
+            const geo = new THREE.ExtrudeGeometry(shape, { depth: thickness, bevelEnabled: false });
+            geo.rotateX(-Math.PI / 2);
+            geo.translate(0, y - thickness / 2, 0);
+            const mat2 = mat.clone(); mat2.side = THREE.DoubleSide;
+            const mesh = new THREE.Mesh(geo, mat2);
+            state.shipGroup.add(mesh);
+            if (edgeColor !== undefined) addEdges(geo, new THREE.Vector3(0, 0, 0), null, edgeColor);
+            return mesh;
+        }
+
+        // Vertical fin from side-profile points [[z, y], ...]; pivot at its base, canted by rotZ
+        function addFin(pts, thickness, mat, x, y, z, rotZ, edgeColor) {
+            const shape = new THREE.Shape();
+            pts.forEach(([zz, yy], i) => { if (i === 0) shape.moveTo(-zz, yy); else shape.lineTo(-zz, yy); });
+            shape.closePath();
+            const geo = new THREE.ExtrudeGeometry(shape, { depth: thickness, bevelEnabled: false });
+            geo.rotateY(Math.PI / 2);
+            geo.translate(-thickness / 2, 0, 0);
+            const mat2 = mat.clone(); mat2.side = THREE.DoubleSide;
+            const mesh = new THREE.Mesh(geo, mat2);
+            mesh.position.set(x, y, z);
+            mesh.rotation.z = rotZ;
+            state.shipGroup.add(mesh);
+            if (edgeColor !== undefined) addEdges(geo, mesh.position, mesh.rotation, edgeColor);
+            return mesh;
+        }
+
+        // Thin glowing panel-line outline (gives the hull a sci-fi / space-craft look)
+        function addEdges(geo, pos, rot, color) {
+            const lines = new THREE.LineSegments(
+                new THREE.EdgesGeometry(geo, 25),
+                new THREE.LineBasicMaterial({ color: color, transparent: true, opacity: 0.55 })
+            );
+            lines.position.copy(pos);
+            if (rot) lines.rotation.copy(rot);
+            state.shipGroup.add(lines);
+        }
+
+        // Digital "pixel" camouflage used by the Su-57
+        function makeCamoTexture(rand, baseColor, accent) {
+            const size = 32;
+            const c = document.createElement('canvas');
+            c.width = c.height = size;
+            const g = c.getContext('2d');
+            const light = new THREE.Color(0xdfe7f2);
+            const mid = baseColor.clone().lerp(new THREE.Color(0x6f89a8), 0.55);
+            const dark = new THREE.Color(accent).lerp(new THREE.Color(0x0b1220), 0.72);
+            g.fillStyle = '#' + light.getHexString(); g.fillRect(0, 0, size, size);
+            for (let y = 0; y < size; y += 2) {
+                for (let x = 0; x < size; x += 2) {
+                    const r = rand();
+                    if (r < 0.38) { g.fillStyle = '#' + mid.getHexString(); g.fillRect(x, y, 2, 2); }
+                    else if (r < 0.56) { g.fillStyle = '#' + dark.getHexString(); g.fillRect(x, y, 2, 2); }
+                }
+            }
+            const tex = new THREE.CanvasTexture(c);
+            tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+            tex.magFilter = THREE.NearestFilter;
+            tex.repeat.set(0.35, 0.35);
+            return tex;
+        }
+
+        // ---------- Image-based lighting: gives the metal hulls something to reflect ----------
+        function buildEnvironmentMap() {
+            if (!renderer || !scene) return;
+            try {
+                const cfg = SECTOR_CONFIGS[state.sector];
+                const c = document.createElement('canvas');
+                c.width = 512; c.height = 256;
+                const g = c.getContext('2d');
+                const sky = g.createLinearGradient(0, 0, 0, 256);
+                sky.addColorStop(0, '#31487a');
+                sky.addColorStop(0.45, '#0d1530');
+                sky.addColorStop(1, '#04060d');
+                g.fillStyle = sky;
+                g.fillRect(0, 0, 512, 256);
+
+                const hex = v => '#' + new THREE.Color(v).getHexString();
+                const softbox = (x, y, rx, ry, color, alpha) => {
+                    g.save();
+                    g.translate(x, y);
+                    g.scale(rx, ry);
+                    const rg = g.createRadialGradient(0, 0, 0, 0, 0, 1);
+                    rg.addColorStop(0, color);
+                    rg.addColorStop(1, 'rgba(0,0,0,0)');
+                    g.globalAlpha = alpha;
+                    g.fillStyle = rg;
+                    g.beginPath(); g.arc(0, 0, 1, 0, Math.PI * 2); g.fill();
+                    g.restore();
+                };
+                softbox(130, 60, 90, 34, '#ffffff', 1.0);               // key light
+                softbox(60, 80, 70, 40, hex(cfg.sunColor), 0.9);        // sun-coloured kicker
+                softbox(330, 100, 80, 36, hex(cfg.palette[0]), 0.95);   // rim A
+                softbox(450, 70, 70, 30, hex(cfg.palette[1]), 0.9);     // rim B
+                softbox(250, 200, 120, 30, hex(cfg.fillColor), 0.55);   // under-glow
+                softbox(256, 20, 160, 18, '#ffffff', 0.7);              // top strip
+
+                const tex = new THREE.CanvasTexture(c);
+                tex.mapping = THREE.EquirectangularReflectionMapping;
+                if (!state.pmrem) state.pmrem = new THREE.PMREMGenerator(renderer);
+                const rt = state.pmrem.fromEquirectangular(tex);
+                if (state.envRT) state.envRT.dispose();
+                state.envRT = rt;
+                scene.environment = rt.texture;
+                tex.dispose();
+            } catch (err) {
+                console.warn('Environment map unavailable:', err);
+            }
+        }
+
+        // ---------- Serial plate printed on the dorsal tail: shows #TOKEN once a token is synced ----------
+        function addSerialPlate(y, z, width, code, edgeColor) {
+            const label = state.tokenId ? '#' + String(state.tokenId).slice(0, 10) : code;
+            const c = document.createElement('canvas');
+            c.width = 320; c.height = 96;
+            const g = c.getContext('2d');
+            g.fillStyle = 'rgba(4, 8, 18, 0.86)';
+            g.fillRect(0, 0, 320, 96);
+            g.strokeStyle = '#' + new THREE.Color(edgeColor).getHexString();
+            g.lineWidth = 6;
+            g.strokeRect(4, 4, 312, 88);
+            g.fillStyle = state.isSovereign ? '#ffd700' : '#ffffff';
+            g.textAlign = 'center';
+            g.textBaseline = 'middle';
+            let size = 54;
+            g.font = '800 ' + size + 'px Orbitron, monospace';
+            while (g.measureText(label).width > 270 && size > 20) {
+                size -= 4;
+                g.font = '800 ' + size + 'px Orbitron, monospace';
+            }
+            g.fillText(label, 160, 50);
+            const tex = new THREE.CanvasTexture(c);
+            const mat = new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false });
+            const plate = new THREE.Mesh(new THREE.PlaneGeometry(width, width * 96 / 320), mat);
+            plate.rotation.x = -Math.PI / 2; // faces up, text reads from behind the craft
+            plate.position.set(0, y, z);
+            state.shipGroup.add(plate);
+            return plate;
+        }
+
+        // ---------- Extra detail helpers (missiles / nav lights / nozzle rings) ----------
+        function addMissile(x, y, z, len, bodyMat, finMat) {
+            const g = new THREE.Group();
+            const body = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, len, 10), bodyMat);
+            body.rotation.x = Math.PI / 2;
+            g.add(body);
+            const nose = new THREE.Mesh(new THREE.ConeGeometry(0.07, 0.34, 10), finMat);
+            nose.rotation.x = -Math.PI / 2;
+            nose.position.z = -(len / 2 + 0.17);
+            g.add(nose);
+            const finH = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.02, 0.2), finMat);
+            finH.position.z = len / 2 - 0.15;
+            g.add(finH);
+            const finV = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.42, 0.2), finMat);
+            finV.position.z = len / 2 - 0.15;
+            g.add(finV);
+            g.position.set(x, y, z);
+            state.shipGroup.add(g);
+            return g;
+        }
+
+        function addNavLight(x, y, z, color) {
+            const m = new THREE.Mesh(new THREE.SphereGeometry(0.075, 10, 10), new THREE.MeshBasicMaterial({ color: color }));
+            m.position.set(x, y, z);
+            state.shipGroup.add(m);
+            return m;
+        }
+
+        function addNozzleRing(x, y, z, radius, mat) {
+            const r = new THREE.Mesh(new THREE.TorusGeometry(radius, 0.05, 8, 28), mat);
+            r.position.set(x, y, z);
+            state.shipGroup.add(r);
+            return r;
+        }
+
+        // Bright white-hot afterburner core that sits inside the coloured thruster cone
+        function addHotCore(x, y, z, radius, length, mat) {
+            const c = new THREE.Mesh(new THREE.ConeGeometry(radius, length, 14), mat);
+            c.rotation.x = -Math.PI / 2;
+            c.position.set(x, y, z);
+            state.shipGroup.add(c);
+            return c;
+        }
+
+        function renderSelectedShipModel(index) {
+            while (state.shipGroup.children.length > 0) {
+                const child = state.shipGroup.children[0];
+                state.shipGroup.remove(child);
+                child.traverse(node => {
+                    if (node.geometry) node.geometry.dispose();
+                    if (node.material) {
+                        const materials = Array.isArray(node.material) ? node.material : [node.material];
+                        materials.forEach(material => {
+                            if (material.map) material.map.dispose();
+                            material.dispose();
+                        });
+                    }
+                });
+            }
+
+            // The craft's identity depends ONLY on the NFT seed + a fixed palette, never on the sector.
+            const traitRandom = createSeededRandom(state.shipSeed + (index + 1) * 977);
+            const palette = SECTOR_CONFIGS['deep-space'].palette;
+            const hullColor = new THREE.Color(0x172033).lerp(
+                new THREE.Color(palette[Math.floor(traitRandom() * palette.length)]),
+                randomBetween(traitRandom, 0.12, 0.32)
+            );
+            const accentColor = palette[Math.floor(traitRandom() * palette.length)];
+            const cockpitColor = palette[Math.floor(traitRandom() * palette.length)];
+            
+            const hullMat = new THREE.MeshStandardMaterial({ color: hullColor, metalness: 0.9, roughness: 0.2 });
+            const plateMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, metalness: 0.95, roughness: 0.15 });
+            const accentMat = new THREE.MeshStandardMaterial({ color: accentColor, metalness: 0.85, roughness: 0.25 });
+            const cockpitMat = new THREE.MeshStandardMaterial({
+                color: cockpitColor, metalness: 0.1, roughness: 0.1, transparent: true, opacity: 0.8, emissive: cockpitColor, emissiveIntensity: 0.55
+            });
+            const coreGlowMat = new THREE.MeshBasicMaterial({ color: cockpitColor });
+            state.thrusterMaterial = new THREE.MeshBasicMaterial({ color: state.engineColor, transparent: true, opacity: 0.9 });
+            const hotCoreMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending, depthWrite: false });
+            const missileMat = new THREE.MeshStandardMaterial({ color: 0xcfd8e3, metalness: 0.55, roughness: 0.35 });
+            const glowStripMat = new THREE.MeshBasicMaterial({ color: state.isSovereign ? 0xffd700 : accentColor, transparent: true, opacity: 0.9 });
+
+            if (index === 0) {
+                // ========================================================
+                // MODEL 0: F-22 RAPTOR (Space Superiority Fighter)
+                // ========================================================
+                const goldCanopy = new THREE.MeshStandardMaterial({
+                    color: 0xd9a441, metalness: 0.95, roughness: 0.08,
+                    emissive: 0x7a4a00, emissiveIntensity: 0.35, transparent: true, opacity: 0.92
+                });
+                const edgeCol = accentColor;
+
+                // Fuselage: faceted chine planform
+                addPlanform([[0,-4.8],[0.4,-3.2],[0.85,-1.4],[1.0,0.6],[1.0,2.9],[0.7,3.7],
+                             [-0.7,3.7],[-1.0,2.9],[-1.0,0.6],[-0.85,-1.4],[-0.4,-3.2]],
+                            0.5, plateMat, 0, edgeCol);
+                // Raised spine / dorsal deck
+                addPlanform([[0,-3.4],[0.45,-1.0],[0.55,2.8],[0.4,3.5],[-0.4,3.5],[-0.55,2.8],[-0.45,-1.0]],
+                            0.3, hullMat, 0.2, edgeCol);
+
+                // Bubble canopy
+                const canopy = new THREE.Mesh(new THREE.SphereGeometry(0.42, 20, 16), goldCanopy);
+                canopy.scale.set(0.8, 0.55, 2.6);
+                canopy.position.set(0, 0.42, -1.5);
+                state.shipGroup.add(canopy);
+
+                // Radome tip
+                const radome = new THREE.Mesh(new THREE.ConeGeometry(0.42, 1.6, 4), plateMat);
+                radome.rotation.x = -Math.PI / 2; radome.rotation.z = Math.PI / 4;
+                radome.scale.set(1.0, 1.0, 0.55);
+                radome.position.set(0, 0, -4.6);
+                state.shipGroup.add(radome);
+
+                // --- Detail pass: pitot probe, canopy frame, dorsal airbrake, tail beaver, spine glow ---
+                const f22Pitot = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.05, 1.3, 8), accentMat);
+                f22Pitot.rotation.x = Math.PI / 2;
+                f22Pitot.position.set(0, 0, -5.6);
+                state.shipGroup.add(f22Pitot);
+
+                const canopyBow = new THREE.Mesh(new THREE.BoxGeometry(0.78, 0.05, 0.08), plateMat);
+                canopyBow.position.set(0, 0.56, -2.35);
+                state.shipGroup.add(canopyBow);
+                const canopyRail = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.05, 2.2), plateMat);
+                [-1, 1].forEach(s => {
+                    const rail = canopyRail.clone();
+                    rail.position.set(s * 0.33, 0.34, -1.5);
+                    state.shipGroup.add(rail);
+                });
+
+                const airbrake = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.05, 0.9), accentMat);
+                airbrake.position.set(0, 0.38, 2.5);
+                state.shipGroup.add(airbrake);
+
+                const beaver = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.22, 1.5), plateMat);
+                beaver.position.set(0, 0.02, 3.95);
+                state.shipGroup.add(beaver);
+
+                const spineStrip = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.03, 2.0), glowStripMat);
+                spineStrip.position.set(0, 0.37, 0.7);
+                state.shipGroup.add(spineStrip);
+
+                [-1, 1].forEach(side => {
+                    // Chine edge glow strips running along the fuselage nose
+                    const chine = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.03, 3.4), glowStripMat);
+                    chine.position.set(side * 0.52, 0.26, -2.1);
+                    chine.rotation.y = side * -0.2;
+                    state.shipGroup.add(chine);
+                    // Wing leading-edge glow line
+                    const le = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.04, 3.82), glowStripMat);
+                    le.position.set(side * 2.25, 0.05, -0.05);
+                    le.rotation.y = side * Math.PI / 4;
+                    state.shipGroup.add(le);
+                    // Navigation lights on the wingtips (red = port, green = starboard)
+                    addNavLight(side * 3.6, 0.06, 1.75, side < 0 ? 0xff2244 : 0x22ff88);
+                    // Side-mounted short-range missiles on the intake shoulders
+                    addMissile(side * 1.38, -0.3, -0.35, 2.0, missileMat, plateMat);
+                    // Control-surface hinge lines on the wings and stabilators
+                    const hinge = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.02, 0.04), plateMat);
+                    hinge.position.set(side * 2.25, 0.055, 2.3);
+                    hinge.rotation.y = side * 0.29;
+                    state.shipGroup.add(hinge);
+                });
+
+                [-1, 1].forEach(side => {
+                    // Trapezoidal main wings (clipped tips, forward-swept trailing edge)
+                    addPlanform(mirrorPts([[0.9,-1.4],[3.6,1.3],[3.6,2.1],[0.9,2.9]], side),
+                                0.09, hullMat, 0, edgeCol);
+                    // Horizontal stabilators
+                    addPlanform(mirrorPts([[0.9,2.7],[2.6,3.7],[2.6,4.2],[0.9,4.1]], side),
+                                0.07, hullMat, -0.02, edgeCol);
+                    // Canted twin vertical tails
+                    addFin([[1.5,0],[3.7,0],[3.55,1.7],[2.75,1.7]], 0.08, accentMat, side * 0.85, 0.2, 0, -side * 0.5, edgeCol);
+                    // Diamond intake boxes
+                    const intake = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 1.7), plateMat);
+                    intake.position.set(side * 0.95, -0.05, -0.7);
+                    intake.rotation.y = side * -0.08;
+                    state.shipGroup.add(intake);
+                    // Engine nozzles
+                    const nozzle = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.4, 1.1, 16), plateMat);
+                    nozzle.rotation.x = Math.PI / 2;
+                    nozzle.position.set(side * 0.5, 0.0, 3.8);
+                    state.shipGroup.add(nozzle);
+                    const glow = new THREE.Mesh(new THREE.ConeGeometry(0.3, 2.6, 16), state.thrusterMaterial);
+                    glow.rotation.x = -Math.PI / 2;
+                    glow.position.set(side * 0.5, 0.0, 5.2);
+                    state.shipGroup.add(glow);
+                    // Nozzle collar ring + white-hot afterburner core
+                    addNozzleRing(side * 0.5, 0.0, 4.35, 0.38, accentMat);
+                    addHotCore(side * 0.5, 0.0, 4.9, 0.14, 1.5, hotCoreMat);
+                });
+
+            } else if (index === 1) {
+                // ========================================================
+                // MODEL 1: SU-57 FELON (Pixel-camo, twin engine, blended LERX)
+                // ========================================================
+                const camoTex = makeCamoTexture(traitRandom, hullColor, accentColor);
+                const camoMat = new THREE.MeshStandardMaterial({ map: camoTex, metalness: 0.55, roughness: 0.45 });
+                const edgeCol = accentColor;
+
+                // Blended wing-body centre
+                addPlanform([[0,-5.0],[0.4,-3.4],[0.9,-1.6],[1.25,0.2],[1.25,2.8],[0.9,3.6],
+                             [-0.9,3.6],[-1.25,2.8],[-1.25,0.2],[-0.9,-1.6],[-0.4,-3.4]],
+                            0.5, camoMat, 0, edgeCol);
+
+                // Radome + canopy + IRST
+                const radome = new THREE.Mesh(new THREE.ConeGeometry(0.4, 1.8, 16), plateMat);
+                radome.rotation.x = -Math.PI / 2;
+                radome.position.set(0, 0.02, -4.7);
+                state.shipGroup.add(radome);
+                const canopy = new THREE.Mesh(new THREE.SphereGeometry(0.4, 20, 16), cockpitMat);
+                canopy.scale.set(0.75, 0.55, 2.7);
+                canopy.position.set(0, 0.4, -2.0);
+                state.shipGroup.add(canopy);
+                const irst = new THREE.Mesh(new THREE.SphereGeometry(0.1, 10, 10), cockpitMat);
+                irst.position.set(0, 0.3, -3.3);
+                state.shipGroup.add(irst);
+
+                [-1, 1].forEach(side => {
+                    // LERX + wing as one continuous planform
+                    addPlanform(mirrorPts([[0.6,-3.1],[1.3,-0.8],[4.0,0.9],[4.0,1.6],[3.3,2.3],[1.2,2.9]], side),
+                                0.09, camoMat, 0, edgeCol);
+                    // Stabilators
+                    addPlanform(mirrorPts([[1.1,3.0],[3.0,4.0],[3.0,4.5],[1.1,4.3]], side),
+                                0.07, camoMat, -0.02, edgeCol);
+                    // Canted all-moving tails
+                    addFin([[1.7,0],[3.9,0],[3.75,1.7],[3.0,1.9]], 0.08, camoMat, side * 1.05, 0.25, 0, -side * 0.52, edgeCol);
+                    // Under-wing intakes
+                    const intake = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.45, 1.8), plateMat);
+                    intake.position.set(side * 0.85, -0.3, -0.2);
+                    state.shipGroup.add(intake);
+                    // Widely spaced twin engines
+                    const nacelle = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.46, 2.6, 18), plateMat);
+                    nacelle.rotation.x = Math.PI / 2;
+                    nacelle.position.set(side * 0.62, -0.05, 2.9);
+                    state.shipGroup.add(nacelle);
+                    const glow = new THREE.Mesh(new THREE.ConeGeometry(0.36, 2.6, 16), state.thrusterMaterial);
+                    glow.rotation.x = -Math.PI / 2;
+                    glow.position.set(side * 0.62, -0.05, 5.5);
+                    state.shipGroup.add(glow);
+                    // Nozzle collar ring + white-hot afterburner core
+                    addNozzleRing(side * 0.62, -0.05, 4.25, 0.44, accentMat);
+                    addHotCore(side * 0.62, -0.05, 5.0, 0.15, 1.5, hotCoreMat);
+
+                    // LEVCON (leading-edge vortex controllers) at the wing roots
+                    addPlanform(mirrorPts([[1.2,-1.4],[1.95,-0.5],[1.95,-0.15],[1.2,-0.1]], side),
+                                0.05, accentMat, 0.07, edgeCol);
+                    // Wing leading-edge glow line (LERX -> wing)
+                    const le = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.04, 3.19), glowStripMat);
+                    le.position.set(side * 2.65, 0.06, 0.05);
+                    le.rotation.y = side * 1.0;
+                    state.shipGroup.add(le);
+                    // Navigation lights on the wingtips (red = port, green = starboard)
+                    addNavLight(side * 4.0, 0.06, 1.3, side < 0 ? 0xff2244 : 0x22ff88);
+                    // Under-wing air-to-air missiles
+                    addMissile(side * 2.0, -0.2, 0.4, 2.0, missileMat, plateMat);
+                    addMissile(side * 2.55, -0.2, 0.7, 2.0, missileMat, plateMat);
+                    // Flap hinge lines
+                    const hinge = new THREE.Mesh(new THREE.BoxGeometry(2.3, 0.02, 0.04), plateMat);
+                    hinge.position.set(side * 2.5, 0.055, 1.95);
+                    hinge.rotation.y = side * 0.3;
+                    state.shipGroup.add(hinge);
+                });
+                // Tail sting
+                const sting = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.06, 2.2, 12), accentMat);
+                sting.rotation.x = Math.PI / 2;
+                sting.position.set(0, 0.1, 4.3);
+                state.shipGroup.add(sting);
+
+                // --- Detail pass: pitot probe, dorsal spine, canopy frame, airbrake, glow strip ---
+                const suPitot = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.05, 1.4, 8), accentMat);
+                suPitot.rotation.x = Math.PI / 2;
+                suPitot.position.set(0, 0.02, -5.85);
+                state.shipGroup.add(suPitot);
+
+                addPlanform([[0,-3.0],[0.5,-0.8],[0.6,2.6],[0.4,3.4],[-0.4,3.4],[-0.6,2.6],[-0.5,-0.8]],
+                            0.26, plateMat, 0.24, edgeCol);
+
+                const suBow = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.05, 0.08), plateMat);
+                suBow.position.set(0, 0.58, -2.45);
+                state.shipGroup.add(suBow);
+                [-1, 1].forEach(s => {
+                    const rail = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.05, 2.3), plateMat);
+                    rail.position.set(s * 0.32, 0.36, -2.0);
+                    state.shipGroup.add(rail);
+                });
+
+                const suBrake = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.05, 1.0), accentMat);
+                suBrake.position.set(0, 0.39, 2.2);
+                state.shipGroup.add(suBrake);
+
+                const suStrip = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.03, 2.0), glowStripMat);
+                suStrip.position.set(0, 0.39, 0.5);
+                state.shipGroup.add(suStrip);
+
+                // Inter-engine tunnel between the two nacelles
+                const tunnel = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.2, 2.0), plateMat);
+                tunnel.position.set(0, 0.02, 3.4);
+                state.shipGroup.add(tunnel);
+
+} else if (index === 2) {
+                // ========================================================
+                // MODEL 2: PHANTOM GT-02 (Stealth Quad-Fin Interceptor, tri-engine)
+                // Balanced around the origin: symmetric on X, mass centred on Z.
+                // ========================================================
+                const edgeCol = accentColor;
+                const phantomCanopy = new THREE.MeshStandardMaterial({
+                    color: 0x0a1424, metalness: 0.95, roughness: 0.05,
+                    emissive: cockpitColor, emissiveIntensity: 0.5, transparent: true, opacity: 0.9
+                });
+
+                // Arrowhead fuselage (chined, razor nose)
+                addPlanform([[0,-5.4],[0.3,-4.0],[0.7,-2.0],[1.1,0.0],[1.1,2.6],[0.8,3.6],
+                             [-0.8,3.6],[-1.1,2.6],[-1.1,0.0],[-0.7,-2.0],[-0.3,-4.0]],
+                            0.5, plateMat, 0, edgeCol);
+                // Raised dorsal spine
+                addPlanform([[0,-3.6],[0.4,-1.0],[0.5,2.8],[0.3,3.4],[-0.3,3.4],[-0.5,2.8],[-0.4,-1.0]],
+                            0.28, hullMat, 0.22, edgeCol);
+                // Neon spine strip
+                const spineGlow = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.04, 3.6), coreGlowMat);
+                spineGlow.position.set(0, 0.38, 0.6);
+                state.shipGroup.add(spineGlow);
+
+                // Stealth canopy
+                const pCanopy = new THREE.Mesh(new THREE.SphereGeometry(0.42, 20, 16), phantomCanopy);
+                pCanopy.scale.set(0.75, 0.5, 2.6);
+                pCanopy.position.set(0, 0.45, -1.9);
+                state.shipGroup.add(pCanopy);
+
+                // Nose sensor probe
+                const probe = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.07, 1.5, 10), accentMat);
+                probe.rotation.x = Math.PI / 2;
+                probe.position.set(0, 0, -6.0);
+                state.shipGroup.add(probe);
+
+                [-1, 1].forEach(side => {
+                    // Cranked double-delta main wings
+                    addPlanform(mirrorPts([[0.9,-1.6],[1.6,-0.4],[4.4,2.2],[4.4,3.0],[1.0,3.2]], side),
+                                0.09, hullMat, 0, edgeCol);
+                    // Forward canards
+                    addPlanform(mirrorPts([[0.7,-3.0],[1.9,-2.0],[1.9,-1.6],[0.7,-1.8]], side),
+                                0.06, accentMat, 0.08, edgeCol);
+                    // Upper canted fins
+                    addFin([[1.6,0],[3.8,0],[3.5,1.6],[2.7,1.8]], 0.08, accentMat,
+                           side * 1.0, 0.2, 0, -side * 0.45, edgeCol);
+                    // Lower ventral fins (the "4-wing" Phantom signature)
+                    addFin([[2.0,0],[3.7,0],[3.4,-1.1],[2.7,-1.2]], 0.08, hullMat,
+                           side * 0.95, -0.2, 0, side * 0.55, edgeCol);
+                    // Intakes
+                    const intake = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.4, 1.6), plateMat);
+                    intake.position.set(side * 0.9, -0.25, -0.8);
+                    state.shipGroup.add(intake);
+                    // Side engine nacelles + exhaust
+                    const nacelle = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.44, 2.4, 18), plateMat);
+                    nacelle.rotation.x = Math.PI / 2;
+                    nacelle.position.set(side * 0.65, -0.05, 3.0);
+                    state.shipGroup.add(nacelle);
+                    const ring = new THREE.Mesh(new THREE.TorusGeometry(0.4, 0.05, 8, 24), accentMat);
+                    ring.position.set(side * 0.65, -0.05, 4.2);
+                    state.shipGroup.add(ring);
+                    const glow = new THREE.Mesh(new THREE.ConeGeometry(0.34, 2.4, 16), state.thrusterMaterial);
+                    glow.rotation.x = -Math.PI / 2;
+                    glow.position.set(side * 0.65, -0.05, 5.4);
+                    state.shipGroup.add(glow);
+                    // Glowing wingtip emitters
+                    const tip = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.12, 0.9), coreGlowMat);
+                    tip.position.set(side * 4.35, 0, 2.65);
+                    state.shipGroup.add(tip);
+                });
+
+                // Centre main engine
+                const mainNozzle = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.36, 2.0, 16), plateMat);
+                mainNozzle.rotation.x = Math.PI / 2;
+                mainNozzle.position.set(0, 0.08, 3.4);
+                state.shipGroup.add(mainNozzle);
+                const mainGlow = new THREE.Mesh(new THREE.ConeGeometry(0.28, 3.0, 16), state.thrusterMaterial);
+                mainGlow.rotation.x = -Math.PI / 2;
+                mainGlow.position.set(0, 0.08, 5.9);
+                state.shipGroup.add(mainGlow);
+
+            } else if (index === 3) {
+                // ========================================================
+                // MODEL 3: SOLARIS FX-47 (forward-swept wings + canards)
+                // ========================================================
+                const edgeCol = accentColor;
+                addPlanform([[0,-4.6],[0.45,-3.0],[0.8,-1.0],[0.9,2.8],[0.6,3.7],[-0.6,3.7],[-0.9,2.8],[-0.8,-1.0],[-0.45,-3.0]], 0.5, plateMat, 0, edgeCol);
+                const fw = [[0.8,0.2],[4.5,-1.8],[4.5,-0.9],[0.8,2.4]];
+                addPlanform(fw, 0.14, hullMat, 0, edgeCol);
+                addPlanform(mirrorPts(fw, -1), 0.14, hullMat, 0, edgeCol);
+                const cn = [[0.5,-2.8],[1.9,-2.3],[1.9,-1.9],[0.5,-1.7]];
+                addPlanform(cn, 0.1, accentMat, 0.05, edgeCol);
+                addPlanform(mirrorPts(cn, -1), 0.1, accentMat, 0.05, edgeCol);
+                const cp = new THREE.Mesh(new THREE.SphereGeometry(0.42, 20, 16), cockpitMat);
+                cp.scale.set(0.7, 0.5, 2.2); cp.position.set(0, 0.38, -1.7);
+                state.shipGroup.add(cp);
+                [-1, 1].forEach(side => {
+                    addFin([[-0.5,0],[0.9,0],[1.3,1.2],[0.6,1.2]], 0.08, hullMat, side * 0.7, 0.2, 2.4, side * -0.35, edgeCol);
+                    const nz = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.36, 2.0, 16), plateMat);
+                    nz.rotation.x = Math.PI / 2; nz.position.set(side * 0.5, 0, 3.4);
+                    state.shipGroup.add(nz);
+                    const gl = new THREE.Mesh(new THREE.ConeGeometry(0.28, 3.0, 16), state.thrusterMaterial);
+                    gl.rotation.x = -Math.PI / 2; gl.position.set(side * 0.5, 0, 5.9);
+                    state.shipGroup.add(gl);
+                    addNozzleRing(side * 0.5, 0, 4.4, 0.34, accentMat);
+                    addHotCore(side * 0.5, 0, 5.2, 0.14, 2.0, hotCoreMat);
+                    addNavLight(side * 4.5, 0, -1.3, side < 0 ? 0xff2244 : 0x22ff88);
+                });
+            } else if (index === 4) {
+                // ========================================================
+                // MODEL 4: VOID WING B-9 (flying-wing boomerang, buried engines)
+                // ========================================================
+                const edgeCol = accentColor;
+                addPlanform([[0,-3.6],[1.2,-2.0],[5.0,1.6],[5.0,2.4],[3.2,2.0],[1.6,3.0],[0,2.4],[-1.6,3.0],[-3.2,2.0],[-5.0,2.4],[-5.0,1.6],[-1.2,-2.0]], 0.45, plateMat, 0, edgeCol);
+                addPlanform([[0,-2.6],[0.9,-0.6],[0.9,1.8],[0,2.2],[-0.9,1.8],[-0.9,-0.6]], 0.3, hullMat, 0.18, edgeCol);
+                const cp = new THREE.Mesh(new THREE.SphereGeometry(0.4, 20, 16), cockpitMat);
+                cp.scale.set(0.8, 0.5, 1.8); cp.position.set(0, 0.34, -1.6);
+                state.shipGroup.add(cp);
+                [-1, 1].forEach(side => {
+                    const nz = new THREE.Mesh(new THREE.CylinderGeometry(0.36, 0.42, 1.0, 16), plateMat);
+                    nz.rotation.x = Math.PI / 2; nz.position.set(side * 0.9, 0, 3.1);
+                    state.shipGroup.add(nz);
+                    const gl = new THREE.Mesh(new THREE.ConeGeometry(0.34, 3.0, 16), state.thrusterMaterial);
+                    gl.rotation.x = -Math.PI / 2; gl.position.set(side * 0.9, 0, 5.1);
+                    state.shipGroup.add(gl);
+                    addNozzleRing(side * 0.9, 0, 3.6, 0.4, accentMat);
+                    addHotCore(side * 0.9, 0, 4.4, 0.16, 1.8, hotCoreMat);
+                    addNavLight(side * 5.0, 0, 2.0, side < 0 ? 0xff2244 : 0x22ff88);
+                });
+            }
+
+            // ---- Crystal Commander: core crystal + orbiting escort shards (links to the 5,550 crystal fleet) ----
+            const CRYSTAL_POS = { 0: [0, 0.62, 1.4], 1: [0, 0.62, 1.4], 2: [0, 0.6, 1.6], 3: [0, 0.6, 1.4], 4: [0, 0.55, 0.4] };
+            const cPos = CRYSTAL_POS[index] || CRYSTAL_POS[0];
+            const crystalMat = new THREE.MeshStandardMaterial({
+                color: cockpitColor, emissive: cockpitColor, emissiveIntensity: 0.9,
+                metalness: 0.2, roughness: 0.05, transparent: true, opacity: 0.85, flatShading: true
+            });
+            const coreCrystal = new THREE.Mesh(new THREE.OctahedronGeometry(0.3, 0), crystalMat);
+            coreCrystal.scale.set(0.8, 1.5, 0.8);
+            coreCrystal.position.set(cPos[0], cPos[1] + 0.25, cPos[2]);
+            state.shipGroup.add(coreCrystal);
+            const shardOrbit = new THREE.Group();
+            const shardGeo = new THREE.OctahedronGeometry(0.18, 0);
+            for (let k = 0; k < 6; k++) {
+                const a = (k / 6) * Math.PI * 2;
+                const shard = new THREE.Mesh(shardGeo, crystalMat);
+                shard.scale.set(0.7, 1.6, 0.7);
+                shard.position.set(Math.cos(a) * 3.4, (k % 2 ? 1 : -1) * 0.9, Math.sin(a) * 3.4);
+                shard.rotation.set(0.4 * k, a, 0.3);
+                shardOrbit.add(shard);
+            }
+            state.shipGroup.add(shardOrbit);
+            state.shipGroup.userData.crystalOrbit = shardOrbit;
+            state.shipGroup.userData.coreCrystal = coreCrystal;
+
+            // ---- Collector decor: serial plate, Sovereign halo, TBA treasury coins ----
+            const PLATES = {
+                0: { y: 0.362, z: 3.2, w: 0.8, code: 'F-22' },
+                1: { y: 0.382, z: 3.0, w: 0.8, code: 'SU-57' },
+                2: { y: 0.372, z: 3.0, w: 0.66, code: 'GT-02' },
+                3: { y: 0.36, z: 3.0, w: 0.7, code: 'FX-47' },
+                4: { y: 0.30, z: 2.0, w: 0.9, code: 'B-9' }
+            };
+            const plateCfg = PLATES[index] || PLATES[0];
+            addSerialPlate(plateCfg.y, plateCfg.z, plateCfg.w, plateCfg.code, state.isSovereign ? 0xffd700 : accentColor);
+
+            state.shipGroup.userData.sovereignHalo = null;
+            state.shipGroup.userData.coinOrbit = null;
+            const goldHex = 0xffd700;
+
+            if (state.isSovereign) {
+                const halo = new THREE.Group();
+                const haloMat = (op) => new THREE.MeshBasicMaterial({ color: goldHex, transparent: true, opacity: op, blending: THREE.AdditiveBlending, depthWrite: false });
+                const ringA = new THREE.Mesh(new THREE.TorusGeometry(6.6, 0.05, 10, 96), haloMat(0.85));
+                ringA.rotation.x = Math.PI / 2;
+                halo.add(ringA);
+                const ringB = new THREE.Mesh(new THREE.TorusGeometry(7.1, 0.035, 10, 96), haloMat(0.45));
+                ringB.rotation.set(Math.PI / 2 + 0.45, 0, 0.3);
+                halo.add(ringB);
+                for (let k = 0; k < 3; k++) {
+                    const a = (k / 3) * Math.PI * 2;
+                    const node = new THREE.Mesh(new THREE.SphereGeometry(0.16, 12, 12), haloMat(0.95));
+                    node.position.set(Math.cos(a) * 6.6, 0, Math.sin(a) * 6.6);
+                    halo.add(node);
+                }
+                state.shipGroup.add(halo);
+                state.shipGroup.userData.sovereignHalo = halo;
+            }
+
+            const coinCount = state.tbaBalance > 0 ? Math.min(24, 3 + Math.floor(Math.log10(state.tbaBalance * 1000 + 1) * 6)) : 0;
+            if (coinCount > 0) {
+                const orbit = new THREE.Group();
+                const coinGeo = new THREE.CylinderGeometry(0.16, 0.16, 0.035, 18);
+                const coinMat = new THREE.MeshStandardMaterial({ color: goldHex, metalness: 1.0, roughness: 0.25, emissive: 0x8a5a00, emissiveIntensity: 0.6 });
+                for (let k = 0; k < coinCount; k++) {
+                    const a = (k / coinCount) * Math.PI * 2;
+                    const coin = new THREE.Mesh(coinGeo, coinMat);
+                    coin.position.set(Math.cos(a) * 5.0, Math.sin(a * 3) * 0.35, Math.sin(a) * 5.0);
+                    coin.rotation.set(0, -a, Math.PI / 2);
+                    orbit.add(coin);
+                }
+                orbit.rotation.z = 0.12;
+                state.shipGroup.add(orbit);
+                state.shipGroup.userData.coinOrbit = orbit;
+            }
+
+            // Exhaust emitter layout per craft: [x, y, startZ] for every nozzle
+            const ENGINE_LAYOUTS = {
+                0: [[-0.5, 0.0, 4.4], [0.5, 0.0, 4.4]],
+                1: [[-0.62, -0.05, 4.3], [0.62, -0.05, 4.3]],
+                2: [[-0.65, -0.05, 4.2], [0.65, -0.05, 4.2], [0, 0.08, 4.4]],
+                3: [[-0.5, 0.0, 4.4], [0.5, 0.0, 4.4]],
+                4: [[-0.9, 0.0, 3.6], [0.9, 0.0, 3.6]]
+            };
+            state.engineLayout = ENGINE_LAYOUTS[index] || ENGINE_LAYOUTS[0];
+
+            const baseScale = randomBetween(traitRandom, 0.92, 1.1);
+            state.shipGroup.scale.setScalar(baseScale);
+            state.shipGroup.userData.baseScale = baseScale;
+            state.shipGroup.rotation.set(0, 0, 0);
+            
+            createEngineParticles();
+        }
+
+        function createEngineParticles() {
+            // Deterministic Fix: Properly dispose of geometry and material to prevent memory leaks
+            if (state.engineParticles) {
+                state.shipGroup.remove(state.engineParticles);
+                if (state.engineParticles.geometry) state.engineParticles.geometry.dispose();
+                if (state.engineParticles.material) state.engineParticles.material.dispose();
+            }
+            
+            // One lane of particles per nozzle so the exhaust leaves the real engines
+            const random = createSeededRandom(state.shipSeed + 999);
+            const layout = state.engineLayout || [[0, 0, 2.5]];
+            const perEngine = 55;
+            const particleCount = perEngine * layout.length;
+            const geo = new THREE.BufferGeometry();
+            const positions = new Float32Array(particleCount * 3);
+            const zStart = new Float32Array(particleCount);
+
+            for (let e = 0; e < layout.length; e++) {
+                const [ex, ey, ez] = layout[e];
+                for (let k = 0; k < perEngine; k++) {
+                    const i = e * perEngine + k;
+                    positions[i * 3] = ex + (random() - 0.5) * 0.28;
+                    positions[i * 3 + 1] = ey + (random() - 0.5) * 0.28;
+                    positions[i * 3 + 2] = ez + random() * 3.2;
+                    zStart[i] = ez;
+                }
+            }
+            geo.userData.zStart = zStart;
+            
+            geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            
+            const mat = new THREE.PointsMaterial({
+                color: state.engineColor,
+                size: 0.22,
+                transparent: true,
+                opacity: 0.8,
+                blending: THREE.AdditiveBlending,
+                depthWrite: false
+            });
+            
+            state.engineParticles = new THREE.Points(geo, mat);
+            state.shipGroup.add(state.engineParticles);
+        }
+
+        function setupUIEventListeners() {
+            const configPanel = document.getElementById('orbit-control-panel');
+            const openConfigBtn = document.getElementById('open-config-btn');
+            
+            document.getElementById('close-config-btn').addEventListener('click', () => {
+                configPanel.classList.add('scale-0', 'opacity-0', 'pointer-events-none');
+                setTimeout(() => {
+                    if (state.uiVisible) openConfigBtn.classList.remove('hidden');
+                }, 300);
+            });
+
+            openConfigBtn.addEventListener('click', () => {
+                openConfigBtn.classList.add('hidden');
+                configPanel.classList.remove('scale-0', 'opacity-0', 'pointer-events-none');
+            });
+
+            document.getElementById('toggle-ui-btn').addEventListener('click', () => {
+                const hud = document.getElementById('main-hud-wrapper');
+                const icon = document.getElementById('toggle-ui-icon');
+                state.uiVisible = !state.uiVisible;
+                
+                if (state.uiVisible) {
+                    hud.classList.remove('opacity-0', 'pointer-events-none');
+                    hud.classList.add('opacity-100');
+                    icon.className = 'fa-solid fa-eye-slash text-lg';
+                    if (configPanel.classList.contains('scale-0')) {
+                        openConfigBtn.classList.remove('hidden');
+                    }
+                } else {
+                    hud.classList.remove('opacity-100');
+                    hud.classList.add('opacity-0', 'pointer-events-none'); 
+                    icon.className = 'fa-solid fa-eye text-lg text-amber-400';
+                    openConfigBtn.classList.add('hidden'); 
+                }
+            });
+
+            document.querySelectorAll('.ship-select-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const index = parseInt(e.currentTarget.getAttribute('data-ship'));
+                    state.activeShipIndex = index;
+
+                    document.querySelectorAll('.ship-select-btn').forEach(b => {
+                        b.className = "ship-select-btn px-2 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-400 hover:text-cyan-300 text-[10px] font-orbitron font-bold truncate transition-all";
+                    });
+                    e.currentTarget.className = "ship-select-btn px-2 py-2 rounded-lg bg-cyan-950 border-2 border-cyan-400 text-cyan-300 text-[10px] font-orbitron font-bold truncate transition-all shadow-neon-cyan";
+
+                    renderSelectedShipModel(index);
+                    showToast(`Craft Switch: ${['F-22 RAPTOR','SU-57 FELON','PHANTOM GT-02','SOLARIS FX-47','VOID WING B-9'][index] || ('MODEL #' + (index + 1))}`);
+                });
+            });
+
+            document.querySelectorAll('.engine-color-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const hexStr = e.currentTarget.getAttribute('data-color');
+                    state.engineColor = parseInt(hexStr);
+                    if (state.thrusterMaterial) state.thrusterMaterial.color.setHex(state.engineColor);
+                    if (state.engineParticles) state.engineParticles.material.color.setHex(state.engineColor);
+                    
+                    document.querySelectorAll('.engine-color-btn').forEach(b => {
+                        b.classList.remove('border-2', 'border-cyan-400');
+                        b.classList.add('border-slate-700');
+                    });
+                    e.currentTarget.classList.remove('border-slate-700');
+                    e.currentTarget.classList.add('border-2', 'border-cyan-400');
+                    showToast("Thruster Energy Adjusted");
+                });
+            });
+
+            document.querySelectorAll('.sector-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const sectorKey = e.currentTarget.getAttribute('data-sector');
+                    state.sector = sectorKey;
+                    const config = SECTOR_CONFIGS[sectorKey];
+                    
+                    document.querySelectorAll('.sector-btn').forEach(b => {
+                        b.className = "sector-btn w-full py-1.5 rounded-lg bg-slate-900 text-slate-400 border border-slate-800 hover:border-slate-600 text-[11px]";
+                    });
+                    e.currentTarget.className = "sector-btn w-full py-1.5 rounded-lg bg-cyan-950 text-cyan-300 border border-cyan-400 text-[11px] font-bold";
+                    
+                    rebuildEnvironmentForSector();
+                    renderSelectedShipModel(state.activeShipIndex);
+                    updateOnChainUI();
+
+                    document.getElementById('hud-sector-name').innerText = config.name;
+                    showToast(`MAPPED: ${config.name}`);
+                });
+            });
+
+            document.getElementById('cam-preset-orbit').addEventListener('click', () => animateCameraTo(0, 3, 13));
+            document.getElementById('cam-preset-engine').addEventListener('click', () => animateCameraTo(0, 1.5, 6)); 
+            document.getElementById('cam-preset-cockpit').addEventListener('click', () => animateCameraTo(0, 1.0, -2.5));
+
+            document.getElementById('hyperdrive-btn').addEventListener('click', () => {
+                if (state.isWormholeActive || state.isWarping || state.warpQueued) return;
+                const fire = () => {
+                    state.warpQueued = false;
+                    if (!state.isWormholeActive && !state.isWarping) state.timeSinceLastWarp = state.warpCycleDuration - 12;
+                };
+                if (state.audioEnabled && music.mode !== 'none') {
+                    // Lock the jump to the next bar line (max ~2 s) so it lands on the music
+                    state.warpQueued = true;
+                    showToast('Warp locked to next bar');
+                    setTimeout(fire, (1 - music.barPos) * MUSIC_BAR * 1000);
+                } else {
+                    fire();
+                }
+            });
+
+            document.getElementById('toggle-orbit-btn').addEventListener('click', () => {
+                state.autoRotate = !state.autoRotate;
+                controls.autoRotate = state.autoRotate;
+                document.getElementById('orbit-status-text').innerText = `AUTO: ${state.autoRotate ? 'ON' : 'OFF'}`;
+            });
+
+            document.getElementById('snapshot-btn').addEventListener('click', () => {
+                renderer.render(scene, camera);
+                const link = document.createElement('a');
+                link.download = `spacecraft-nft-model-${state.activeShipIndex + 1}.png`;
+                link.href = renderer.domElement.toDataURL('image/png');
+                link.click();
+                showToast("Viewport Captured!");
+            });
+
+            const modal = document.getElementById('metadata-modal');
+            const closeModalFn = () => modal.classList.add('hidden');
+            
+            document.getElementById('info-modal-open-btn').addEventListener('click', () => modal.classList.remove('hidden'));
+            document.getElementById('info-modal-close-btn').addEventListener('click', closeModalFn);
+            
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) closeModalFn();
+            });
+
+            document.getElementById('modal-connect-btn').addEventListener('click', () => {
+                const addr = document.getElementById('input-contract-address').value;
+                const tokenId = document.getElementById('input-token-id').value;
+                fetchSmartContractData(addr, tokenId);
+                closeModalFn();
+            });
+
+            document.getElementById('audio-toggle-btn').addEventListener('click', toggleAudioHum);
+        }
+
+        function animateCameraTo(offsetX, offsetY, offsetZ) {
+            if (state.cameraAnimFrame) cancelAnimationFrame(state.cameraAnimFrame);
+            const startPos = camera.position.clone();
+            const endPos = new THREE.Vector3(offsetX, offsetY, offsetZ);
+            
+            let progress = 0;
+            function step() {
+                progress = Math.min(progress + 0.045, 1);
+                const eased = progress * progress * (3 - 2 * progress);
+                
+                camera.position.lerpVectors(startPos, endPos, eased);
+                controls.target.set(0,0,0);
+                controls.update();
+                
+                if (progress < 1) {
+                    state.cameraAnimFrame = requestAnimationFrame(step);
+                } else {
+                    state.cameraAnimFrame = null;
+                }
+            }
+            step();
+        }
+
+        function showToast(text) {
+            const toast = document.getElementById('toast-notification');
+            const toastText = document.getElementById('toast-text');
+            if (!toast || !toastText) return;
+
+            toastText.innerText = text;
+            toast.classList.remove('translate-x-full', 'opacity-0');
+
+            if (state.toastTimeout) clearTimeout(state.toastTimeout);
+            state.toastTimeout = setTimeout(() => {
+                toast.classList.add('translate-x-full', 'opacity-0');
+            }, 2800);
+        }
+
+        // ========================================================
+        // SOUNDTRACK: gapless loop (Web Audio) + beat clock @ 115 BPM, 4/4
+        // ========================================================
+        const SOUNDTRACK_ID = 'Dc6goSHMFWJK5VWLRriLrrUbwXw5BHrrRtRSYbJRUGr3';
+        const SOUNDTRACK_URLS = [
+            'https://gateway.irys.xyz/' + SOUNDTRACK_ID,
+            'https://arweave.net/' + SOUNDTRACK_ID
+        ];
+        const MUSIC_BPM = 115;
+        const MUSIC_BEAT = 60 / MUSIC_BPM;   // ~0.5217 s
+        const MUSIC_BAR = MUSIC_BEAT * 4;    // ~2.087 s
+        const music = {
+            mode: 'none',   // 'webaudio' | 'element' | 'none'
+            ctx: null, buffer: null, source: null, gain: null, analyser: null, data: null,
+            startedAt: 0, el: null, loading: false,
+            pulse: 0, energy: 0, beatPhase: 0, barPos: 0
+        };
+
+        async function loadSoundtrack() {
+            if (music.ctx) {
+                for (const url of SOUNDTRACK_URLS) {
+                    try {
+                        const res = await fetch(url, { mode: 'cors' });
+                        if (!res.ok) continue;
+                        const arr = await res.arrayBuffer();
+                        music.buffer = await new Promise((ok, fail) => music.ctx.decodeAudioData(arr, ok, fail));
+                        music.mode = 'webaudio';
+                        return;
+                    } catch (err) {
+                        console.warn('Soundtrack source failed:', url, err);
+                    }
+                }
+            }
+            // Fallback: plain HTML5 audio (loop may have a tiny gap, no spectrum analysis)
+            music.el = new Audio(SOUNDTRACK_URLS[0]);
+            music.el.loop = true;
+            music.el.volume = 0.6;
+            music.el.addEventListener('error', () => {
+                if (music.el && music.el.src !== SOUNDTRACK_URLS[1]) music.el.src = SOUNDTRACK_URLS[1];
+            }, { once: true });
+            music.mode = 'element';
+        }
+
+        function startWebAudioLoop() {
+            const src = music.ctx.createBufferSource();
+            src.buffer = music.buffer;
+            src.loop = true;
+            music.gain = music.ctx.createGain();
+            music.gain.gain.value = 0.6;
+            music.analyser = music.ctx.createAnalyser();
+            music.analyser.fftSize = 256;
+            music.analyser.smoothingTimeConstant = 0.8;
+            music.data = new Uint8Array(music.analyser.frequencyBinCount);
+            src.connect(music.analyser);
+            music.analyser.connect(music.gain);
+            music.gain.connect(music.ctx.destination);
+            music.startedAt = music.ctx.currentTime;
+            src.start(0);
+            music.source = src;
+        }
+
+        async function toggleAudioHum() {
+            // Switch off: suspend keeps the beat clock and loop position intact
+            if (state.audioEnabled) {
+                if (music.mode === 'webaudio' && music.ctx) music.ctx.suspend();
+                if (music.mode === 'element' && music.el) music.el.pause();
+                state.audioEnabled = false;
+                document.getElementById('audio-icon').className = 'fa-solid fa-volume-xmark';
+                return;
+            }
+            if (music.loading) return;
+
+            // Create + resume the context synchronously inside the tap (browser autoplay rules)
+            const AC = window.AudioContext || window.webkitAudioContext;
+            if (AC && !music.ctx) { try { music.ctx = new AC(); } catch (e) { music.ctx = null; } }
+            if (music.ctx) { try { music.ctx.resume(); } catch (e) {} }
+
+            if (music.mode === 'none') {
+                music.loading = true;
+                showToast('Loading Soundtrack...');
+                try { await loadSoundtrack(); } finally { music.loading = false; }
+            }
+
+            try {
+                if (music.mode === 'webaudio') {
+                    if (!music.source) startWebAudioLoop(); else await music.ctx.resume();
+                } else if (music.mode === 'element') {
+                    await music.el.play();
+                } else {
+                    throw new Error('No soundtrack source');
+                }
+                state.audioEnabled = true;
+                document.getElementById('audio-icon').className = 'fa-solid fa-volume-high text-cyan-400';
+                showToast('Soundtrack Online');
+            } catch (err) {
+                console.error('Audio playback error:', err);
+                showToast('ERROR: Audio Playback Blocked');
+            }
+        }
+
+        // Per-frame beat clock + loudness. pulse: 1 on the beat -> 0; energy: smoothed low/mid level
+        function updateMusic(delta) {
+            let t = null;
+            if (state.audioEnabled) {
+                if (music.mode === 'webaudio' && music.ctx) {
+                    t = music.ctx.currentTime - music.startedAt - (music.ctx.outputLatency || music.ctx.baseLatency || 0);
+                } else if (music.mode === 'element' && music.el) {
+                    t = music.el.currentTime;
+                }
+            }
+            if (t === null || t < 0) {
+                music.pulse *= Math.exp(-delta * 6);
+                music.energy *= Math.exp(-delta * 4);
+                return;
+            }
+            music.beatPhase = (t / MUSIC_BEAT) % 1;
+            music.barPos = (t % MUSIC_BAR) / MUSIC_BAR;
+            music.pulse = Math.pow(1 - music.beatPhase, 3);
+            if (music.analyser && music.data) {
+                music.analyser.getByteFrequencyData(music.data);
+                let sum = 0;
+                const n = 24;
+                for (let i = 0; i < n; i++) sum += music.data[i];
+                const level = sum / (n * 255);
+                music.energy += (level - music.energy) * Math.min(1, delta * 8);
+            } else {
+                music.energy = 0.25 + 0.35 * music.pulse;
+            }
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const delta = clock.getDelta();
+            const elapsedTime = clock.getElapsedTime();
+
+            frameCounter++;
+            const now = performance.now();
+            if (now - lastFpsTimestamp >= 1000) {
+                const currentFps = Math.round((frameCounter * 1000) / (now - lastFpsTimestamp));
+                const fpsElem = document.getElementById('fps-counter');
+                if (fpsElem) fpsElem.innerText = currentFps;
+                frameCounter = 0;
+                lastFpsTimestamp = now;
+            }
+
+            if (state.starMaterial) {
+                state.starMaterial.uniforms.time.value = elapsedTime;
+            }
+
+            // --- Music reactivity (all values decay to 0 when the soundtrack is off) ---
+            updateMusic(delta);
+            const beatPulse = music.pulse;
+            const beatEnergy = music.energy;
+            if (state.starMaterial) state.starMaterial.uniforms.beat.value = beatPulse;
+            renderer.toneMappingExposure = 1.25 + 0.14 * beatPulse + 0.10 * beatEnergy;
+            if (state.thrusterMaterial) state.thrusterMaterial.opacity = 0.78 + 0.22 * Math.max(beatPulse, beatEnergy);
+            if (state.engineParticles) state.engineParticles.material.size = 0.22 + 0.09 * beatPulse;
+            if (state.shipGroup) {
+                const halo = state.shipGroup.userData.sovereignHalo;
+                if (halo) {
+                    halo.rotation.y += delta * 0.4;
+                    halo.scale.setScalar(1 + 0.025 * beatPulse);
+                }
+                const coins = state.shipGroup.userData.coinOrbit;
+                if (coins) coins.rotation.y += delta * 0.35;
+                const shards = state.shipGroup.userData.crystalOrbit;
+                if (shards) { shards.rotation.y -= delta * 0.6; shards.children.forEach((c, i) => { c.rotation.y += delta * (1 + i * 0.15); }); }
+                const core = state.shipGroup.userData.coreCrystal;
+                if (core) { core.rotation.y += delta * 1.2; core.scale.y = 1.5 + 0.12 * Math.sin(elapsedTime * 3) + 0.25 * beatPulse; }
+            }
+
+            if (state.shipGroup) {
+                state.shipGroup.position.y = Math.sin(elapsedTime * 1.4) * 0.18;
+                state.shipGroup.rotation.z = Math.sin(elapsedTime * 0.9) * 0.04;
+                state.shipGroup.rotation.x = Math.cos(elapsedTime * 0.7) * 0.03;
+
+                if (state.engineParticles) {
+                    const posAttr = state.engineParticles.geometry.attributes.position;
+                    const speedMultiplier = state.isWormholeActive ? 5.0 : 3.0;
+                    const zStartArr = state.engineParticles.geometry.userData.zStart;
+                    for (let i = 0; i < posAttr.count; i++) {
+                        let z = posAttr.getZ(i);
+                        z += delta * 8.0 * speedMultiplier;
+                        if (z > zStartArr[i] + 3.2) z = zStartArr[i];
+                        posAttr.setZ(i, z);
+                    }
+                    posAttr.needsUpdate = true;
+                }
+            }
+
+            const pSpeed = state.isWormholeActive ? 240 : 25;
+
+            if (state.stardustField) {
+                const pos = state.stardustField.geometry.attributes.position;
+                for (let i = 0; i < pos.count; i++) {
+                    let z = pos.getZ(i) + delta * pSpeed;
+                    if (z > 40) z = -200;
+                    pos.setZ(i, z);
+                }
+                pos.needsUpdate = true;
+            }
+
+            if (state.squareParticlesField) {
+                const pos = state.squareParticlesField.geometry.attributes.position;
+                for (let i = 0; i < pos.count; i++) {
+                    let z = pos.getZ(i) + delta * (pSpeed * 1.3);
+                    if (z > 50) z = -220;
+                    pos.setZ(i, z);
+                }
+                pos.needsUpdate = true;
+            }
+
+            state.celestialGroups.forEach((planet) => {
+                planet.rotation.y += delta * (planet.userData.spinSpeed || 0.005);
+            });
+
+            if (state.instancedAsteroids && state.asteroidData) {
+                let matrixUpdated = false;
+                const dummy = new THREE.Object3D();
+                const astSpeed = state.isWormholeActive ? 160 : 30;
+
+                for (let i = 0; i < state.asteroidData.length; i++) {
+                    const ast = state.asteroidData[i];
+                    
+                    ast.pos.z += delta * (astSpeed * 0.8 + ast.moveSpeedZ);
+                    ast.rot.x += ast.rotSpeedX;
+                    ast.rot.y += ast.rotSpeedY;
+                    
+                    if (ast.pos.z > 50) {
+                        // Deterministic Fix: Use seeded randomizer instead of Math.random()
+                        ast.pos.z = -200 - state.animRandom() * 150;
+                        ast.pos.x = (state.animRandom() - 0.5) * 120;
+                        ast.pos.y = (state.animRandom() - 0.5) * 80;
+                    }
+                    
+                    dummy.position.copy(ast.pos);
+                    dummy.rotation.copy(ast.rot);
+                    dummy.scale.copy(ast.scale);
+                    dummy.updateMatrix();
+
+                    state.instancedAsteroids.setMatrixAt(i, dummy.matrix);
+                    matrixUpdated = true;
+                }
+                if (matrixUpdated) state.instancedAsteroids.instanceMatrix.needsUpdate = true;
+            }
+
+            if (!state.isWarping) {
+                state.timeSinceLastWarp += delta;
+            }
+
+            const anomalyAlert = document.getElementById('hud-anomaly-alert');
+            const velocityHud = document.getElementById('hud-velocity-state');
+
+            if (state.timeSinceLastWarp >= state.warpCycleDuration - 12 && !state.isWormholeActive) {
+                state.isWormholeActive = true;
+                if (anomalyAlert) anomalyAlert.classList.remove('hidden');
+                
+                if (state.wireframeGateway) {
+                    state.wireframeGateway.position.set(0, 0, -600);
+                    state.wireframeGateway.children[0].material.opacity = 0.95;
+                    state.wireframeGateway.children[1].material.opacity = 0.9;
+                }
+                if (state.dimensionCore) state.dimensionCore.position.set(0, 0, -800);
+                if (state.wormholeFront) state.wormholeFront.position.set(0, 0, -800);
+                if (state.wormholeBack) state.wormholeBack.position.set(0, 0, -800);
+                
+                showToast("ANOMALY DETECTED: WORMHOLE");
+            }
+
+            if (state.isWormholeActive) {
+                const rushSpeed = 160 + (180 * Math.max(0, (state.timeSinceLastWarp - (state.warpCycleDuration - 10))));
+                
+                if (state.wireframeGateway) {
+                    state.wireframeGateway.position.z += delta * rushSpeed;
+                    state.wireframeGateway.rotation.z += delta * 0.5;
+                    
+                    if (state.wireframeGateway.position.z > -150) {
+                        if (velocityHud) {
+                            velocityHud.innerText = 'QUANTUM SLIPSTREAM';
+                            velocityHud.className = 'text-fuchsia-400 font-extrabold animate-pulse';
+                        }
+                        if (state.slipstreamRays) {
+                            state.slipstreamRays.material.opacity = Math.min(0.85, state.slipstreamRays.material.opacity + delta * 2.0);
+                            state.slipstreamRays.rotation.z += delta * 1.5;
+                        }
+                        state.slipstreamRings.forEach((ring, idx) => {
+                            ring.material.opacity = Math.min(0.9, ring.material.opacity + delta * 2.0);
+                            ring.position.z += delta * (rushSpeed * 0.9);
+                            if (ring.position.z > 20) ring.position.z = -300;
+                            const hueShift = (elapsedTime * 0.5 + idx * 0.1) % 1.0;
+                            ring.material.color.setHSL(hueShift, 1.0, 0.6);
+                        });
+                    }
+                }
+                
+                if (state.dimensionCore) {
+                    state.dimensionCore.position.z += delta * rushSpeed;
+                    state.dimensionCore.material.opacity = Math.min(1.0, state.dimensionCore.material.opacity + delta * 0.4);
+                }
+                
+                if (state.wormholeFront && state.wormholeBack) {
+                    state.wormholeFront.position.z += delta * rushSpeed;
+                    state.wormholeBack.position.z += delta * rushSpeed;
+                    state.wormholeFront.rotation.z -= delta * 3.0;
+                    state.wormholeBack.rotation.z += delta * 3.0;
+                    
+                    state.wormholeFront.children.forEach(ring => {
+                        ring.material.opacity = Math.min(0.8, ring.material.opacity + delta * 0.5);
+                        ring.scale.setScalar(1.0 + (state.dimensionCore.position.z + 800) * 0.0015);
+                    });
+                    state.wormholeBack.children.forEach(ring => {
+                        ring.material.opacity = Math.min(0.8, ring.material.opacity + delta * 0.5);
+                        ring.scale.setScalar(1.0 + (state.dimensionCore.position.z + 800) * 0.0015);
+                    });
+                }
+
+                if (state.dimensionCore && state.dimensionCore.position.z > -300) {
+                    camera.fov = Math.min(140, camera.fov + delta * 70);
+                    camera.updateProjectionMatrix();
+                }
+
+                if (state.dimensionCore && state.dimensionCore.position.z >= camera.position.z - 2 && !state.isWarping) {
+                    state.isWarping = true;
+                    const flash = document.getElementById('warp-flash');
+                    if (flash) {
+                        flash.className = "fixed inset-0 z-[60] pointer-events-none opacity-100 transition-opacity duration-300 bg-black";
+                    }
+                    
+                    setTimeout(() => {
+                        if (state.dimensionCore) state.dimensionCore.position.set(0, 0, 3000);
+                        if (state.wormholeFront) state.wormholeFront.position.set(0, 0, 3000);
+                        if (state.wormholeBack) state.wormholeBack.position.set(0, 0, 3000);
+                        
+                        if (state.wireframeGateway) {
+                            state.wireframeGateway.position.set(0, 0, 3000);
+                            state.wireframeGateway.children[0].material.opacity = 0;
+                            state.wireframeGateway.children[1].material.opacity = 0;
+                        }
+                        if (state.slipstreamRays) state.slipstreamRays.material.opacity = 0;
+                        state.slipstreamRings.forEach(r => r.material.opacity = 0);
+                        if (state.dimensionCore) state.dimensionCore.material.opacity = 0;
+                        if (state.wormholeFront) state.wormholeFront.children.forEach(r => r.material.opacity = 0);
+                        if (state.wormholeBack) state.wormholeBack.children.forEach(r => r.material.opacity = 0);
+                        
+                        state.isWormholeActive = false;
+                        state.timeSinceLastWarp = 0;
+                        
+                        if (anomalyAlert) anomalyAlert.classList.add('hidden');
+                        if (velocityHud) {
+                            velocityHud.innerText = 'CRUISING';
+                            velocityHud.className = 'text-cyan-300';
+                        }
+                        
+                        resetUniversePositions();
+                        
+                        camera.fov = state.baseFov;
+                        camera.updateProjectionMatrix();
+                        
+                        if (flash) {
+                            flash.className = "fixed inset-0 z-[60] pointer-events-none opacity-0 transition-opacity duration-[1000ms] bg-black";
+                        }
+                        
+                        setTimeout(() => {
+                            state.isWarping = false;
+                        }, 1000);
+                    }, 350);
+                }
+            }
+
+            if (controls) {
+                controls.update();
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        initWebGL();
+        (function lockAndSync() {
+            const idEl = document.getElementById('input-token-id');
+            const adEl = document.getElementById('input-contract-address');
+            if (idEl) { idEl.value = String(LOCKED_TOKEN_ID); idEl.readOnly = true; }
+            if (adEl) adEl.readOnly = true;
+            state.activeShipIndex = LOCKED_SHIP_INDEX;
+            renderSelectedShipModel(LOCKED_SHIP_INDEX);
+            fetchSmartContractData(adEl ? adEl.value : '', String(LOCKED_TOKEN_ID));
+        })();
+    </script>
+</body>
+</html>
