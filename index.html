@@ -1703,19 +1703,19 @@ function isCouncilToken(tokenId) {
     if (!Number.isInteger(id) || id < 111 || id > MAX_TOKEN_ID) return false;
     return (id <= 999 && id % 111 === 0) || (id >= 1111 && id % 1111 === 0);
 }
-
 // 2. High-Performance Token ID Simulator (ยกเลิกการวนลูปยิง RPC 20 รอบ)
+// [FIX] เดิมเรียก contract._sequenceTracker() ซึ่งเป็น private ในสัญญา ไม่มี getter และไม่อยู่ใน CONTRACT_ABI
+//       ทำให้เกิด "TypeError: contract._sequenceTracker is not a function" มิ้นไม่ผ่านตั้งแต่ขั้นเตรียมข้อมูล
+// [หลักการ] สัญญานับทีละ 1 และข้ามเฉพาะ ID ที่มีเจ้าของแล้ว (เช่นที่ ARCHITECT_MINT ไว้) ไม่มีฟังก์ชัน burn
+//           ID ทุกตัวที่ <= tracker จึงมีเจ้าของหมด การเริ่มนับจาก 0 แล้วข้าม ID ที่ถูกมิ้นแล้ว ได้ผลเท่ากับสัญญา
 async function simulatePublicMintTokenIds(contract, quantity) {
     if (quantity < 1 || quantity > 20) throw new Error("MaxBatchExceeded: 1-20 per tx");
 
-    // ยิง RPC รวมแค่ครั้งเดียวเพื่อนำข้อมูลทั้งหมดมาสแกนใน RAM (In-Memory)
-    const [sequenceTracker, activeTokens] = await Promise.all([
-        contract._sequenceTracker(),
-        contract.getAllActiveTokens()
-    ]);
+    // ยิง RPC ครั้งเดียว ดึงรายการ ID ที่ถูกมิ้นแล้วทั้งหมดมาสแกนใน RAM (In-Memory)
+    const activeTokens = await contract.getAllActiveTokens();
 
     const activeSet = new Set(activeTokens.map(id => id.toString()));
-    let currentTracker = Number(sequenceTracker);
+    let currentTracker = 0;
     const tokenIds = [];
 
     while (tokenIds.length < quantity) {
@@ -1730,11 +1730,6 @@ async function simulatePublicMintTokenIds(contract, quantity) {
             throw new Error(`Only ${tokenIds.length} sequential token ID(s) remain.`);
         }
 
-        tokenIds.push(currentTracker);
-    }
-
-    return tokenIds;
-}
 
 // 3. Payload Generator (รักษา Return Signature เดิมทุกประการ)
 async function prepareAwakeningPayload(qty) {
