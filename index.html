@@ -1703,25 +1703,22 @@ function isCouncilToken(tokenId) {
     if (!Number.isInteger(id) || id < 111 || id > MAX_TOKEN_ID) return false;
     return (id <= 999 && id % 111 === 0) || (id >= 1111 && id % 1111 === 0);
 }
-// 2. High-Performance Token ID Simulator (ยกเลิกการวนลูปยิง RPC 20 รอบ)
-// [FIX] เดิมเรียก contract._sequenceTracker() ซึ่งเป็น private ในสัญญา ไม่มี getter และไม่อยู่ใน CONTRACT_ABI
-//       ทำให้เกิด "TypeError: contract._sequenceTracker is not a function" มิ้นไม่ผ่านตั้งแต่ขั้นเตรียมข้อมูล
-// [หลักการ] สัญญานับทีละ 1 และข้ามเฉพาะ ID ที่มีเจ้าของแล้ว (เช่นที่ ARCHITECT_MINT ไว้) ไม่มีฟังก์ชัน burn
-//           ID ทุกตัวที่ <= tracker จึงมีเจ้าของหมด การเริ่มนับจาก 0 แล้วข้าม ID ที่ถูกมิ้นแล้ว ได้ผลเท่ากับสัญญา
+
+// 2. High-Performance Token ID Simulator (แก้ไขจุดตาย: ตัดการเรียก private _sequenceTracker() ออก และใช้ In-Memory Cursor จำลองการข้าม Token ที่ถูก Mint แล้ว)
 async function simulatePublicMintTokenIds(contract, quantity) {
-    if (quantity < 1 || quantity > 20) throw new Error("MaxBatchExceeded: 1-20 per tx");
+    if (quantity < 1 || quantity > MAX_PUBLIC_MINT_BATCH) throw new Error(`MaxBatchExceeded: 1-${MAX_PUBLIC_MINT_BATCH} per tx`);
 
-    // ยิง RPC ครั้งเดียว ดึงรายการ ID ที่ถูกมิ้นแล้วทั้งหมดมาสแกนใน RAM (In-Memory)
+    // ดึงเฉพาะ activeTokens จาก Smart Contract มาสแกนใน RAM (In-Memory)
     const activeTokens = await contract.getAllActiveTokens();
-
     const activeSet = new Set(activeTokens.map(id => id.toString()));
-    let currentTracker = 0;
+    
     const tokenIds = [];
+    let currentTracker = 0; // จำลองเริ่มต้นจาก 0 เทียบเท่า _sequenceTracker ใน Solidity
 
     while (tokenIds.length < quantity) {
         currentTracker++;
 
-        // ข้าม Token ID ที่ถูก Mint ไปแล้วใน Memory
+        // ข้าม Token ID ที่ถูก Mint ไปแล้วใน Memory (ทั้ง Public และ Architect Mint)
         while (activeSet.has(currentTracker.toString())) {
             currentTracker++;
         }
@@ -1730,10 +1727,15 @@ async function simulatePublicMintTokenIds(contract, quantity) {
             throw new Error(`Only ${tokenIds.length} sequential token ID(s) remain.`);
         }
 
+        tokenIds.push(currentTracker);
+    }
+
+    return tokenIds;
+}
 
 // 3. Payload Generator (รักษา Return Signature เดิมทุกประการ)
 async function prepareAwakeningPayload(qty) {
-    if (qty < 1 || qty > 20) throw new Error("MaxBatchExceeded: 1-20 per tx");
+    if (qty < 1 || qty > MAX_PUBLIC_MINT_BATCH) throw new Error(`MaxBatchExceeded: 1-${MAX_PUBLIC_MINT_BATCH} per tx`);
 
     // ดึงราคาสินค้าและสถานะจาก Smart Contract
     const [standardPrice, councilPrice, activeDeedsCount] = await Promise.all([
@@ -1744,7 +1746,7 @@ async function prepareAwakeningPayload(qty) {
 
     if (Number(activeDeedsCount) + qty > MAX_TOKEN_ID) throw new Error("MaxSupplyReached");
 
-    // สแกนดึง Token ID ที่จะถูก Mint ผ่าน In-Memory Simulator ตัวใหม่
+    // สแกนดึง Token ID ที่จะถูก Mint ผ่าน In-Memory Simulator ตัวใหม่ที่ปลอดภัย
     const tokenIds = await simulatePublicMintTokenIds(secureContract, qty);
     
     let expectedValue = 0n;
@@ -1812,6 +1814,8 @@ async function triggerForge(type, e) {
         return null;
     }
 }
+
+
 
 
 async function withNetworkRetry(fn, retries = 3, delay = 1000) {
