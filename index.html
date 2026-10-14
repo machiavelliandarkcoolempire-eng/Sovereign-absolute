@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 <meta name="theme-color" content="#050814" />
 <meta name="referrer" content="strict-origin-when-cross-origin" />
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https: https://*.irys.xyz https://gateway.irys.xyz https://arweave.net https://ar-io.net; media-src 'self' blob: https: https://*.irys.xyz https://gateway.irys.xyz https://arweave.net https://ar-io.net; connect-src 'self' https://mainnet.base.org https://base.llamarpc.com https://base-rpc.publicnode.com https://*.irys.xyz https://gateway.irys.xyz https://arweave.net https://ar-io.net wss://relay.walletconnect.com wss://relay.walletconnect.org https://rpc.walletconnect.com https://api.web3modal.com https://api.reown.com wss:; base-uri 'none'; object-src 'none'; form-action 'self';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https: https://*.irys.xyz https://gateway.irys.xyz https://arweave.net https://ar-io.net; media-src 'self' blob: https: https://*.irys.xyz https://gateway.irys.xyz https://arweave.net https://ar-io.net; connect-src 'self' https://base-mainnet.g.alchemy.com https://mainnet.base.org https://base.llamarpc.com https://base-rpc.publicnode.com https://*.irys.xyz https://gateway.irys.xyz https://arweave.net https://ar-io.net wss://relay.walletconnect.com wss://relay.walletconnect.org https://rpc.walletconnect.com https://api.web3modal.com https://api.reown.com wss:; base-uri 'none'; object-src 'none'; form-action 'self';">
 
 <title>THE IMPERIAL SOVEREIGN DEED — VERSION 18</title>
 
@@ -4511,6 +4511,9 @@ function buildFlipCard(host, frontUri, back, labels) {
 
     const f = face(0), b = face(180);
 
+    // ต้อง mount เข้า DOM ก่อน renderToViewport ค้นหา element ด้วย id
+    host.append(card);
+
     // หน้า: รูปภาพเสมอ
     renderToViewport(f.vp.id, frontUri || DEFAULT_FRONT_URI, "NO FRONT IMAGE", "direct-image");
 
@@ -4537,7 +4540,7 @@ function buildFlipCard(host, frontUri, back, labels) {
         b.d.style.pointerEvents = flipped ? "auto" : "none";
     });
 
-    host.append(card, btn);
+    host.append(btn);
 }
 
 // เปิดโหมดหมุนอัตโนมัติของหน้ายานที่ฝังอยู่ในกรอบ (ใช้ปุ่ม AUTO ของหน้ายานเอง)
