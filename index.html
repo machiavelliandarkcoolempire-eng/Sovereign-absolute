@@ -863,18 +863,22 @@ const BASE_CHAIN_ID = 8453;
 const CONTRACT_VERSION = 18;
 const DEFAULT_FRONT_URI = "https://gateway.irys.xyz/9owrLsuodwEM7DdatGkoYpmBayjDtEu6djRQceRN4KrP";
 // ==============================================================================
-// 🛡️ TRUSTED 3D ASSETS (GITHUB HOSTED - ZERO XSS RISK & ZERO LATENCY)
+// 🛡️ TRUSTED 3D ASSETS
 // ==============================================================================
-// ท่านสามารถเปลี่ยน URL ด้านล่างนี้ให้ตรงกับ Repository ของท่านได้ทันที
-const ASSET_3D_STANDARD = "https://gateway.irys.xyz/EqusxrAUTzU92GSu5ak6hZn6JQYVPTXRQPQN4iX6A57d";
-const ASSET_3D_COUNCIL = "https://raw.githubusercontent.com/YOUR_ORG/YOUR_REPO/main/3d-council.glb";
-const ASSET_3D_SOVEREIGN = "https://raw.githubusercontent.com/YOUR_ORG/YOUR_REPO/main/3d-sovereign.glb";
-const URL_3D_STANDARD = ASSET_3D_STANDARD;
-const URL_3D_COUNCIL = ASSET_3D_COUNCIL;
+const ASSET_3D_STANDARD = "https://gateway.irys.xyz/GwVAJNcyX12tavpKcMEHVakfCDFSTa9Ka8PQKDN95Axr";
+const ASSET_3D_COUNCIL = "https://gateway.irys.xyz/5c3ZkZcziuWBjNQ4CCfVNvQiRShv1uMJZbbfRJVdvqqR";
+const URL_3D_STANDARD = "https://gateway.irys.xyz/5c3ZkZcziuWBjNQ4CCfVNvQiRShv1uMJZbbfRJVdvqqR";
+const URL_3D_COUNCIL = "https://gateway.irys.xyz/5c3ZkZcziuWBjNQ4CCfVNvQiRShv1uMJZbbfRJVdvqqR";
+// ต่อ ?token=<id> ท้ายลิงก์ Awakening ให้แต่ละใบ (gateway ไม่สนใจ query string)
+const withTokenParam = (uri, id) => {
+    try {
+        const u = new URL(uri);
+        if (!u.searchParams.has("token")) u.searchParams.set("token", String(id));
+        return u.href;
+    } catch (_) { return uri; }
+};
 const WETH_ADDRESS = "0x4200000000000000000000000000000000000006";
 const MULTICALL3_ADDRESS = "0xcA11bde05977b3631167028862bE2a173976CA11";
-
-
 // ==============================================================================
 // 🌐 CANVAS ENGINE FILE CONFIGURATION (SAME DIRECTORY / GITHUB ROOT)
 // ==============================================================================
@@ -890,7 +894,7 @@ function pick3DFile(tokenId) {
     if (SHIP_TOKEN_IDS.includes(id)) return `${CANVAS_BASE}SHIP_${id}.html`;
     // Council 111–999 = คริสตัลทอง (ไฟล์ C_rings.html เปลี่ยนชื่อเป็น SOVEREIGN_COUNCIL.html ก่อนอัปโหลด)
     if (isCouncilToken(id)) return CANVAS_BASE + "SOVEREIGN_COUNCIL.html?token=" + id;
-    return CANVAS_BASE + "SOVEREIGN_AWAKENING.html";
+    return CANVAS_BASE + "SOVEREIGN_AWAKENING.html?token=" + id;
 }
 
 const ARWEAVE_GATEWAYS = [
@@ -1764,7 +1768,7 @@ async function prepareAwakeningPayload(qty) {
             backs.push(URL_3D_COUNCIL);
         } else {
             expectedValue += stdWei;
-            backs.push(URL_3D_STANDARD);
+            backs.push(withTokenParam(URL_3D_STANDARD, id));
         }
         fronts.push(DEFAULT_FRONT_URI);
     }
@@ -4827,16 +4831,20 @@ const requireArchitect = async () => {
     if (!permissions?.isAdmin) throw new Error("Architect or contract-owner privileges are required.");
 };
 
-const adminUriArray = (input, count, kind) => {
+const adminUriArray = (input, count, kind, tokenIds = null) => {
     const values = Array.isArray(input)
         ? input.map((value) => String(value).trim()).filter(Boolean)
         : String(input || "").split(",").map((value) => value.trim()).filter(Boolean);
     if (values.length !== 1 && values.length !== count) {
         throw new Error(`Provide one ${kind} URI to reuse, or exactly ${count} ${kind} URIs.`);
     }
-    return Array.from({ length: count }, (_, index) =>
-        normalizeMediaUri(values[values.length === 1 ? 0 : index], { required: true })
-    );
+    return Array.from({ length: count }, (_, index) => {
+        const uri = normalizeMediaUri(values[values.length === 1 ? 0 : index], { required: true });
+        // ถ้าเป็นไฟล์ Awakening (ที่ฮาร์ดโค้ดไว้) ให้เติม ?token=<id> ของใบนั้นให้อัตโนมัติ
+        return (kind === "back" && tokenIds && uri.startsWith(ASSET_3D_STANDARD))
+            ? withTokenParam(uri, tokenIds[index])
+            : uri;
+    });
 };
 
 // ==============================================================================
@@ -4937,7 +4945,7 @@ window.executeArchitectMint = async function (tokenIdInput, recipientInput, fron
             throw new Error(`Architect mint limit reached: ${currentMintCount.toString()} of ${MAX_ARCHITECT_MINT_TOTAL} used.`);
         }
         const fronts = adminUriArray(frontInput, tokenIds.length, "front");
-        const backs = adminUriArray(backInput, tokenIds.length, "back");
+        const backs = adminUriArray(backInput, tokenIds.length, "back", tokenIds);
         const receipt = await window.runTx(
             null,
             `ARCHITECT_MINT_${tokenIds.map((id) => `#${id}`).join(",")}`,

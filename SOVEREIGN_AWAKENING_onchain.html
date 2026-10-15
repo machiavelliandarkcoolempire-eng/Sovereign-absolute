@@ -2751,7 +2751,12 @@
         // =====================================================================
         (function onChainModule() {
             const CONTRACT = '0x06040F2e5301B2616491E113962A84d372b8f600';
-            const RPC_URL = 'https://mainnet.base.org';
+            const RPC_URLS = [
+                'https://mainnet.base.org',
+                'https://base-rpc.publicnode.com',
+                'https://base.llamarpc.com',
+                'https://1rpc.io/base'
+            ];
             const CHAIN_ID = 8453;
             const ETHERS_SRC = 'https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js';
             const DEFAULT_TOKEN_ID = 1;   // <-- set this to the Standard token this file represents (or open with ?token=N)
@@ -2760,7 +2765,9 @@
                 'function getDeedData(uint256 t) view returns (address sovereignOwner, bool sovereignActive, bool absoluteSovereigntyStatus, string sovereignFront, string sovereignBack, string sovereignVideo, string sovereignIdentity, string sovereignHidden, address sovereignTba)'
             ];
 
-            const qp = new URLSearchParams(location.search).get('token');
+            // อ่านเบอร์จาก ?token=N ก่อน ถ้าไม่มีลองอ่านจาก #N (เผื่อ marketplace ตัด query string)
+            const hashMatch = /(\d{1,4})/.exec(location.hash || '');
+            const qp = new URLSearchParams(location.search).get('token') ?? (hashMatch ? hashMatch[1] : null);
             const qn = qp === null ? DEFAULT_TOKEN_ID : Number(qp);
             const TOKEN_ID = Number.isInteger(qn) && qn >= 1 && qn <= 5555 ? qn : DEFAULT_TOKEN_ID;
 
@@ -2872,18 +2879,23 @@
                 chain.state = 'pending'; render(); setStatus('Connecting to Base…');
                 try {
                     await loadEthers();
-                    const provider = new ethers.JsonRpcProvider(RPC_URL, CHAIN_ID, { staticNetwork: true });
-                    const c = new ethers.Contract(CONTRACT, ABI, provider);
-
-                    let d;
-                    try { d = await withTimeout(c.getDeedData(TOKEN_ID), 12000); }
-                    catch (e) {
-                        if (e && (e.code === 'CALL_EXCEPTION' || /NonexistentToken|execution reverted/i.test(String(e.message)))) {
-                            chain.state = 'unminted'; chain.owner = null; chain.tba = null; chain.tbaBalance = '0.0000';
-                            render(); setStatus('Not yet claimed on-chain', true); return;
+                    // ลอง RPC ทีละตัว ตัวไหนล่มหรือโดนบล็อกก็ข้ามไปตัวถัดไป
+                    let provider, c, d, lastErr = null;
+                    for (const url of RPC_URLS) {
+                        try {
+                            provider = new ethers.JsonRpcProvider(url, CHAIN_ID, { staticNetwork: true });
+                            c = new ethers.Contract(CONTRACT, ABI, provider);
+                            d = await withTimeout(c.getDeedData(TOKEN_ID), 8000);
+                            lastErr = null; break;
+                        } catch (e) {
+                            if (e && (e.code === 'CALL_EXCEPTION' || /NonexistentToken|execution reverted/i.test(String(e.message)))) {
+                                chain.state = 'unminted'; chain.owner = null; chain.tba = null; chain.tbaBalance = '0.0000';
+                                render(); setStatus('Not yet claimed on-chain', true); return;
+                            }
+                            lastErr = e; console.warn('RPC failed:', url, e);
                         }
-                        throw e;
                     }
+                    if (lastErr || !d) throw (lastErr || new Error('all RPC endpoints failed'));
 
                     chain.owner = d[0]; chain.active = !!d[1]; chain.absolute = !!d[2]; chain.dna = d[6] || '';
                     chain.tba = d[8] && d[8] !== ethers.ZeroAddress ? d[8] : null;
