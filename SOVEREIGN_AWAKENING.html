@@ -294,6 +294,39 @@
             .spec-line { font-size: 7.5px; letter-spacing: 1px; }
             .hud-footer { margin-bottom: 16px; }
         }
+
+        /* ===== on-chain additions ===== */
+        .nft-badge { font-family: inherit; cursor: pointer; pointer-events: auto; -webkit-appearance: none; appearance: none; }
+        .nft-badge:focus-visible { outline: 1px solid var(--neon-cyan); outline-offset: 3px; }
+        #deedLabel { font-size: 10px !important; letter-spacing: 2px; margin-top: 0; }
+        .chain-status { font-size: 10px; letter-spacing: 1.5px; color: #7fb4d8; margin-top: 10px; min-height: 14px; text-transform: uppercase; }
+        .chain-status.warn { color: #e0a07a; }
+        .scrim { position: fixed; inset: 0; z-index: 40; background: rgba(0,0,0,.6); opacity: 0; pointer-events: none; transition: opacity .35s; }
+        .scrim.open { opacity: 1; pointer-events: auto; }
+        .ledger { position: fixed; z-index: 50; left: 50%; bottom: 0; width: min(520px, 100%);
+            transform: translate(-50%, 102%); transition: transform .45s cubic-bezier(.2,.8,.2,1);
+            background: linear-gradient(180deg, rgba(5,12,26,.96), rgba(3,5,12,.98));
+            border: 1px solid rgba(0,240,255,.3); border-bottom: none; border-radius: 10px 10px 0 0;
+            padding: 20px 20px max(24px, env(safe-area-inset-bottom)); max-height: 86vh; overflow-y: auto;
+            box-shadow: 0 -20px 60px rgba(0,0,0,.8); }
+        .ledger.open { transform: translate(-50%, 0); }
+        .ledger[hidden] { display: block; visibility: hidden; }
+        .ledger.open[hidden] { visibility: visible; }
+        .ledger-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+        .ledger-title { font-family: 'Cinzel', serif; font-weight: 800; font-size: 13px; letter-spacing: 4px; color: #fff; text-shadow: 0 0 14px rgba(0,240,255,.5); }
+        .ledger-sub { font-size: 10.5px; letter-spacing: .5px; color: #7fb4d8; margin-bottom: 14px; line-height: 1.5; }
+        .ledger-x { cursor: pointer; background: none; border: 1px solid rgba(0,240,255,.35); color: var(--neon-cyan); width: 34px; height: 34px; font-size: 18px; line-height: 1; border-radius: 8px; font-family: inherit; }
+        .ledger-rows { border-top: 1px solid rgba(0,240,255,.2); }
+        .l-row { display: flex; justify-content: space-between; align-items: baseline; gap: 14px; padding: 10px 0; border-bottom: 1px solid rgba(0,240,255,.1); }
+        .l-row dt { font-size: 10px; letter-spacing: 1.5px; color: #7fb4d8; text-transform: uppercase; flex: none; }
+        .l-row dd { font-size: 12px; color: #e6f6ff; text-align: right; word-break: break-all; }
+        .l-row dd a { color: var(--neon-cyan); text-decoration: none; border-bottom: 1px dotted rgba(0,240,255,.5); }
+        .l-tag { display: inline-block; border: 1px solid rgba(0,240,255,.45); color: var(--neon-cyan); padding: 1px 7px; font-size: 10px; letter-spacing: 1.5px; border-radius: 10px; }
+        .l-actions { display: flex; gap: 10px; margin-top: 16px; }
+        .l-btn { flex: 1; cursor: pointer; font-family: 'Cinzel', serif; font-weight: 800; font-size: 11px; letter-spacing: 3px; padding: 12px 8px; border-radius: 10px; border: 1px solid rgba(0,240,255,.5); background: transparent; color: var(--neon-cyan); }
+        .l-btn.primary { background: rgba(0,240,255,.14); color: #fff; }
+        .l-btn[disabled] { opacity: .5; cursor: progress; }
+        @media (prefers-reduced-motion: reduce) { .ledger, .scrim { transition-duration: .01s; } }
     </style>
 
     <!-- Three.js Core Library r128 & Post-Processing Dependencies -->
@@ -2311,16 +2344,31 @@
         <div class="hud-header">
             <div>
                 <div class="brand-title"></div>
-                <div class="brand-subtitle"></div>
+                <div class="brand-subtitle" id="deedLabel"></div>
             </div>
-            <div class="nft-badge">SOVEREIGN</div>
+            <button type="button" class="nft-badge" id="sealBtn" aria-haspopup="dialog" aria-controls="ledger">SYNCING</button>
         </div>
 
         <div class="hud-footer">
             <h1 class="main-title">SOVEREIGN AWAKENING</h1>
             <p class="spec-line">THE IMPERIAL SOVEREIGN DEED ♠</p>
+            <p class="chain-status" id="chainStatus" role="status" aria-live="polite"></p>
         </div>
     </div>
+
+    <div id="scrim" class="scrim"></div>
+    <section id="ledger" class="ledger" role="dialog" aria-modal="true" aria-labelledby="ledgerTitle" hidden>
+        <div class="ledger-head">
+            <h2 id="ledgerTitle" class="ledger-title">ON-CHAIN LEDGER</h2>
+            <button id="ledgerClose" class="ledger-x" type="button" aria-label="Close ledger">&times;</button>
+        </div>
+        <p class="ledger-sub">Read live from Base Mainnet. The contract is a registry; this page is the renderer.</p>
+        <dl id="ledgerRows" class="ledger-rows"></dl>
+        <div class="l-actions">
+            <button id="syncBtn" class="l-btn primary" type="button">SYNC</button>
+            <button id="ledgerClose2" class="l-btn" type="button">CLOSE</button>
+        </div>
+    </section>
 
     <script>
         const container = document.getElementById('webgl-container');
@@ -2614,17 +2662,51 @@
 
         const clock = new THREE.Clock();
 
+        // ===== on-chain traits: targets are set by the chain module, current values ease toward them =====
+        const TRAIT_BASE = {
+            outerEmissive: new THREE.Color(0x00ffff),
+            innerEmissive: new THREE.Color(0x0099ff),
+            core:          new THREE.Color(0x00f0ff),
+            ring:          new THREE.Color(0x40a5f8),
+            edges:         new THREE.Color(0x85d6ff)
+        };
+        const TRAIT_GOLD = new THREE.Color(0xffd27a);
+        const traits = {
+            cur: { tilt: Math.PI / 8, scale: 1, hue: 0, gold: 0, dim: 1, ringSpin: 0.2, dustY: 0 },
+            tgt: { tilt: Math.PI / 8, scale: 1, hue: 0, gold: 0, dim: 1, ringSpin: 0.2, dustY: 0 }
+        };
+        let ringAngle = 0, lastT = 0;
+        const _tc = new THREE.Color();
+        function tintInto(base, out) {
+            _tc.copy(base).offsetHSL(traits.cur.hue, 0, 0).lerp(TRAIT_GOLD, traits.cur.gold);
+            out.copy(_tc);
+        }
+        function updateTraits(dt) {
+            const k = 1 - Math.exp(-dt * 2.2);
+            for (const key in traits.cur) traits.cur[key] += (traits.tgt[key] - traits.cur[key]) * k;
+            sacredRing.rotation.x = traits.cur.tilt;
+            sacredRing.scale.setScalar(traits.cur.scale);
+            tintInto(TRAIT_BASE.outerEmissive, outerMaterial.emissive);
+            tintInto(TRAIT_BASE.innerEmissive, innerMaterial.emissive);
+            tintInto(TRAIT_BASE.core, coreLight.color);
+            tintInto(TRAIT_BASE.ring, ringMat.color);
+            tintInto(TRAIT_BASE.edges, edgesMat.color);
+        }
+
         function animate() {
             requestAnimationFrame(animate);
             const time = clock.getElapsedTime();
+            const dt = Math.min(0.1, time - lastT); lastT = time;
+            updateTraits(dt);
 
             mainGroup.rotation.y = time * 0.25;
             mainGroup.position.y = Math.sin(time * 1.1) * 0.07;
 
             symbolMaskTexture.offset.y = -time * 0.015;
-            sacredRing.rotation.y = -time * 0.2;
+            ringAngle -= dt * traits.cur.ringSpin;
+            sacredRing.rotation.y = ringAngle;
 
-            dustParticles.rotation.y = time * 0.008;
+            dustParticles.rotation.y = time * 0.008 + traits.cur.dustY;
             dustParticles.rotation.x = time * 0.004;
 
             const pulse = (Math.sin(time * 2.2) + 1.0) * 0.5;
@@ -2636,8 +2718,8 @@
                 0.12 * (0.94 + easedPulse * 0.12)
             );
 
-            coreLight.intensity = 5.0 + (easedPulse * 3.0);
-            outerMaterial.emissiveIntensity = 3.5 + (easedPulse * 1.5);
+            coreLight.intensity = (5.0 + (easedPulse * 3.0)) * traits.cur.dim;
+            outerMaterial.emissiveIntensity = (3.5 + (easedPulse * 1.5)) * traits.cur.dim;
 
             controls.update();
             composer.render();
@@ -2663,6 +2745,203 @@
                 bloomPass.resolution.set(width * dpr, height * dpr);
             }, 100);
         });
+
+        // =====================================================================
+        // ON-CHAIN MODULE  (Base Mainnet · read-only · no signing)
+        // =====================================================================
+        (function onChainModule() {
+            const CONTRACT = '0x06040F2e5301B2616491E113962A84d372b8f600';
+            const RPC_URLS = [
+                'https://mainnet.base.org',
+                'https://base-rpc.publicnode.com',
+                'https://base.llamarpc.com',
+                'https://1rpc.io/base'
+            ];
+            const CHAIN_ID = 8453;
+            const ETHERS_SRC = 'https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js';
+            const DEFAULT_TOKEN_ID = 1;   // <-- set this to the Standard token this file represents (or open with ?token=N)
+            const ABI = [
+                'function SOVEREIGNTY_COUNCIL(uint256 tokenId) view returns (bool)',
+                'function getDeedData(uint256 t) view returns (address sovereignOwner, bool sovereignActive, bool absoluteSovereigntyStatus, string sovereignFront, string sovereignBack, string sovereignVideo, string sovereignIdentity, string sovereignHidden, address sovereignTba)'
+            ];
+
+            // อ่านเบอร์จาก ?token=N ก่อน ถ้าไม่มีลองอ่านจาก #N (เผื่อ marketplace ตัด query string)
+            const hashMatch = /(\d{1,4})/.exec(location.hash || '');
+            const qp = new URLSearchParams(location.search).get('token') ?? (hashMatch ? hashMatch[1] : null);
+            const qn = qp === null ? DEFAULT_TOKEN_ID : Number(qp);
+            const TOKEN_ID = Number.isInteger(qn) && qn >= 1 && qn <= 5555 ? qn : DEFAULT_TOKEN_ID;
+
+            const councilLocal = id => {
+                if (id < 111 || id > 5555) return false;
+                if (id <= 999 && id % 111 === 0) return true;
+                return id >= 1111 && id % 1111 === 0;
+            };
+            const fnv1a = text => {
+                let h = 2166136261;
+                for (let i = 0; i < text.length; i++) h = Math.imul(h ^ text.charCodeAt(i), 16777619);
+                return h >>> 0;
+            };
+            const mulberry32 = seed => {
+                let v = seed >>> 0;
+                return () => {
+                    v += 0x6D2B79F5; let t = v;
+                    t = Math.imul(t ^ (t >>> 15), t | 1);
+                    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+                    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+                };
+            };
+            const short = a => a ? a.slice(0, 6) + '…' + a.slice(-4) : '—';
+            const el = id => document.getElementById(id);
+
+            // state: pending | ok | unminted | offline
+            const chain = {
+                state: 'pending', owner: null, active: true, absolute: false, council: councilLocal(TOKEN_ID),
+                tba: null, tbaDeployed: false, tbaBalance: '0.0000', dna: '',
+                seed: fnv1a(CONTRACT.toLowerCase() + ':' + TOKEN_ID)
+            };
+
+            function badgeText() {
+                if (chain.state === 'pending') return 'SYNCING';
+                if (chain.state === 'unminted') return 'UNCLAIMED';
+                if (chain.state === 'offline') return 'OFFLINE';
+                if (chain.council) return 'COUNCIL';
+                if (chain.absolute) return 'SOVEREIGN';
+                return chain.active ? 'AWAKENED' : 'DORMANT';
+            }
+            function setStatus(text, warn) {
+                const s = el('chainStatus'); s.textContent = text; s.className = 'chain-status' + (warn ? ' warn' : '');
+            }
+
+            // Seed + status → visual traits (eased in updateTraits)
+            function applyToScene() {
+                const rnd = mulberry32(chain.seed);
+                traits.tgt.tilt     = Math.PI / 10 + rnd() * Math.PI / 9;
+                traits.tgt.scale    = 0.92 + rnd() * 0.22;
+                traits.tgt.hue      = (rnd() - 0.5) * 0.07;
+                traits.tgt.ringSpin = 0.14 + rnd() * 0.14;
+                traits.tgt.dustY    = rnd() * 1.5;
+                const gold = chain.state === 'ok' && (chain.absolute || chain.council);
+                traits.tgt.gold = gold ? 0.85 : 0;
+                traits.tgt.dim  = chain.state === 'ok' && !chain.active ? 0.45 : 1;
+            }
+
+            function render() {
+                el('deedLabel').textContent = 'DEED Nº ' + TOKEN_ID;
+                el('sealBtn').textContent = badgeText();
+                applyToScene();
+                renderLedger();
+            }
+
+            function renderLedger() {
+                const rows = el('ledgerRows'); rows.replaceChildren();
+                const add = (label, value, opts = {}) => {
+                    const row = document.createElement('div'); row.className = 'l-row';
+                    const dt = document.createElement('dt'); dt.textContent = label;
+                    const dd = document.createElement('dd');
+                    if (opts.href) {
+                        const a = document.createElement('a'); a.href = opts.href; a.target = '_blank'; a.rel = 'noopener noreferrer';
+                        a.textContent = value; dd.appendChild(a);
+                    } else if (opts.tag) {
+                        const t = document.createElement('span'); t.className = 'l-tag'; t.textContent = value; dd.appendChild(t);
+                    } else dd.textContent = value;
+                    row.append(dt, dd); rows.appendChild(row);
+                };
+                add('Token', '#' + TOKEN_ID);
+                add('Seat', chain.council ? 'COUNCIL' : (chain.absolute ? 'SOVEREIGN' : 'STANDARD'), { tag: true });
+                add('State', { pending: 'SYNCING', ok: chain.active ? 'ACTIVE' : 'INACTIVE', unminted: 'UNCLAIMED', offline: 'UNSYNCED' }[chain.state]);
+                add('Owner', chain.owner ? short(chain.owner) : '—', chain.owner ? { href: 'https://basescan.org/address/' + chain.owner } : {});
+                add('Absolute sovereignty', chain.council || chain.absolute ? 'UNLOCKED' : 'LOCKED');
+                add('TBA vault', chain.tba ? short(chain.tba) + (chain.tbaDeployed ? '' : ' (reserved)') : '—',
+                    chain.tba ? { href: 'https://basescan.org/address/' + chain.tba } : {});
+                add('TBA balance', chain.tbaBalance + ' ETH');
+                add('DNA seed', '0x' + chain.seed.toString(16).toUpperCase().padStart(8, '0'));
+                add('Contract', short(CONTRACT), { href: 'https://basescan.org/token/' + CONTRACT + '?a=' + TOKEN_ID });
+            }
+
+            const withTimeout = (p, ms) => Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), ms))]);
+
+            function loadEthers() {
+                if (window.ethers) return Promise.resolve();
+                return new Promise((res, rej) => {
+                    const sc = document.createElement('script');
+                    const t = setTimeout(() => rej(new Error('ethers load timeout')), 10000);
+                    sc.onload = () => { clearTimeout(t); window.ethers ? res() : rej(new Error('ethers missing')); };
+                    sc.onerror = () => { clearTimeout(t); rej(new Error('ethers load failed')); };
+                    sc.async = true; sc.src = ETHERS_SRC;
+                    document.head.appendChild(sc);
+                });
+            }
+
+            let syncing = false;
+            async function sync() {
+                if (syncing) return;
+                syncing = true; el('syncBtn').disabled = true;
+                chain.state = 'pending'; render(); setStatus('Connecting to Base…');
+                try {
+                    await loadEthers();
+                    // ลอง RPC ทีละตัว ตัวไหนล่มหรือโดนบล็อกก็ข้ามไปตัวถัดไป
+                    let provider, c, d, lastErr = null;
+                    for (const url of RPC_URLS) {
+                        try {
+                            provider = new ethers.JsonRpcProvider(url, CHAIN_ID, { staticNetwork: true });
+                            c = new ethers.Contract(CONTRACT, ABI, provider);
+                            d = await withTimeout(c.getDeedData(TOKEN_ID), 8000);
+                            lastErr = null; break;
+                        } catch (e) {
+                            if (e && (e.code === 'CALL_EXCEPTION' || /NonexistentToken|execution reverted/i.test(String(e.message)))) {
+                                chain.state = 'unminted'; chain.owner = null; chain.tba = null; chain.tbaBalance = '0.0000';
+                                render(); setStatus('Not yet claimed on-chain', true); return;
+                            }
+                            lastErr = e; console.warn('RPC failed:', url, e);
+                        }
+                    }
+                    if (lastErr || !d) throw (lastErr || new Error('all RPC endpoints failed'));
+
+                    chain.owner = d[0]; chain.active = !!d[1]; chain.absolute = !!d[2]; chain.dna = d[6] || '';
+                    chain.tba = d[8] && d[8] !== ethers.ZeroAddress ? d[8] : null;
+                    try { chain.council = !!(await withTimeout(c.SOVEREIGNTY_COUNCIL(TOKEN_ID), 8000)); }
+                    catch { chain.council = councilLocal(TOKEN_ID); }
+
+                    chain.tbaDeployed = false; chain.tbaBalance = '0.0000';
+                    if (chain.tba) {
+                        try {
+                            const [bal, code] = await Promise.all([provider.getBalance(chain.tba), provider.getCode(chain.tba)]);
+                            chain.tbaBalance = Number(ethers.formatEther(bal)).toFixed(4);
+                            chain.tbaDeployed = !!code && code !== '0x';
+                        } catch (e) { console.warn('TBA read warning:', e); }
+                    }
+                    chain.seed = fnv1a(chain.dna.length ? chain.dna : CONTRACT.toLowerCase() + ':' + TOKEN_ID);
+                    chain.state = 'ok';
+                    render();
+                    setStatus('Owner ' + short(chain.owner) + ' · TBA ' + chain.tbaBalance + ' ETH');
+                } catch (err) {
+                    console.warn('On-chain sync failed:', err);
+                    chain.state = 'offline'; render(); setStatus('Offline render · chain unreachable', true);
+                } finally {
+                    syncing = false; el('syncBtn').disabled = false;
+                }
+            }
+
+            const ledger = el('ledger'), scrim = el('scrim');
+            function openLedger() {
+                ledger.hidden = false;
+                requestAnimationFrame(() => { ledger.classList.add('open'); scrim.classList.add('open'); el('ledgerClose').focus(); });
+            }
+            function closeLedger() {
+                ledger.classList.remove('open'); scrim.classList.remove('open');
+                setTimeout(() => { if (!ledger.classList.contains('open')) ledger.hidden = true; }, 460);
+                el('sealBtn').focus();
+            }
+            el('sealBtn').addEventListener('click', openLedger);
+            el('ledgerClose').addEventListener('click', closeLedger);
+            el('ledgerClose2').addEventListener('click', closeLedger);
+            scrim.addEventListener('click', closeLedger);
+            el('syncBtn').addEventListener('click', sync);
+            window.addEventListener('keydown', e => { if (e.key === 'Escape' && ledger.classList.contains('open')) closeLedger(); });
+
+            render();
+            sync();
+        })();
     </script>
 </body>
 </html>
