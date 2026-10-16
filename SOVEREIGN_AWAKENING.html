@@ -2371,11 +2371,54 @@
     </section>
 
     <script>
+        // ===== token identity — read from the link, never hard-coded =====
+        const SOV = (function () {
+            const CONTRACT_ADDR = '0x06040F2e5301B2616491E113962A84d372b8f600';
+            const fnv1a = text => {
+                let h = 2166136261;
+                for (let i = 0; i < text.length; i++) h = Math.imul(h ^ text.charCodeAt(i), 16777619);
+                return h >>> 0;
+            };
+            const mulberry32 = seed => {
+                let v = seed >>> 0;
+                return () => {
+                    v += 0x6D2B79F5; let t = v;
+                    t = Math.imul(t ^ (t >>> 15), t | 1);
+                    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+                    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+                };
+            };
+            // JS mirror of SOVEREIGNTY_COUNCIL() — a pure function in the contract
+            const councilLocal = id => {
+                if (id === null || id < 111 || id > 5555) return false;
+                if (id <= 999 && id % 111 === 0) return true;
+                return id >= 1111 && id % 1111 === 0;
+            };
+            // ?token=N first, then #N (for hosts that strip the query string). No number in the link → null.
+            const parseToken = () => {
+                const ok = n => (Number.isInteger(n) && n >= 1 && n <= 5555) ? n : null;
+                const q = new URLSearchParams(location.search).get('token');
+                if (q !== null && /^\d{1,4}$/.test(q)) return ok(Number(q));
+                const h = /^#\/?(?:token=)?(\d{1,4})$/.exec(location.hash || '');
+                return h ? ok(Number(h[1])) : null;
+            };
+            // Colour is locked to the token number only (never the DNA), so it can't change when the owner edits identity.
+            // Council = no hue shift (keeps its gold). Standard = full wheel, minus the yellow/gold band reserved for Council.
+            const tokenHue = id => {
+                if (id === null || councilLocal(id)) return 0;
+                const u = mulberry32(fnv1a(CONTRACT_ADDR.toLowerCase() + ':hue:' + id))() * 0.86;
+                return u < 0.54 ? u : u + 0.14;
+            };
+            const token = parseToken();
+            const isCouncil = councilLocal(token);
+            return { token, hue: tokenHue(token), envHue: isCouncil ? 0.595 : tokenHue(token), fnv1a, mulberry32, councilLocal };
+        })();
+
         const container = document.getElementById('webgl-container');
 
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x03050c);
-        scene.fog = new THREE.FogExp2(0x03050c, 0.02);
+        scene.background = new THREE.Color(0x020204);
+        scene.fog = new THREE.FogExp2(0x020204, 0.04);
 
         const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 1000);
         camera.position.set(0, 0, 7.5);
@@ -2390,7 +2433,7 @@
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setPixelRatio(getDPR());
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        renderer.toneMappingExposure = 1.15;
+        renderer.toneMappingExposure = 1.2;
         renderer.physicallyCorrectLights = true;
         container.appendChild(renderer.domElement);
 
@@ -2403,33 +2446,37 @@
         controls.autoRotate = true;
         controls.autoRotateSpeed = 0.5;
 
-        function initStudioEnvironment() {
+        function initStudioEnvironment(hue = 0) {
+            // สีที่เลื่อนตามเลขโทเค็น (hue) แล้วแปลงเป็น rgba พร้อมความโปร่งใส
+            const HA = (c, a) => {
+                const k = new THREE.Color(c).offsetHSL(hue, 0, 0);
+                return 'rgba(' + Math.round(k.r * 255) + ',' + Math.round(k.g * 255) + ',' + Math.round(k.b * 255) + ',' + a + ')';
+            };
             const canvas = document.createElement('canvas');
-            canvas.width = 2048;
-            canvas.height = 1024;
+            canvas.width = 1024;
+            canvas.height = 512;
             const ctx = canvas.getContext('2d');
 
-            const bgGrad = ctx.createLinearGradient(0, 0, 0, 1024);
-            bgGrad.addColorStop(0.0, '#03050c');
-            bgGrad.addColorStop(0.5, '#122648');
-            bgGrad.addColorStop(1.0, '#03050c');
+            const bgGrad = ctx.createLinearGradient(0, 0, 0, 512);
+            bgGrad.addColorStop(0.0, '#010103');
+            bgGrad.addColorStop(0.5, HA(0x0d1b32, 1));
+            bgGrad.addColorStop(1.0, '#010103');
             ctx.fillStyle = bgGrad;
-            ctx.fillRect(0, 0, 2048, 1024);
+            ctx.fillRect(0, 0, 1024, 512);
 
-            function addSoftbox(x, y, w, h, color, blur) {
-                ctx.save();
-                ctx.fillStyle = color;
-                ctx.shadowColor = color;
-                ctx.shadowBlur = blur;
-                ctx.fillRect(x, y, w, h);
-                ctx.restore();
+            function drawStudioLight(x, y, radius, color) {
+                const radGrad = ctx.createRadialGradient(x, y, 0, x, y, radius);
+                radGrad.addColorStop(0, color);
+                radGrad.addColorStop(1, 'rgba(0,0,0,0)');
+                ctx.fillStyle = radGrad;
+                ctx.beginPath();
+                ctx.arc(x, y, radius, 0, Math.PI * 2);
+                ctx.fill();
             }
 
-            // กระจาย Softbox ให้ครอบคลุมทั้งซ้ายและขวา เพื่อให้เกิดไฮไลท์สะท้อนรอบตัวคริสตัล
-            addSoftbox(150, 200, 300, 640, '#ffffff', 30);
-            addSoftbox(600, 150, 350, 400, '#00f0ff', 35);
-            addSoftbox(1100, 150, 350, 400, '#00f0ff', 35); // เพิ่ม Softbox ฝั่งขวา
-            addSoftbox(1600, 200, 300, 640, '#ffdf7a', 40); // เพิ่ม Softbox ไฮไลท์ทองฝั่งขวา
+            drawStudioLight(256, 150, 160, HA(0x78d2ff, 0.95));
+            drawStudioLight(768, 350, 200, HA(0x0082ff, 0.9));
+            drawStudioLight(512, 80, 220, 'rgba(255, 255, 255, 0.85)');
 
             const texture = new THREE.CanvasTexture(canvas);
             texture.mapping = THREE.EquirectangularReflectionMapping;
@@ -2442,7 +2489,7 @@
             texture.dispose();
             pmrem.dispose();
         }
-        initStudioEnvironment();
+        initStudioEnvironment(SOV.envHue);
 
         function createMicroSurfaceNoiseTexture() {
             const size = 1024;
@@ -2457,8 +2504,8 @@
                 const rand = Math.random();
                 let val = 0;
                 if (rand > 0.90) val = 255;
-                else if (rand > 0.65) val = Math.floor(Math.random() * 100 + 40);
-                else val = Math.floor(Math.random() * 40);
+                else if (rand > 0.65) val = Math.floor(Math.random() * 100 + 30);
+                else val = Math.floor(Math.random() * 20);
                 data[i] = val;
                 data[i + 1] = val;
                 data[i + 2] = val;
@@ -2484,11 +2531,11 @@
             ctx.fillRect(0, 0, 4096, 4096);
 
             ctx.fillStyle = '#ffffff';
-            ctx.strokeStyle = '#00f0ff';
+            ctx.strokeStyle = '#00d2ff';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.font = '700 160px "Noto Sans Runic", "Space Mono", monospace';
-            ctx.lineWidth = 10;
+            ctx.lineWidth = 8;
 
             const runes = ['ᚠ','ᚢ','ᚦ','ᚨ','ᚱ','ᚲ','ᚷ','ᚹ','ᚺ','ᚾ','ᛁ','ᛃ','ᛇ','ᛈ','ᛉ','ᛋ','ᛏ','ᛒ','ᛖ','ᛗ','ᛚ','ᛝ','ᛟ','ᛞ'];
             
@@ -2518,28 +2565,28 @@
         const outerGeom = new THREE.OctahedronGeometry(1.0, 0);
         
         const outerMaterial = new THREE.MeshPhysicalMaterial({
-            color: new THREE.Color(0x001829),
-            metalness: 0.1,
-            roughness: 0.12,
+            color: new THREE.Color(0x001833),
+            metalness: 0.05,
+            roughness: 0.08,
             roughnessMap: microNoiseTexture,
             bumpMap: microNoiseTexture,
-            bumpScale: 0.03,
-            
-            clearcoat: 0.3,
+            bumpScale: 0.003,
+
+            clearcoat: 1.0,
             clearcoatRoughness: 0.05,
-            
-            transmission: 0.7,
-            thickness: 0.6,
-            ior: 1.3,
-            attenuationColor: new THREE.Color(0x0088ff),
-            attenuationDistance: 8,
-            
+
+            transmission: 0.85,
+            thickness: 2.0,
+            ior: 2.2,
+            attenuationColor: new THREE.Color(0x0066ff),
+            attenuationDistance: 1.5,
+
             emissiveMap: symbolMaskTexture,
-            emissive: new THREE.Color(0x00ffff),
+            emissive: new THREE.Color(0x00d2ff),
             emissiveIntensity: 4.5,
-            
+
             transparent: true,
-            opacity: 0.65,
+            opacity: 1.2,
             side: THREE.DoubleSide
         });
 
@@ -2549,15 +2596,15 @@
 
         const innerGeom = new THREE.OctahedronGeometry(1.0, 0);
         const innerMaterial = new THREE.MeshStandardMaterial({
-            color: 0x002255,
-            emissive: 0x0099ff,
-            emissiveIntensity: 2.5,
+            color: 0x001133,
+            emissive: 0x0077ff,
+            emissiveIntensity: 2.0,
             roughness: 0.1,
             metalness: 0.9
         });
 
         const innerCore = new THREE.Mesh(innerGeom, innerMaterial);
-        innerCore.scale.set(3, 0.7, 3);
+        innerCore.scale.set(0.12, 0.55, 0.12);
         mainGroup.add(innerCore);
 
         const edgesGeom = new THREE.EdgesGeometry(outerGeom);
@@ -2572,8 +2619,9 @@
         const crystalEdges = new THREE.LineSegments(edgesGeom, edgesMat);
         crystalEdges.scale.set(0.851, 2.302, 0.851);
         mainGroup.add(crystalEdges);
+        crystalEdges.visible = false; // ต้นฉบับ F.html ไม่มีเส้นขอบ (คงตัวแปรไว้ให้ระบบเปลี่ยนสีทำงานต่อได้)
 
-        const coreLight = new THREE.PointLight(0x00f0ff, 8.0, 8.0, 2.0);
+        const coreLight = new THREE.PointLight(0x0077ff, 3.5, 5.0, 2.0);
         innerCore.add(coreLight);
 
         const ringParticleCount = 900;
@@ -2603,57 +2651,53 @@
         sacredRing.rotation.x = Math.PI / 8;
         mainGroup.add(sacredRing);
 
-        const dustCount = 900;
+        const dustCount = 400;
         const dustGeom = new THREE.BufferGeometry();
         const dustPos = new Float32Array(dustCount * 3);
 
         for (let i = 0; i < dustCount * 3; i += 3) {
-            dustPos[i] = (Math.random() - 0.5) * 14;
-            dustPos[i+1] = (Math.random() - 0.5) * 14;
-            dustPos[i+2] = (Math.random() - 0.5) * 14;
+            dustPos[i] = (Math.random() - 0.5) * 7;
+            dustPos[i+1] = (Math.random() - 0.5) * 7;
+            dustPos[i+2] = (Math.random() - 0.5) * 7;
         }
 
         dustGeom.setAttribute('position', new THREE.BufferAttribute(dustPos, 3));
         const dustMat = new THREE.PointsMaterial({
-            color: 0x88ccff,
-            size: 0.018,
+            color: 0x00d2ff,
+            size: 0.022,
             transparent: true,
-            opacity: 1,
-            blending: THREE.AdditiveBlending,
-            depthWrite: false
+            opacity: 0.8,
+            blending: THREE.AdditiveBlending
         });
 
         const dustParticles = new THREE.Points(dustGeom, dustMat);
         scene.add(dustParticles);
 
-        scene.add(new THREE.AmbientLight(0x112233, 1.8));
+        const ambientLight = new THREE.AmbientLight(0x08111e, 1.0);
+        scene.add(ambientLight);
 
-        // ไฟส่องฝั่งซ้าย
-        const studioSpot1 = new THREE.SpotLight(0x00bfff, 10.0, 25, Math.PI / 5, 0.4, 1.5);
-        studioSpot1.position.set(-5, 5, 4);
+        const studioSpot1 = new THREE.SpotLight(0x00bfff, 8.0, 25, Math.PI / 5, 0.4, 1.5);
+        studioSpot1.position.set(-4, 6, 4);
         studioSpot1.lookAt(0, 0, 0);
         scene.add(studioSpot1);
 
-        // ไฟส่องฝั่งขวา (เพิ่มเข้ามาใหม่เพื่อให้เกิดแสงไฮไลท์ขอบขวาชัดเจน)
-        const studioSpotRight = new THREE.SpotLight(0x88e1ff, 9.0, 25, Math.PI / 5, 0.4, 1.5);
-        studioSpotRight.position.set(5, 4, 4);
-        studioSpotRight.lookAt(0, 0, 0);
-        scene.add(studioSpotRight);
-
-        // ไฟส่องด้านหน้า-ล่าง
-        const studioSpot2 = new THREE.SpotLight(0x40a5f8, 6.0, 25, Math.PI / 5, 0.4, 1.5);
-        studioSpot2.position.set(0, -4, 4);
+        const studioSpot2 = new THREE.SpotLight(0xffffff, 6.0, 25, Math.PI / 5, 0.4, 1.5);
+        studioSpot2.position.set(4, -4, 3);
         studioSpot2.lookAt(0, 0, 0);
         scene.add(studioSpot2);
+
+        const backRim = new THREE.DirectionalLight(0x0055ff, 4.0);
+        backRim.position.set(0, -5, -6);
+        scene.add(backRim);
 
         const renderPass = new THREE.RenderPass(scene, camera);
         const activeDPR = getDPR();
         
         const bloomPass = new THREE.UnrealBloomPass(
             new THREE.Vector2(window.innerWidth * activeDPR, window.innerHeight * activeDPR),
+            0.8,
             0.4,
-            0.5,
-            0.55
+            0.2
         );
 
         const composer = new THREE.EffectComposer(renderer);
@@ -2664,22 +2708,47 @@
 
         // ===== on-chain traits: targets are set by the chain module, current values ease toward them =====
         const TRAIT_BASE = {
-            outerEmissive: new THREE.Color(0x00ffff),
-            innerEmissive: new THREE.Color(0x0099ff),
-            core:          new THREE.Color(0x00f0ff),
+            outerEmissive: new THREE.Color(0x00d2ff),
+            innerEmissive: new THREE.Color(0x0077ff),
+            core:          new THREE.Color(0x0077ff),
             ring:          new THREE.Color(0x40a5f8),
-            edges:         new THREE.Color(0x85d6ff)
+            edges:         new THREE.Color(0x85d6ff),
+            body:          new THREE.Color(0x001833),
+            atten:         new THREE.Color(0x0066ff),
+            innerBody:     new THREE.Color(0x001133),
+            ambient:       new THREE.Color(0x08111e),
+            spot1:         new THREE.Color(0x00bfff),
+            spotR:         new THREE.Color(0x0055ff),
+            spot2:         new THREE.Color(0xffffff),
+            dust:          new THREE.Color(0x00d2ff)
         };
         const TRAIT_GOLD = new THREE.Color(0xffd27a);
         const traits = {
-            cur: { tilt: Math.PI / 8, scale: 1, hue: 0, gold: 0, dim: 1, ringSpin: 0.2, dustY: 0 },
-            tgt: { tilt: Math.PI / 8, scale: 1, hue: 0, gold: 0, dim: 1, ringSpin: 0.2, dustY: 0 }
+            cur: { tilt: Math.PI / 8, scale: 1, hue: SOV.hue, gold: 0, dim: 1, ringSpin: 0.2, dustY: 0 },
+            tgt: { tilt: Math.PI / 8, scale: 1, hue: SOV.hue, gold: 0, dim: 1, ringSpin: 0.2, dustY: 0 }
         };
         let ringAngle = 0, lastT = 0;
         const _tc = new THREE.Color();
+        const GOLD_H = 0.095, _hsl = { h: 0, s: 0, l: 0 };
         function tintInto(base, out) {
-            _tc.copy(base).offsetHSL(traits.cur.hue, 0, 0).lerp(TRAIT_GOLD, traits.cur.gold);
-            out.copy(_tc);
+            base.getHSL(_hsl);
+            let h = (_hsl.h + traits.cur.hue) % 1; if (h < 0) h += 1;
+            const g = traits.cur.gold;
+            if (g > 0) {                                   // slide toward gold's hue, keep lightness, lift saturation
+                let d = GOLD_H - h; d -= Math.round(d);
+                h += d * g;
+                _hsl.s = _hsl.s * (1 - g) + Math.max(_hsl.s, 0.72) * g;
+            }
+            out.setHSL(h, _hsl.s, _hsl.l);
+        }
+        // แกนพลังงาน: ขาวสว่างเสมอ เปลี่ยนสีแค่เฉดบางๆ ตามเลขโทเค็น (ไม่เปลี่ยนเต็มวงล้อเหมือนตัวผลึก)
+        const CORE_BASE_H = 0.529;   // ฐานเดียวกับสีผลึก (0x00d2ff) เพื่อให้แกนออกสีตามผลึกพอดี
+        const CORE_HUE_SHIFT = 1.0;  // ตามเฉดผลึกเต็ม (ความจางคุมที่ sat/light ด้านล่าง) // 0 = ไม่เปลี่ยนเลย, 1 = เปลี่ยนเต็ม  (ลดลงเพื่อให้สีเปลี่ยนน้อย)
+        function tintCore(out, sat, light) {
+            let h = (CORE_BASE_H + traits.cur.hue * CORE_HUE_SHIFT) % 1; if (h < 0) h += 1;
+            const g = traits.cur.gold;
+            if (g > 0) { let d = GOLD_H - h; d -= Math.round(d); h += d * g; }  // ผลึก Council เป็นทอง แกนก็อมทอง
+            out.setHSL(h, sat, light);
         }
         function updateTraits(dt) {
             const k = 1 - Math.exp(-dt * 2.2);
@@ -2687,10 +2756,18 @@
             sacredRing.rotation.x = traits.cur.tilt;
             sacredRing.scale.setScalar(traits.cur.scale);
             tintInto(TRAIT_BASE.outerEmissive, outerMaterial.emissive);
-            tintInto(TRAIT_BASE.innerEmissive, innerMaterial.emissive);
-            tintInto(TRAIT_BASE.core, coreLight.color);
+            tintCore(innerMaterial.emissive, 1.0, 0.75);   // แกนกลาง: ขาวสว่าง ติดสีจางๆ
+            tintCore(coreLight.color, 0.8, 0.65);          // แสงจากแกน: ขาวอมสีเล็กน้อย ยังย้อมผลึกให้มีโทนสี
             tintInto(TRAIT_BASE.ring, ringMat.color);
             tintInto(TRAIT_BASE.edges, edgesMat.color);
+            tintInto(TRAIT_BASE.body, outerMaterial.color);
+            if (outerMaterial.attenuationColor) tintInto(TRAIT_BASE.atten, outerMaterial.attenuationColor);
+            tintInto(TRAIT_BASE.innerBody, innerMaterial.color);
+            tintInto(TRAIT_BASE.ambient, ambientLight.color);
+            tintInto(TRAIT_BASE.spot1, studioSpot1.color);
+            tintInto(TRAIT_BASE.spotR, backRim.color);
+            tintInto(TRAIT_BASE.spot2, studioSpot2.color);
+            tintInto(TRAIT_BASE.dust, dustMat.color);
         }
 
         function animate() {
@@ -2699,15 +2776,14 @@
             const dt = Math.min(0.1, time - lastT); lastT = time;
             updateTraits(dt);
 
-            mainGroup.rotation.y = time * 0.25;
-            mainGroup.position.y = Math.sin(time * 1.1) * 0.07;
+            mainGroup.rotation.y = time * 0.3;
+            mainGroup.position.y = Math.sin(time * 1.0) * 0.08;
 
             symbolMaskTexture.offset.y = -time * 0.015;
             ringAngle -= dt * traits.cur.ringSpin;
             sacredRing.rotation.y = ringAngle;
 
-            dustParticles.rotation.y = time * 0.008 + traits.cur.dustY;
-            dustParticles.rotation.x = time * 0.004;
+            dustParticles.rotation.y = time * 0.015 + traits.cur.dustY;
 
             const pulse = (Math.sin(time * 2.2) + 1.0) * 0.5;
             const easedPulse = Math.pow(pulse, 2);
@@ -2718,8 +2794,9 @@
                 0.12 * (0.94 + easedPulse * 0.12)
             );
 
-            coreLight.intensity = (5.0 + (easedPulse * 3.0)) * traits.cur.dim;
-            outerMaterial.emissiveIntensity = (3.5 + (easedPulse * 1.5)) * traits.cur.dim;
+            innerMaterial.emissiveIntensity = 0.5 + easedPulse * 0.5;   // แกนสว่างเจิดจ้า + เต้นเบาๆ
+            coreLight.intensity = (1.2 + (easedPulse * 0.5)) * (0.8 + 0.2 * traits.cur.dim);
+            outerMaterial.emissiveIntensity = (4.5 + (easedPulse * 1.5)) * traits.cur.dim;
 
             controls.update();
             composer.render();
@@ -2759,37 +2836,13 @@
             ];
             const CHAIN_ID = 8453;
             const ETHERS_SRC = 'https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js';
-            const DEFAULT_TOKEN_ID = 1;   // <-- set this to the Standard token this file represents (or open with ?token=N)
             const ABI = [
                 'function SOVEREIGNTY_COUNCIL(uint256 tokenId) view returns (bool)',
                 'function getDeedData(uint256 t) view returns (address sovereignOwner, bool sovereignActive, bool absoluteSovereigntyStatus, string sovereignFront, string sovereignBack, string sovereignVideo, string sovereignIdentity, string sovereignHidden, address sovereignTba)'
             ];
 
-            // อ่านเบอร์จาก ?token=N ก่อน ถ้าไม่มีลองอ่านจาก #N (เผื่อ marketplace ตัด query string)
-            const hashMatch = /(\d{1,4})/.exec(location.hash || '');
-            const qp = new URLSearchParams(location.search).get('token') ?? (hashMatch ? hashMatch[1] : null);
-            const qn = qp === null ? DEFAULT_TOKEN_ID : Number(qp);
-            const TOKEN_ID = Number.isInteger(qn) && qn >= 1 && qn <= 5555 ? qn : DEFAULT_TOKEN_ID;
-
-            const councilLocal = id => {
-                if (id < 111 || id > 5555) return false;
-                if (id <= 999 && id % 111 === 0) return true;
-                return id >= 1111 && id % 1111 === 0;
-            };
-            const fnv1a = text => {
-                let h = 2166136261;
-                for (let i = 0; i < text.length; i++) h = Math.imul(h ^ text.charCodeAt(i), 16777619);
-                return h >>> 0;
-            };
-            const mulberry32 = seed => {
-                let v = seed >>> 0;
-                return () => {
-                    v += 0x6D2B79F5; let t = v;
-                    t = Math.imul(t ^ (t >>> 15), t | 1);
-                    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-                    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-                };
-            };
+            const TOKEN_ID = SOV.token;   // null when the link carries no number
+            const { councilLocal, fnv1a, mulberry32 } = SOV;
             const short = a => a ? a.slice(0, 6) + '…' + a.slice(-4) : '—';
             const el = id => document.getElementById(id);
 
@@ -2801,6 +2854,7 @@
             };
 
             function badgeText() {
+                if (TOKEN_ID === null) return 'NO TOKEN';
                 if (chain.state === 'pending') return 'SYNCING';
                 if (chain.state === 'unminted') return 'UNCLAIMED';
                 if (chain.state === 'offline') return 'OFFLINE';
@@ -2817,16 +2871,17 @@
                 const rnd = mulberry32(chain.seed);
                 traits.tgt.tilt     = Math.PI / 10 + rnd() * Math.PI / 9;
                 traits.tgt.scale    = 0.92 + rnd() * 0.22;
-                traits.tgt.hue      = (rnd() - 0.5) * 0.07;
+                rnd(); // เรียกไว้เพื่อให้ลำดับสุ่มของ trait อื่น (ringSpin, dustY) ไม่เปลี่ยน
+                traits.tgt.hue      = SOV.hue;
                 traits.tgt.ringSpin = 0.14 + rnd() * 0.14;
                 traits.tgt.dustY    = rnd() * 1.5;
-                const gold = chain.state === 'ok' && (chain.absolute || chain.council);
+                const gold = chain.council || (chain.state === 'ok' && chain.absolute);   // council rule is pure → gold even offline
                 traits.tgt.gold = gold ? 0.85 : 0;
                 traits.tgt.dim  = chain.state === 'ok' && !chain.active ? 0.45 : 1;
             }
 
             function render() {
-                el('deedLabel').textContent = 'DEED Nº ' + TOKEN_ID;
+                el('deedLabel').textContent = 'DEED Nº ' + (TOKEN_ID === null ? '—' : TOKEN_ID);
                 el('sealBtn').textContent = badgeText();
                 applyToScene();
                 renderLedger();
@@ -2846,16 +2901,16 @@
                     } else dd.textContent = value;
                     row.append(dt, dd); rows.appendChild(row);
                 };
-                add('Token', '#' + TOKEN_ID);
+                add('Token', TOKEN_ID === null ? '—' : '#' + TOKEN_ID);
                 add('Seat', chain.council ? 'COUNCIL' : (chain.absolute ? 'SOVEREIGN' : 'STANDARD'), { tag: true });
-                add('State', { pending: 'SYNCING', ok: chain.active ? 'ACTIVE' : 'INACTIVE', unminted: 'UNCLAIMED', offline: 'UNSYNCED' }[chain.state]);
+                add('State', { pending: 'SYNCING', ok: chain.active ? 'ACTIVE' : 'INACTIVE', unminted: 'UNCLAIMED', offline: 'UNSYNCED', notoken: 'NO TOKEN' }[chain.state]);
                 add('Owner', chain.owner ? short(chain.owner) : '—', chain.owner ? { href: 'https://basescan.org/address/' + chain.owner } : {});
                 add('Absolute sovereignty', chain.council || chain.absolute ? 'UNLOCKED' : 'LOCKED');
                 add('TBA vault', chain.tba ? short(chain.tba) + (chain.tbaDeployed ? '' : ' (reserved)') : '—',
                     chain.tba ? { href: 'https://basescan.org/address/' + chain.tba } : {});
                 add('TBA balance', chain.tbaBalance + ' ETH');
                 add('DNA seed', '0x' + chain.seed.toString(16).toUpperCase().padStart(8, '0'));
-                add('Contract', short(CONTRACT), { href: 'https://basescan.org/token/' + CONTRACT + '?a=' + TOKEN_ID });
+                add('Contract', short(CONTRACT), { href: 'https://basescan.org/token/' + CONTRACT + (TOKEN_ID === null ? '' : '?a=' + TOKEN_ID) });
             }
 
             const withTimeout = (p, ms) => Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), ms))]);
@@ -2872,51 +2927,73 @@
                 });
             }
 
+            const isRevert = e => !!e && (e.code === 'CALL_EXCEPTION' || /NonexistentToken|execution reverted/i.test(String(e.message)));
+
+            // Tries each public RPC in turn. A contract revert is a real answer (token unclaimed); anything else moves on to the next RPC.
+            async function readDeed() {
+                let lastErr;
+                for (const url of RPC_URLS) {
+                    let provider;
+                    try {
+                        let net; try { net = ethers.Network.from(CHAIN_ID); } catch { net = undefined; }
+                        provider = net
+                            ? new ethers.JsonRpcProvider(url, net, { staticNetwork: net, batchMaxCount: 1 })
+                            : new ethers.JsonRpcProvider(url, undefined, { batchMaxCount: 1 });
+                        const c = new ethers.Contract(CONTRACT, ABI, provider);
+
+                        let d;
+                        try { d = await withTimeout(c.getDeedData(TOKEN_ID), 9000); }
+                        catch (e) { if (isRevert(e)) return { unminted: true }; throw e; }
+
+                        let council;
+                        try { council = !!(await withTimeout(c.SOVEREIGNTY_COUNCIL(TOKEN_ID), 6000)); }
+                        catch { council = councilLocal(TOKEN_ID); }
+
+                        const tba = d[8] && d[8] !== ethers.ZeroAddress ? d[8] : null;
+                        let bal = '0.0000', deployed = false;
+                        if (tba) {
+                            try {
+                                const [b, code] = await Promise.all([provider.getBalance(tba), provider.getCode(tba)]);
+                                bal = Number(ethers.formatEther(b)).toFixed(4);
+                                deployed = !!code && code !== '0x';
+                            } catch (e) { console.warn('TBA read warning:', e); }
+                        }
+                        return { d, council, tba, bal, deployed };
+                    } catch (e) {
+                        lastErr = e; console.warn('RPC failed:', url, e);
+                    } finally {
+                        try { provider && provider.destroy && provider.destroy(); } catch {}
+                    }
+                }
+                throw lastErr || new Error('no RPC reachable');
+            }
+            const reasonOf = err => String((err && (err.shortMessage || err.message)) || 'unknown').replace(/\s+/g, ' ').slice(0, 44);
+
             let syncing = false;
             async function sync() {
                 if (syncing) return;
+                if (TOKEN_ID === null) {
+                    chain.state = 'notoken'; render(); setStatus('', false); return;
+                }
                 syncing = true; el('syncBtn').disabled = true;
                 chain.state = 'pending'; render(); setStatus('Connecting to Base…');
                 try {
                     await loadEthers();
-                    // ลอง RPC ทีละตัว ตัวไหนล่มหรือโดนบล็อกก็ข้ามไปตัวถัดไป
-                    let provider, c, d, lastErr = null;
-                    for (const url of RPC_URLS) {
-                        try {
-                            provider = new ethers.JsonRpcProvider(url, CHAIN_ID, { staticNetwork: true });
-                            c = new ethers.Contract(CONTRACT, ABI, provider);
-                            d = await withTimeout(c.getDeedData(TOKEN_ID), 8000);
-                            lastErr = null; break;
-                        } catch (e) {
-                            if (e && (e.code === 'CALL_EXCEPTION' || /NonexistentToken|execution reverted/i.test(String(e.message)))) {
-                                chain.state = 'unminted'; chain.owner = null; chain.tba = null; chain.tbaBalance = '0.0000';
-                                render(); setStatus('Not yet claimed on-chain', true); return;
-                            }
-                            lastErr = e; console.warn('RPC failed:', url, e);
-                        }
+                    const r = await readDeed();
+                    if (r.unminted) {
+                        chain.state = 'unminted'; chain.owner = null; chain.tba = null; chain.tbaBalance = '0.0000';
+                        render(); setStatus('Not yet claimed on-chain', true); return;
                     }
-                    if (lastErr || !d) throw (lastErr || new Error('all RPC endpoints failed'));
-
+                    const d = r.d;
                     chain.owner = d[0]; chain.active = !!d[1]; chain.absolute = !!d[2]; chain.dna = d[6] || '';
-                    chain.tba = d[8] && d[8] !== ethers.ZeroAddress ? d[8] : null;
-                    try { chain.council = !!(await withTimeout(c.SOVEREIGNTY_COUNCIL(TOKEN_ID), 8000)); }
-                    catch { chain.council = councilLocal(TOKEN_ID); }
-
-                    chain.tbaDeployed = false; chain.tbaBalance = '0.0000';
-                    if (chain.tba) {
-                        try {
-                            const [bal, code] = await Promise.all([provider.getBalance(chain.tba), provider.getCode(chain.tba)]);
-                            chain.tbaBalance = Number(ethers.formatEther(bal)).toFixed(4);
-                            chain.tbaDeployed = !!code && code !== '0x';
-                        } catch (e) { console.warn('TBA read warning:', e); }
-                    }
+                    chain.council = r.council; chain.tba = r.tba; chain.tbaBalance = r.bal; chain.tbaDeployed = r.deployed;
                     chain.seed = fnv1a(chain.dna.length ? chain.dna : CONTRACT.toLowerCase() + ':' + TOKEN_ID);
                     chain.state = 'ok';
                     render();
                     setStatus('Owner ' + short(chain.owner) + ' · TBA ' + chain.tbaBalance + ' ETH');
                 } catch (err) {
                     console.warn('On-chain sync failed:', err);
-                    chain.state = 'offline'; render(); setStatus('Offline render · chain unreachable', true);
+                    chain.state = 'offline'; render(); setStatus('Offline · ' + reasonOf(err), true);
                 } finally {
                     syncing = false; el('syncBtn').disabled = false;
                 }

@@ -449,6 +449,10 @@
             <div class="p-3 bg-black/70 rounded-lg border border-stone-800"><span class="text-stone-500 uppercase">Owner</span><output id="inspector-owner" class="block mt-1 text-amber-400 break-all">—</output></div>
             <div class="p-3 bg-black/70 rounded-lg border border-stone-800"><span class="text-stone-500 uppercase">Active</span><output id="inspector-active" class="block mt-1 text-amber-400 break-all">—</output></div>
             <div class="p-3 bg-black/70 rounded-lg border border-stone-800"><span class="text-stone-500 uppercase">Absolute sovereignty</span><output id="inspector-absolute" class="block mt-1 text-amber-400 break-all">—</output></div>
+        </div>
+        <details id="inspectorDetails" class="mt-3" ontoggle="this.firstElementChild.firstElementChild.textContent = this.open ? 'HIDE DETAILS ▲' : 'SHOW DETAILS ▼'">
+            <summary class="cursor-pointer select-none px-4 py-3 rounded-lg border border-amber-700/40 bg-black/60 text-amber-400 text-[10px] font-mono uppercase tracking-widest" style="list-style:none"><span>SHOW DETAILS ▼</span></summary>
+            <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3 text-[10px] font-mono">
             <div class="p-3 bg-black/70 rounded-lg border border-stone-800"><span class="text-stone-500 uppercase">Front URI</span><output id="inspector-front" class="block mt-1 text-amber-400 break-all">—</output></div>
             <div class="p-3 bg-black/70 rounded-lg border border-stone-800"><span class="text-stone-500 uppercase">Back URI</span><output id="inspector-back" class="block mt-1 text-amber-400 break-all">—</output></div>
             <div class="p-3 bg-black/70 rounded-lg border border-stone-800"><span class="text-stone-500 uppercase">Video URI</span><output id="inspector-video" class="block mt-1 text-amber-400 break-all">—</output></div>
@@ -456,6 +460,7 @@
             <div class="p-3 bg-black/70 rounded-lg border border-stone-800"><span class="text-stone-500 uppercase">Hidden property</span><output id="inspector-hidden" class="block mt-1 text-amber-400 break-all">—</output></div>
             <div class="p-3 bg-black/70 rounded-lg border border-stone-800 sm:col-span-2"><span class="text-stone-500 uppercase">Token-bound account</span><output id="inspector-tba" class="block mt-1 text-amber-400 break-all">—</output></div>
         </div>
+        </details>
         <!-- 🎯 DEPLOY TBA BUTTON IS HERE -->
         <button id="btnDeployInspectorTBA" type="button" onclick="deployTBAForToken()" class="mt-4 px-5 py-3 rounded-lg text-[10px] font-mono">DEPLOY TBA FOR INSPECTED TOKEN</button>
         <div class="mt-5 pt-4 border-t border-stone-800">
@@ -830,10 +835,10 @@
 
 <section class="chiaroscuro-bg p-6 md:p-8 rounded-2xl my-6 border border-slate-800 bg-black/60 text-center relative z-10 shadow-[inset_0_0_30px_rgba(0,0,0,0.8)]">
     <h4 class="text-[11px] md:text-xs font-black font-cinzel text-slate-400 uppercase tracking-widest mb-3">
-        ⚖ THE ARCHITECT ABDICATION & FORENSIC INTEGRITY DOCTRINE 🔱
+        ⚖ THE ARCHITECT POWERS & FORENSIC INTEGRITY DOCTRINE 🔱
     </h4>
     <p class="text-[10px] md:text-[11px] font-mono text-slate-500 leading-relaxed max-w-4xl mx-auto uppercase">
-        THE SOVEREIGN DEVELOPMENT AND MEMBER SUPPORT IS STRICTLY GOVERNED BY AUTONOMOUS MATHEMATICS.
+        Ownership, identity and media references are governed by the smart contract. The contract owner and the architect keep administrative powers: setting the mint, Nova and Council prices, changing the base URI, minting up to 300 tokens through ARCHITECT_MINT, withdrawing the contract balance, recovering ERC-20 tokens, changing the architect and transferring ownership. The contract has no pause function.
     </p>
     <div class="my-4 border-t border-slate-800/80 w-2/3 mx-auto"></div>
     <p class="text-[10px] md:text-[11px] font-mono text-slate-500 leading-relaxed max-w-4xl mx-auto uppercase tracking-tight">
@@ -843,9 +848,6 @@
 
 <footer class="mt-6 chiaroscuro-bg p-5 md:p-6 rounded-2xl font-mono text-[10px] text-slate-500 relative z-10 border border-stone-900">
     <div id="systemFooterLog" class="h-12 overflow-y-auto leading-relaxed scroll-dark text-slate-600">> [SYSTEM]: Integrity scan complete. Global nodes aligned. No external backend infrastructure recognized pursuant to the autarchic provisions of the Machiavellian Protocol. THE SOVEREIGN ABSOLUTE 🔱.</div>
-    <div class="mt-5 pt-5 border-t border-slate-800/60 text-center text-slate-600 uppercase tracking-widest leading-relaxed text-[9px] md:text-[10px]">
-        This protocol operates an exclusive, private digital identity infrastructure accessible solely via direct curation. All proceeds represent lawful studio service fees. Reserve allocations fund software R&D and Ecosystem Infrastructure Support Grants. Minting and on-chain operations are executed 100% self-sovereignly by curated pass holders. This protocol does not offer public sales, securities, or financial returns.
-    </div>
 </footer>
 
 <script>
@@ -865,10 +867,14 @@ const DEFAULT_FRONT_URI = "https://gateway.irys.xyz/9owrLsuodwEM7DdatGkoYpmBayjD
 // ==============================================================================
 // 🛡️ TRUSTED 3D ASSETS
 // ==============================================================================
-const ASSET_3D_STANDARD = "https://gateway.irys.xyz/GwVAJNcyX12tavpKcMEHVakfCDFSTa9Ka8PQKDN95Axr";
+const ASSET_3D_STANDARD = "https://gateway.irys.xyz/BXroCtbdVHxRSHaMDWVyqeans9FHP2vNDAwbAJaz8DLd";
 const ASSET_3D_COUNCIL = "https://gateway.irys.xyz/5c3ZkZcziuWBjNQ4CCfVNvQiRShv1uMJZbbfRJVdvqqR";
-const URL_3D_STANDARD = "https://gateway.irys.xyz/5c3ZkZcziuWBjNQ4CCfVNvQiRShv1uMJZbbfRJVdvqqR";
+const URL_3D_STANDARD = "https://gateway.irys.xyz/BXroCtbdVHxRSHaMDWVyqeans9FHP2vNDAwbAJaz8DLd";
 const URL_3D_COUNCIL = "https://gateway.irys.xyz/5c3ZkZcziuWBjNQ4CCfVNvQiRShv1uMJZbbfRJVdvqqR";
+// Council หลักร้อย (111–999) เท่านั้น — ไม่ใส่ ?token ที่นี่ ระบบต่อ ?token=<id> ให้แต่ละใบเอง
+// gateway.irys.xyz ทำ redirect ไป datasprite-cdn.com แล้ว "ตัด ?token ทิ้ง" → ต้องใช้ลิงก์ตรง (ปลายทาง redirect) ถึงจะส่ง token ไปถึงหน้า 3D
+const URL_3D_STANDARD_DIRECT = "https://tr6jssj26b77vj5a7cdxrvrhdunoqncvmb6zgptswemlgltr4yva.mainnet-1.datasprite-cdn.com/BXroCtbdVHxRSHaMDWVyqeans9FHP2vNDAwbAJaz8DLd";
+const URL_3D_COUNCIL_HUNDREDS = "https://iruptvjj3cct5vei2ltapatnjrnbp757id2dxp6jk7vdpekkpaaa.mainnet-1.datasprite-cdn.com/5c3ZkZcziuWBjNQ4CCfVNvQiRShv1uMJZbbfRJVdvqqR";
 // ต่อ ?token=<id> ท้ายลิงก์ Awakening ให้แต่ละใบ (gateway ไม่สนใจ query string)
 const withTokenParam = (uri, id) => {
     try {
@@ -884,17 +890,17 @@ const MULTICALL3_ADDRESS = "0xcA11bde05977b3631167028862bE2a173976CA11";
 // ==============================================================================
 // 👉 ใส่ที่อยู่ GitHub Pages ของท่านตรงนี้ (ต้องลงท้ายด้วย /) เช่น "https://ชื่อท่าน.github.io/ชื่อrepo/"
 // ถ้าปล่อย "./" = ดึงจากโฟลเดอร์เดียวกับ index.html
-const CANVAS_BASE = "./";
-const CANVAS_IDLE_MODE2 = CANVAS_BASE + "SOVEREIGN_AWAKENING.html"; // สำหรับช่อง 2 (ตอนยังไม่มีคนกดดู Token)
-const CANVAS_PREVIEW_MODE3 = CANVAS_BASE + "SHIP_3333.html";  // ช่อง 3: แสดงตลอด ไม่เปลี่ยนตาม token
+const CANVAS_BASE_URL = "./";
+const CANVAS_IDLE_MODE2 = CANVAS_BASE_URL + "SOVEREIGN_AWAKENING.html"; // สำหรับช่อง 2 (ตอนยังไม่มีคนกดดู Token)
+const CANVAS_PREVIEW_MODE3 = CANVAS_BASE_URL + "SHIP_3333.html";  // ช่อง 3: แสดงตลอด ไม่เปลี่ยนตาม token
 // ยาน Council: มีไฟล์เฉพาะ 5 ใบตามเอกสาร handoff (SHIP_1111/2222/3333/4444/5555.html)
 const SHIP_TOKEN_IDS = [1111, 2222, 3333, 4444, 5555];
 function pick3DFile(tokenId) {
     const id = Number(tokenId);
-    if (SHIP_TOKEN_IDS.includes(id)) return `${CANVAS_BASE}SHIP_${id}.html`;
+    if (SHIP_TOKEN_IDS.includes(id)) return `${CANVAS_BASE_URL}SHIP_${id}.html`;
     // Council 111–999 = คริสตัลทอง (ไฟล์ C_rings.html เปลี่ยนชื่อเป็น SOVEREIGN_COUNCIL.html ก่อนอัปโหลด)
-    if (isCouncilToken(id)) return CANVAS_BASE + "SOVEREIGN_COUNCIL.html?token=" + id;
-    return CANVAS_BASE + "SOVEREIGN_AWAKENING.html?token=" + id;
+    if (isCouncilToken(id)) return CANVAS_BASE_URL + "SOVEREIGN_COUNCIL.html?token=" + id;
+    return CANVAS_BASE_URL + "SOVEREIGN_AWAKENING.html?token=" + id;
 }
 
 const ARWEAVE_GATEWAYS = [
@@ -1765,10 +1771,10 @@ async function prepareAwakeningPayload(qty) {
         const id = tokenIds[i];
         if (isCouncilToken(id)) {
             expectedValue += councilWei;
-            backs.push(URL_3D_COUNCIL);
+            backs.push(id <= 999 ? withTokenParam(URL_3D_COUNCIL_HUNDREDS, id) : URL_3D_COUNCIL);
         } else {
             expectedValue += stdWei;
-            backs.push(withTokenParam(URL_3D_STANDARD, id));
+            backs.push(withTokenParam(URL_3D_STANDARD_DIRECT, id));
         }
         fronts.push(DEFAULT_FRONT_URI);
     }
@@ -1999,7 +2005,7 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
             // 🛡️ ON-CHAIN STATUS VERIFICATION (PREVENTS DEADLOCK ON REVERTED TX)
             if (pendingFundTx && pendingFundTx !== 'pending') {
                 try {
-                    const activeProvider = window.provider || (window.signer ? window.signer.provider : null);
+                    const activeProvider = window.provider || (window.signer ? window.signer.provider : (typeof signer !== 'undefined' && signer ? signer.provider : null));
                     if (activeProvider) {
                         const txReceipt = await activeProvider.getTransactionReceipt(pendingFundTx);
                         if (txReceipt && txReceipt.status === 0) {
@@ -2080,8 +2086,8 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
             const maxAttempts = 36; 
             
             while (!isSynced && attempts < maxAttempts) {
-                const activeSigner = window.signer;
-                if (!window.irys || !activeSigner) { 
+                const activeSigner = window.signer || (typeof signer !== 'undefined' ? signer : null);
+                if (!window.irys || !activeSigner) {
                     throw new Error("Wallet session severed during sync protocol."); 
                 }
                 await new Promise(resolve => setTimeout(resolve, 5000));
@@ -3844,7 +3850,7 @@ if (typeof window.videoCullingObserver === 'undefined') {
 }
 
 function renderMediaToDOM(container, resolvedMedia, mediaType, abortSignal) {
-    if (!container || !(container instanceof HTMLElement)) return;
+    if (!container || !(container instanceof HTMLElement) || !container.isConnected) return;
     if (!resolvedMedia || typeof resolvedMedia !== 'object' || !resolvedMedia.url) {
         renderEmptyState(container, "ARTIFACT CORRUPTED (NO URL)", "text-red-500");
         return;
@@ -3870,6 +3876,7 @@ function renderMediaToDOM(container, resolvedMedia, mediaType, abortSignal) {
         child.onerror = null;
         child.onloadeddata = null;
         child.oncanplay = null;
+        child.onloadedmetadata = null;
         child.onclick = null;
 
         if (child.tagName === 'VIDEO' || child.tagName === 'IMG') {
@@ -3898,7 +3905,8 @@ function renderMediaToDOM(container, resolvedMedia, mediaType, abortSignal) {
     const isVideo = mediaType === 'video';
     const el = document.createElement(isVideo ? 'video' : 'img');
     
-    el.className = 'w-full h-full object-cover p-1 rounded bg-black shadow-[0_0_15px_rgba(0,0,0,0.8)] z-10 relative opacity-0 transition-opacity duration-500';
+    el.className = 'w-full h-full object-contain p-1 rounded bg-black shadow-[0_0_15px_rgba(0,0,0,0.8)] z-10 relative opacity-0 transition-opacity duration-500';
+    el.style.objectFit = 'contain';
     if (isVideo) el.crossOrigin = 'anonymous'; // images are only displayed, never read pixel-by-pixel
     
     if (resolvedMedia.isBlob) {
@@ -3920,6 +3928,7 @@ function renderMediaToDOM(container, resolvedMedia, mediaType, abortSignal) {
             el.onerror = null;
             el.onloadeddata = null;
             el.oncanplay = null;
+            el.onloadedmetadata = null;
             if (isVideo) {
                 el.pause();
                 el.removeAttribute('src');
@@ -4017,6 +4026,11 @@ function renderMediaToDOM(container, resolvedMedia, mediaType, abortSignal) {
             };
         }
         
+        el.onloadedmetadata = () => {
+            if ((!abortSignal || !abortSignal.aborted) && typeof container._onMediaSize === 'function' && el.videoWidth && el.videoHeight) {
+                container._onMediaSize(el.videoWidth, el.videoHeight);
+            }
+        };
         el.oncanplay = () => {
             if (!abortSignal || !abortSignal.aborted) {
                 el.classList.remove('opacity-0');
@@ -4033,6 +4047,7 @@ function renderMediaToDOM(container, resolvedMedia, mediaType, abortSignal) {
         el.onload = () => {
             if (!abortSignal || !abortSignal.aborted) {
                 el.classList.remove('opacity-0');
+                if (typeof container._onMediaSize === 'function' && el.naturalWidth && el.naturalHeight) container._onMediaSize(el.naturalWidth, el.naturalHeight);
             }
         };
     }
@@ -4493,11 +4508,30 @@ const _canvasUrl = (base, tokenId) => (tokenId ? pick3DFile(tokenId) : base);
 
 let _faceSeq = 0;
 // สร้างการ์ดพลิก 180° ในกล่อง host: หน้า = รูปภาพเสมอ, หลัง = video | 3D
+// [MEM] ปล่อยสื่อของกล่องเก่าก่อนสร้างใหม่: ยกเลิกการโหลดที่ค้าง และเคลียร์ iframe 3D ทันที
+function releaseHostMedia(host) {
+    if (!host) return;
+    host.querySelectorAll('[id^="flipface-"]').forEach((vp) => {
+        if (vp._abortController) { try { vp._abortController.abort(); } catch (_) {} vp._abortController = null; }
+        vp._onMediaSize = null;
+    });
+    host.querySelectorAll('iframe').forEach((fr) => { try { fr.src = 'about:blank'; } catch (_) {} });
+}
+
+// [DYNAMIC CANVAS] อัตราส่วนสื่อจริง จำกัดช่วง 9:16 – 16:9 (ไม่รู้ขนาด = null)
+const clampMediaRatio = (w, h) => {
+    const r = Number(w) / Number(h);
+    if (!isFinite(r) || r <= 0) return null;
+    return Math.min(16 / 9, Math.max(9 / 16, r));
+};
+
 function buildFlipCard(host, frontUri, back, labels) {
     if (!host) return;
+    releaseHostMedia(host);
     host.replaceChildren();
     host.style.padding = "0";
     host.style.perspective = "1400px";
+    host.style.aspectRatio = "4 / 3";
 
     const card = document.createElement("div");
     card.style.cssText = "position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform 700ms cubic-bezier(.2,.7,.2,1);";
@@ -4514,6 +4548,17 @@ function buildFlipCard(host, frontUri, back, labels) {
     };
 
     const f = face(0), b = face(180);
+
+    // พลิกไปหน้าไหน กล่องก็ปรับตามสื่อของหน้านั้น (ยังไม่รู้ขนาด = 4/3)
+    const faceRatio = [null, null];
+    let flipped = false;
+    const applyRatio = () => {
+        const r = faceRatio[flipped ? 1 : 0];
+        host.style.aspectRatio = r ? String(r) : "4 / 3";
+    };
+    [f.vp, b.vp].forEach((vp, idx) => {
+        vp._onMediaSize = (w, h) => { faceRatio[idx] = clampMediaRatio(w, h); applyRatio(); };
+    });
 
     // ต้อง mount เข้า DOM ก่อน renderToViewport ค้นหา element ด้วย id
     host.append(card);
@@ -4534,12 +4579,12 @@ function buildFlipCard(host, frontUri, back, labels) {
     btn.type = "button";
     btn.textContent = labels.toBack;
     btn.style.cssText = "position:absolute;left:50%;bottom:8px;transform:translateX(-50%);z-index:30;padding:6px 14px;border-radius:8px;border:1px solid #b45309;background:rgba(0,0,0,.85);color:#fcd34d;font:700 10px monospace;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;";
-    let flipped = false;
     b.d.style.pointerEvents = "none";
     btn.addEventListener("click", () => {
         flipped = !flipped;
         card.style.transform = flipped ? "rotateY(180deg)" : "rotateY(0deg)";
         btn.textContent = flipped ? labels.toFront : labels.toBack;
+        applyRatio();
         f.d.style.pointerEvents = flipped ? "none" : "auto";
         b.d.style.pointerEvents = flipped ? "auto" : "none";
     });
@@ -4553,6 +4598,7 @@ function _autoSpinWhenLoaded(frame) {
         let tries = 0;
         const t = setInterval(() => {
             tries++;
+            if (!frame.isConnected) { clearInterval(t); return; }
             try {
                 const d = frame.contentDocument;
                 const label = d && d.getElementById("orbit-status-text");
@@ -4594,7 +4640,9 @@ function initMediaBoxes() {
         { kind: "video", uri: "" }, { toBack: "SHOW VIDEO", toFront: "SHOW IMAGE" });
     const box2 = document.getElementById("previewBackContainer");
     if (box2) {
+        releaseHostMedia(box2);
         box2.replaceChildren();
+        box2.style.aspectRatio = "4 / 3";
         box2.style.padding = "0";
         box2.style.perspective = "none";
         box2.appendChild(_mkIframe(CANVAS_IDLE_MODE2));
@@ -4841,11 +4889,15 @@ const adminUriArray = (input, count, kind, tokenIds = null) => {
     return Array.from({ length: count }, (_, index) => {
         const uri = normalizeMediaUri(values[values.length === 1 ? 0 : index], { required: true });
         // ถ้าเป็นไฟล์ Awakening (ที่ฮาร์ดโค้ดไว้) ให้เติม ?token=<id> ของใบนั้นให้อัตโนมัติ
-        return (kind === "back" && tokenIds && uri.startsWith(ASSET_3D_STANDARD))
-            ? withTokenParam(uri, tokenIds[index])
-            : uri;
+        if (kind === "back" && tokenIds) {
+            const id = tokenIds[index];
+            if (uri.startsWith(URL_3D_STANDARD)) return withTokenParam(URL_3D_STANDARD_DIRECT, id);
+            if (uri.startsWith(URL_3D_COUNCIL) && id <= 999) return withTokenParam(URL_3D_COUNCIL_HUNDREDS, id);
+        }
+        return uri;
     });
 };
+
 
 // ==============================================================================
 // 7. EXECUTE: ARCHITECT CONSOLE ISOLATION
