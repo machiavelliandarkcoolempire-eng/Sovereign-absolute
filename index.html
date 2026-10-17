@@ -674,20 +674,24 @@
             <h3 class="text-xs font-bold text-fuchsia-400 font-mono uppercase tracking-widest border-b border-stone-800 pb-2">3. ARCHITECT MASTER MINT</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label class="text-[9px] text-stone-500 font-mono block mb-1 uppercase">Token IDs (Comma separated)</label>
-                    <input type="text" id="adminMintTokenIds" placeholder="e.g. 1, 2, 3" class="w-full bg-black border border-stone-800 p-2.5 text-xs font-mono text-fuchsia-300 rounded-lg outline-none focus:border-fuchsia-500" />
+                    <label class="text-[9px] text-stone-500 font-mono block mb-1 uppercase">Quantity (used only when Token IDs is blank, max 50)</label>
+                    <input type="number" id="adminMintQuantity" min="1" max="50" step="1" value="1" class="w-full bg-black border border-stone-800 p-2.5 text-xs font-mono text-fuchsia-300 rounded-lg outline-none focus:border-fuchsia-500" />
                 </div>
                 <div>
-                    <label class="text-[9px] text-stone-500 font-mono block mb-1 uppercase">Recipient Address</label>
-                    <input type="text" id="adminMintRecipient" placeholder="0x..." class="w-full bg-black border border-stone-800 p-2.5 text-xs font-mono text-fuchsia-300 rounded-lg outline-none focus:border-fuchsia-500" />
+                    <label class="text-[9px] text-stone-500 font-mono block mb-1 uppercase">Token IDs (Comma separated) — leave blank = auto-pick next free IDs</label>
+                    <input type="text" id="adminMintTokenIds" placeholder="blank = auto (skips Council IDs), or e.g. 1, 2, 3" class="w-full bg-black border border-stone-800 p-2.5 text-xs font-mono text-fuchsia-300 rounded-lg outline-none focus:border-fuchsia-500" />
                 </div>
                 <div>
-                    <label class="text-[9px] text-stone-500 font-mono block mb-1 uppercase">Front URIs (Comma separated or 1 for all)</label>
-                    <input type="text" id="adminMintFront" placeholder="Front URI" class="w-full bg-black border border-stone-800 p-2.5 text-xs font-mono text-fuchsia-300 rounded-lg outline-none focus:border-fuchsia-500" />
+                    <label class="text-[9px] text-stone-500 font-mono block mb-1 uppercase">Recipient Address — blank = connected wallet</label>
+                    <input type="text" id="adminMintRecipient" placeholder="blank = my wallet, or 0x..." class="w-full bg-black border border-stone-800 p-2.5 text-xs font-mono text-fuchsia-300 rounded-lg outline-none focus:border-fuchsia-500" />
                 </div>
                 <div>
-                    <label class="text-[9px] text-stone-500 font-mono block mb-1 uppercase">Back URIs (Comma separated or 1 for all)</label>
-                    <input type="text" id="adminMintBack" placeholder="Back URI" class="w-full bg-black border border-stone-800 p-2.5 text-xs font-mono text-fuchsia-300 rounded-lg outline-none focus:border-fuchsia-500" />
+                    <label class="text-[9px] text-stone-500 font-mono block mb-1 uppercase">Front URIs (Comma separated or 1 for all) — blank = default</label>
+                    <input type="text" id="adminMintFront" placeholder="blank = same default as public mint" class="w-full bg-black border border-stone-800 p-2.5 text-xs font-mono text-fuchsia-300 rounded-lg outline-none focus:border-fuchsia-500" />
+                </div>
+                <div>
+                    <label class="text-[9px] text-stone-500 font-mono block mb-1 uppercase">Back URIs (Comma separated or 1 for all) — blank = default 3D per token</label>
+                    <input type="text" id="adminMintBack" placeholder="blank = same 3D as public mint (per-token colour)" class="w-full bg-black border border-stone-800 p-2.5 text-xs font-mono text-fuchsia-300 rounded-lg outline-none focus:border-fuchsia-500" />
                 </div>
             </div>
             <button onclick="if(typeof uiExecuteArchitectMint === 'function') uiExecuteArchitectMint()" class="w-full bg-fuchsia-950/60 border border-fuchsia-700 text-fuchsia-200 hover:bg-fuchsia-900 text-xs font-bold font-mono py-3.5 rounded-lg uppercase transition-colors shadow-[0_0_15px_rgba(192,38,211,0.3)]">EXECUTE MASTER MINT</button>
@@ -752,6 +756,8 @@ const withTokenParam = (uri, id) => {
         return u.href;
     } catch (_) { return uri; }
 };
+// รูปแบบ "ลิงก์ + #เลขโทเค็น" — เศษ # ไม่ถูกตัดตอน gateway redirect (ต่างจาก ?token) และหน้า Awakening อ่านเลขจาก #N ได้
+const withTokenHash = (uri, id) => String(uri).split("#")[0] + "#" + String(id);
 const WETH_ADDRESS = "0x4200000000000000000000000000000000000006";
 const MULTICALL3_ADDRESS = "0xcA11bde05977b3631167028862bE2a173976CA11";
 // ==============================================================================
@@ -1648,7 +1654,7 @@ async function prepareAwakeningPayload(qty) {
             backs.push(id <= 999 ? withTokenParam(URL_3D_COUNCIL_HUNDREDS, id) : URL_3D_COUNCIL);
         } else {
             expectedValue += stdWei;
-            backs.push(withTokenParam(URL_3D_STANDARD_DIRECT, id));
+            backs.push(withTokenHash(URL_3D_STANDARD, id));
         }
         fronts.push(DEFAULT_FRONT_URI);
     }
@@ -4608,6 +4614,30 @@ const requireArchitect = async () => {
     if (!permissions?.isAdmin) throw new Error("Architect or contract-owner privileges are required.");
 };
 
+// ค่าเริ่มต้นของ Architect Mint: ใช้กติกาเดียวกับ Public Mint (ไม่ต้องวางลิงก์เอง)
+const defaultBackForToken = (id) => {
+    if (isCouncilToken(id)) {
+        return id <= 999 ? withTokenParam(URL_3D_COUNCIL_HUNDREDS, id) : URL_3D_COUNCIL;
+    }
+    return withTokenHash(URL_3D_STANDARD, id);
+};
+
+// เลือก Token ID ถัดไปที่ยังว่างให้อัตโนมัติ (ข้ามเลข Council เพื่อไม่ให้ใบพิเศษถูกแจกโดยไม่ตั้งใจ)
+async function pickNextArchitectTokenIds(quantity) {
+    if (!Number.isInteger(quantity) || quantity < 1 || quantity > MAX_ARCHITECT_MINT_BATCH) {
+        throw new Error(`Quantity must be 1-${MAX_ARCHITECT_MINT_BATCH}.`);
+    }
+    const activeTokens = await secureContract.getAllActiveTokens();
+    const activeSet = new Set(activeTokens.map((id) => id.toString()));
+    const ids = [];
+    for (let candidate = 1; candidate <= MAX_TOKEN_ID && ids.length < quantity; candidate++) {
+        if (activeSet.has(String(candidate)) || isCouncilToken(candidate)) continue;
+        ids.push(candidate);
+    }
+    if (ids.length < quantity) throw new Error(`Only ${ids.length} free standard token ID(s) remain.`);
+    return ids;
+}
+
 const adminUriArray = (input, count, kind, tokenIds = null) => {
     const values = Array.isArray(input)
         ? input.map((value) => String(value).trim()).filter(Boolean)
@@ -4620,7 +4650,7 @@ const adminUriArray = (input, count, kind, tokenIds = null) => {
         // ถ้าเป็นไฟล์ Awakening (ที่ฮาร์ดโค้ดไว้) ให้เติม ?token=<id> ของใบนั้นให้อัตโนมัติ
         if (kind === "back" && tokenIds) {
             const id = tokenIds[index];
-            if (uri.startsWith(URL_3D_STANDARD)) return withTokenParam(URL_3D_STANDARD_DIRECT, id);
+            if (uri.startsWith(URL_3D_STANDARD)) return withTokenHash(URL_3D_STANDARD, id);
             if (uri.startsWith(URL_3D_COUNCIL) && id <= 999) return withTokenParam(URL_3D_COUNCIL_HUNDREDS, id);
         }
         return uri;
@@ -4705,12 +4735,14 @@ window.executeWithdrawTreasury = async function () {
     }
 };
 
-window.executeArchitectMint = async function (tokenIdInput, recipientInput, frontInput, backInput) {
+window.executeArchitectMint = async function (tokenIdInput, recipientInput, frontInput, backInput, quantityInput) {
     try {
         await requireArchitect();
-        const rawIds = Array.isArray(tokenIdInput)
-            ? tokenIdInput
-            : String(tokenIdInput || "").split(",").map((value) => value.trim()).filter(Boolean);
+        const idsText = Array.isArray(tokenIdInput) ? tokenIdInput.join(",") : String(tokenIdInput || "").trim();
+        // ช่อง Token IDs ว่าง = เลือกเลขถัดไปที่ยังว่างให้เอง ตามจำนวนในช่อง Quantity (ค่าเริ่มต้น 1)
+        const rawIds = idsText
+            ? idsText.split(",").map((value) => value.trim()).filter(Boolean)
+            : await pickNextArchitectTokenIds(Number(String(quantityInput || "1").trim() || 1));
         const tokenIds = rawIds.map((value) => validateTokenRange(value));
         if (!tokenIds.length || tokenIds.some((id) => !id)) {
             throw new Error("Provide one or more valid token IDs.");
@@ -4719,14 +4751,20 @@ window.executeArchitectMint = async function (tokenIdInput, recipientInput, fron
             throw new Error(`ARCHITECT_MINT accepts at most ${MAX_ARCHITECT_MINT_BATCH} token IDs per transaction.`);
         }
         if (new Set(tokenIds).size !== tokenIds.length) throw new Error("Token IDs must be unique.");
-        const recipient = String(recipientInput || "").trim();
+        // ช่อง Recipient ว่าง = ส่งเข้ากระเป๋าที่เชื่อมอยู่
+        const recipient = String(recipientInput || "").trim() || await signer.getAddress();
         if (!isValidAddress(recipient)) throw new Error("Provide a valid recipient wallet address.");
         const currentMintCount = BigInt((await secureContract.architectMintCount()).toString());
         if (currentMintCount + BigInt(tokenIds.length) > BigInt(MAX_ARCHITECT_MINT_TOTAL)) {
             throw new Error(`Architect mint limit reached: ${currentMintCount.toString()} of ${MAX_ARCHITECT_MINT_TOTAL} used.`);
         }
-        const fronts = adminUriArray(frontInput, tokenIds.length, "front");
-        const backs = adminUriArray(backInput, tokenIds.length, "back", tokenIds);
+        // ช่อง Front/Back ว่าง = ใช้ค่าเริ่มต้นเดียวกับ Public Mint
+        const fronts = String(frontInput || "").trim()
+            ? adminUriArray(frontInput, tokenIds.length, "front")
+            : tokenIds.map(() => DEFAULT_FRONT_URI);
+        const backs = String(backInput || "").trim()
+            ? adminUriArray(backInput, tokenIds.length, "back", tokenIds)
+            : tokenIds.map((id) => defaultBackForToken(id));
         const receipt = await window.runTx(
             null,
             `ARCHITECT_MINT_${tokenIds.map((id) => `#${id}`).join(",")}`,
@@ -4754,6 +4792,7 @@ window.uiExecuteArchitectMint = async function() {
     const elRecipient = document.getElementById("adminMintRecipient");
     const elFront = document.getElementById("adminMintFront");
     const elBack = document.getElementById("adminMintBack");
+    const elQty = document.getElementById("adminMintQuantity");
 
     if (!elTokenIds || !elRecipient || !elFront || !elBack) {
         if (typeof showNotification === 'function') {
@@ -4763,7 +4802,7 @@ window.uiExecuteArchitectMint = async function() {
         return null;
     }
 
-    await window.executeArchitectMint(elTokenIds.value, elRecipient.value, elFront.value, elBack.value);
+    await window.executeArchitectMint(elTokenIds.value, elRecipient.value, elFront.value, elBack.value, elQty ? elQty.value : "1");
 };
 
 window.uiExecuteSetParams = async function() {
