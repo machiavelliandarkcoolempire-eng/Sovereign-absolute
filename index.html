@@ -15,7 +15,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script src="https://unpkg.com/@walletconnect/ethereum-provider@2.11.1/dist/index.umd.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script src="https://cdn.jsdelivr.net/npm/hls.js@latest" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<script src="./web3-polyfill.js"></script>
+<!-- web3-polyfill.js is bundled into irys-bundle.js by esbuild (--inject); do not load its ES module source as a classic script. -->
 <script src="./irys-bundle.js"></script>
 
 <style>
@@ -96,11 +96,6 @@
         filter: drop-shadow(0 2px 10px rgba(217, 119, 6, 0.5));
     }
 
-    .gold-vivid { 
-        color: #fcd34d; 
-        text-shadow: 0 0 25px rgba(251, 191, 36, 0.8), 0 2px 4px rgba(0, 0, 0, 0.9); 
-    }
-
     .btn-gold-master, .btn-rebirth-bright, button { 
         position: relative; 
         overflow: hidden; 
@@ -150,23 +145,6 @@
         box-shadow: 0 0 35px rgba(217, 119, 6, 0.5);
     }
 
-    .scanline-bar {
-        position: relative; overflow: hidden; border: 1px solid rgba(251, 191, 36, 0.5);
-        border-radius: 1.25rem;
-        background: linear-gradient(135deg, rgba(25, 18, 5, 0.95) 0%, rgba(5, 5, 5, 0.98) 50%, rgba(25, 15, 5, 0.95) 100%);
-        box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.9), 0 0 40px rgba(217, 119, 6, 0.25);
-        transition: all 0.4s ease;
-    }
-    .scanline-bar:hover {
-        border-color: rgba(251, 191, 36, 0.9); 
-        box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.9), 0 0 60px rgba(217, 119, 6, 0.5);
-    }
-    .scanline-bar::before {
-        content: ''; position: absolute; top: -10%; left: 0; width: 100%; height: 2px;
-        background: linear-gradient(90deg, transparent, #fef08a 50%, transparent);
-        box-shadow: 0 0 30px 8px rgba(251, 191, 36, 0.8); animation: scanline 3s linear infinite;
-    }
-    @keyframes scanline { 0% { top: -10%; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { top: 100%; opacity: 0; } }
 
     input[type="text"], input[type="number"] {
         background-color: rgba(0, 0, 0, 0.6);
@@ -211,56 +189,6 @@
         <div class="flex flex-col sm:flex-row gap-3">
             <button onclick="if(typeof window.resolveFundConfirm === 'function') window.resolveFundConfirm(false)" class="w-full sm:w-1/2 bg-stone-950 text-stone-400 font-mono text-xs py-3.5 rounded-xl uppercase border border-stone-800 hover:bg-stone-900 transition-colors">CANCEL</button>
             <button onclick="if(typeof window.resolveFundConfirm === 'function') window.resolveFundConfirm(true)" class="w-full sm:w-1/2 btn-gold-master text-xs py-3.5 rounded-xl">FUND BRIDGE</button>
-        </div>
-    </div>
-</div>
-
-<div id="identityAuthModal" class="fixed inset-0 bg-black/95 backdrop-blur-xl z-[80] hidden items-center justify-center p-4">
-    <div class="chiaroscuro-bg p-6 md:p-8 rounded-2xl border border-rose-900/70 max-w-2xl w-full max-h-[90vh] flex flex-col shadow-[0_0_50px_rgba(153,27,27,0.3)]">
-        <h3 class="text-base font-black font-cinzel text-rose-400 mb-2 uppercase tracking-widest flex-shrink-0">🔒 IDENTITY PASSPORT & SYSTEM GUIDE</h3>
-        <p class="text-[10px] md:text-xs font-mono text-slate-400 leading-relaxed mb-4 flex-shrink-0">
-            The Forensic Laboratory is strictly Token-Gated. Review the Sovereign Dashboard operational guide before executing the scan.
-        </p>
-
-        <div class="bg-black/80 border border-stone-800 rounded-xl p-5 mb-5 overflow-y-auto scroll-dark text-[10px] md:text-[11px] font-mono text-slate-300 space-y-6 flex-grow shadow-[inset_0_0_30px_rgba(0,0,0,0.9)] h-72">
-            <div>
-                <h4 class="text-amber-500 font-black uppercase mb-2 border-b border-stone-800 pb-1.5">Phase 1: Sovereign Awakening</h4>
-                <ul class="space-y-2 list-none pl-1">
-                    <li><span class="text-rose-400 font-bold">Action:</span> Connect Web3 wallet and mint the Deed Access Utility Token on the Base network.</li>
-                    <li><span class="text-rose-400 font-bold">Fact:</span> TBA addresses are available on demand; only the current token owner can deploy an account through the page's owner-authorized action.</li>
-                    <li><span class="text-rose-400 font-bold">Outcome:</span> Absolute operational utility and control over metadata and media transfer strictly to the active keyholder.</li>
-                </ul>
-            </div>
-            <div>
-                <h4 class="text-amber-500 font-black uppercase mb-2 border-b border-stone-800 pb-1.5">Phase 2: Deed Ascension</h4>
-                <ul class="space-y-2 list-none pl-1">
-                    <li><span class="text-rose-400 font-bold">Dynamic Preview Slots:</span> Upgraded to dynamic viewing capabilities for Nova sample templates.</li>
-                    <li><span class="text-rose-400 font-bold">Forensic Anointment (The Imprint):</span> The Architect does not manufacture full 4K videos. We execute precise forensic imprinting ("Anointment"). <strong>For Video:</strong> The buyer selects a specific Chrono-Map timeframe (e.g., 12 seconds, frames 1-5) where the cryptographic DNA flashes for exactly 0.01 seconds (5 frames). <strong>For 5 Profile Images:</strong> The DNA is permanently engraved at <span class="text-red-400 font-bold bg-red-950/40 px-1.5 py-0.5 rounded">3% Opacity</span>.</li>
-                    <li><span class="text-rose-400 font-bold">Nova Input Fields:</span> Nova takes three on-chain parameters: Token ID, Identity DNA, and Hidden Property. Front, back, and video URIs are updated separately through <code>updateIdentity(tokenId, front, back, video)</code>. <br><span class="text-amber-400 text-[10px] font-bold mt-1.5 inline-block">STRATEGIC ADVISORY: It is highly recommended that buyers use the exact same Identity DNA (identical text and numbers) across all inputs for absolute consistency.</span></li>
-                    <li class="mt-3 text-[10px] text-red-400 border border-red-900/60 bg-red-950/30 p-3 rounded-lg uppercase font-bold leading-relaxed">
-                        CRITICAL: Nova stores identityDNA and hiddenProperty on-chain. The token owner may call Nova again; later calls are free after the sovereignty fee is paid once. Media URIs (front, back, video) use the separate owner-only updateIdentity() function.
-                    </li>
-                </ul>
-            </div>
-            <div>
-                <h4 class="text-amber-500 font-black uppercase mb-2 border-b border-stone-800 pb-1.5">Phase 3: Forensic DNA Lab</h4>
-                <ul class="space-y-2 list-none pl-1">
-                    <li><span class="text-rose-400 font-bold">Action:</span> Access via the hidden trigger under the "Uncompromised Integrity Protocol" section.</li>
-                    <li><span class="text-rose-400 font-bold">Fact:</span> On-chain verification restricts access exclusively to the verified Deed holder.</li>
-                    <li><span class="text-rose-400 font-bold">Outcome:</span> Instantly cross-checks personal DNA footprints to deliver irrefutable, court-admissible evidence, significantly expediting identity theft and deepfake litigation.</li>
-                </ul>
-            </div>
-            <div>
-                <h4 class="text-amber-500 font-black uppercase mb-2 border-b border-stone-800 pb-1.5">Phase 5: Token Lifecycle</h4>
-                <ul class="space-y-2 list-none pl-1">
-                    <li><span class="text-rose-400 font-bold">Supported operations:</span> Sovereign awakening, Nova identity, media updates, TBA deployment, and the ABI-listed architect administration methods.</li>
-                    <li><span class="text-rose-400 font-bold">Contract scope:</span> Only operations exposed by the supplied contract interface are available in this dashboard.</li>
-                </ul>
-            </div>
-        </div>
-        <div class="flex flex-col sm:flex-row gap-3 flex-shrink-0">
-            <button onclick="if(typeof closeIdentityAuthModal === 'function') closeIdentityAuthModal()" class="w-full sm:w-1/2 bg-stone-950 text-stone-400 font-mono text-xs py-3.5 rounded-xl uppercase border border-stone-800 hover:bg-stone-900 transition-colors">ABORT SCAN</button>
-            <button id="btnGatewayUnlock" onclick="if(typeof executeGatewayUnlock === 'function') executeGatewayUnlock(event)" class="w-full sm:w-1/2 bg-rose-950/80 text-rose-200 border border-rose-600 font-mono font-bold text-xs py-3.5 rounded-xl uppercase hover:bg-rose-900 transition-colors shadow-[0_0_20px_rgba(153,27,27,0.5)]">AGREE & EXECUTE SCAN 🧬</button>
         </div>
     </div>
 </div>
@@ -327,73 +255,6 @@
         </button>
     </div>
 </header>
-
-<section class="mb-6 relative z-10">
-    <div onclick="if(typeof openIdentityAuthModal === 'function') openIdentityAuthModal()" class="scanline-bar chiaroscuro-bg p-6 md:p-8 rounded-2xl cursor-pointer hover:border-amber-500 transition-all shadow-[inset_0_0_30px_rgba(0,0,0,0.9)]" title="INITIALIZE IDENTITY PROBE">
-        <h2 class="gold-vivid text-center font-cinzel font-black text-xl md:text-3xl tracking-[0.2em] md:tracking-[0.3em] opacity-90 hover:opacity-100 transition-all drop-shadow-2xl select-none uppercase">
-            UNCOMPROMISED INTEGRITY PROTOCOL
-        </h2>
-    </div>
-</section>
-
-<!-- 🧬 เริ่มต้น Section: ห้อง DNA STUDIO -->
-<section id="memberDnaStudio" class="hidden mb-6 relative z-10">
-    <div class="chiaroscuro-bg p-6 md:p-8 rounded-2xl border border-cyan-900/50 shadow-[0_0_40px_rgba(6,182,212,0.15)]">
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-stone-800 pb-4 mb-6 gap-3">
-            <div>
-                <h2 class="text-xl font-black font-cinzel text-cyan-400 uppercase tracking-tight">SOVEREIGN NOVA: ON-CHAIN FORENSIC TRUTH</h2>
-                <p class="text-[10px] font-mono text-stone-500 uppercase tracking-wide mt-1">RESTRICTED SYSTEM — 9-PARAMETER ON-CHAIN DATA</p>
-            </div>
-            <span id="labAccessBadge" class="bg-cyan-950/60 text-cyan-300 border border-cyan-700 text-[10px] font-black px-3 py-2 tracking-widest uppercase rounded-lg shadow-[0_0_15px_rgba(6,182,212,0.4)]">HOLDER VERIFIED</span>
-        </div>
-
-        <div class="space-y-3 font-mono text-[10px] md:text-xs">
-            <div class="bg-black/80 p-3.5 rounded-lg border border-stone-800 flex flex-col gap-1">
-                <span class="text-stone-500 font-bold uppercase">1. ACCREDITED OWNER:</span> 
-                <span id="dna-owner" class="text-cyan-300 break-all font-bold">AWAITING...</span>
-            </div>
-            <div class="grid grid-cols-2 gap-3">
-                <div class="bg-black/80 p-3.5 rounded-lg border border-stone-800 flex flex-col gap-1">
-                    <span class="text-stone-500 font-bold uppercase">2. ACTIVE STATUS:</span> 
-                    <span id="dna-active" class="text-cyan-300 font-bold">AWAITING...</span>
-                </div>
-                <div class="bg-black/80 p-3.5 rounded-lg border border-stone-800 flex flex-col gap-1">
-                    <span class="text-stone-500 font-bold uppercase">3. SANCTIFIED (NOVA):</span> 
-                    <span id="dna-sanctified" class="text-cyan-300 font-bold">AWAITING...</span>
-                </div>
-            </div>
-            <div class="bg-black/80 p-3.5 rounded-lg border border-stone-800 flex flex-col gap-1">
-                <span class="text-stone-500 font-bold uppercase">4. FRONT URI:</span> 
-                <span id="dna-front" class="text-cyan-300 break-all">AWAITING...</span>
-            </div>
-            <div class="bg-black/80 p-3.5 rounded-lg border border-stone-800 flex flex-col gap-1">
-                <span class="text-stone-500 font-bold uppercase">5. BACK URI:</span> 
-                <span id="dna-back" class="text-cyan-300 break-all">AWAITING...</span>
-            </div>
-            <div class="bg-black/80 p-3.5 rounded-lg border border-stone-800 flex flex-col gap-1">
-                <span class="text-stone-500 font-bold uppercase">6. VIDEO URI:</span> 
-                <span id="dna-video" class="text-cyan-300 break-all">AWAITING...</span>
-            </div>
-            <div class="bg-black/80 p-3.5 rounded-lg border border-rose-900/30 flex flex-col gap-1 shadow-inner">
-                <span class="text-rose-400 font-bold uppercase">7. IDENTITY DNA:</span> 
-                <span id="dna-dna" class="text-rose-200 break-all font-bold">AWAITING...</span>
-            </div>
-            <div class="bg-black/80 p-3.5 rounded-lg border border-rose-900/30 flex flex-col gap-1 shadow-inner">
-                <span class="text-rose-400 font-bold uppercase">8. HIDDEN PROPERTY:</span> 
-                <span id="dna-hidden" class="text-rose-200 break-all font-bold">AWAITING...</span>
-            </div>
-            <div class="bg-black/80 p-3.5 rounded-lg border border-stone-800 flex flex-col gap-1">
-                <span class="text-stone-500 font-bold uppercase">9. SOVEREIGN TBA:</span>
-                <span id="dna-tba" class="text-cyan-300 break-all font-bold">AWAITING...</span>
-            </div>
-        </div>
-        
-        <button onclick="if(typeof processIdentityDnaInspectionOnChain === 'function') processIdentityDnaInspectionOnChain()" class="w-full bg-cyan-950/60 text-cyan-200 border border-cyan-600 text-xs font-black py-4 rounded-xl uppercase hover:bg-cyan-900 transition-all tracking-widest shadow-[0_0_25px_rgba(6,182,212,0.4)] cursor-pointer mt-5">
-            REFRESH ON-CHAIN STRUCTURAL TRACE 🧬
-        </button>
-    </div>
-</section>
-<!-- 🧬 สิ้นสุด Section: ห้อง DNA STUDIO -->
 
 <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5 mb-6 relative z-10">
     <div class="chiaroscuro-bg p-5 rounded-2xl border-l-4 border-rose-700">
@@ -595,16 +456,16 @@
 
         <!-- MODE 2 SLOT -->
         <article class="min-w-0">
-            <h3 class="text-[10px] font-mono font-bold text-amber-400 uppercase tracking-widest mb-2">MODE 2: IMAGE & 3D MODEL (FLIP INSPECTION)</h3>
-            <div id="previewBackContainer" class="preview-slot relative flex items-center justify-center overflow-hidden rounded-xl bg-black p-3" style="aspect-ratio: 4 / 3; min-height: 220px" aria-label="Mode 2 Image and 3D Model Preview">
+            <h3 class="text-[10px] font-mono font-bold text-amber-400 uppercase tracking-widest mb-2">MODE 2: 3D STANDARD DEEDS (AUTO-ROTATE)</h3>
+            <div id="previewBackContainer" class="preview-slot relative flex items-center justify-center overflow-hidden rounded-xl bg-black p-3" style="aspect-ratio: 4 / 3; min-height: 220px" aria-label="Mode 2 3D standard deeds">
                 <span class="text-[10px] font-mono text-stone-500 text-center uppercase">Search a token ID to load Image & 3D Inspection Canvas.</span>
             </div>
         </article>
 
         <!-- MODE 3 SLOT -->
         <article class="min-w-0">
-            <h3 class="text-[10px] font-mono font-bold text-amber-400 uppercase tracking-widest mb-2">MODE 3: 3D CANVAS PREVIEW (NON-FLIP)</h3>
-            <div id="previewVideoContainer" class="preview-slot relative flex items-center justify-center overflow-hidden rounded-xl bg-black p-3" style="aspect-ratio: 4 / 3; min-height: 220px" aria-label="Mode 3 3D Canvas Preview">
+            <h3 class="text-[10px] font-mono font-bold text-amber-400 uppercase tracking-widest mb-2">MODE 3: 3D COUNCIL &amp; SHIP DEEDS (AUTO-ROTATE)</h3>
+            <div id="previewVideoContainer" class="preview-slot relative flex items-center justify-center overflow-hidden rounded-xl bg-black p-3" style="aspect-ratio: 4 / 3; min-height: 220px" aria-label="Mode 3 3D council and ship deeds">
                 <span class="text-[10px] font-mono text-stone-500 text-center uppercase">3D Canvas Standalone Viewport Active.</span>
             </div>
         </article>
@@ -713,14 +574,9 @@
             <label class="text-[10px] text-stone-400 font-mono block mb-2 uppercase tracking-wider">① Token ID (t)</label>
             <input type="number" id="novaTokenId" min="1" max="5555" placeholder="1 - 5,555 Execution coordinate" class="w-full bg-black border border-stone-800 p-3.5 text-sm font-mono text-amber-500 rounded-xl outline-none focus:border-amber-500 transition-all" />
         </div>
-        <div class="space-y-3">
-            <label class="text-[10px] text-stone-400 font-mono block uppercase tracking-wider">② Identity DNA Forensic</label>
-            <input type="text" id="novaDnaName" placeholder="CODE NAME" class="w-full bg-black border border-stone-800 p-3 text-sm font-mono text-rose-300 rounded-xl outline-none focus:border-rose-500 transition-all" />
-            <div class="flex gap-2">
-                <input type="number" id="novaDnaX" placeholder="1014" class="w-1/2 bg-black border border-stone-800 p-3 text-sm font-mono text-rose-300 rounded-xl outline-none focus:border-rose-500 transition-all" />
-                <input type="number" id="novaDnaY" placeholder="1754" class="w-1/2 bg-black border border-stone-800 p-3 text-sm font-mono text-rose-300 rounded-xl outline-none focus:border-rose-500 transition-all" />
-            </div>
-            <input type="text" id="novaDnaChrono" placeholder="VERIFIED AT 12S FR 1-6" class="w-full bg-black border border-stone-800 p-3 text-sm font-mono text-rose-300 rounded-xl outline-none focus:border-rose-500 transition-all" />
+        <div>
+            <label class="text-[10px] text-stone-400 font-mono block mb-2 uppercase tracking-wider">② Identity DNA</label>
+            <input type="text" id="novaDnaInput" placeholder="Your identity text, sent to the contract as typed" class="w-full bg-black border border-stone-800 p-3.5 text-sm font-mono text-rose-300 rounded-xl outline-none focus:border-rose-500 transition-all" />
         </div>
         <div class="md:col-span-2">
             <label class="text-[10px] text-stone-400 font-mono block mb-2 uppercase tracking-wider">③ Hidden (Token URL / Freedom)</label>
@@ -728,6 +584,19 @@
         </div>
     </div>
         
+    <div class="mt-6 p-5 md:p-6 border border-amber-900/50 rounded-2xl bg-black/40 text-[11px] md:text-xs font-mono text-slate-300 leading-relaxed space-y-3">
+        <h3 class="text-sm font-black font-cinzel text-amber-400 tracking-wide">What is Absolute Sovereignty?</h3>
+        <p>By default, your deed's metadata is served from the Architect's base URI. Absolute Sovereignty is the state in which your deed points to <strong>your own</strong> metadata address instead. Nobody has to approve it, and the Architect is not involved.</p>
+        <ul class="list-disc pl-5 space-y-1.5">
+            <li><strong>How it unlocks:</strong> run Nova once and pay the Nova fee once. Council deeds unlock free. Every later Nova call costs nothing.</li>
+            <li><strong>Identity DNA:</strong> any text you choose, stored on-chain as your identity record. Because it is public and permanent, you can use it outside the chain, for example to verify a holder with a QR code or a check-in scan at an event. The contract only stores it.</li>
+            <li><strong>Hidden:</strong> the address of your own metadata API. When Absolute Sovereignty is unlocked and both DNA and Hidden contain at least one character, the contract returns your Hidden value as the token URI.</li>
+            <li><strong>If either is empty:</strong> the deed is still unlocked, but the contract keeps using the Architect's base URI.</li>
+            <li><strong>Opting out:</strong> you are not required to run your own back end. The Architect's service stays available. Submitting an empty Hidden value later returns your deed to it.</li>
+        </ul>
+        <p>Hidden must be an address that you keep online and that returns valid metadata. The contract does not check it. If your server goes down, your deed's metadata goes down with it. You can fix or replace it at any time with another Nova call.</p>
+    </div>
+
     <div class="mt-8">
         <div class="p-5 md:p-6 border border-rose-900/50 rounded-2xl bg-black/40 shadow-inner mb-4">
             <span class="text-[10px] font-mono text-rose-400 uppercase tracking-widest block mb-4 pb-4 border-b border-stone-800 leading-relaxed">
@@ -892,7 +761,7 @@ const MULTICALL3_ADDRESS = "0xcA11bde05977b3631167028862bE2a173976CA11";
 // ถ้าปล่อย "./" = ดึงจากโฟลเดอร์เดียวกับ index.html
 const CANVAS_BASE_URL = "./";
 const CANVAS_IDLE_MODE2 = CANVAS_BASE_URL + "SOVEREIGN_AWAKENING.html"; // สำหรับช่อง 2 (ตอนยังไม่มีคนกดดู Token)
-const CANVAS_PREVIEW_MODE3 = CANVAS_BASE_URL + "SHIP_3333.html";  // ช่อง 3: แสดงตลอด ไม่เปลี่ยนตาม token
+const CANVAS_PREVIEW_MODE3 = CANVAS_BASE_URL + "SHIP_4444.html";  // ช่อง 3: แสดงตลอด ไม่เปลี่ยนตาม token
 // ยาน Council: มีไฟล์เฉพาะ 5 ใบตามเอกสาร handoff (SHIP_1111/2222/3333/4444/5555.html)
 const SHIP_TOKEN_IDS = [1111, 2222, 3333, 4444, 5555];
 function pick3DFile(tokenId) {
@@ -1625,6 +1494,11 @@ async function runTx(eventOrBtn, actionName, methodName, args = [], overrides = 
             throw new Error("Transaction reverted by EVM during execution.");
         }
     } catch (err) {
+        // [FIX-4] tx ถูก speed-up/replace: ถ้า tx ใหม่สำเร็จ ถือว่าสำเร็จ (ไม่ใช่ล้มเหลว)
+        if (err && err.code === 'TRANSACTION_REPLACED' && err.reason !== 'cancelled' && err.receipt && err.receipt.status === 1) {
+            if (typeof safeAppendLog === 'function') safeAppendLog(`[TX] ${actionName} confirmed via replacement tx in block ${err.receipt.blockNumber}.`, "text-emerald-400 font-bold");
+            return err.receipt;
+        }
         const errorMsg = err.message && err.message.startsWith('SIMULATION_REVERTED:') 
             ? err.message.replace('SIMULATION_REVERTED: ', '') 
             : decodeContractError(err);
@@ -2432,6 +2306,7 @@ async function executeIrysTopUp(amountEthStr = null, triggerBtn = null) {
 async function executeArchitectCentralizedUpload(type) {
     const btnId = type === 'front' ? 'btnUploadFront' : 'btnUploadBack';
     const btn = document.getElementById(btnId);
+    let progress = null; // Must remain in scope for finally cleanup.
     if (btn && typeof toggleButtonLoading === 'function') toggleButtonLoading(btn, true);
 
     // ✅ ปรับปรุงการตรวจสอบตัวแปรประเภท Signer / Contract อย่างปลอดภัย ป้องกัน ReferenceError
@@ -2504,7 +2379,6 @@ async function executeArchitectCentralizedUpload(type) {
             return;
         }
 
-        let progress = null;
         if (!window.irys) await ensureIrysReady();
         
         if (typeof safeAppendLog === 'function') safeAppendLog(`Streaming ${type} payload for Token #${inspectedId} to Irys Datachain...`, "text-blue-400");
@@ -2554,8 +2428,11 @@ async function executeArchitectCentralizedUpload(type) {
         if (typeof safeAppendLog === 'function') safeAppendLog(`Upload failed: ${errMsg}`, "text-red-500");
         if (typeof showNotification === 'function') showNotification(`Upload failed: ${errMsg}`, "error");
     } finally {
-        if (progress) progress.hide();
-        if (btn) toggleButtonLoading(btn, false);
+        // Cleanup must never prevent the upload button from being restored.
+        try { if (progress && typeof progress.hide === 'function') progress.hide(); } catch (cleanupError) {
+            if (typeof safeAppendLog === 'function') safeAppendLog(`[UPLOAD CLEANUP WARNING] ${cleanupError?.message || cleanupError}`, "text-yellow-500");
+        }
+        if (btn && typeof toggleButtonLoading === 'function') toggleButtonLoading(btn, false);
     }
 }
 
@@ -2597,14 +2474,6 @@ function createProgressController(totalBytes) {
 // ==============================================================================
 // 🛡️ ABSOLUTE EVENT DELEGATION & UI ROUTING
 // ==============================================================================
-
-function openIdentityAuthModal() {
-    document.getElementById('identityAuthModal')?.classList.remove('hidden');
-}
-
-function closeIdentityAuthModal() {
-    document.getElementById('identityAuthModal')?.classList.add('hidden');
-}
 
 // ==============================================================================
 // 🔐 PRIVILEGE & GATEWAY ENGINE
@@ -2648,149 +2517,6 @@ function checkPendingNova() {
             localStorage.removeItem('pending_nova_token');
         } catch (purgeErr) {}
     }
-}
-
-async function executeGatewayUnlock(event) {
-    if (!secureContract || !signer) {
-        showNotification("CRITICAL ERROR: WALLET NOT CONNECTED - Please connect your wallet first.", "error");
-        return;
-    }
-
-    const tokenId = window.SystemState.inspectedTokenId;
-    if (!tokenId) {
-        showNotification("No deed selected. Enter a token ID in the Token Inspector first.", "error");
-        return;
-    }
-
-    const btn = toggleButtonLoading(event, true);
-    try {
-        const userAddress = (await signer.getAddress()).toLowerCase();
-        
-        const [
-          sovereignOwner,
-          sovereignActive,
-          absoluteSovereigntyStatus,
-          sovereignFront,
-          sovereignBack,
-          sovereignVideo,
-          sovereignIdentity,
-          sovereignHidden,
-          sovereignTba
-        ] = await secureContract.getDeedData(tokenId.toString());
-        
-        const ownerOnChain = String(sovereignOwner).toLowerCase();
-        
-        const privs = await verifyUserPrivileges(userAddress);
-        if (userAddress !== ownerOnChain && !privs.isArchitect) {
-            showNotification("ACCESS DENIED: UNAUTHORIZED ENTITY", "error");
-            safeAppendLog(`ACCESS DENIED: Wallet ${userAddress.slice(0,6)} is not the owner of Node #${tokenId}.`, "text-red-500 font-bold");
-            closeIdentityAuthModal();
-            return;
-        }
-
-        document.getElementById('dna-owner').textContent = sovereignOwner;
-        document.getElementById('dna-active').textContent = sovereignActive ? "TRUE (ACTIVE)" : "FALSE (DORMANT)";
-        document.getElementById('dna-sanctified').textContent = absoluteSovereigntyStatus ? "TRUE (SANCTIFIED)" : "FALSE (UNVERIFIED)";
-        document.getElementById('dna-front').textContent = sovereignFront || "UNASSIGNED";
-        document.getElementById('dna-back').textContent = sovereignBack || "UNASSIGNED";
-        document.getElementById('dna-video').textContent = sovereignVideo || "UNASSIGNED";
-        
-        document.getElementById('dna-dna').innerHTML = renderDNA(sovereignIdentity);
-        document.getElementById('dna-hidden').innerHTML = renderDNA(sovereignHidden);
-        document.getElementById('dna-tba').textContent = await secureContract.getTBA(String(tokenId)) || "UNAVAILABLE";
-
-        closeIdentityAuthModal();
-        const vault = document.getElementById('memberDnaStudio');
-        if (vault) {
-            vault.classList.remove('hidden');
-            requestAnimationFrame(() => vault.scrollIntoView({ behavior: 'smooth' }));
-        }
-        
-        safeAppendLog(`ACCESS GRANTED: Node #${tokenId} Laboratory unlocked.`, "text-cyan-400 font-bold");
-        showNotification(`Welcome! Access granted.`, "success");
-
-    } catch (err) {
-        console.error("[SYS LOG] Blockchain Query Error:", err);
-        showNotification("VALIDATION FAILED: Error retrieving data from Blockchain.", "error");
-    } finally {
-        if (btn) toggleButtonLoading(btn, false);
-    }
-}
-
-// ==============================================================================
-// [PATCHED] FORENSIC LAB REFRESH (STRICT ACCESS CONTROL)
-// ==============================================================================
-async function processIdentityDnaInspectionOnChain() {
-    const tokenId = window.SystemState.inspectedTokenId;
-    if (!tokenId) return;
-
-    const activeContract = secureContract || readOnlyContract;
-    if (!activeContract || !signer) {
-        showNotification("Wallet connection required for Forensic Lab access.", "error");
-        return;
-    }
-
-    try {
-        const [
-          sovereignOwner,
-          sovereignActive,
-          absoluteSovereigntyStatus,
-          sovereignFront,
-          sovereignBack,
-          sovereignVideo,
-          sovereignIdentity,
-          sovereignHidden,
-          sovereignTba
-        ] = await activeContract.getDeedData(tokenId.toString());
-        
-        // [DETERMINISTIC FIX]: Enforce Owner/Architect verification on refresh
-        const userAddress = (await signer.getAddress()).toLowerCase();
-        const ownerOnChain = String(sovereignOwner).toLowerCase();
-        const privs = await verifyUserPrivileges(userAddress);
-        
-        if (userAddress !== ownerOnChain && !privs.isArchitect) {
-            showNotification("ACCESS DENIED: UNAUTHORIZED ENTITY", "error");
-            safeAppendLog(`SECURITY BLOCK: Unauthorized refresh attempt on Node #${tokenId}.`, "text-red-500 font-bold");
-            return;
-        }
-
-        document.getElementById('dna-owner').textContent = sovereignOwner;
-        document.getElementById('dna-active').textContent = sovereignActive ? "TRUE (ACTIVE)" : "FALSE (DORMANT)";
-        document.getElementById('dna-sanctified').textContent = absoluteSovereigntyStatus ? "TRUE (SANCTIFIED)" : "FALSE (UNVERIFIED)";
-        document.getElementById('dna-front').textContent = sovereignFront || "UNASSIGNED";
-        document.getElementById('dna-back').textContent = sovereignBack || "UNASSIGNED";
-        document.getElementById('dna-video').textContent = sovereignVideo || "UNASSIGNED";
-        
-        document.getElementById('dna-dna').innerHTML = renderDNA(sovereignIdentity);
-        document.getElementById('dna-hidden').innerHTML = renderDNA(sovereignHidden);
-        document.getElementById('dna-tba').textContent = await activeContract.getTBA(String(tokenId)) || "UNAVAILABLE";
-
-        safeAppendLog(`On-chain Forensic analysis refreshed for Node #${tokenId}.`, "text-emerald-400");
-        showNotification("Data refreshed from blockchain.", "success");
-    } catch (err) {
-        safeAppendLog(`Failed to extract on-chain DNA for Node #${tokenId}.`, "text-red-500");
-        showNotification("Failed to refresh data.", "error");
-    }
-}
-
-// ==============================================================================
-// 🧬 DNA PARSER ENGINE
-// ==============================================================================
-function renderDNA(sovereignIdentityString) {
-    if (!sovereignIdentityString) return "NO DATA";
-    const parts = sovereignIdentityString.split('|').map(s => s.trim());
-    
-    const safePart0 = sanitizeForDOM(parts[0] || '');
-    const safePart1 = sanitizeForDOM(parts[1] || '');
-    const safePart2 = sanitizeForDOM(parts[2] || '');
-    
-    return `
-        <div class="dna-block">
-            <p>- ${safePart0}</p>
-            <p>- ${safePart1}</p>
-            <p>- ${safePart2}</p>
-        </div>
-    `;
 }
 
 // ==============================================================================
@@ -2851,7 +2577,7 @@ function resetAdminInputs(forceClear = false) {
         console.warn("[SYS LOG] resetAdminInputs called implicitly. State preserved to prevent destructive wiping.");
         return; 
     }
-    const inputsToClear = ['forgeFrontUri', 'forgeBackUri', 'novaDnaName', 'novaDnaX', 'novaDnaY', 'novaDnaChrono', 'novaHiddenInput'];
+    const inputsToClear = ['forgeFrontUri', 'forgeBackUri', 'novaDnaInput', 'novaHiddenInput'];
     inputsToClear.forEach(id => {
         const el = document.getElementById(id);
         if (el) el.value = "";
@@ -3046,6 +2772,11 @@ async function handleAccountsChangedEvent(accounts) {
     
     if (typeof clearAllTimers === 'function') clearAllTimers();
     
+    // [FIX-1] ตัวแปรหลักประกาศด้วย let (ไม่ใช่ property ของ window) ต้องเคลียร์ตัวแปรจริงด้วย
+    provider = null;
+    signer = null;
+    secureContract = null;
+    irys = null;
     window.provider = null;
     window.signer = null;
     window.secureContract = null;
@@ -3058,12 +2789,17 @@ function setNetworkHardLock(locked, observedChainId = '') {
 
     document.querySelectorAll('button').forEach((button) => {
         if (locked) {
-            button.dataset.networkLocked = button.disabled ? 'preserve' : 'restore';
+            // [FIX-2] จดสถานะเดิมเพียงครั้งเดียว ล็อกซ้ำต้องไม่ทับค่า 'restore'
+            if (!button.dataset.networkLocked) {
+                button.dataset.networkLocked = button.disabled ? 'preserve' : 'restore';
+            }
             button.disabled = true;
             button.classList.add('opacity-50', 'cursor-not-allowed');
-        } else if (button.dataset.networkLocked === 'restore') {
-            button.disabled = false;
-            button.classList.remove('opacity-50', 'cursor-not-allowed');
+        } else if (button.dataset.networkLocked) {
+            if (button.dataset.networkLocked === 'restore') {
+                button.disabled = false;
+                button.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
             delete button.dataset.networkLocked;
         }
     });
@@ -3288,27 +3024,18 @@ async function triggerIdentityNova(e) {
             throw new Error("Only the current token owner may execute THE_SOVEREIGN_NOVA.");
         }
 
-        const name = document.getElementById("novaDnaName")?.value.trim() || "";
-        const x = document.getElementById("novaDnaX")?.value.trim() || "";
-        const y = document.getElementById("novaDnaY")?.value.trim() || "";
-        const chrono = document.getElementById("novaDnaChrono")?.value.trim() || "";
+        // DNA and HIDDEN are sent as typed. The contract sets the rule: tokenURI returns HIDDEN only
+        // when absoluteSovereignty is true and BOTH strings are non-empty.
+        const dna = document.getElementById("novaDnaInput")?.value.trim() || "";
         const hidden = document.getElementById("novaHiddenInput")?.value.trim() || "";
 
-        const dna = (name || x || y || chrono) 
-            ? `Identity DNA : ${name} | Pixel Anchor : X=${x},Y=${y} | Chrono-Map : ${chrono}`
-            : "";
+        // HIDDEN is used as a token URI, so unsafe URI schemes stay blocked.
+        if (hidden && isMaliciousURI(hidden)) {
+            throw new Error("Unsafe Hidden value rejected (script, data, file, or blob URI).");
+        }
 
-        if (dna.length > 1024) {
-            throw new Error("Identity DNA must be 1,024 characters or fewer.");
-        }
-        
-        // [DIRECTIVE 4 ENFORCEMENT]: Hidden property (URI) strict 255-Character Limit Guard
-        if (hidden.length > 255) {
-            throw new Error(`Hidden property (URI) must be 255 characters or fewer (Current: ${hidden.length}).`);
-        }
-        
-        if ((dna && (!isValidSovereignInput(dna) || isMaliciousURI(dna))) || (hidden && isMaliciousURI(hidden))) {
-            throw new Error("Unsafe identity or hidden-property text rejected.");
+        if (!dna || !hidden) {
+            showNotification("DNA or Hidden is empty: the contract will keep using the Architect's base URI for this deed.", "warning");
         }
 
         const receipt = await executeNova(tokenId, dna, hidden, absoluteSovereigntyStatus);
@@ -3447,7 +3174,7 @@ function isMaliciousURI(uri) {
     const cleanUri = String(uri).trim().replace(/[\x00-\x20]/g, '').toLowerCase();
     if (!cleanUri) return false;
     if (/^(javascript|vbscript|data|file|blob):/i.test(cleanUri)) return true;
-    if (/<script|onerror=|onload=|eval\(|document\./i.test(cleanUri)) return true;
+    if (/<script|onerror=|onload=/i.test(cleanUri)) return true; // [FIX-5] ตัด eval(/document. ออก: จับ URL ปกติผิด (เช่น /document.json)
     return false;
 }
 
@@ -3578,7 +3305,7 @@ async function syncContractStates() {
         
         if (activeProvider && currentHdrAddress && currentHdrAddress !== "—") {
             try {
-                const activeSigner = await activeProvider.getSigner().catch(() => null);
+                const activeSigner = signer || null; // [FIX-3] FallbackProvider ไม่มี getSigner(); ใช้ signer ของกระเป๋าที่เชื่อมอยู่
                 const targetAddress = activeSigner ? await activeSigner.getAddress().catch(() => null) : null;
                 
                 if (targetAddress) {
@@ -4614,19 +4341,31 @@ function _autoSpinWhenLoaded(frame) {
     });
 }
 
-// กล่อง 3: 3D เพียวๆ ไม่พลิก แสดงตลอด
-function renderMediaBox3() {
-    const host = document.getElementById("previewVideoContainer");
+// [V18-LAYOUT] กล่อง 2 = 3D เหรียญมาตรฐาน | กล่อง 3 = 3D เหรียญพิเศษ (สภา 111–999 + ตอง 1111–5555)
+// ไม่พลิก หมุนตลอด โหลด iframe ใหม่เฉพาะเมื่อไฟล์หรือเลขเปลี่ยน กล่องอื่นไม่ถูกแตะ (ไม่รีโหลด WebGL ซ้ำ)
+function ensure3DFrame(host, src) {
     if (!host) return;
-    // วาดครั้งเดียว แล้วไม่แตะอีก (ไม่ให้รีโหลดทุกครั้งที่ค้นหา token)
-    if (host.dataset.mode3Ready === "1") return;
+    if (host._frame && host._frame.isConnected && host._frameSrc === src) return;
+    releaseHostMedia(host);
+    host._frame = null;
+    host._frameSrc = null;
     host.replaceChildren();
     host.style.padding = "0";
     host.style.perspective = "none";
-    const f3 = _mkIframe(CANVAS_PREVIEW_MODE3);
-    _autoSpinWhenLoaded(f3);
-    host.appendChild(f3);
-    host.dataset.mode3Ready = "1";
+    host.style.aspectRatio = "4 / 3";
+    const f = _mkIframe(src);
+    _autoSpinWhenLoaded(f);
+    host.appendChild(f);
+    host._frame = f;
+    host._frameSrc = src;
+}
+
+function renderMediaBox2(src) {
+    ensure3DFrame(document.getElementById("previewBackContainer"), src || CANVAS_IDLE_MODE2);
+}
+
+function renderMediaBox3(src) {
+    ensure3DFrame(document.getElementById("previewVideoContainer"), src || CANVAS_PREVIEW_MODE3);
 }
 
 // สถานะเริ่มต้น (ยังไม่เลือก token)
@@ -4638,16 +4377,8 @@ function initMediaBoxes() {
 
     buildFlipCard(document.getElementById("previewFrontContainer"), DEFAULT_FRONT_URI,
         { kind: "video", uri: "" }, { toBack: "SHOW VIDEO", toFront: "SHOW IMAGE" });
-    const box2 = document.getElementById("previewBackContainer");
-    if (box2) {
-        releaseHostMedia(box2);
-        box2.replaceChildren();
-        box2.style.aspectRatio = "4 / 3";
-        box2.style.padding = "0";
-        box2.style.perspective = "none";
-        box2.appendChild(_mkIframe(CANVAS_IDLE_MODE2));
-    }
-    renderMediaBox3();
+    renderMediaBox2(CANVAS_IDLE_MODE2);
+    renderMediaBox3(CANVAS_PREVIEW_MODE3);
 }
 
 const renderDeedMediaPreview = async (data, tokenId) => {
@@ -4672,12 +4403,10 @@ const renderDeedMediaPreview = async (data, tokenId) => {
     buildFlipCard(document.getElementById("previewFrontContainer"), imageFront,
         { kind: "video", uri: video }, { toBack: "SHOW VIDEO", toFront: "SHOW IMAGE" });
 
-    // กล่อง 2: รูป (หน้า) + 3D (หลัง)
-    buildFlipCard(document.getElementById("previewBackContainer"), imageFront,
-        { kind: "iframe", src: _canvasUrl(CANVAS_IDLE_MODE2, tokenId) }, { toBack: "SHOW 3D", toFront: "SHOW IMAGE" });
-
-    // กล่อง 3: 3D เพียวๆ
-    renderMediaBox3();
+    // [V18-LAYOUT] เหรียญพิเศษ (สภา 111–999 / ตอง 1111–5555) → กล่อง 3 | เหรียญมาตรฐาน → กล่อง 2
+    // รูปจากเชนแสดงที่กล่อง 1 เท่านั้น กล่องที่ไม่เกี่ยวข้องค้างสถานะล่าสุด ไม่รีโหลด
+    if (isCouncilToken(tokenId)) renderMediaBox3(pick3DFile(tokenId));
+    else renderMediaBox2(pick3DFile(tokenId));
 
     if (typeof currentLoadedMediaData !== "undefined" && currentLoadedMediaData) {
         currentLoadedMediaData.front = imageFront;
