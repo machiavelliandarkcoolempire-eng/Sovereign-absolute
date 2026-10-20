@@ -2388,12 +2388,6 @@
                     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
                 };
             };
-            // JS mirror of SOVEREIGNTY_COUNCIL() — a pure function in the contract
-            const councilLocal = id => {
-                if (id === null || id < 111 || id > 5555) return false;
-                if (id <= 999 && id % 111 === 0) return true;
-                return id >= 1111 && id % 1111 === 0;
-            };
             // ?token=N first, then #N (for hosts that strip the query string). No number in the link → null.
             const parseToken = () => {
                 const ok = n => (Number.isInteger(n) && n >= 1 && n <= 5555) ? n : null;
@@ -2402,16 +2396,25 @@
                 const h = /^#\/?(?:token=)?(\d{1,4})$/.exec(location.hash || '');
                 return h ? ok(Number(h[1])) : null;
             };
-            // Colour is locked to the token number only (never the DNA), so it can't change when the owner edits identity.
-            // Council = no hue shift (keeps its gold). Standard = full wheel, minus the yellow/gold band reserved for Council.
+            // Colour is tied to token number, not DNA. Tokens 1-24 keep the exact legacy formula.
+            // Standard tokens 25-5555 use a seeded permutation of 5531 hue slots: every token
+            // gets a distinct hue across the full wheel. No hue (including gold/yellow) is reserved.
+            const LEGACY_MAX_ID = 24;
+            const STANDARD_MAX_ID = 5555;
+            const STANDARD_HUE_COUNT = STANDARD_MAX_ID - LEGACY_MAX_ID;
             const tokenHue = id => {
-                if (id === null || councilLocal(id)) return 0;
-                const u = mulberry32(fnv1a(CONTRACT_ADDR.toLowerCase() + ':hue:' + id))() * 0.86;
-                return u < 0.54 ? u : u + 0.14;
+                if (id === null) return 0;
+                const key = CONTRACT_ADDR.toLowerCase();
+                if (id <= LEGACY_MAX_ID) {
+                    const u = mulberry32(fnv1a(key + ':hue:' + id))() * 0.86;   // original formula, unchanged
+                    return u < 0.54 ? u : u + 0.14;
+                }
+                const offset = fnv1a(key + ':standard-hue-offset') % STANDARD_HUE_COUNT;
+                const slot = (((id - LEGACY_MAX_ID - 1) * 2027) + offset) % STANDARD_HUE_COUNT;
+                return slot / STANDARD_HUE_COUNT; // unique hue slot for every Standard token 25-5555
             };
             const token = parseToken();
-            const isCouncil = councilLocal(token);
-            return { token, hue: tokenHue(token), envHue: isCouncil ? 0.595 : tokenHue(token), fnv1a, mulberry32, councilLocal };
+            return { token, hue: tokenHue(token), envHue: tokenHue(token), fnv1a, mulberry32 };
         })();
 
         const container = document.getElementById('webgl-container');
@@ -2837,18 +2840,19 @@
             const CHAIN_ID = 8453;
             const ETHERS_SRC = 'https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js';
             const ABI = [
+                'function ownerOf(uint256 tokenId) view returns (address)',
                 'function SOVEREIGNTY_COUNCIL(uint256 tokenId) view returns (bool)',
                 'function getDeedData(uint256 t) view returns (address sovereignOwner, bool sovereignActive, bool absoluteSovereigntyStatus, string sovereignFront, string sovereignBack, string sovereignVideo, string sovereignIdentity, string sovereignHidden, address sovereignTba)'
             ];
 
             const TOKEN_ID = SOV.token;   // null when the link carries no number
-            const { councilLocal, fnv1a, mulberry32 } = SOV;
+            const { fnv1a, mulberry32 } = SOV;
             const short = a => a ? a.slice(0, 6) + '…' + a.slice(-4) : '—';
             const el = id => document.getElementById(id);
 
             // state: pending | ok | unminted | offline
             const chain = {
-                state: 'pending', owner: null, active: true, absolute: false, council: councilLocal(TOKEN_ID),
+                state: 'pending', owner: null, active: true, absolute: false, council: false,
                 tba: null, tbaDeployed: false, tbaBalance: '0.0000', dna: '',
                 seed: fnv1a(CONTRACT.toLowerCase() + ':' + TOKEN_ID)
             };
@@ -2868,16 +2872,24 @@
 
             // Seed + status → visual traits (eased in updateTraits)
             function applyToScene() {
-                const rnd = mulberry32(chain.seed);
+                // Standard tokens 25+ get their own token-based visual seed, independent of
+                // Council status or metadata/DNA. Legacy tokens 1-24 retain the original seed.
+                const visualSeed = TOKEN_ID !== null && TOKEN_ID > 24
+                    ? fnv1a(CONTRACT.toLowerCase() + ':standard-visual:' + TOKEN_ID)
+                    : chain.seed;
+                const rnd = mulberry32(visualSeed);
                 traits.tgt.tilt     = Math.PI / 10 + rnd() * Math.PI / 9;
                 traits.tgt.scale    = 0.92 + rnd() * 0.22;
-                rnd(); // เรียกไว้เพื่อให้ลำดับสุ่มของ trait อื่น (ringSpin, dustY) ไม่เปลี่ยน
-                traits.tgt.hue      = SOV.hue;
+                rnd(); // keep legacy trait sequence stable
+                traits.tgt.hue      = SOV.hue; // never override Standard hue based on Council status
                 traits.tgt.ringSpin = 0.14 + rnd() * 0.14;
                 traits.tgt.dustY    = rnd() * 1.5;
-                const gold = chain.council || (chain.state === 'ok' && chain.absolute);   // council rule is pure → gold even offline
+                // Only the legacy 1-24 tokens retain their original gold-status treatment.
+                const gold = TOKEN_ID !== null && TOKEN_ID <= 24 && chain.state === 'ok' && (chain.council || chain.absolute);
                 traits.tgt.gold = gold ? 0.85 : 0;
-                traits.tgt.dim  = chain.state === 'ok' && !chain.active ? 0.45 : 1;
+                const statusDim = chain.state === 'ok' && !chain.active ? 0.45 : 1;
+                const materialBrightness = TOKEN_ID !== null && TOKEN_ID > 24 ? 0.88 + rnd() * 0.24 : 1;
+                traits.tgt.dim = statusDim * materialBrightness;
             }
 
             function render() {
@@ -2902,14 +2914,14 @@
                     row.append(dt, dd); rows.appendChild(row);
                 };
                 add('Token', TOKEN_ID === null ? '—' : '#' + TOKEN_ID);
-                add('Seat', chain.council ? 'COUNCIL' : (chain.absolute ? 'SOVEREIGN' : 'STANDARD'), { tag: true });
+                add('Seat', chain.state !== 'ok' ? '—' : (chain.council ? 'COUNCIL' : (chain.absolute ? 'SOVEREIGN' : 'STANDARD')), { tag: true });
                 add('State', { pending: 'SYNCING', ok: chain.active ? 'ACTIVE' : 'INACTIVE', unminted: 'UNCLAIMED', offline: 'UNSYNCED', notoken: 'NO TOKEN' }[chain.state]);
                 add('Owner', chain.owner ? short(chain.owner) : '—', chain.owner ? { href: 'https://basescan.org/address/' + chain.owner } : {});
-                add('Absolute sovereignty', chain.council || chain.absolute ? 'UNLOCKED' : 'LOCKED');
+                add('Absolute sovereignty', chain.state !== 'ok' ? '—' : (chain.council || chain.absolute ? 'UNLOCKED' : 'LOCKED'));
                 add('TBA vault', chain.tba ? short(chain.tba) + (chain.tbaDeployed ? '' : ' (reserved)') : '—',
                     chain.tba ? { href: 'https://basescan.org/address/' + chain.tba } : {});
-                add('TBA balance', chain.tbaBalance + ' ETH');
-                add('DNA seed', '0x' + chain.seed.toString(16).toUpperCase().padStart(8, '0'));
+                add('TBA balance', chain.state === 'ok' && chain.tba ? chain.tbaBalance + ' ETH' : '—');
+                add('DNA seed', chain.state === 'ok' && chain.dna ? '0x' + chain.seed.toString(16).toUpperCase().padStart(8, '0') : '—');
                 add('Contract', short(CONTRACT), { href: 'https://basescan.org/token/' + CONTRACT + (TOKEN_ID === null ? '' : '?a=' + TOKEN_ID) });
             }
 
@@ -2927,7 +2939,9 @@
                 });
             }
 
-            const isRevert = e => !!e && (e.code === 'CALL_EXCEPTION' || /NonexistentToken|execution reverted/i.test(String(e.message)));
+            // A real "token does not exist" answer is a revert that CARRIES revert data. An empty revert / decode error means
+            // wrong contract, wrong ABI or a bad node — that is an error, never "unclaimed".
+            const isRevert = e => { const d = e && e.data; return !!e && e.code === 'CALL_EXCEPTION' && typeof d === 'string' && d.length > 2; };
 
             // Tries each public RPC in turn. A contract revert is a real answer (token unclaimed); anything else moves on to the next RPC.
             async function readDeed() {
@@ -2941,13 +2955,13 @@
                             : new ethers.JsonRpcProvider(url, undefined, { batchMaxCount: 1 });
                         const c = new ethers.Contract(CONTRACT, ABI, provider);
 
-                        let d;
-                        try { d = await withTimeout(c.getDeedData(TOKEN_ID), 9000); }
+                        let owner;
+                        try { owner = await withTimeout(c.ownerOf(TOKEN_ID), 9000); }
                         catch (e) { if (isRevert(e)) return { unminted: true }; throw e; }
 
-                        let council;
-                        try { council = !!(await withTimeout(c.SOVEREIGNTY_COUNCIL(TOKEN_ID), 6000)); }
-                        catch { council = councilLocal(TOKEN_ID); }
+                        // token exists: any failure below is an ERROR (next RPC / OFFLINE), never "unclaimed"
+                        const d = await withTimeout(c.getDeedData(TOKEN_ID), 9000);
+                        const council = !!(await withTimeout(c.SOVEREIGNTY_COUNCIL(TOKEN_ID), 6000));
 
                         const tba = d[8] && d[8] !== ethers.ZeroAddress ? d[8] : null;
                         let bal = '0.0000', deployed = false;
@@ -2958,7 +2972,7 @@
                                 deployed = !!code && code !== '0x';
                             } catch (e) { console.warn('TBA read warning:', e); }
                         }
-                        return { d, council, tba, bal, deployed };
+                        return { d, owner, council, tba, bal, deployed };
                     } catch (e) {
                         lastErr = e; console.warn('RPC failed:', url, e);
                     } finally {
@@ -2985,7 +2999,7 @@
                         render(); setStatus('Not yet claimed on-chain', true); return;
                     }
                     const d = r.d;
-                    chain.owner = d[0]; chain.active = !!d[1]; chain.absolute = !!d[2]; chain.dna = d[6] || '';
+                    chain.owner = (d[0] && d[0] !== ethers.ZeroAddress) ? d[0] : r.owner; chain.active = !!d[1]; chain.absolute = !!d[2]; chain.dna = d[6] || '';
                     chain.council = r.council; chain.tba = r.tba; chain.tbaBalance = r.bal; chain.tbaDeployed = r.deployed;
                     chain.seed = fnv1a(chain.dna.length ? chain.dna : CONTRACT.toLowerCase() + ':' + TOKEN_ID);
                     chain.state = 'ok';

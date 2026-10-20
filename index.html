@@ -19,7 +19,7 @@
 <script src="./irys-bundle.js"></script>
 
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=JetBrains+Mono:wght@400;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700;800&display=swap');
 
     :root {
         --void: #000000;
@@ -160,6 +160,38 @@
     
     .tab-btn.active { background: rgba(245,158,11,0.2); border-color: rgba(245,158,11,0.9); color: #fbbf24; }
     .tab-btn:hover:not(.active) { border-color: rgba(245,158,11,0.6); color: #fcd34d; }
+
+    /* ===== READABILITY PASS: 3 font roles, larger minimum sizes, higher contrast ===== */
+    :root { --font-ui: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif; --font-data: 'JetBrains Mono', ui-monospace, monospace; }
+    body { font-family: var(--font-ui); font-size: 15px; line-height: 1.6; color: #f5e6b8; }
+    /* Tailwind font-mono / custom .font-mono now means "UI text"; real data below gets mono back */
+    .font-mono, button, label, p, li, summary, a { font-family: var(--font-ui) !important; }
+    h1, h2, h3, h4, .font-cinzel { font-family: 'Cinzel', serif !important; }
+    input, output, textarea, #systemLogBox, #systemLogBox *, #systemFooterLog, #hdrContract, #hdrAddress,
+    #displaySupply, #displayArchitectMintCount, #lblMintPrice, #lblCouncilMintPrice, #lblNovaFee, #lblHistoricalMint,
+    #tbaAddressDisplay, #tbaEthBalance, #tbaWethBalance, #activeDeedMetadataDisplay, #hdrBalance, #uploadProgressLabel {
+        font-family: var(--font-data) !important;
+    }
+    /* soften the glow on body text, keep it on headings */
+    p, li, label, span, input, output, summary, a { text-shadow: none; }
+    /* minimum sizes (Tailwind arbitrary classes are too small on phones) */
+    [class*="text-[8px]"], [class*="text-[9px]"], [class*="text-[10px]"] { font-size: 12px !important; line-height: 1.5; }
+    [class*="text-[11px]"] { font-size: 13px !important; }
+    input[type="text"], input[type="number"] { font-size: 14px !important; }
+    /* long uppercase + wide tracking is hard to read */
+    .tracking-widest, .tracking-\[0\.15em\] { letter-spacing: 0.06em !important; }
+    .tracking-wider { letter-spacing: 0.04em !important; }
+    button, .btn-gold-master, .btn-rebirth-bright { letter-spacing: 0.05em; font-weight: 800; }
+    /* contrast for secondary text (was too dim on near-black) */
+    .text-stone-400, .text-slate-400 { color: #cfc6ae !important; }
+    .text-stone-500, .text-slate-500, .text-slate-600 { color: #b5ab92 !important; }
+    ::placeholder { color: #8d846f; opacity: 1; font-size: 13px; }
+    /* explanatory boxes: sentence case, readable */
+    .info-box { font-size: 14px; line-height: 1.65; color: #e7dcc0; }
+    .info-box p { text-transform: none; letter-spacing: 0; }
+    .info-box strong { color: #fcd34d; }
+    .notice-box p { text-transform: none !important; letter-spacing: 0 !important; font-size: 13px !important; line-height: 1.6; color: #ffd0c8 !important; }
+    .notice-box .notice-tag { color: #ff8a7a !important; }
 </style>
 </head>
 
@@ -273,7 +305,7 @@
             <span>HIST MINTS: <span id="lblHistoricalMint" class="text-stone-300 font-bold">0</span></span>
         </div>
     </div>
-    <div class="chiaroscuro-bg p-5 rounded-2xl border-l-4 border-amber-500">
+    <div class="chiaroscuro-bg p-5 rounded-2xl border-l-4 border-amber-500 sm:col-span-2 lg:col-span-1">
         <span class="text-[10px] font-mono uppercase text-stone-400 block mb-2 tracking-wider">ARCHITECT MINTS</span>
         <div id="displayArchitectMintCount" class="text-2xl md:text-3xl font-black gold-text font-mono">—</div>
         <div class="mt-2 text-[10px] font-mono text-stone-500 uppercase">On-chain count</div>
@@ -557,44 +589,37 @@
 </section>
 
 <!-- 🚨 ARCHITECT NOTICE (IRONCLAD RULE 3) -->
-<div class="bg-red-950/40 border border-red-900 p-4 rounded-xl mb-6 shadow-inner max-w-4xl mx-auto">
-    <p class="text-[10px] font-mono text-red-400 uppercase leading-relaxed text-center">
-        <span class="font-bold text-red-500">NOTICE:</span> Front URI must strictly be a STILL IMAGE (PNG/JPG/WEBP). Marketplaces (OpenSea/Blur) rely on Front URI for primary card preview. Secondary media (3D Models / Video) are assigned to Back URI and will render based on buyer's media configuration.
+<div class="notice-box bg-red-950/60 border border-red-700 p-4 rounded-xl mb-6 shadow-inner max-w-4xl mx-auto">
+    <p class="text-[10px] font-mono leading-relaxed text-center">
+        <span class="notice-tag font-bold">NOTICE:</span> Front URI must strictly be a STILL IMAGE (PNG/JPG/WEBP). Marketplaces (OpenSea/Blur) rely on Front URI for primary card preview. Secondary media (3D Models / Video) are assigned to Back URI and will render based on buyer's media configuration.
     </p>
 </div>
 
 <section class="chiaroscuro-bg p-6 md:p-8 rounded-2xl mb-6 relative z-10 border border-rose-900/40">
     <div class="border-b border-stone-800 pb-4 mb-6">
         <h2 class="text-xl font-black font-cinzel gold-text uppercase tracking-tight">⚡ Master Inscription Ledger Operations</h2>
-        <p class="text-[10px] font-mono text-stone-500 uppercase tracking-wide mt-1">IMMUTABLE IDENTITY ASSIGNMENTS • FORGING CRYPTOGRAPHIC CONSENSUS pipelines</p>
+        <p class="text-[10px] font-mono text-stone-500 uppercase tracking-wide mt-1">IMMUTABLE IDENTITY ASSIGNMENTS • FORGING CRYPTOGRAPHIC CONSENSUS PIPELINES</p>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
         <div>
             <label class="text-[10px] text-stone-400 font-mono block mb-2 uppercase tracking-wider">① Token ID (t)</label>
-            <input type="number" id="novaTokenId" min="1" max="5555" placeholder="1 - 5,555 Execution coordinate" class="w-full bg-black border border-stone-800 p-3.5 text-sm font-mono text-amber-500 rounded-xl outline-none focus:border-amber-500 transition-all" />
+            <input type="number" id="novaTokenId" min="1" max="5555" placeholder="1 – 5,555" class="w-full bg-black border border-stone-800 p-3.5 text-sm font-mono text-amber-500 rounded-xl outline-none focus:border-amber-500 transition-all" />
         </div>
         <div>
             <label class="text-[10px] text-stone-400 font-mono block mb-2 uppercase tracking-wider">② Identity DNA</label>
-            <input type="text" id="novaDnaInput" placeholder="Your identity text, sent to the contract as typed" class="w-full bg-black border border-stone-800 p-3.5 text-sm font-mono text-rose-300 rounded-xl outline-none focus:border-rose-500 transition-all" />
+            <input type="text" id="novaDnaInput" placeholder="Your identity text" class="w-full bg-black border border-stone-800 p-3.5 text-sm font-mono text-rose-300 rounded-xl outline-none focus:border-rose-500 transition-all" />
         </div>
         <div class="md:col-span-2">
             <label class="text-[10px] text-stone-400 font-mono block mb-2 uppercase tracking-wider">③ Hidden (Token URL / Freedom)</label>
-            <input type="text" id="novaHiddenInput" placeholder="TOKEN URI (YOUR_DOMAIN_BACK-END API)" class="w-full bg-black border border-rose-900/60 p-3.5 text-sm font-mono text-rose-400 rounded-xl outline-none focus:border-rose-500 transition-all" />
+            <input type="text" id="novaHiddenInput" placeholder="Your Token URI (backend API)" class="w-full bg-black border border-rose-900/60 p-3.5 text-sm font-mono text-rose-400 rounded-xl outline-none focus:border-rose-500 transition-all" />
         </div>
     </div>
         
-    <div class="mt-6 p-5 md:p-6 border border-amber-900/50 rounded-2xl bg-black/40 text-[11px] md:text-xs font-mono text-slate-300 leading-relaxed space-y-3">
+    <div class="info-box mt-6 p-5 md:p-6 border border-amber-900/50 rounded-2xl bg-black/40 space-y-3">
         <h3 class="text-sm font-black font-cinzel text-amber-400 tracking-wide">What is Absolute Sovereignty?</h3>
-        <p>By default, your deed's metadata is served from the Architect's base URI. Absolute Sovereignty is the state in which your deed points to <strong>your own</strong> metadata address instead. Nobody has to approve it, and the Architect is not involved.</p>
-        <ul class="list-disc pl-5 space-y-1.5">
-            <li><strong>How it unlocks:</strong> run Nova once and pay the Nova fee once. Council deeds unlock free. Every later Nova call costs nothing.</li>
-            <li><strong>Identity DNA:</strong> any text you choose, stored on-chain as your identity record. Because it is public and permanent, you can use it outside the chain, for example to verify a holder with a QR code or a check-in scan at an event. The contract only stores it.</li>
-            <li><strong>Hidden:</strong> the address of your own metadata API. When Absolute Sovereignty is unlocked and both DNA and Hidden contain at least one character, the contract returns your Hidden value as the token URI.</li>
-            <li><strong>If either is empty:</strong> the deed is still unlocked, but the contract keeps using the Architect's base URI.</li>
-            <li><strong>Opting out:</strong> you are not required to run your own back end. The Architect's service stays available. Submitting an empty Hidden value later returns your deed to it.</li>
-        </ul>
-        <p>Hidden must be an address that you keep online and that returns valid metadata. The contract does not check it. If your server goes down, your deed's metadata goes down with it. You can fix or replace it at any time with another Nova call.</p>
+        <p>Nova lets you use your own backend API for your deed's metadata. Fill in <strong>both</strong> Identity DNA and Hidden (your Token URI). Once both are set, the contract bypasses the project's base URI and uses your Token URI instead.</p>
+        <p class="text-stone-400">Keep your API online. If it goes down, your deed's metadata goes down with it.</p>
     </div>
 
     <div class="mt-8">
@@ -706,21 +731,32 @@
     </div>
 </section>
 
-<section class="chiaroscuro-bg p-6 md:p-8 rounded-2xl my-6 border border-slate-800 bg-black/60 text-center relative z-10 shadow-[inset_0_0_30px_rgba(0,0,0,0.8)]">
-    <h4 class="text-[11px] md:text-xs font-black font-cinzel text-slate-400 uppercase tracking-widest mb-3">
-        ⚖ THE ARCHITECT POWERS & FORENSIC INTEGRITY DOCTRINE 🔱
+
+<section class="chiaroscuro-bg p-5 md:p-6 rounded-2xl my-6 border border-slate-800 bg-black/60 text-center relative z-10">
+
+    <h4 class="text-xs font-black font-cinzel text-slate-400 uppercase tracking-widest mb-3">
+        ♠ SOVEREIGN AWAKENING
     </h4>
-    <p class="text-[10px] md:text-[11px] font-mono text-slate-500 leading-relaxed max-w-4xl mx-auto uppercase">
-        Ownership, identity and media references are governed by the smart contract. The contract owner and the architect keep administrative powers: setting the mint, Nova and Council prices, changing the base URI, minting up to 300 tokens through ARCHITECT_MINT, withdrawing the contract balance, recovering ERC-20 tokens, changing the architect and transferring ownership. The contract has no pause function.
+
+    <p class="text-[10px] font-mono text-slate-500 leading-relaxed uppercase">
+        Generative 3D Crystal · Chiaroscuro Lighting · Unique Token Identity
+        <br>
+        Single-File Static HTML · Live Read-Only Base Data · No Wallet Required
     </p>
+
     <div class="my-4 border-t border-slate-800/80 w-2/3 mx-auto"></div>
-    <p class="text-[10px] md:text-[11px] font-mono text-slate-500 leading-relaxed max-w-4xl mx-auto uppercase tracking-tight">
-        🚨 <span class="text-amber-600/90 font-bold">REAL-WORLD INTEGRITY MANDATE:</span> ALL PROFILE MEDIA AND 4K ASSETS INSCRIBED WITH CRYPTOGRAPHIC HASH METADATA MUST BE DEPLOYED EXCLUSIVELY TO REPRESENT REAL-WORLD IDENTITY ON EXTERNAL PLATFORMS. UTILIZING UNVERIFIED MEDIA NULLIFIES IDENTITY AUTHENTICITY; NEITHER THE SMART CONTRACT NOR DASHBOARD WILL OFFER PROOF OF PROTECTION AGAINST IDENTITY SPOOFING.
+
+    <p class="text-[10px] font-mono text-slate-500 uppercase tracking-wide">
+        YOUR TOKEN. YOUR MEDIA. YOUR CHOICE.
     </p>
+
 </section>
 
-<footer class="mt-6 chiaroscuro-bg p-5 md:p-6 rounded-2xl font-mono text-[10px] text-slate-500 relative z-10 border border-stone-900">
-    <div id="systemFooterLog" class="h-12 overflow-y-auto leading-relaxed scroll-dark text-slate-600">> [SYSTEM]: Integrity scan complete. Global nodes aligned. No external backend infrastructure recognized pursuant to the autarchic provisions of the Machiavellian Protocol. THE SOVEREIGN ABSOLUTE 🔱.</div>
+<footer class="mt-5 p-4 rounded-xl font-mono text-[10px] text-slate-600 border border-stone-900 text-center">
+    <div id="systemFooterLog">
+        &gt; [SYSTEM]: SOVEREIGN INTERFACE ONLINE.
+    </div>
+    <p class="mt-3 tracking-widest">IDENTITY ARCHITECT ♠️</p>
 </footer>
 
 <script>
