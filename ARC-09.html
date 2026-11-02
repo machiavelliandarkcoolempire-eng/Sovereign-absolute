@@ -4771,21 +4771,41 @@ const __$G=typeof globalThis!=="undefined"?globalThis:typeof window!=="undefined
             }
 
             if (state.modernFlame) {
-                // 5555 exhaust: white-hot core + tapered flame, both apex rearwards (+Z)
-                const hcGeo = new THREE.ConeGeometry(baseRadius * 0.5, length * 1.5, 14);
-                hcGeo.rotateX(Math.PI / 2);
-                const hotCore = new THREE.Mesh(hcGeo, hotCoreMat);
-                hotCore.position.z = length / 2 + length * 0.75 - 0.1;
-                group.add(hotCore);
-
+                // ARC-09 exhaust standard: two-layer soft additive shader plume (fresnel edge, tail fade, flicker) + nozzle glow sprite.
+                // Both layers are apex rearwards (+Z) with the pivot at the nozzle, so the existing g6Plumes scale.z stretch still drives them.
+                const plumeVS = `varying vec2 vUv;varying vec3 vN;varying vec3 vV;
+                  void main(){vUv=uv;vN=normalize(normalMatrix*normal);vec4 mv=modelViewMatrix*vec4(position,1.0);vV=normalize(-mv.xyz);gl_Position=projectionMatrix*mv;}`;
+                const plumeFS = `uniform vec3 uColor;uniform float uCore;uniform float uTime;uniform float uPhase;varying vec2 vUv;varying vec3 vN;varying vec3 vV;
+                  void main(){float t=1.0-vUv.y;float fall=pow(max(t,0.0),1.35);float f=pow(abs(dot(normalize(vN),normalize(vV))),1.4);f=0.30+0.70*f;
+                  float flick=0.88+0.12*sin(uTime*38.0+vUv.y*14.0+uPhase);
+                  vec3 c=mix(uColor,vec3(1.0),uCore);gl_FragColor=vec4(c*(0.55+0.9*uCore),fall*f*flick*(0.55+0.4*uCore));}`;
                 const plumeLen = 4.4;
-                const pg = new THREE.ConeGeometry(baseRadius * 0.85, plumeLen, 14);
-                pg.rotateX(Math.PI / 2);
-                pg.translate(0, 0, plumeLen / 2);            // pivot = nozzle, scale.z stretches the flame away from the ship
-                const plume = new THREE.Mesh(pg, glowMat);
-                plume.position.z = length / 2;
-                group.add(plume);
-                if (state.shipGroup.userData.g6Plumes) state.shipGroup.userData.g6Plumes.push(plume);
+                // soft radial glow at the nozzle (same gradient as ARC-09)
+                const gc = document.createElement('canvas'); gc.width = gc.height = 128;
+                const gg = gc.getContext('2d'); const grg = gg.createRadialGradient(64, 64, 0, 64, 64, 64);
+                grg.addColorStop(0, 'rgba(255,255,255,1)'); grg.addColorStop(0.25, 'rgba(207,232,255,0.75)'); grg.addColorStop(0.6, 'rgba(120,180,255,0.22)'); grg.addColorStop(1, 'rgba(0,0,0,0)');
+                gg.fillStyle = grg; gg.fillRect(0, 0, 128, 128);
+                const glowSpriteMat = new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(gc), color: glowMat.color.clone(), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, depthTest: true });
+                const glowSprite = new THREE.Sprite(glowSpriteMat);
+                glowSprite.position.z = length / 2 + 0.08;
+                glowSprite.scale.set(baseRadius * 3.2, baseRadius * 3.2, 1);
+                glowSprite.renderOrder = 6;
+                group.add(glowSprite);
+                [[1.0, 0.0], [0.55, 0.3]].forEach(([k, core], li) => {
+                    const pg = new THREE.ConeGeometry(baseRadius * 0.85 * k, plumeLen, 18, 1, true);
+                    pg.rotateX(Math.PI / 2);
+                    pg.translate(0, 0, plumeLen / 2);            // pivot = nozzle, scale.z stretches the flame away from the ship
+                    const pm = new THREE.ShaderMaterial({
+                        uniforms: { uColor: { value: glowMat.color.clone() }, uCore: { value: core }, uTime: { value: 0 }, uPhase: { value: li * 1.7 + x } },
+                        vertexShader: plumeVS, fragmentShader: plumeFS, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide
+                    });
+                    const plume = new THREE.Mesh(pg, pm);
+                    plume.position.z = length / 2;
+                    plume.renderOrder = 5;
+                    if (li === 0) { plume.userData.glowMat = glowSpriteMat; plume.userData.glowSprite = glowSprite; plume.userData.glowBase = baseRadius * 3.2; }   // outer layer carries the sprite colour sync + pulse
+                    group.add(plume);
+                    if (state.shipGroup.userData.g6Plumes) state.shipGroup.userData.g6Plumes.push(plume);
+                });
             } else {
             // Shock diamond core
             const hotCore = new THREE.Mesh(new THREE.ConeGeometry(baseRadius * 0.42, length * 1.4, 16), hotCoreMat);
@@ -5237,41 +5257,44 @@ const __$G=typeof globalThis!=="undefined"?globalThis:typeof window!=="undefined
                 if (state.engineParticles.material) state.engineParticles.material.dispose();
             }
             
-            // One lane of particles per nozzle so the exhaust leaves the real engines
+            // ARC-09 exhaust standard: thin ROUND sparks (soft dot sprite + per-particle fade), same motion rule as ARC-09 updateSparks.
+            if (state.engineParticles && state.engineParticles.material && state.engineParticles.material.map) state.engineParticles.material.map.dispose();
             const random = createSeededRandom(state.shipSeed + 999);
             const layout = state.engineLayout || [[0, 0, 2.5]];
-            const perEngine = 55;
+            const PER = window.innerWidth < 700 ? 64 : 90;
             const trail = state.modernFlame ? 4.4 : 3.2;
-            const particleCount = perEngine * layout.length;
+            const spread = 0.38;                       // random point inside the nozzle circle (not a square)
+            const particleCount = PER * layout.length;
             const geo = new THREE.BufferGeometry();
             const positions = new Float32Array(particleCount * 3);
-            const zStart = new Float32Array(particleCount);
-
+            const colors = new Float32Array(particleCount * 3);
+            const pT = new Float32Array(particleCount);
+            const pOff = new Float32Array(particleCount * 2);
             for (let e = 0; e < layout.length; e++) {
-                const [ex, ey, ez] = layout[e];
-                for (let k = 0; k < perEngine; k++) {
-                    const i = e * perEngine + k;
-                    positions[i * 3] = ex + (random() - 0.5) * 0.28;
-                    positions[i * 3 + 1] = ey + (random() - 0.5) * 0.28;
-                    positions[i * 3 + 2] = ez + random() * trail;
-                    zStart[i] = ez;
+                for (let k = 0; k < PER; k++) {
+                    const i = e * PER + k;
+                    pT[i] = random();
+                    const a = random() * Math.PI * 2, rr = Math.sqrt(random()) * spread;
+                    pOff[i * 2] = Math.cos(a) * rr; pOff[i * 2 + 1] = Math.sin(a) * rr;
                 }
             }
-            geo.userData.zStart = zStart;
-            geo.userData.trail = trail;
-            
+            geo.userData.layout = layout; geo.userData.PER = PER; geo.userData.trail = trail;
+            geo.userData.pT = pT; geo.userData.pOff = pOff;
             geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-            
+            geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+            const dc = document.createElement('canvas'); dc.width = dc.height = 32;
+            const dg = dc.getContext('2d'); const drg = dg.createRadialGradient(16, 16, 0, 16, 16, 16);
+            drg.addColorStop(0, 'rgba(255,255,255,1)'); drg.addColorStop(1, 'rgba(255,255,255,0)');
+            dg.fillStyle = drg; dg.fillRect(0, 0, 32, 32);
             const mat = new THREE.PointsMaterial({
-                color: state.engineColor,
-                size: 0.22,
-                transparent: true,
-                opacity: 0.8,
-                blending: THREE.AdditiveBlending,
-                depthWrite: false
+                size: 0.22, map: new THREE.CanvasTexture(dc), vertexColors: true,
+                transparent: true, blending: THREE.AdditiveBlending, depthWrite: false
             });
-            
+
             state.engineParticles = new THREE.Points(geo, mat);
+            state.engineParticles.frustumCulled = false;
+            state.engineParticles.renderOrder = 7;
             state.shipGroup.add(state.engineParticles);
         }
 
@@ -6634,7 +6657,7 @@ const __$G=typeof globalThis!=="undefined"?globalThis:typeof window!=="undefined
                     state.engineColor = parseInt(hexStr);
                     if (state.thrusterMaterial) state.thrusterMaterial.color.copy(engineTint(state.engineColor));
                     if (state.hotCoreMat) state.hotCoreMat.color.copy(engineTint(state.engineColor).lerp(new THREE.Color(0xffffff), 0.22));
-                    if (state.engineParticles) state.engineParticles.material.color.copy(engineTint(state.engineColor));
+                    // sparks take their colour from thrusterMaterial each frame (vertex colours)
                     if (state.shipGroup && state.shipGroup.userData.n999) state.shipGroup.userData.n999.setColor(state.engineColor);
                     
                     document.querySelectorAll('.engine-color-btn').forEach(b => {
@@ -7135,13 +7158,19 @@ const __$G=typeof globalThis!=="undefined"?globalThis:typeof window!=="undefined
                 if (g6g) g6g.opacity = 0.72 + 0.28 * Math.max(beatPulse, 0.5 + 0.5 * Math.sin(elapsedTime * 2.2));
                 const plumesAnim = state.shipGroup.userData.g6Plumes;
                 if (plumesAnim) {
-                    const stretchTarget = state.inFall ? 2.0 : (state.turbo ? 1.5 : 1.0);
+                    const stretchTarget = state.inFall ? 4.0 : (state.turbo ? 2.5 : 1.6);   // ARC-09 values
                     state.flameStretch += (stretchTarget - state.flameStretch) * Math.min(1, delta * 2.5);
                     const flp = 1 + 0.06 * Math.sin(elapsedTime * 23) + 0.05 * beatPulse;
-                    const widenP = 1 + (state.flameStretch - 1) * 0.15;
+                    const widenP = 1 + (state.flameStretch - 1) * 0.12;
                     plumesAnim.forEach((m, i) => {
                         m.scale.z = state.flameStretch * (flp + 0.03 * Math.sin(elapsedTime * 17 + i * 1.9));
                         m.scale.x = m.scale.y = widenP;
+                        if (m.material && m.material.uniforms && m.material.uniforms.uTime) {      // ARC-09 style shader plume: flicker clock + follow the ship's engine colour
+                            m.material.uniforms.uTime.value = elapsedTime;
+                            if (state.thrusterMaterial) m.material.uniforms.uColor.value.copy(state.thrusterMaterial.color);
+                            if (m.userData.glowMat && state.thrusterMaterial) m.userData.glowMat.color.copy(state.thrusterMaterial.color);
+                            if (m.userData.glowSprite) { const gs = m.userData.glowBase * (1 + 0.07 * Math.sin(elapsedTime * 19 + i * 1.3)) * (1 + 0.25 * (state.flameStretch - 1)); m.userData.glowSprite.scale.set(gs, gs, 1); }
+                        }
                     });
                 }
                 const n999 = state.shipGroup.userData.n999;
@@ -7159,18 +7188,28 @@ const __$G=typeof globalThis!=="undefined"?globalThis:typeof window!=="undefined
                 }
 
                 // Exhaust Plasma Particle Movement
-                if (state.engineParticles) {
-                    const posAttr = state.engineParticles.geometry.attributes.position;
-                    const speedMultiplier = state.inFall ? 6.5 : (state.turbo ? 4.5 : 3.0);
-                    const zStartArr = state.engineParticles.geometry.userData.zStart;
-                    const trailLenP = state.engineParticles.geometry.userData.trail || 5.0;
-                    for (let i = 0; i < posAttr.count; i++) {
-                        let z = posAttr.getZ(i);
-                        z += delta * 8.5 * speedMultiplier;
-                        if (z > zStartArr[i] + trailLenP) z = zStartArr[i];
-                        posAttr.setZ(i, z);
+                if (state.engineParticles && state.engineParticles.geometry.userData.pT) {
+                    // ARC-09 updateSparks rule: phase t runs 0..1 along the flame, spread narrows, colour fades; coupled to the plume stretch
+                    const gP = state.engineParticles.geometry, uP = gP.userData;
+                    const posP = gP.attributes.position.array, colP = gP.attributes.color.array;
+                    const stretchP = state.flameStretch || 1;
+                    const tcP = state.thrusterMaterial ? state.thrusterMaterial.color : null;
+                    const cr = tcP ? tcP.r : 0.3, cg = tcP ? tcP.g : 0.8, cb = tcP ? tcP.b : 1.0;
+                    const dtP = delta * 0.5 * (1 + 0.45 * (stretchP - 1));
+                    for (let e = 0; e < uP.layout.length; e++) {
+                        const em = uP.layout[e];
+                        for (let i = 0; i < uP.PER; i++) {
+                            const k = e * uP.PER + i;
+                            let t = uP.pT[k] + dtP; if (t > 1) t -= 1; uP.pT[k] = t;
+                            const sh = 1 - t * 0.6;
+                            posP[k * 3] = em[0] + uP.pOff[k * 2] * sh;
+                            posP[k * 3 + 1] = em[1] + uP.pOff[k * 2 + 1] * sh;
+                            posP[k * 3 + 2] = em[2] + t * uP.trail * stretchP;
+                            const f = Math.pow(1 - t, 1.6);
+                            colP[k * 3] = cr * f; colP[k * 3 + 1] = cg * f; colP[k * 3 + 2] = cb * f;
+                        }
                     }
-                    posAttr.needsUpdate = true;
+                    gP.attributes.position.needsUpdate = true; gP.attributes.color.needsUpdate = true;
                 }
 
                 // Plasma Cannon Dynamic Recoil Recovery & Muzzle Flash Fade
