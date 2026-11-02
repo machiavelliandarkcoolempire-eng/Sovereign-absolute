@@ -812,8 +812,29 @@ const MULTICALL3_ADDRESS = "0xcA11bde05977b3631167028862bE2a173976CA11";
 const CANVAS_BASE_URL = "./";
 const CANVAS_IDLE_MODE2 = CANVAS_BASE_URL + "SOVEREIGN_AWAKENING.html"; // สำหรับช่อง 2 (ตอนยังไม่มีคนกดดู Token)
 const CANVAS_PREVIEW_MODE3 = CANVAS_BASE_URL + "ARC-01.html";  // ช่อง 3: แสดงตลอด ไม่เปลี่ยนตาม token
-// ยาน Council: มีไฟล์เฉพาะ 5 ใบตามเอกสาร handoff (SHIP_1111/2222/3333/4444/5555.html)
-const SHIP_TOKEN_IDS = [1111, 2222, 3333, 4444, 5555];
+// ยาน Council: SHIP_111–888 (หลักร้อยคู่ 111,222,...,888) + SHIP_1111/2222/3333/4444/5555.html
+// หมายเหตุ: 999 ยังใช้ SOVEREIGN_COUNCIL.html (คริสตัลทอง) เหมือนเดิม
+const SHIP_TOKEN_IDS = [111, 222, 333, 444, 555, 666, 777, 888, 1111, 2222, 3333, 4444, 5555];
+// ยานใหม่ ARC-09 (ลงทะเบียนไว้แล้ว รอกำหนดว่าจะให้แสดงที่ไหน)
+const CANVAS_ARC_09 = CANVAS_BASE_URL + "ARC-09.html";
+
+// ==============================================================================
+// 🏷️ BASE BUILDER CODE (ERC-8021) — bc_z6fkwm9v
+// ต่อท้าย calldata ทุกธุรกรรมที่ส่งผ่าน runTx เพื่อ attribute กิจกรรมให้โปรเจกต์ SOVEREIGN MEDIA STATION
+// ==============================================================================
+const BUILDER_CODE = "bc_z6fkwm9v";
+const ERC8021_MARKER = "80218021802180218021802180218021";
+const BUILDER_DATA_SUFFIX = (() => {
+    const bytes = new TextEncoder().encode(BUILDER_CODE);
+    const codesHex = Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+    const lenHex = bytes.length.toString(16).padStart(2, "0");
+    return codesHex + lenHex + "00" + ERC8021_MARKER; // codes + length(1B) + schemaId 0x00 + marker(16B)
+})();
+function appendBuilderSuffix(data) {
+    const hex = String(data || "0x");
+    if (hex.toLowerCase().endsWith(ERC8021_MARKER)) return hex; // กันต่อซ้ำ
+    return hex + BUILDER_DATA_SUFFIX;
+}
 function pick3DFile(tokenId) {
     const id = Number(tokenId);
     if (SHIP_TOKEN_IDS.includes(id)) return `${CANVAS_BASE_URL}SHIP_${id}.html`;
@@ -1527,8 +1548,19 @@ async function runTx(eventOrBtn, actionName, methodName, args = [], overrides = 
             throw new Error(`SIMULATION_REVERTED: ${decodedSimErr}`);
         }
 
-        const tx = await secureContract[methodName](...args, overrides);
-        
+        // 🏷️ Builder Code: สร้างธุรกรรม → ต่อ suffix ERC-8021 ท้าย calldata → จำลองซ้ำ → ส่งผ่าน signer
+        const populatedTx = await secureContract[methodName].populateTransaction(...args, overrides);
+        populatedTx.data = appendBuilderSuffix(populatedTx.data);
+        try {
+            await signer.call(populatedTx);
+        } catch (suffixSimErr) {
+            const decodedSuffixErr = decodeContractError(suffixSimErr);
+            if (typeof safeAppendLog === 'function') safeAppendLog(`[SIMULATION FAILED] With Builder Code suffix: ${decodedSuffixErr}`, "text-red-500 font-bold");
+            throw new Error(`SIMULATION_REVERTED: ${decodedSuffixErr}`);
+        }
+        const tx = await signer.sendTransaction(populatedTx);
+        if (typeof safeAppendLog === 'function') safeAppendLog(`[TX] Builder Code ${BUILDER_CODE} attached.`, "text-slate-400");
+
         if (typeof safeAppendLog === 'function') safeAppendLog(`[TX] Broadcasted. Hash: ${tx.hash.slice(0,12)}... Awaiting confirmation.`, "text-blue-400");
         
         if (options && typeof options.onBroadcast === 'function') {
