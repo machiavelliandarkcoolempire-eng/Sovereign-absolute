@@ -2,12 +2,12 @@
 <html lang="en" style="background-color:#050814;color-scheme:dark" class="bg-[#050814] text-slate-100 overflow-x-hidden selection:bg-rose-700 selection:text-white">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="theme-color" content="#050814" />
 <meta name="referrer" content="strict-origin-when-cross-origin" />
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https: https://*.irys.xyz https://gateway.irys.xyz https://arweave.net https://ar-io.net; media-src 'self' blob: https: https://*.irys.xyz https://gateway.irys.xyz https://arweave.net https://ar-io.net; connect-src 'self' https://base-mainnet.g.alchemy.com https://mainnet.base.org https://base.llamarpc.com https://base-rpc.publicnode.com https://*.irys.xyz https://gateway.irys.xyz https://arweave.net https://ar-io.net wss://relay.walletconnect.com wss://relay.walletconnect.org https://rpc.walletconnect.com https://api.web3modal.com https://api.reown.com wss:; base-uri 'none'; object-src 'none'; form-action 'self';">
 
-<title>THE IMPERIAL SOVEREIGN DEED — VERSION 18</title>
+<title>THE IMPERIAL SOVEREIGN DEED — VERSION 19</title>
 
 <link rel="stylesheet" href="./dist.css" />
 
@@ -167,6 +167,27 @@
         min-height: clamp(340px, 100vw, 640px) !important;
     }
     #previewBackContainer iframe, #previewVideoContainer iframe { min-height: inherit; }
+    .preview-slot:fullscreen, .preview-slot:-webkit-full-screen {
+        width: 100vw !important;
+        height: 100vh !important;
+        height: 100dvh !important;
+        min-height: 100vh !important;
+        min-height: 100dvh !important;
+        max-height: 100dvh !important;
+        aspect-ratio: auto !important;
+        padding: 0 !important;
+        border: 0 !important;
+        border-radius: 0 !important;
+        background: #000 !important;
+    }
+    .preview-slot:fullscreen iframe, .preview-slot:fullscreen video, .preview-slot:fullscreen img, .preview-slot:fullscreen canvas,
+    .preview-slot:-webkit-full-screen iframe, .preview-slot:-webkit-full-screen video, .preview-slot:-webkit-full-screen img, .preview-slot:-webkit-full-screen canvas {
+        width: 100% !important;
+        height: 100% !important;
+        max-width: 100% !important;
+        max-height: 100% !important;
+        object-fit: contain;
+    }
 
     /* ===== READABILITY PASS: 3 font roles, larger minimum sizes, higher contrast ===== */
     :root { --font-ui: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif; --font-data: 'JetBrains Mono', ui-monospace, monospace; }
@@ -223,7 +244,7 @@
     <div class="chiaroscuro-bg p-6 md:p-8 rounded-2xl border border-amber-600/60 max-w-md w-full text-center shadow-[0_0_50px_rgba(217,119,6,0.3)]">
         <h3 class="text-base font-black font-cinzel text-amber-500 mb-3 uppercase tracking-widest">⛽ BRIDGE CAPITAL DEPLETION</h3>
         <p class="text-[11px] md:text-xs font-mono text-slate-300 leading-relaxed mb-6">
-            The network telemetry detects insufficient balance on the Irys Permanent Settlement Bridge. System requires additional gas allocation of: <br><span id="fundAmountDisplay" class="text-amber-400 font-bold text-lg block mt-2">0.0000</span> <span class="text-amber-500/70 text-[10px]">ETH (15% buffer included)</span>
+            The network telemetry detects insufficient balance on the Irys Permanent Settlement Bridge. System requires additional gas allocation of: <br><span id="fundAmountDisplay" class="text-amber-400 font-bold text-lg block mt-2">0.0000</span> <span class="text-amber-500/70 text-[10px]">ETH (20% buffer included)</span>
         </p>
         <div class="flex flex-col sm:flex-row gap-3">
             <button onclick="if(typeof window.resolveFundConfirm === 'function') window.resolveFundConfirm(false)" class="w-full sm:w-1/2 bg-stone-950 text-stone-400 font-mono text-xs py-3.5 rounded-xl uppercase border border-stone-800 hover:bg-stone-900 transition-colors">CANCEL</button>
@@ -266,6 +287,21 @@
             <p class="text-[9px] md:text-[10px] font-mono text-rose-400/80 uppercase tracking-[0.15em] mt-1 truncate">
                 5,555 SOVEREIGN DEEDS • BASE MAINNET • <span class="font-bold text-stone-300" id="hdrContract">0x06040F2e5301B2616491E113962A84d372b8f600</span>
             </p>
+            <p class="mt-2 max-w-2xl text-xs md:text-sm leading-relaxed text-stone-300">
+                Each deed is a Base token with its own identity and media. Minting sets the starting point; while you hold it, you may keep the project’s original media or update its identity. Browse without a wallet; connect only when you choose to take action.
+            </p>
+            <a href="#tokenInspectorSection" class="inline-flex mt-3 px-4 py-2 rounded-lg border border-amber-700 bg-black/50 text-amber-300 text-xs font-bold uppercase tracking-wide hover:border-amber-400">
+                START HERE: BROWSE TOKENS ↓
+            </a>
+            <details class="mt-3 max-w-2xl rounded-lg border border-stone-800 bg-black/40 p-3 text-sm leading-relaxed text-stone-300">
+                <summary class="cursor-pointer font-semibold text-amber-300">HOW TOKEN IDENTITY WORKS</summary>
+                <div class="mt-3 space-y-3">
+                    <p>Minting sets the project’s factory defaults. Updates are optional; while you hold the token, you can use the smart contract’s supported actions to change its media references and identity data.</p>
+                    <p>You may reference media URLs hosted on other chains or projects. A URL is only a reference; it does not prove ownership of, or transfer rights to, the source asset.</p>
+                    <p>Uploading to Irys stores the file on Arweave and fills the media fields; it does not change your token. Topping up Irys credit, if needed, is a separate ETH payment on Base. Your token changes on-chain only when you submit the update and sign.</p>
+                    <p>You are responsible for the media and URLs you choose, including applicable rights and laws. Metadata services can relay your references, but each marketplace or app decides how and when to display them.</p>
+                </div>
+            </details>
         </div>
     </div>
 
@@ -286,7 +322,7 @@
         <div id="walletInfo" class="hidden flex-col items-start sm:items-end text-[10px] font-mono uppercase w-full sm:w-auto bg-black/40 p-2.5 rounded-lg border border-stone-800">
             <span class="text-stone-400">NET: <span id="hdrNetwork" class="text-amber-500 font-bold">—</span></span>
             <span class="text-stone-400">ADDR: <span id="hdrAddress" class="text-stone-200 font-bold">—</span></span>
-            <span class="text-stone-400">DEED BALANCE: <span id="hdrBalance" class="text-rose-400 font-bold">0</span></span>
+            <span class="text-stone-400">ETH BALANCE: <span id="hdrBalance" class="text-rose-400 font-bold">0</span></span>
             <span id="connStatusBase1" class="text-emerald-400 font-bold mt-1">⚪ Status: Disconnected</span>
         </div>
         <button id="btnConnect" onclick="if(typeof connectWallet === 'function') connectWallet(this)" class="px-6 py-3.5 w-full sm:w-auto btn-gold-master rounded-xl text-xs whitespace-nowrap">
@@ -319,10 +355,10 @@
     </div>
 </section>
 
-<section class="chiaroscuro-bg p-6 md:p-8 rounded-2xl mb-6 relative z-10 border border-amber-900/30">
+<section id="tokenInspectorSection" class="chiaroscuro-bg p-6 md:p-8 rounded-2xl mb-6 relative z-10 border border-amber-900/30">
     <div class="border-b border-stone-800 pb-4 mb-6">
         <h2 class="text-xl font-black font-cinzel text-amber-500 uppercase tracking-wider">⌕ SOVEREIGN TOKEN INSPECTOR</h2>
-        <p class="text-[10px] font-mono text-stone-500 uppercase tracking-wide mt-1">ON-DEMAND LEDGER LOOKUP • TOKENS 1–5555</p>
+        <p class="text-[10px] font-mono text-stone-500 uppercase tracking-wide mt-1">LOOK UP ANY TOKEN (1–5,555) • NO WALLET REQUIRED</p>
     </div>
     <div class="bg-black/50 p-4 md:p-5 rounded-xl border border-stone-800">
         <label for="tokenInspectorInput" class="text-[10px] text-stone-400 font-mono block mb-2 uppercase tracking-widest">TOKEN ID</label>
@@ -362,7 +398,7 @@
         </div>
         </details>
         <!-- 🎯 DEPLOY TBA BUTTON IS HERE -->
-        <button id="btnDeployInspectorTBA" type="button" onclick="deployTBAForToken()" class="mt-4 px-5 py-3 rounded-lg text-[10px] font-mono">DEPLOY TBA FOR INSPECTED TOKEN</button>
+        <button id="btnDeployInspectorTBA" type="button" onclick="deployTBAForToken()" class="mt-4 px-5 py-3 rounded-lg text-[10px] font-mono">DEPLOY TBA (TOKEN OWNER ONLY)</button>
         <div class="mt-5 pt-4 border-t border-stone-800">
             <h3 class="text-[10px] text-amber-500 font-mono uppercase tracking-widest mb-2">CONNECTED WALLET DEEDS</h3>
             <p id="walletPortfolioStatus" class="text-[10px] text-stone-500 font-mono">Connect a wallet to list its exact on-chain token IDs.</p>
@@ -371,10 +407,91 @@
     </div>
 </section>
 
-<section class="chiaroscuro-bg p-6 md:p-8 rounded-2xl mb-6 relative z-10 border border-amber-900/30 shadow-[0_0_40px_rgba(217,119,6,0.1)]">
+<section id="tokenMediaPreviewSection" class="chiaroscuro-bg p-6 md:p-8 rounded-2xl mb-6 relative z-10 border border-rose-900/40">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-stone-800 pb-4 mb-6 gap-4">
+        <div>
+            <h2 class="text-xl font-black font-cinzel gold-text uppercase tracking-tight">TOKEN MEDIA PREVIEW</h2>
+            <p class="text-[10px] font-mono text-stone-500 uppercase tracking-wide mt-1">PREVIEW THE TOKEN’S COVER, MEDIA & PROJECT 3D ASSETS</p>
+        </div>
+        <span id="mediaPreviewTokenLabel" class="text-[10px] font-mono text-stone-500 uppercase" aria-live="polite">Waiting for token ID</span>
+    </div>
+    <div class="info-box mt-4 p-4 border border-amber-900/50 rounded-xl bg-black/40">
+        <p>SAFETY NOTE: This dashboard never runs a holder's 3D or HTML code. Boxes 2 and 3 show only the project's own 3D files. Your Front, Back and Video links are shown only as an image or a video. Other apps and marketplaces decide for themselves how they show your links.</p>
+    </div>
+
+    <!-- DYNAMIC CANVAS PREVIEW CONTAINER -->
+    <div id="mediaPreviewCanvas" class="hidden rounded-xl border border-stone-800 bg-black/80 p-4 md:p-6" aria-live="polite">
+        <div id="mediaPreviewCanvasTitle" class="text-[10px] font-mono font-black uppercase tracking-widest text-amber-400 mb-4"></div>
+        <div id="mediaPreviewCanvasContent" class="w-full"></div>
+        <p class="text-[9px] font-mono text-stone-500 uppercase mt-4">Rendering uses only the inspected deed's on-chain media fields.</p>
+    </div>
+
+    <!-- THREE MODE PREVIEW GRID -->
+    <div id="legacyMediaPreviewGrid" class="grid grid-cols-1 gap-6 md:gap-8">
+        <!-- MODE 1 SLOT -->
+        <article class="min-w-0">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+                <h3 class="text-[10px] font-mono font-bold text-amber-400 uppercase tracking-widest">MODE 1: IMAGE & VIDEO (FLIP CARD)</h3>
+                <button type="button" onclick="togglePreviewFullscreen('previewFrontContainer')" aria-controls="previewFrontContainer" class="w-full sm:w-auto min-h-[44px] px-4 py-2 text-[10px]">OPEN FULL SCREEN</button>
+            </div>
+            <div id="previewFrontContainer" class="preview-slot relative flex items-center justify-center overflow-hidden rounded-xl bg-black p-3" style="aspect-ratio: 4 / 3; min-height: 220px" aria-label="Mode 1 Image and Video Preview">
+                <span class="text-[10px] font-mono text-stone-500 text-center uppercase">Search a token ID to load Image & Video Dynamic Flip Card.</span>
+            </div>
+        </article>
+
+        <!-- MODE 2 SLOT -->
+        <article class="min-w-0">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+                <h3 class="text-[10px] font-mono font-bold text-amber-400 uppercase tracking-widest">MODE 2: 3D STANDARD DEEDS (AUTO-ROTATE)</h3>
+                <button type="button" onclick="togglePreviewFullscreen('previewBackContainer')" aria-controls="previewBackContainer" class="w-full sm:w-auto min-h-[44px] px-4 py-2 text-[10px]">OPEN FULL SCREEN</button>
+            </div>
+            <div id="previewBackContainer" class="preview-slot relative flex items-center justify-center overflow-hidden rounded-xl bg-black p-3" style="aspect-ratio: 4 / 3; min-height: 220px" aria-label="Mode 2 3D standard deeds">
+                <span class="text-[10px] font-mono text-stone-500 text-center uppercase">Search a token ID to load Image & 3D Inspection Canvas.</span>
+            </div>
+        </article>
+
+        <!-- MODE 3 SLOT -->
+        <article class="min-w-0">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+                <h3 id="mode3Title" class="text-[10px] font-mono font-bold text-amber-400 uppercase tracking-widest">MODE 3: 3D ARC-09 SHOWCASE (AUTO-ROTATE)</h3>
+                <button type="button" onclick="togglePreviewFullscreen('previewVideoContainer')" aria-controls="previewVideoContainer" class="w-full sm:w-auto min-h-[44px] px-4 py-2 text-[10px]">OPEN FULL SCREEN</button>
+            </div>
+            <div id="previewVideoContainer" class="preview-slot relative flex items-center justify-center overflow-hidden rounded-xl bg-black p-3" style="aspect-ratio: 4 / 3; min-height: 220px" aria-label="Mode 3 3D council and ship deeds">
+                <span class="text-[10px] font-mono text-stone-500 text-center uppercase">3D Canvas Standalone Viewport Active.</span>
+            </div>
+    <details class="mt-3 rounded-xl border border-slate-800 bg-black/40 p-3 text-left">
+        <summary class="cursor-pointer text-[10px] font-mono font-bold tracking-wide text-slate-300">
+            THE JOURNEY OF ARC-01 AND THE SOVEREIGN FLEET (15 SPACECRAFT)
+        </summary>
+        <div class="mt-3 space-y-3 text-[11px] leading-relaxed text-slate-400">
+            <p>When interdimensional travel was no longer a distant dream, the ARC-01 drifted through deep space, propelled by plasma thrusters amid celestial bodies and asteroids large and small.</p>
+            <p>At the coordinates chosen for the wormhole opening, the true journey began. The ARC-01 unleashed an immense gamma-ray energy wave ahead. Its force tore through spacetime and created a small black hole, which expanded until it consumed the surrounding stars.</p>
+            <p>The ARC-01 continued toward the event horizon. The moment it crossed into this region, everything around it seemed to slow as if time had stopped. Stars were gradually drawn in, while the ship and its engines shuddered violently under colliding energy waves and immense gravitational forces.</p>
+            <p>But the ship’s armor was forged from a special element discovered in deep space. Its exceptionally strong bonds resisted the distortion of spacetime, allowing the vessel to withstand immense gravity without being stretched, torn apart, or crushed by tidal forces. The ship remained intact.</p>
+            <p>At the critical moment, the ARC-01 unleashed its ultimate gamma-ray energy, accelerating to near-light speed and plunging into the wormhole tunnel through the black hole. It successfully emerged into a new dimension and a universe on the other side.</p>
+            <p>This journey features the complete Sovereign fleet of 15 spacecraft: ARC-01 (Token #1) and the 14 triple-number ships #111, #222, #333, #444, #555, #666, #777, #888, #999, #1111, #2222, #3333, #4444 and #5555.</p>
+            <p class="border-t border-slate-800 pt-3 text-slate-500">Note: This story was created for entertainment and is not a scientific experiment. The creator was inspired by Einstein’s wormhole theory.</p>
+        </div>
+    </details>
+        </article>
+
+    </div>
+     <div class="lg:col-span-12 w-full mt-2">
+            <div class="bg-stone-950 border border-rose-900/50 rounded-xl p-5 md:p-6 shadow-inner">
+                <div class="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-3 md:gap-4">
+                    <a id="linkSocial1" href="#" target="_blank" rel="noopener noreferrer" class="w-full sm:w-auto px-5 py-3 bg-stone-900 border border-stone-700 rounded-lg text-[10px] md:text-xs font-mono uppercase text-stone-300 hover:border-amber-500 hover:text-amber-400 transition-colors text-center">✦ LinkedIn Gateway</a>
+                    <a id="linkSocial2" href="#" target="_blank" rel="noopener noreferrer" class="w-full sm:w-auto px-5 py-3 bg-stone-900 border border-stone-700 rounded-lg text-[10px] md:text-xs font-mono uppercase text-stone-300 hover:border-amber-500 hover:text-amber-400 transition-colors text-center">✦ X / Twitter Gateway</a>
+                    <a id="linkSocial3" href="#" target="_blank" rel="noopener noreferrer" class="w-full sm:w-auto px-5 py-3 bg-stone-900 border border-stone-700 rounded-lg text-[10px] md:text-xs font-mono uppercase text-stone-300 hover:border-rose-500 hover:text-rose-400 transition-colors text-center">✦ Council Room Discord</a>
+                    <a id="linkSocialClubHouse" href="#" target="_blank" rel="noopener noreferrer" class="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-[#78350f] to-[#d97706] border border-[#fef08a] rounded-lg text-[10px] md:text-xs font-mono font-black uppercase text-black hover:brightness-110 transition-all shadow-[0_0_20px_rgba(217,119,6,0.4)] text-center">🏆 THE SOVEREIGN CLUB HOUSE</a>
+                </div>
+            </div>
+        </div>
+</section>
+
+<section id="mintSection" class="chiaroscuro-bg p-6 md:p-8 rounded-2xl mb-6 relative z-10 border border-amber-900/30 shadow-[0_0_40px_rgba(217,119,6,0.1)]">
     <div class="border-b border-stone-800 pb-4 mb-6">
         <h2 class="text-xl font-black font-cinzel text-amber-500 uppercase tracking-wider">⚡ SOVEREIGN ART FORGE & TBA REGISTRY</h2>
-        <p class="text-[10px] font-mono text-stone-500 uppercase tracking-wide mt-1">CRYPTOGRAPHIC ACTION HUB & DETERMINISTIC VAULT</p>
+        <p class="text-[10px] font-mono text-stone-500 uppercase tracking-wide mt-1">MINT A NEW DEED • MINTING SETS THE PROJECT’S DEFAULT IDENTITY</p>
     </div>
     
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
@@ -387,7 +504,7 @@
                 <div class="mb-2 bg-black/60 p-4 rounded-xl border border-stone-800 shadow-inner">
                     <label for="mintQuantity" class="text-[10px] text-stone-400 font-mono block mb-2 uppercase tracking-wider">NUMBER OF NEXT SEQUENTIAL DEEDS</label>
                     <input type="number" id="mintQuantity" min="1" max="20" step="1" value="1" class="w-full bg-black border border-stone-700 p-3.5 text-sm font-mono text-amber-400 rounded-lg outline-none focus:border-amber-500 transition-all" />
-                    <p class="text-[9px] font-mono text-stone-500 mt-2 uppercase leading-relaxed">Batch size: 1–20. The total fee is shown before signing. Mint media uses the configured V18 front and reverse references.</p>
+                    <p class="text-[9px] font-mono text-stone-500 mt-2 uppercase leading-relaxed">Batch size: 1–20. The total fee appears in a notice before your wallet opens. IDs are assigned in order; Council IDs (111, 222, …) are charged the Council price. Mint media uses the configured V18 front and reverse references.</p>
                 </div>
 
                 <button id="executeForgeBtn" onclick="if(typeof openForgeConsentModal === 'function') openForgeConsentModal('REBIRTH', this)" class="btn-rebirth-bright text-sm py-4 rounded-xl font-black tracking-widest w-full">
@@ -440,9 +557,7 @@
             </h2>
             
             <div class="text-stone-300 text-sm space-y-3 mb-6 leading-relaxed max-h-60 overflow-y-auto pr-2 custom-scrollbar">
-                <p><b class="text-red-400">I. Non-Financial Asset:</b> I acknowledge that the <b>IMPERIAL SOVEREIGN DEED</b> is exclusively a digital architectural artwork and a personal cryptographic identity instrument on the blockchain. It is strictly not a security, an investment asset, or a financial instrument of any kind.</p>
-                <p><b class="text-red-400">II. Zero Expectation of Profit:</b> This system provides no valuation guarantees and promises no future financial returns. I accept that the intrinsic value of this architecture is derived solely from its artistic merit and the personal will of its sovereign holder.</p>
-                <p><b class="text-red-400">III. Immutable Sovereignty:</b> The execution of the Rebirth (Minting) ritual onto the Blockchain is absolute and irreversible. I accept the conditions of minting and metadata changes permitted by the contract, and I bear sole responsibility for the genetic metadata inscribed. Protocol fees are non-refundable.</p>
+                <p>I understand this is digital art, not an investment, and minting is final.</p>
             </div>
             
             <div class="flex items-start space-x-3 mb-6 p-3 bg-black/50 border border-stone-800 rounded hover:border-stone-700 transition-colors">
@@ -451,7 +566,7 @@
                 </div>
                 <label for="forgeModalCheckbox" class="font-medium text-stone-300 text-sm cursor-pointer select-none">
                     <br>
-                    <span class="text-stone-500 text-xs">(I explicitly accept the Sovereign Terms & Conditions above.)</span>
+                    <span class="text-stone-500 text-xs">(I understand and accept.)</span>
                 </label>
             </div>
 
@@ -467,72 +582,22 @@
     </div>
 </section>
 
-<section class="chiaroscuro-bg p-6 md:p-8 rounded-2xl mb-6 relative z-10 border border-rose-900/40">
+<section id="mediaUploadSection" class="chiaroscuro-bg p-6 md:p-8 rounded-2xl mb-6 relative z-10 border border-rose-900/40">
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-stone-800 pb-4 mb-6 gap-4">
         <div>
-            <h2 class="text-xl font-black font-cinzel gold-text uppercase tracking-tight">TOKEN MEDIA PREVIEW</h2>
-            <p class="text-[10px] font-mono text-stone-500 uppercase tracking-wide mt-1">DYNAMIC CANVAS • FLIP CARD • 3D INSPECTION</p>
-        </div>
-        <span id="mediaPreviewTokenLabel" class="text-[10px] font-mono text-stone-500 uppercase" aria-live="polite">Waiting for token ID</span>
-    </div>
-
-    <!-- DYNAMIC CANVAS PREVIEW CONTAINER -->
-    <div id="mediaPreviewCanvas" class="hidden rounded-xl border border-stone-800 bg-black/80 p-4 md:p-6" aria-live="polite">
-        <div id="mediaPreviewCanvasTitle" class="text-[10px] font-mono font-black uppercase tracking-widest text-amber-400 mb-4"></div>
-        <div id="mediaPreviewCanvasContent" class="w-full"></div>
-        <p class="text-[9px] font-mono text-stone-500 uppercase mt-4">Rendering uses only the inspected deed's on-chain media fields.</p>
-    </div>
-
-    <!-- THREE MODE PREVIEW GRID -->
-    <div id="legacyMediaPreviewGrid" class="grid grid-cols-1 gap-6 md:gap-8">
-        <!-- MODE 1 SLOT -->
-        <article class="min-w-0">
-            <h3 class="text-[10px] font-mono font-bold text-amber-400 uppercase tracking-widest mb-2">MODE 1: IMAGE & VIDEO (FLIP CARD)</h3>
-            <div id="previewFrontContainer" class="preview-slot relative flex items-center justify-center overflow-hidden rounded-xl bg-black p-3" style="aspect-ratio: 4 / 3; min-height: 220px" aria-label="Mode 1 Image and Video Preview">
-                <span class="text-[10px] font-mono text-stone-500 text-center uppercase">Search a token ID to load Image & Video Dynamic Flip Card.</span>
-            </div>
-        </article>
-
-        <!-- MODE 2 SLOT -->
-        <article class="min-w-0">
-            <h3 class="text-[10px] font-mono font-bold text-amber-400 uppercase tracking-widest mb-2">MODE 2: 3D STANDARD DEEDS (AUTO-ROTATE)</h3>
-            <div id="previewBackContainer" class="preview-slot relative flex items-center justify-center overflow-hidden rounded-xl bg-black p-3" style="aspect-ratio: 4 / 3; min-height: 220px" aria-label="Mode 2 3D standard deeds">
-                <span class="text-[10px] font-mono text-stone-500 text-center uppercase">Search a token ID to load Image & 3D Inspection Canvas.</span>
-            </div>
-        </article>
-
-        <!-- MODE 3 SLOT -->
-        <article class="min-w-0">
-            <h3 class="text-[10px] font-mono font-bold text-amber-400 uppercase tracking-widest mb-2">MODE 3: 3D COUNCIL &amp; SHIP DEEDS (AUTO-ROTATE)</h3>
-            <div id="previewVideoContainer" class="preview-slot relative flex items-center justify-center overflow-hidden rounded-xl bg-black p-3" style="aspect-ratio: 4 / 3; min-height: 220px" aria-label="Mode 3 3D council and ship deeds">
-                <span class="text-[10px] font-mono text-stone-500 text-center uppercase">3D Canvas Standalone Viewport Active.</span>
-            </div>
-        </article>
-
-    </div>
-     <div class="lg:col-span-12 w-full mt-2">
-            <div class="bg-stone-950 border border-rose-900/50 rounded-xl p-5 md:p-6 shadow-inner">
-                <div class="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-3 md:gap-4">
-                    <a id="linkSocial1" href="#" target="_blank" rel="noopener noreferrer" class="w-full sm:w-auto px-5 py-3 bg-stone-900 border border-stone-700 rounded-lg text-[10px] md:text-xs font-mono uppercase text-stone-300 hover:border-amber-500 hover:text-amber-400 transition-colors text-center">✦ LinkedIn Gateway</a>
-                    <a id="linkSocial2" href="#" target="_blank" rel="noopener noreferrer" class="w-full sm:w-auto px-5 py-3 bg-stone-900 border border-stone-700 rounded-lg text-[10px] md:text-xs font-mono uppercase text-stone-300 hover:border-amber-500 hover:text-amber-400 transition-colors text-center">✦ X / Twitter Gateway</a>
-                    <a id="linkSocial3" href="#" target="_blank" rel="noopener noreferrer" class="w-full sm:w-auto px-5 py-3 bg-stone-900 border border-stone-700 rounded-lg text-[10px] md:text-xs font-mono uppercase text-stone-300 hover:border-rose-500 hover:text-rose-400 transition-colors text-center">✦ Council Room Discord</a>
-                    <a id="linkSocialClubHouse" href="#" target="_blank" rel="noopener noreferrer" class="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-[#78350f] to-[#d97706] border border-[#fef08a] rounded-lg text-[10px] md:text-xs font-mono font-black uppercase text-black hover:brightness-110 transition-all shadow-[0_0_20px_rgba(217,119,6,0.4)] text-center">🏆 THE SOVEREIGN CLUB HOUSE</a>
-                </div>
-            </div>
-        </div>
-</section>
-
-<section class="chiaroscuro-bg p-6 md:p-8 rounded-2xl mb-6 relative z-10 border border-rose-900/40">
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-stone-800 pb-4 mb-6 gap-4">
-        <div>
-            <h2 class="text-xl font-black font-cinzel text-stone-100 uppercase tracking-tight">📡 Decentralized Media Transmission Station</h2>
-            <p class="text-[10px] font-mono text-stone-500 uppercase tracking-wide mt-1">DIRECT IRYS BRIDGING TRANSMISSION • MAXIMUM CAPACITY: 500MB</p>
+            <h2 class="text-xl font-black font-cinzel text-stone-100 uppercase tracking-tight">📡 UPLOAD MEDIA TO YOUR TOKEN</h2>
+            <p class="text-[10px] font-mono text-stone-500 uppercase tracking-wide mt-1">UPLOAD OR PASTE A LINK • MAX FILE SIZE: 500 MB</p>
             <div id="uploadTargetDisplay" class="text-[10px] font-mono text-slate-500 mt-2 uppercase font-bold">LOCKED TOKEN ID: NONE</div>
         </div>
         <div id="targetBridgeFieldLabel" class="text-[10px] font-mono font-bold text-amber-500 uppercase bg-stone-950 px-4 py-2 border border-stone-800 rounded-lg shadow-inner text-center w-full md:w-auto">
             TARGET TOKEN: NONE
         </div>
     </div>
+    <details id="stationHowTo" class="info-box mb-3" ontoggle="this.firstElementChild.firstElementChild.textContent = this.open ? 'HIDE ▲' : 'HOW TO USE THIS STATION ▼'">
+        <summary class="cursor-pointer select-none px-4 py-3 rounded-lg border border-amber-700/40 bg-black/60 text-amber-400 text-[10px] font-mono uppercase tracking-widest" style="list-style:none"><span>HOW TO USE THIS STATION ▼</span></summary>
+        <p class="mt-3">All steps are optional. Your token, your media, your choice.<br>1. Connect your wallet on Base.<br>2. Pick your token ID in the Token Inspector. Uploading stays locked until you do.<br>3. Front tab = the cover image shown by marketplaces. Back tab = your video or 3D animation (it also fills Video URI).<br>4. Press STREAM PAYLOAD (Front tab) or STREAM REVERSE PAYLOAD (Back tab) and choose your file (max 500 MB). If asked, top up a small amount of ETH for permanent storage. You can also paste any link instead of uploading.<br>5. Press SUBMIT IDENTITY UPDATE and sign. Only this step changes your token on-chain. (An Irys top-up, if needed, is a separate small ETH payment.)<br>Marketplaces and apps decide for themselves how they show your media.</p>
+    </details>
+    <p id="stationStatusLine" class="info-box" aria-live="polite">Wallet: not connected | Token: none | Step 1: connect your wallet.</p>
 
     <div class="flex flex-col sm:flex-row gap-3 mb-6" role="tablist" aria-label="Transmission station selector">
         <button type="button" role="tab" aria-selected="true" aria-controls="stationFront" onclick="if(typeof switchStation === 'function') switchStation('front')" id="tabFront" class="tab-btn active flex-1 bg-stone-950 border border-stone-800 rounded-xl py-4 text-[11px] font-black font-mono uppercase tracking-wider text-stone-300 transition-all cursor-pointer">OBVERSE DECK (FRONT)</button>
@@ -548,11 +613,11 @@
                 <label class="flex items-center cursor-pointer"><input type="radio" name="frontType" value="video" class="accent-rose-500 w-4 h-4" onchange="if(typeof onTypeToggle === 'function') onTypeToggle('front')" /> <span class="text-rose-500 font-bold ml-1.5">VIDEO</span></label>
                 <span class="text-stone-600 mx-1">/</span>
                 <label class="flex items-center cursor-pointer"><input type="radio" name="frontType" value="audio" class="accent-cyan-500 w-4 h-4" onchange="if(typeof onTypeToggle === 'function') onTypeToggle('front')" /> <span class="text-cyan-500 font-bold ml-1.5">AUDIO</span></label>
-                <span class="text-stone-600 mx-1">/</span>
-                <label class="flex items-center cursor-pointer"><input type="radio" name="frontType" value="html" class="accent-fuchsia-500 w-4 h-4" onchange="if(typeof onTypeToggle === 'function') onTypeToggle('front')" /> <span class="text-fuchsia-500 font-bold ml-1.5">HTML (ADMIN)</span></label>
+                <span id="frontHtmlTypeSeparator" class="text-stone-600 mx-1" style="display:none">/</span>
+                <label id="frontHtmlTypeOption" class="flex items-center cursor-pointer" style="display:none"><input type="radio" name="frontType" value="html" class="accent-fuchsia-500 w-4 h-4" onchange="if(typeof onTypeToggle === 'function') onTypeToggle('front')" /> <span class="text-fuchsia-500 font-bold ml-1.5">HTML (ADMIN)</span></label>
             </span>
             
-            <div class="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">   <button id="btnConnectIrys" onclick="if(typeof ensureIrysReady === 'function') ensureIrysReady()" type="button" class="w-full sm:w-auto px-5 py-3 bg-slate-900 border border-blue-800 text-blue-400 font-mono text-xs font-bold hover:bg-blue-950 hover:text-blue-300 transition-colors shadow-[0_0_15px_rgba(30,58,138,0.4)] rounded-lg">
+            <div class="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">   <button id="btnConnectIrys" onclick="engageIrysBridgeUI()" type="button" class="w-full sm:w-auto px-5 py-3 bg-slate-900 border border-blue-800 text-blue-400 font-mono text-xs font-bold hover:bg-blue-950 hover:text-blue-300 transition-colors shadow-[0_0_15px_rgba(30,58,138,0.4)] rounded-lg">
         ⚡ ENGAGE IRYS BRIDGE
         </button>
         <div class="relative w-full sm:w-36">
@@ -580,8 +645,8 @@
                 <label class="flex items-center cursor-pointer"><input type="radio" name="backType" value="video" class="accent-rose-500 w-4 h-4" onchange="if(typeof onTypeToggle === 'function') onTypeToggle('back')" /> <span class="text-rose-500 font-bold ml-1.5">VIDEO</span></label>
                 <span class="text-stone-600 mx-1">/</span>
                 <label class="flex items-center cursor-pointer"><input type="radio" name="backType" value="audio" class="accent-cyan-500 w-4 h-4" onchange="if(typeof onTypeToggle === 'function') onTypeToggle('back')" /> <span class="text-cyan-500 font-bold ml-1.5">AUDIO</span></label>
-                <span class="text-stone-600 mx-1">/</span>
-                <label class="flex items-center cursor-pointer"><input type="radio" name="backType" value="html" class="accent-fuchsia-500 w-4 h-4" onchange="if(typeof onTypeToggle === 'function') onTypeToggle('back')" /> <span class="text-fuchsia-500 font-bold ml-1.5">HTML (ADMIN)</span></label>
+                <span id="backHtmlTypeSeparator" class="text-stone-600 mx-1" style="display:none">/</span>
+                <label id="backHtmlTypeOption" class="flex items-center cursor-pointer" style="display:none"><input type="radio" name="backType" value="html" class="accent-fuchsia-500 w-4 h-4" onchange="if(typeof onTypeToggle === 'function') onTypeToggle('back')" /> <span class="text-fuchsia-500 font-bold ml-1.5">HTML (ADMIN)</span></label>
             </span>
             <button id="btnUploadBack" onclick="if(typeof executeArchitectCentralizedUpload === 'function') executeArchitectCentralizedUpload('back')" type="button" class="w-full lg:w-auto px-6 py-3 bg-amber-700 hover:bg-amber-600 text-black font-black text-[11px] font-mono uppercase rounded-lg transition-all shadow-[0_0_15px_rgba(217,119,6,0.3)]">
                 STREAM REVERSE PAYLOAD
@@ -598,14 +663,14 @@
 <!-- 🚨 ARCHITECT NOTICE (IRONCLAD RULE 3) -->
 <div class="notice-box bg-red-950/60 border border-red-700 p-4 rounded-xl mb-6 shadow-inner max-w-4xl mx-auto">
     <p class="text-[10px] font-mono leading-relaxed text-center">
-        <span class="notice-tag font-bold">NOTICE:</span> Front URI must strictly be a STILL IMAGE (PNG/JPG/WEBP). Marketplaces (OpenSea/Blur) rely on Front URI for primary card preview. Secondary media (3D Models / Video) are assigned to Back URI and will render based on buyer's media configuration.
+        <span class="notice-tag font-bold">NOTICE:</span> Marketplaces use the Front URI only as the cover image, so Front should be a still image (PNG/JPG/WEBP). The animation (video or 3D) is set in Back URI and Video URI (same value) and is usually seen when the token is opened. How it appears depends on each marketplace or app.
     </p>
 </div>
 
 <section class="chiaroscuro-bg p-6 md:p-8 rounded-2xl mb-6 relative z-10 border border-rose-900/40">
     <div class="border-b border-stone-800 pb-4 mb-6">
-        <h2 class="text-xl font-black font-cinzel gold-text uppercase tracking-tight">⚡ Master Inscription Ledger Operations</h2>
-        <p class="text-[10px] font-mono text-stone-500 uppercase tracking-wide mt-1">OWNER-CONTROLLED IDENTITY • UPDATE ANYTIME, PAY ONLY GAS</p>
+        <h2 class="text-xl font-black font-cinzel gold-text uppercase tracking-tight">⚡ TOKEN IDENTITY & MEDIA UPDATES</h2>
+        <p class="text-[10px] font-mono text-stone-500 uppercase tracking-wide mt-1">OPTIONAL CHANGES • WRITTEN ON-CHAIN ONLY AFTER YOU SIGN</p>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -624,20 +689,23 @@
     </div>
         
     <div class="info-box mt-6 p-5 md:p-6 border border-amber-900/50 rounded-2xl bg-black/40 space-y-3">
-        <h3 class="text-sm font-black font-cinzel text-amber-400 tracking-wide">What is Absolute Sovereignty?</h3>
-        <p>Nova lets you use your own backend API for your deed's metadata. Fill in <strong>both</strong> Identity DNA and Hidden (your Token URI). Once both are set, the contract bypasses the project's base URI and uses your Token URI instead.</p>
-        <p class="text-stone-400">Keep your API online. If it goes down, your deed's metadata goes down with it.</p>
+        <h3 class="text-sm font-black font-cinzel text-amber-400 tracking-wide">What is Nova?</h3>
+        <p>Nova is optional. You don't need it to change your image or video. That is free, anytime.</p>
+        <p>Use Nova only if you run your own metadata gateway: your own link that tells marketplaces your deed's name, image and video. Paste that link in <strong>Hidden</strong>, and fill in <strong>Identity DNA</strong> too. Both are required.</p>
+        <p class="text-stone-400"><strong>If your server goes down,</strong> your deed may show blank. To fix it, submit Nova again with blank values. Your deed goes back to the project's default link.</p>
+        <p>Fee: one time only. Council deeds and unlocked deeds pay nothing.</p>
     </div>
 
     <div class="mt-8">
         <div class="p-5 md:p-6 border border-rose-900/50 rounded-2xl bg-black/40 shadow-inner mb-4">
             <span class="text-[10px] font-mono text-rose-400 uppercase tracking-widest block mb-4 pb-4 border-b border-stone-800 leading-relaxed">
-            • Unlocks Sanctified Status & Lifetime Identity Updates
+            • Unlocks Absolute Sovereignty: your own Token URI for this deed.
             </span>
-            <button onclick="document.getElementById('novaWarnModal').classList.remove('hidden')" class="w-full btn-gold-master rounded-xl py-4 text-xs md:text-sm shadow-[0_0_20px_rgba(217,119,6,0.3)]">[ ⚡ SANCTIFY NOVA CONSECRATION ]</button>
+            <button id="btnNovaOpen" onclick="document.getElementById('novaWarnModal').classList.remove('hidden')" class="w-full btn-gold-master rounded-xl py-4 text-xs md:text-sm shadow-[0_0_20px_rgba(217,119,6,0.3)]">[ ⚡ SANCTIFY NOVA CONSECRATION ]</button>
         </div>
         <div class="p-5 md:p-6 border border-rose-900/50 rounded-2xl bg-black/40 shadow-inner">
-            <h3 class="text-sm font-black font-cinzel text-rose-400 mb-4 uppercase tracking-widest border-b border-stone-800 pb-2">📜 UPDATE SANCTIFIED IDENTITY</h3>
+            <h3 class="text-sm font-black font-cinzel text-rose-400 mb-4 uppercase tracking-widest border-b border-stone-800 pb-2">📜 UPDATE MEDIA LINKS (FRONT / BACK / VIDEO)</h3>
+            <p class="text-[10px] font-mono text-stone-500 tracking-wide leading-relaxed mb-4">Media links can be updated by the token owner at any time; Nova is not required.</p>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
                     <label class="text-[10px] text-stone-400 font-mono block mb-2 uppercase tracking-wider">Target Token ID</label>
@@ -645,17 +713,18 @@
                 </div>
                 <div>
                     <label class="text-[10px] text-stone-400 font-mono block mb-2 uppercase tracking-wider">Front URI</label>
-                    <input type="text" id="updateFrontUriInput" placeholder="Front URI" class="w-full bg-black border border-stone-800 p-3 text-sm font-mono text-amber-500 rounded-xl outline-none focus:border-amber-500 transition-all" />
+                    <input type="text" id="updateFrontUriInput" placeholder="Front URI — leave blank to keep current" class="w-full bg-black border border-stone-800 p-3 text-sm font-mono text-amber-500 rounded-xl outline-none focus:border-amber-500 transition-all" />
                 </div>
                 <div>
                     <label class="text-[10px] text-stone-400 font-mono block mb-2 uppercase tracking-wider">Back URI</label>
-                    <input type="text" id="updateBackUriInput" placeholder="Back URI" class="w-full bg-black border border-stone-800 p-3 text-sm font-mono text-amber-500 rounded-xl outline-none focus:border-amber-500 transition-all" />
+                    <input type="text" id="updateBackUriInput" placeholder="Back URI — leave blank to keep current" class="w-full bg-black border border-stone-800 p-3 text-sm font-mono text-amber-500 rounded-xl outline-none focus:border-amber-500 transition-all" />
                 </div>
                 <div>
                     <label class="text-[10px] text-stone-400 font-mono block mb-2 uppercase tracking-wider">Video URI</label>
-                    <input type="text" id="updateVideoUriInput" placeholder="Video URI" class="w-full bg-black border border-stone-800 p-3 text-sm font-mono text-amber-500 rounded-xl outline-none focus:border-amber-500 transition-all" />
+                    <input type="text" id="updateVideoUriInput" placeholder="Video URI — leave blank to keep current" class="w-full bg-black border border-stone-800 p-3 text-sm font-mono text-amber-500 rounded-xl outline-none focus:border-amber-500 transition-all" />
                 </div>
             </div>
+            <p class="text-[10px] font-mono text-stone-500 tracking-wide leading-relaxed mb-4">Optional. Your token, your media, your choice. You are fully responsible for the media you display. Links are displayed, not verified. Marketplaces decide how they show them.</p>
             <button id="btnSubmitUpdateIdentity" onclick="if(typeof executeUpdateIdentity === 'function') executeUpdateIdentity(this)" class="w-full bg-stone-950 border border-rose-700 text-rose-400 font-black font-mono text-xs md:text-sm py-4 rounded-xl uppercase tracking-wider hover:bg-rose-950 transition-all shadow-[0_0_15px_rgba(153,27,27,0.2)]">[ 📜 SUBMIT IDENTITY UPDATE ]</button>
         </div>
     </div>
@@ -703,7 +772,7 @@
 
         <!-- ARCHITECT MINT -->
         <div class="bg-black/50 p-5 rounded-xl border border-stone-800 space-y-4 lg:col-span-2">
-            <h3 class="text-xs font-bold text-fuchsia-400 font-mono uppercase tracking-widest border-b border-stone-800 pb-2">3. ARCHITECT MASTER MINT</h3>
+            <h3 class="text-xs font-bold text-fuchsia-400 font-mono uppercase tracking-widest border-b border-stone-800 pb-2">3. ARCHITECT MASTER MINT (max 300 total)</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="text-[9px] text-stone-500 font-mono block mb-1 uppercase">Quantity (used only when Token IDs is blank, max 50)</label>
@@ -745,11 +814,12 @@
         ♠ SOVEREIGN AWAKENING
     </h4>
 
-    <p class="text-[10px] font-mono text-slate-500 leading-relaxed uppercase">
-        Generative 3D Crystal · Chiaroscuro Lighting · Unique Token Identity
-        <br>
-        Single-File Static HTML · Live Read-Only Base Data · No Wallet Required
+    <p class="text-[10px] font-mono text-slate-500 leading-relaxed">
+        Live, read-only Base token data. Browsing requires no wallet.<br>
+        To upload, connect your wallet and select a token; the dashboard checks upload eligibility automatically. Token changes are written on-chain only when you press SUBMIT. Irys top-ups are separate.<br>
+        Front, Back and Video links are shown only as images or videos. This dashboard never runs holder-provided 3D or HTML code. Boxes 2 and 3 show only the project’s own 3D files.
     </p>
+
 
     <div class="my-4 border-t border-slate-800/80 w-2/3 mx-auto"></div>
 
@@ -811,10 +881,10 @@ const MULTICALL3_ADDRESS = "0xcA11bde05977b3631167028862bE2a173976CA11";
 // ถ้าปล่อย "./" = ดึงจากโฟลเดอร์เดียวกับ index.html
 const CANVAS_BASE_URL = "./";
 const CANVAS_IDLE_MODE2 = CANVAS_BASE_URL + "SOVEREIGN_AWAKENING.html"; // สำหรับช่อง 2 (ตอนยังไม่มีคนกดดู Token)
-const CANVAS_PREVIEW_MODE3 = CANVAS_BASE_URL + "ARC-01.html";  // ช่อง 3: แสดงตลอด ไม่เปลี่ยนตาม token
-// ยาน Council: SHIP_111–888 (หลักร้อยคู่ 111,222,...,888) + SHIP_1111/2222/3333/4444/5555.html
-// หมายเหตุ: 999 ยังใช้ SOVEREIGN_COUNCIL.html (คริสตัลทอง) เหมือนเดิม
-const SHIP_TOKEN_IDS = [111, 222, 333, 444, 555, 666, 777, 888, 1111, 2222, 3333, 4444, 5555];
+const CANVAS_PREVIEW_MODE3 = CANVAS_BASE_URL + "ARC-09.html";  // Box 3 default showcase: ARC-09 (new flagship); ship tokens load their own model
+// กองบินเลขตอง 14 ลำ: SHIP_111…SHIP_999 (9 ลำ) + SHIP_1111…SHIP_5555 (5 ลำ) + ARC-01 = Token #1 รวม 15 ลำ
+// 999 เป็นยาน SHIP_999.html แล้ว
+const SHIP_TOKEN_IDS = [111, 222, 333, 444, 555, 666, 777, 888, 999, 1111, 2222, 3333, 4444, 5555];
 // ยานใหม่ ARC-09 (ลงทะเบียนไว้แล้ว รอกำหนดว่าจะให้แสดงที่ไหน)
 const CANVAS_ARC_09 = CANVAS_BASE_URL + "ARC-09.html";
 
@@ -837,6 +907,7 @@ function appendBuilderSuffix(data) {
 }
 function pick3DFile(tokenId) {
     const id = Number(tokenId);
+    if (id === 1) return `${CANVAS_BASE_URL}ARC-01.html`; // ARC-01 = Token #1
     if (SHIP_TOKEN_IDS.includes(id)) return `${CANVAS_BASE_URL}SHIP_${id}.html`;
     // Council 111–999 = คริสตัลทอง (ไฟล์ C_rings.html เปลี่ยนชื่อเป็น SOVEREIGN_COUNCIL.html ก่อนอัปโหลด)
     if (isCouncilToken(id)) return CANVAS_BASE_URL + "SOVEREIGN_COUNCIL.html?token=" + id;
@@ -1520,7 +1591,12 @@ async function promptUserForFile(acceptType = 'image/*,video/*,audio/*,text/html
 // ==============================================================================
 // ⚔️ TRANSACTION WRAPPER
 // ==============================================================================
-async function runTx(eventOrBtn, actionName, methodName, args = [], overrides = {}, options = { manageLock: true, manageButton: true, onBroadcast: null }) {
+function shouldRefreshView(id) {
+    const inspectedId = window.SystemState?.inspectedTokenId;
+    return inspectedId === null || inspectedId === undefined || String(inspectedId) === String(id);
+}
+
+async function runTx(eventOrBtn, actionName, methodName, args = [], overrides = {}, options = {}) {
     if (!secureContract || !signer) {
         if (typeof showNotification === 'function') showNotification("Wallet not connected or contract uninitialized.", "error");
         return null;
@@ -1530,7 +1606,23 @@ async function runTx(eventOrBtn, actionName, methodName, args = [], overrides = 
         return null;
     }
 
+    const opts = { manageLock: true, manageButton: true, successToast: true, onBroadcast: null, ...(options || {}) };
+    if (window._runTxBusy === true) {
+        showNotification("Another transaction is still running. Please wait.", "warning");
+        return null;
+    }
+    window._runTxBusy = true;
+
+    const btn = (typeof HTMLElement !== "undefined" && eventOrBtn instanceof HTMLElement)
+        ? eventOrBtn
+        : eventOrBtn?.currentTarget || null;
+    let ownsButton = false;
+
     try {
+        if (btn && opts.manageButton !== false && !btn.classList.contains("btn-processing")) {
+            toggleButtonLoading(btn, true);
+            ownsButton = true;
+        }
         if (typeof safeAppendLog === 'function') safeAppendLog(`[TX] Initiating ${actionName}...`, "text-yellow-400");
         const txProvider = secureContract.runner?.provider || provider || readOnlyProvider;
         const network = txProvider?.getNetwork ? await txProvider.getNetwork() : null;
@@ -1563,14 +1655,15 @@ async function runTx(eventOrBtn, actionName, methodName, args = [], overrides = 
 
         if (typeof safeAppendLog === 'function') safeAppendLog(`[TX] Broadcasted. Hash: ${tx.hash.slice(0,12)}... Awaiting confirmation.`, "text-blue-400");
         
-        if (options && typeof options.onBroadcast === 'function') {
-            try { options.onBroadcast(tx); } catch (cbErr) { console.warn("[SYS LOG] onBroadcast callback execution failed:", cbErr); }
+        if (typeof opts.onBroadcast === 'function') {
+            try { opts.onBroadcast(tx); } catch (cbErr) { console.warn("[SYS LOG] onBroadcast callback execution failed:", cbErr); }
         }
         
         const receipt = await tx.wait();
         
         if (receipt && receipt.status === 1) {
             if (typeof safeAppendLog === 'function') safeAppendLog(`[TX] ${actionName} confirmed in block ${receipt.blockNumber}.`, "text-emerald-400 font-bold");
+            if (opts.successToast !== false) showNotification(actionName + " confirmed on-chain.", "success");
             return receipt;
         } else {
             throw new Error("Transaction reverted by EVM during execution.");
@@ -1579,6 +1672,7 @@ async function runTx(eventOrBtn, actionName, methodName, args = [], overrides = 
         // [FIX-4] tx ถูก speed-up/replace: ถ้า tx ใหม่สำเร็จ ถือว่าสำเร็จ (ไม่ใช่ล้มเหลว)
         if (err && err.code === 'TRANSACTION_REPLACED' && err.reason !== 'cancelled' && err.receipt && err.receipt.status === 1) {
             if (typeof safeAppendLog === 'function') safeAppendLog(`[TX] ${actionName} confirmed via replacement tx in block ${err.receipt.blockNumber}.`, "text-emerald-400 font-bold");
+            if (opts.successToast !== false) showNotification(actionName + " confirmed on-chain.", "success");
             return err.receipt;
         }
         const errorMsg = err.message && err.message.startsWith('SIMULATION_REVERTED:') 
@@ -1595,7 +1689,10 @@ async function runTx(eventOrBtn, actionName, methodName, args = [], overrides = 
             if (typeof showNotification === 'function') showNotification(`TRANSACTION REVERTED: ${errorMsg}`, "error");
         }
         return null;
-    } finally {}
+    } finally {
+        window._runTxBusy = false;
+        if (ownsButton) toggleButtonLoading(btn, false);
+    }
 }
 
 // ==============================================================================
@@ -1752,6 +1849,8 @@ async function triggerForge(type, e) {
         return null;
     }
 
+    const pressedButton = typeof HTMLElement !== "undefined" && e instanceof HTMLElement ? e : null;
+    if (pressedButton) toggleButtonLoading(pressedButton, true);
     try {
         const payload = await prepareAwakeningPayload(quantity);
         const tokenIds = payload.tokenIds; // Extract unified tokenIds from payload
@@ -1772,12 +1871,16 @@ async function triggerForge(type, e) {
             GLOBAL_NODE_CACHE.clear();
             appendLog(`THE_SOVEREIGN_AWAKENING minted ${tokenIds.map((id) => `#${id}`).join(", ")}.`, "text-emerald-400 font-bold");
             await syncContractStates();
-            await window.inspectTokenFromInput?.(tokenIds[0], { expectActive: true });
+            if (shouldRefreshView(tokenIds[0])) {
+                await window.inspectTokenFromInput?.(tokenIds[0], { expectActive: true });
+            }
         }
         return receipt;
     } catch (error) {
         showNotification(`Mint preparation failed: ${decodeContractError(error)}`, "error");
         return null;
+    } finally {
+        if (pressedButton) toggleButtonLoading(pressedButton, false);
     }
 }
 
@@ -1797,6 +1900,15 @@ async function withNetworkRetry(fn, retries = 3, delay = 1000) {
 // ==============================================================================
 // 📡 4. BRIDGE INITIALIZER (เชื่อมต่อ Irys) [FIXED: Global Scope Sync]
 // ==============================================================================
+async function engageIrysBridgeUI() {
+    try {
+        await ensureIrysReady();
+        showNotification("Irys bridge is online.", "success");
+    } catch (err) {
+        showNotification("Irys bridge failed: " + (err?.message || err), "error");
+    }
+}
+
 async function ensureIrysReady(timeoutMs = 60000) {
     if (typeof irys !== 'undefined' && irys) {
         window.irys = irys; 
@@ -2177,7 +2289,7 @@ async function executeIrysUpload(payload, tags, isFile = false, progressCtrl = n
         }
 
         if (typeof updateBridgeStatus === 'function') updateBridgeStatus("PERMANENTLY ONLINE", "success");
-        if (typeof showNotification === 'function') showNotification("Upload Completed! Your payload is securely stored on-chain.", "success");
+        if (typeof showNotification === 'function') showNotification("Upload done. Your file is saved forever on Arweave. Your token has not changed yet. Press SUBMIT and sign to apply it.", "success");
         if (typeof safeAppendLog === 'function') {
             safeAppendLog(`[IRYS TELEMETRY] Transaction Successful: Payload permanently uploaded to Irys.`, "text-emerald-400 font-bold");
         }
@@ -2386,6 +2498,20 @@ async function executeIrysTopUp(amountEthStr = null, triggerBtn = null) {
 // 📡 2. GATEWAY & DOM MAPPER (CENTRALIZED UPLOAD)
 // ==============================================================================
 async function executeArchitectCentralizedUpload(type) {
+    if (window._uploadBusy === true) {
+        showNotification("Another upload is still running. Please wait.", "warning");
+        return;
+    }
+    window._uploadBusy = true;
+    const inspectedId = window.SystemState?.inspectedTokenId;
+    try {
+        return await executeArchitectCentralizedUploadCore(type, inspectedId);
+    } finally {
+        window._uploadBusy = false;
+    }
+}
+
+async function executeArchitectCentralizedUploadCore(type, inspectedId) {
     const btnId = type === 'front' ? 'btnUploadFront' : 'btnUploadBack';
     const btn = document.getElementById(btnId);
     let progress = null; // Must remain in scope for finally cleanup.
@@ -2419,7 +2545,6 @@ async function executeArchitectCentralizedUpload(type) {
             return;
         }
 
-        const inspectedId = window.SystemState?.inspectedTokenId;
         if (inspectedId === null || inspectedId === undefined || isNaN(inspectedId)) {
             if (typeof showNotification === 'function') showNotification("Enter a valid token ID in the Token Inspector first.", "error");
             if (btn) toggleButtonLoading(btn, false);
@@ -2483,6 +2608,11 @@ async function executeArchitectCentralizedUpload(type) {
 
         const sanitizedTxId = sanitizeForDOM(txId);
         if (typeof safeAppendLog === 'function') safeAppendLog(`Payload successfully anchored: ${sanitizedTxId} [MIME: ${mimeType}]`, "text-emerald-400 font-bold");
+        if (String(window.SystemState?.inspectedTokenId) !== String(inspectedId)) {
+            showNotification("Upload for token #" + inspectedId + " finished.", "success");
+            appendLog(`Upload for token #${inspectedId} finished. TxID: ${txId}`, "text-emerald-400 font-bold");
+            return;
+        }
         
         if (type === 'front') {
             const frontUriField = document.getElementById('forgeFrontUri');
@@ -2496,10 +2626,15 @@ async function executeArchitectCentralizedUpload(type) {
         } else if (type === 'back') {
             const backUriField = document.getElementById('forgeBackUri');
             const updateBackField = document.getElementById('updateBackUriInput');
+            const updateVideoField = document.getElementById('updateVideoUriInput');
             if (backUriField) backUriField.value = sanitizedTxId;
             if (updateBackField) updateBackField.value = sanitizedTxId;
+            if (updateVideoField) updateVideoField.value = sanitizedTxId;
+            if (updateBackField) updateBackField.dataset.lastMediaValue = sanitizedTxId;
+            if (updateVideoField) updateVideoField.dataset.lastMediaValue = sanitizedTxId;
             if (window.SystemState && window.SystemState.currentLoadedMediaData) {
                 window.SystemState.currentLoadedMediaData.back = sanitizedTxId;
+                window.SystemState.currentLoadedMediaData.video = sanitizedTxId;
             }
             if (typeof renderToViewport === 'function') renderToViewport('previewBackContainer', sanitizedTxId, "Reverse diagnostic data trace is currently null.", mimeType);
         }
@@ -2802,6 +2937,7 @@ function setupWalletEventListeners(rawProvider) {
 async function handleAccountsChangedEvent(accounts) {
     if (walletSessionController) walletSessionController.abort();
     walletSessionController = new AbortController();
+    hideHtmlUploadOptionsAndResetSelection();
 
     try { if (secureContract?.removeAllListeners) secureContract.removeAllListeners(); } catch (err) {}
     
@@ -2815,6 +2951,7 @@ async function handleAccountsChangedEvent(accounts) {
     }
     window.SystemState.inspectedTokenId = null;
     window.SystemState.actionTargetTokenId = null;
+    window.SystemState.walletPrivs = null;
 
     localStorage.removeItem('irys_pending_fund_tx');
     localStorage.removeItem('pending_nova_txid');
@@ -2863,6 +3000,7 @@ async function handleAccountsChangedEvent(accounts) {
     window.signer = null;
     window.secureContract = null;
     window.irys = null; 
+    updateStationStatus();
 }
 
 function setNetworkHardLock(locked, observedChainId = '') {
@@ -2987,6 +3125,8 @@ async function connectWallet(e) {
         secureContract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
         
         const privs = await verifyUserPrivileges(account);
+        window.SystemState.walletPrivs = privs;
+        setHtmlUploadOptionsVisible(Boolean(privs.isAdmin));
         const statBase = document.getElementById('connStatusBase1');
         
         if (!privs.isHolder && !privs.isAdmin) {
@@ -3014,6 +3154,7 @@ async function connectWallet(e) {
         await syncContractStates();
         setupRealTimeEvents(); 
         checkPendingNova();
+        await updateStationStatus();
         
     } catch (error) { 
         const errorMsg = decodeContractError(error);
@@ -3043,7 +3184,7 @@ async function closeNovaWarn(isConfirmed) {
             if (modal) modal.classList.remove('hidden');
             return;
         }
-        const fakeEvent = { currentTarget: document.getElementById('novaConfirmBtn') };
+        const fakeEvent = { currentTarget: document.getElementById('btnNovaOpen') };
         await triggerIdentityNova(fakeEvent);
     } else {
         localStorage.removeItem('pending_nova_txid');
@@ -3069,7 +3210,8 @@ async function executeNova(tokenId, DNA_STRING, HIDDEN_STRING, absoluteSovereign
         `THE_SOVEREIGN_NOVA_#${tokenId}`,
         "THE_SOVEREIGN_NOVA",
         [String(tokenId), DNA_STRING, HIDDEN_STRING],
-        { value: requiredFee.toString() }
+        { value: requiredFee.toString() },
+        { successToast: false }
     );
 }
 
@@ -3117,7 +3259,7 @@ async function triggerIdentityNova(e) {
         }
 
         if (!dna || !hidden) {
-            showNotification("DNA or Hidden is empty: the contract will keep using the Architect's base URI for this deed.", "warning");
+            showNotification("Empty value: this deed will use the project's default link. Fee applies only if your deed is not unlocked yet.", "warning");
         }
 
         const receipt = await executeNova(tokenId, dna, hidden, absoluteSovereigntyStatus);
@@ -3132,7 +3274,8 @@ async function triggerIdentityNova(e) {
         } catch (_) {}
 
         GLOBAL_NODE_CACHE.delete(String(tokenId));
-        await auditTokenFromLedger(tokenId);
+        await syncContractStates();
+        if (shouldRefreshView(tokenId)) await auditTokenFromLedger(tokenId);
         appendLog(`Nova identity and hidden property recorded for deed #${tokenId}.`, "text-emerald-400 font-bold");
         showNotification(`Nova Ascension successful for Deed #${tokenId}.`, "success");
         
@@ -3193,7 +3336,8 @@ async function executeUpdateIdentity(e) {
         );
         if (receipt) {
             GLOBAL_NODE_CACHE.delete(String(tokenId));
-            await auditTokenFromLedger(tokenId);
+            await syncContractStates();
+            if (shouldRefreshView(tokenId)) await auditTokenFromLedger(tokenId);
             appendLog(`Media references updated for deed #${tokenId}.`, "text-emerald-400");
         }
         return receipt;
@@ -3989,11 +4133,67 @@ function onTypeToggle(station) {
     
     if (target) {
         // เปลี่ยนคำอธิบาย Target ให้สอดคล้อง
-        if (type === 'video') target.textContent = "animation_url / videoURI";
+        if (station === 'front') {
+            target.textContent = (type === 'image')
+                ? "frontURI (cover image)"
+                : "frontURI (note: marketplaces use Front as a still cover image)";
+        } else if (type === 'video') target.textContent = "animation_url / videoURI";
         else if (type === 'audio') target.textContent = "animation_url / audioURI";
         else if (type === 'html') target.textContent = "animation_url / interactiveURI";
         else target.textContent = "image";
     }
+}
+
+function setHtmlUploadOptionsVisible(isVisible) {
+    ["front", "back"].forEach((station) => {
+        const option = document.getElementById(`${station}HtmlTypeOption`);
+        const separator = document.getElementById(`${station}HtmlTypeSeparator`);
+        if (option) option.style.display = isVisible ? "" : "none";
+        if (separator) separator.style.display = isVisible ? "" : "none";
+    });
+}
+
+function hideHtmlUploadOptionsAndResetSelection() {
+    setHtmlUploadOptionsVisible(false);
+    ["front", "back"].forEach((station) => {
+        const htmlOption = document.querySelector(`input[name="${station}Type"][value="html"]`);
+        if (!htmlOption?.checked) return;
+        const imageOption = document.querySelector(`input[name="${station}Type"][value="image"]`);
+        if (imageOption) imageOption.checked = true;
+        if (typeof onTypeToggle === "function") onTypeToggle(station);
+    });
+}
+
+async function updateStationStatus() {
+    const statusLine = document.getElementById("stationStatusLine");
+    if (!statusLine) return;
+
+    const activeSigner = window.signer || (typeof signer !== "undefined" ? signer : null);
+    if (!activeSigner) {
+        statusLine.textContent = "Wallet: not connected | Token: none | Step 1: connect your wallet.";
+        return;
+    }
+
+    let address;
+    try {
+        address = await activeSigner.getAddress();
+    } catch (_) {
+        statusLine.textContent = "Wallet: not connected | Token: none | Step 1: connect your wallet.";
+        return;
+    }
+    const walletLabel = `${address.slice(0, 6)}...${address.slice(-4)}`;
+    const tokenId = window.SystemState?.inspectedTokenId;
+    if (tokenId === null || tokenId === undefined || tokenId === "" || !Number.isFinite(Number(tokenId))) {
+        statusLine.textContent = `Wallet: ${walletLabel} | Token: none | Step 2: pick a token ID in the Token Inspector.`;
+        return;
+    }
+
+    const privs = window.SystemState?.walletPrivs;
+    if (privs && !privs.isHolder && !privs.isOwner && !privs.isArchitect && !privs.isAdmin) {
+        statusLine.textContent = `Wallet: ${walletLabel} | This wallet holds no deed, so uploads are locked.`;
+        return;
+    }
+    statusLine.textContent = `Wallet: ${walletLabel} | Token: #${tokenId} | Ready to upload. Only the owner of this token can submit the update.`;
 }
 
 function revealApp() { 
@@ -4175,7 +4375,7 @@ window.deployTBAForToken = async function (tokenId) {
             const code = await rpc.getCode(predicted);
             if (code && code !== "0x") {
                 showNotification(`TBA already deployed at ${predicted}.`, "success");
-                await window.auditTokenFromLedger(id);
+                if (shouldRefreshView(id)) await window.auditTokenFromLedger(id);
                 return null;
             }
         }
@@ -4188,8 +4388,9 @@ window.deployTBAForToken = async function (tokenId) {
         const receipt = await window.runTx(button, `DEPLOY_TBA_#${id}`, "deployTBA", [String(id)], { gasLimit });
         if (receipt) {
             GLOBAL_NODE_CACHE?.delete?.(String(id));
+            await syncContractStates();
             // [DETERMINISTIC FIX]: Call auditTokenFromLedger to reveal new TBA in Vault
-            await window.auditTokenFromLedger(id, { expectActive: true });
+            if (shouldRefreshView(id)) await window.auditTokenFromLedger(id, { expectActive: true });
             await window.refreshWalletPortfolio();
         }
         return receipt;
@@ -4207,6 +4408,43 @@ const is3DMediaUri = (uri) => {
 const isVideoMediaUri = (uri) => {
     const str = String(uri || "").trim();
     return /\.(?:mp4|webm|mov|m3u8)(?:[?#].*)?$/i.test(str);
+};
+
+const isBoxOneExcludedMediaUri = async (uri) => {
+    const value = String(uri || "").trim();
+    if (!value) return false;
+    const lowerValue = value.toLowerCase();
+    if (lowerValue.includes(".html") || lowerValue.includes(".glb") || lowerValue.includes(".gltf")) return true;
+
+    const project3DLinks = [
+        URL_3D_STANDARD,
+        URL_3D_STANDARD_DIRECT,
+        URL_3D_COUNCIL,
+        URL_3D_COUNCIL_HUNDREDS,
+        ASSET_3D_STANDARD,
+        ASSET_3D_COUNCIL
+    ];
+    if (project3DLinks.some((link) => value.startsWith(link))) return true;
+
+    const probeUrl = /^[a-zA-Z0-9_-]{42,45}$/.test(value)
+        ? `https://gateway.irys.xyz/${value}`
+        : value;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
+    try {
+        const response = await fetch(probeUrl, { method: "HEAD", mode: "cors", signal: controller.signal });
+        return (response.headers.get("content-type") || "").toLowerCase().startsWith("text/html");
+    } catch (_) {
+        return false;
+    } finally {
+        clearTimeout(timeout);
+    }
+};
+
+const getSafeBoxOneMediaUri = async (uri) => {
+    const value = String(uri || "").trim();
+    if (!value || await isBoxOneExcludedMediaUri(value)) return "";
+    return value;
 };
 
 const createCanvasSlot = (host, id, title) => {
@@ -4334,7 +4572,7 @@ const clampMediaRatio = (w, h) => {
     return Math.min(16 / 9, Math.max(9 / 16, r));
 };
 
-function buildFlipCard(host, frontUri, back, labels) {
+function buildFlipCard(host, frontUri, back, labels, frontType = "image") {
     if (!host) return;
     releaseHostMedia(host);
     host.replaceChildren();
@@ -4373,10 +4611,12 @@ function buildFlipCard(host, frontUri, back, labels) {
     host.append(card);
 
     // หน้า: รูปภาพเสมอ
-    renderToViewport(f.vp.id, frontUri || DEFAULT_FRONT_URI, "NO FRONT IMAGE", "direct-image");
+    renderToViewport(f.vp.id, frontUri || DEFAULT_FRONT_URI, "NO FRONT IMAGE", frontType === "auto" ? null : "direct-image");
 
     // หลัง
-    if (back.kind === "iframe") {
+    if (back.kind === "auto") {
+        renderToViewport(b.vp.id, back.uri, "NO VIDEO");
+    } else if (back.kind === "iframe") {
         b.vp.appendChild(_mkIframe(back.src));
     } else if (back.kind === "video") {
         renderToViewport(b.vp.id, back.uri, "NO VIDEO", "direct-video");
@@ -4446,8 +4686,56 @@ function renderMediaBox2(src) {
     ensure3DFrame(document.getElementById("previewBackContainer"), src || CANVAS_IDLE_MODE2);
 }
 
+function setMode3Title(src) {
+    const el = document.getElementById("mode3Title");
+    if (!el) return;
+    const s = String(src || CANVAS_PREVIEW_MODE3);
+    let label = "MODE 3: 3D ARC-09 SHOWCASE (AUTO-ROTATE)";
+    if (/ARC-01\.html/.test(s)) label = "MODE 3: 3D ARC-01 • TOKEN #1 (AUTO-ROTATE)";
+    else if (/SHIP_(\d+)\.html/.test(s)) label = `MODE 3: 3D SPACESHIP FLEET • TOKEN #${s.match(/SHIP_(\d+)\.html/)[1]} (AUTO-ROTATE)`;
+    else if (/SOVEREIGN_COUNCIL\.html/.test(s)) label = "MODE 3: 3D COUNCIL SHOWCASE (AUTO-ROTATE)";
+    el.textContent = label;
+}
+
 function renderMediaBox3(src) {
     ensure3DFrame(document.getElementById("previewVideoContainer"), src || CANVAS_PREVIEW_MODE3);
+    setMode3Title(src);
+}
+
+function togglePreviewFullscreen(targetId) {
+    const target = document.getElementById(targetId);
+    if (!target) return;
+
+    const activeElement = document.fullscreenElement || document.webkitFullscreenElement || null;
+    const exitFullscreen = document.exitFullscreen || document.webkitExitFullscreen;
+    if (activeElement === target) {
+        if (typeof exitFullscreen === "function") {
+            try {
+                const result = exitFullscreen.call(document);
+                if (result && typeof result.catch === "function") {
+                    result.catch((error) => showNotification(`Could not exit full screen: ${error?.message || error}`, "warning"));
+                }
+            } catch (error) {
+                showNotification(`Could not exit full screen: ${error?.message || error}`, "warning");
+            }
+        }
+        return;
+    }
+
+    const requestFullscreen = target.requestFullscreen || target.webkitRequestFullscreen;
+    if (typeof requestFullscreen !== "function") {
+        showNotification("Full-screen viewing is not supported by this browser.", "warning");
+        return;
+    }
+
+    try {
+        const result = requestFullscreen.call(target);
+        if (result && typeof result.catch === "function") {
+            result.catch((error) => showNotification(`Could not open full screen: ${error?.message || error}`, "warning"));
+        }
+    } catch (error) {
+        showNotification(`Could not open full screen: ${error?.message || error}`, "warning");
+    }
 }
 
 // สถานะเริ่มต้น (ยังไม่เลือก token)
@@ -4472,27 +4760,29 @@ const renderDeedMediaPreview = async (data, tokenId) => {
     if (mediaLabel) mediaLabel.textContent = `DEED #${tokenId} • ACTIVE ON-CHAIN MEDIA`;
 
     const front = (data?.sovereignFront || "").trim();
-    const video = (data?.sovereignVideo || "").trim();
+    const backMedia = (data?.sovereignVideo || "").trim() || (data?.sovereignBack || "").trim();
+    const [safeFront, safeBack] = await Promise.all([
+        getSafeBoxOneMediaUri(front),
+        getSafeBoxOneMediaUri(backMedia)
+    ]);
+    const imageFront = safeFront || DEFAULT_FRONT_URI;
 
-    // หน้าการ์ดต้องเป็นรูปภาพนิ่งเท่านั้น (กัน video/3D/html หลุดมาที่ Front)
-    const frontIsUnsafe = !front || isVideoMediaUri(front) || is3DMediaUri(front);
-    const imageFront = frontIsUnsafe ? DEFAULT_FRONT_URI : front;
-    if (front && frontIsUnsafe && typeof safeAppendLog === "function") {
-        safeAppendLog(`[SECURITY] Front URI of #${tokenId} is not a still image. Using default image.`, "text-red-500 font-bold");
-    }
-
-    // กล่อง 1: รูป (หน้า) + วิดีโอ (หลัง)
+    // กล่อง 1: สื่อที่อนุญาตแสดงเป็นรูปหรือวิดีโอเท่านั้น ไม่มี iframe
     buildFlipCard(document.getElementById("previewFrontContainer"), imageFront,
-        { kind: "video", uri: video }, { toBack: "SHOW VIDEO", toFront: "SHOW IMAGE" });
+        { kind: "auto", uri: safeBack }, { toBack: "SHOW VIDEO", toFront: "SHOW IMAGE" }, "auto");
 
     // [V18-LAYOUT] เหรียญพิเศษ (สภา 111–999 / ตอง 1111–5555) → กล่อง 3 | เหรียญมาตรฐาน → กล่อง 2
     // รูปจากเชนแสดงที่กล่อง 1 เท่านั้น กล่องที่ไม่เกี่ยวข้องค้างสถานะล่าสุด ไม่รีโหลด
-    if (isCouncilToken(tokenId)) renderMediaBox3(pick3DFile(tokenId));
-    else renderMediaBox2(pick3DFile(tokenId));
+    if (Number(tokenId) === 1) {
+        renderMediaBox2(CANVAS_BASE_URL + "SOVEREIGN_AWAKENING.html?token=1");
+        renderMediaBox3(pick3DFile(1)); // ARC-01
+    } else if (isCouncilToken(tokenId)) renderMediaBox3(pick3DFile(tokenId));
+    else { renderMediaBox2(pick3DFile(tokenId)); renderMediaBox3(CANVAS_PREVIEW_MODE3); }
 
     if (typeof currentLoadedMediaData !== "undefined" && currentLoadedMediaData) {
         currentLoadedMediaData.front = imageFront;
-        currentLoadedMediaData.video = video;
+        currentLoadedMediaData.back = safeBack;
+        currentLoadedMediaData.video = safeBack;
     }
 };
 
@@ -4507,7 +4797,32 @@ const clearDeedMediaPreview = (tokenId, stateLabel = "NO ON-CHAIN MEDIA") => {
     }
 };
 
-window.addEventListener("DOMContentLoaded", () => { try { initMediaBoxes(); } catch (e) { console.warn("[MEDIA INIT]", e); } });
+window.addEventListener("DOMContentLoaded", () => {
+    try { initMediaBoxes(); } catch (e) { console.warn("[MEDIA INIT]", e); }
+    updateStationStatus();
+    const backInput = document.getElementById("updateBackUriInput");
+    const videoInput = document.getElementById("updateVideoUriInput");
+    if (backInput && videoInput) {
+        backInput.dataset.lastMediaValue = backInput.value;
+        videoInput.dataset.lastMediaValue = videoInput.value;
+        const updateMediaInputSnapshots = () => {
+            backInput.dataset.lastMediaValue = backInput.value;
+            videoInput.dataset.lastMediaValue = videoInput.value;
+        };
+        backInput.addEventListener("input", () => {
+            const previousBack = backInput.dataset.lastMediaValue ?? "";
+            const previousVideo = videoInput.dataset.lastMediaValue ?? "";
+            if (previousBack === previousVideo || !previousVideo.trim()) videoInput.value = backInput.value;
+            updateMediaInputSnapshots();
+        });
+        videoInput.addEventListener("input", () => {
+            const previousBack = backInput.dataset.lastMediaValue ?? "";
+            const previousVideo = videoInput.dataset.lastMediaValue ?? "";
+            if (previousBack === previousVideo || !previousBack.trim()) backInput.value = videoInput.value;
+            updateMediaInputSnapshots();
+        });
+    }
+});
 
 // ==============================================================================
 // 🎯 SOVEREIGN TOKEN INSPECTOR & TBA VAULT SYNC (PRODUCTION HARDENED)
@@ -4525,6 +4840,7 @@ window.inspectTokenFromInput = async function (value, opts) {
     
     // 1. อัปเดต Global State
     window.SystemState.inspectedTokenId = id;
+    updateStationStatus();
     window.SystemState.actionTargetTokenId = id;
 
     // 2. ซิงค์ไปยัง Transmission Station และ Input อื่นๆ
@@ -4845,7 +5161,9 @@ window.executeArchitectMint = async function (tokenIdInput, recipientInput, fron
         if (receipt) {
             GLOBAL_NODE_CACHE?.clear?.();
             await window.syncContractStates();
-            await window.inspectTokenFromInput(tokenIds[0], { expectActive: true });
+            if (shouldRefreshView(tokenIds[0])) {
+                await window.inspectTokenFromInput(tokenIds[0], { expectActive: true });
+            }
         }
         return receipt;
     } catch (error) {
