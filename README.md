@@ -68,11 +68,11 @@ The system also includes a three-screen concurrent-media presentation concept, w
 
 ### Roadmap / Planned Expansion
 
-- **Sovereignty Fleet expansion:** The broader roadmap targets 15 spacecraft models.
-- **Additional spacecraft experiences:** Six finished models are identified in the current project materials; the remaining models are planned expansion rather than part of that six-model count.
+- **Sovereignty Fleet:** Eight spacecraft are completed, with two additional spacecraft in the final finishing and decorative stage.
+- **Current lineup:** Ten spacecraft units are documented in the SPACECRAFT section below.
 - **Continued product evolution:** Additional spacecraft identities, scenes and presentation experiences can expand the product family while retaining the shared token, metadata and viewer architecture.
 
-The 15-model target is a roadmap total, not a claim that all 15 models are already completed.
+The current production status is **8 completed spacecraft and 2 nearing completion**. The 15-model target is a broader roadmap total, not a claim that all 15 models are already completed.
 
 ---
 
@@ -436,16 +436,22 @@ The product’s presentation combines:
 
 The broader SPACECRAFT product family includes the flagship and a planned collection of additional spacecraft designs.
 
-The current project materials identify six finished ship models:
+The current SPACECRAFT lineup documents **ten distinct units**. Eight spacecraft are completed, while two additional spacecraft are in the final finishing and decorative stage.
 
-- ARC-01
-- Fleet model 1111
-- Fleet model 2222
-- Fleet model 3333
-- Fleet model 4444
-- Fleet model 5555
+| Unit | Designation | Spacecraft Name |
+|---|---|---|
+| **UNIT #1** | **ARC-01** | **SOVEREIGNTY ARCHITECT FLAGSHIP** |
+| **UNIT #111** | **DS-01** | **SOVEREIGNTY GOLDEN DRAGON** |
+| **UNIT #222** | **SH-22** | **SOVEREIGNTY SHADOW BLADE** |
+| **UNIT #333** | **TD-33** | **SOVEREIGNTY THUNDER BLACK STAR** |
+| **UNIT #999** | **ARC-09** | **SOVEREIGNTY ARCHITECT FLAGSHIP WHITE STAR** |
+| **UNIT #1111** | **S-22** | **SOVEREIGNTY T-REX** |
+| **UNIT #2222** | **SO-57** | **SOVEREIGNTY EAGLE** |
+| **UNIT #3333** | **GT-03** | **SOVEREIGNTY PHANTOM APEX** |
+| **UNIT #4444** | **PX-44** | **SOVEREIGNTY BLACK STAR PLASMA REAPER** |
+| **UNIT #5555** | **TX-01** | **SOVEREIGNTY TITAN SLAYER** |
 
-The broader creative roadmap targets **15 spacecraft models**, with additional designs planned. The roadmap total should not be confused with the six models identified as finished.
+The broader creative roadmap targets **15 spacecraft models**. This is a long-term expansion target; it should not be confused with the ten units currently documented above.
 
 The fleet is part of the same overall product architecture: distinct digital products can be presented through interactive viewers while using the wider infrastructure’s media and token-information capabilities.
 
