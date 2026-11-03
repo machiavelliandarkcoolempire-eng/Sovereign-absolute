@@ -5,7 +5,7 @@
 **Production-Ready High-Performance Web3 Architecture**  
 **Your Token. Your Media. Your Choice.**
 
-Sovereign Protocol is a holder-oriented Web3 ecosystem built on Base. It combines an ERC-721 smart contract, owner-controlled digital identity, a multifunctional dashboard, metadata and media infrastructure, Token Bound Accounts (TBAs), and interactive 3D digital products.
+SOVEREIGN MEDIA STATION is an integrated media-identity infrastructure built on Base. It combines the THE IMPERIAL SOVEREIGN DEED ERC-721 smart contract, holder-controlled media identity updates, the dashboard, THE SOVEREIGN PROTOCOL metadata gateway/API, media upload and delivery infrastructure, and interactive digital products. ERC-6551 Token Bound Accounts are an optional supporting integration, not the core architecture.
 
 This is not a static-image-only NFT concept. Sovereign Protocol connects on-chain ownership with playable, game-like 3D experiences, self-contained HTML viewers, RPC-powered token inspection, changeable identity references, external-service integrations, and holder-directed media presentation.
 
@@ -26,7 +26,7 @@ Sovereign Protocol brings together three connected layers:
 3. **Products — STANDARD and SPACECRAFT**  
    STANDARD presents the Crystal Energy Core digital-art experience. SPACECRAFT presents ARC-01 and the Sovereignty Fleet through interactive, game-like 3D scenes, cinematic environments, propulsion effects, HUD elements, and spacetime-inspired transitions.
 
-The result is an integrated Web3 product architecture where **ownership, identity, media and presentation are connected but remain distinct**. Holders can update supported identity references as their work evolves, use external endpoints for their own purposes, and present their tokens through dynamic media experiences rather than being limited to one permanent image.
+The result is an integrated Web3 architecture where **ownership, identity, media delivery and presentation are connected but remain distinct**. From mint onward, the token holder can update the token’s Front URI, Back URI and Video URI through `updateIdentity`, with no fixed lifetime update-count quota in the described contract design. The metadata gateway and Base URI provide the metadata-delivery path that allows those changing references to be resolved and presented. NOVA is a separate metadata-routing capability; it does not unlock the holder’s initial right to update media references.
 
 ### Live Links
 
@@ -46,8 +46,8 @@ This section separates capabilities present in the project from future expansion
 ### Implemented / Present in the Current Project
 
 - **Base ERC-721 collection:** Sovereign Protocol contract deployment and token collection identified by the project’s contract address.
-- **Holder-directed token identity:** Contract functions for changing supported identity and media-reference fields, including front, back, video, DNA and HIDDEN metadata references.
-- **Metadata routing:** Token metadata follows the contract’s URI rules, including the holder-configured HIDDEN URI when the required identity fields are set.
+- **Holder-directed token identity:** From mint onward, the token owner can use `updateIdentity` to change Front URI, Back URI and Video URI. The function is not activated by NOVA and has no fixed lifetime update-count quota in the described design. DNA and HIDDEN are configured separately through NOVA.
+- **Metadata routing:** Tokens use the project Base URI / metadata gateway by default. When both DNA and HIDDEN satisfy the contract condition (both values greater than zero), the contract switches the token metadata route to the string supplied for `tokenURI`, allowing the holder to point to an independently operated metadata endpoint or domain.
 - **Token Bound Account integration:** ERC-6551 TBA-related contract and dashboard workflows.
 - **Multifunctional dashboard:** Token inspection and interfaces for identity, media and contract-related operations.
 - **Interactive product viewers:** Separate HTML experiences for ARC-01, fleet ships, STANDARD/Sovereign Awakening, and the Sovereign Council/dashboard.
@@ -154,7 +154,7 @@ A holder may choose an artwork, photograph, video, 3D model, external API, perso
 
 Sovereign Protocol separates the token’s on-chain collection identity from its configurable media and identity references.
 
-The contract includes these principal functions:
+The contract includes these principal functions. `updateIdentity` is available to the token owner from mint onward; it is independent of NOVA and can be called repeatedly without a fixed lifetime update-count quota in the described design:
 
 | Function | Purpose |
 |---|---|
@@ -198,11 +198,9 @@ A business could also use identity references to connect a token with its own we
 
 ### 2.4 Updating DNA, HIDDEN and Media Identity
 
-The contract’s Nova function sets the identity DNA and HIDDEN URI. An already-consecrated token can invoke Nova again without the initial Nova fee under the contract’s existing fee conditions, allowing its owner to change those values.
+The **updateIdentity** function updates the token’s Front URI, Back URI and Video URI. The token owner has this ability from mint onward; it is not gated by NOVA. The described contract design does not impose a fixed lifetime update-count quota on these media-reference changes. Each update is a separate on-chain transaction and therefore remains subject to gas costs, network availability and the contract’s authorization rules.
 
-The **updateIdentity** function separately updates the front, back and video references.
-
-These operations are owner-controlled and can be repeated; they are not designed around a fixed lifetime quota of identity changes. Transactions remain subject to network availability, gas costs and the conditions enforced by the contract.
+**SOVEREIGN NOVA is a separate operation.** It records the token’s DNA and HIDDEN identity values. It does not grant the initial right to update Front, Back or Video media references. Its fee and repeat-use conditions are governed by the deployed contract’s configured rules.
 
 Nova is currently configured for the project at **0.1 ETH**. The contract’s parameter-setting mechanism can change fee parameters, so the effective on-chain value is the value currently configured in the deployed contract.
 
@@ -210,11 +208,12 @@ Nova is an identity and metadata configuration mechanism. It should not be descr
 
 ### 2.5 Metadata URI and External Services
 
-Sovereign Protocol supports a collection-level base URI and a holder-configured HIDDEN URI.
+The metadata architecture has two routing modes:
 
-When the contract’s required Nova identity fields are set, **tokenURI** returns the holder-configured HIDDEN URI. Otherwise, it returns the collection’s base URI followed by the token ID and **.json**.
+1. **Project metadata route — Base URI and THE SOVEREIGN PROTOCOL gateway/API.** Tokens that have not activated the NOVA routing condition use the project’s Base URI. The gateway/API reads the on-chain identity and media references, resolves the current values and builds metadata for consuming applications. This route is intentionally part of the system that supports ongoing changes to a token’s media identity; it is not a restriction on the holder’s ability to update those references.
+2. **Holder-directed metadata route — `tokenURI` string.** When both DNA and HIDDEN are greater than zero under the contract’s NOVA condition, the contract bypasses the project Base URI and uses the string configured for `tokenURI`. That string is designed to accept a URL or domain, including an endpoint operated by the token holder.
 
-This makes it possible for holders to use their own metadata endpoint rather than relying exclusively on the collection’s default metadata path.
+NOVA therefore changes **where the token’s metadata is obtained**. It does not activate `updateIdentity` or create the holder’s initial media-update rights. The Front, Back and Video references remain a separate holder-authorized function.
 
 External APIs can provide dynamic metadata and media for a token. If a holder configures a personal API and that API becomes unavailable, the holder or relevant service operator can restore the service, change the configured URI or adopt another arrangement.
 
@@ -273,7 +272,7 @@ For example, a creator can upload a newly produced dog-character artwork, obtain
 
 ### 3.3 API and Metadata Gateway
 
-The API and metadata gateway provide the service layer between media references, metadata consumers and the presentation experience.
+The API and metadata gateway provide the service layer between the project Base URI, the on-chain media references, metadata consumers and the presentation experience. It is an intentional part of the architecture for repeatedly resolving updated identity/media references and delivering the corresponding metadata.
 
 The current metadata API implementation:
 
@@ -287,7 +286,7 @@ The current metadata API implementation:
 
 This layer lets media references be presented through marketplace metadata without requiring the smart contract itself to host arbitrary files or render a 3D scene.
 
-The architecture intentionally allows holders to reference external endpoints through the available identity fields. A creator can use an endpoint associated with their artwork; a business can maintain a project metadata service; a holder can use an external API for a dynamic identity experience; and a viewer can resolve media references for presentation.
+The architecture intentionally allows holders to update media references repeatedly while the project metadata route continues to resolve and deliver the current metadata. When the NOVA routing condition is met, the holder can instead direct `tokenURI` to a URL or domain for an independently operated metadata API. A creator can use an endpoint associated with their artwork; a business can maintain a project metadata service; and a viewer or marketplace can request the resulting metadata for presentation.
 
 ### 3.4 RPC-Powered HTML Products
 
@@ -494,7 +493,7 @@ The products can therefore provide a rich viewing experience while keeping owner
 
 ### Holder-Directed Identity
 
-The holder chooses the supported identity and media references associated with their token. The infrastructure does not automatically make creative decisions for them.
+From mint onward, the holder can update Front URI, Back URI and Video URI through `updateIdentity`, repeatedly and without a fixed lifetime update-count quota in the described design. The holder chooses the media references associated with their token. NOVA is not required for these updates.
 
 ### Infrastructure as a Service Layer
 
@@ -506,7 +505,7 @@ A token’s presentation can evolve through updated identity fields and metadata
 
 ### Separation of Storage, Contract and Presentation
 
-The storage service holds media; the contract records ownership and configured references; the API and metadata layer serves data; and the viewer presents the experience.
+The storage service holds media; the contract records ownership and the holder-configured Front, Back and Video references; the project Base URI and metadata gateway resolve and serve metadata; NOVA can switch `tokenURI` to a holder-specified URL/domain when DNA and HIDDEN are both greater than zero; and the viewer presents the experience.
 
 ### Real-Time Digital Products
 
