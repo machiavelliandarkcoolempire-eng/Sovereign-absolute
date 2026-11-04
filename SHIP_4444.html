@@ -1464,7 +1464,7 @@ const __$G=typeof globalThis!=="undefined"?globalThis:typeof window!=="undefined
         };
         // Per-ship plasma colour (jets, core glow, particles). 0 = ARC-01 (no hash).
         const FLEET_ENGINE_COLORS = { 0: 0xffb347, 1111: 0xe5ffff, 2222: 0x9be7ff, 3333: 0xff4a24, 4444: 0x2a18b8, 5555: 0xff5a14 };
-        let FLEET_TOKEN = 4444; // locked: SHIP_4444.html = PX-44 SOVEREIGNTY BLACK STAR PLASMA REAPER
+        const FLEET_TOKEN = 4444;   // standalone build: ship fixed, no #hash switching
         let LOCKED_TOKEN_ID = FLEET_TOKEN || 1;
         let LOCKED_SHIP_INDEX = FLEET_TOKEN ? FLEET_SHIP_BY_TOKEN[FLEET_TOKEN] : 5;
         const SOVEREIGN_ABI = [
@@ -3406,7 +3406,30 @@ const __$G=typeof globalThis!=="undefined"?globalThis:typeof window!=="undefined
             return group;
         }
 
-        function addVectorPetalNozzle(x, y, z, baseRadius, length, petalCount, casingMat, petalMat, throatMat, hotCoreMat, glowMat) {
+        // v15: TX-01 (#5555) style jet cover copied to every ship: ring + crown of radial blocks, dark metal bronze
+        let __bronzeCapMat = null;
+        function getBronzeCapMat() {
+            if (!__bronzeCapMat) __bronzeCapMat = new THREE.MeshStandardMaterial({ color: 0x0a0b10, metalness: 0.6, roughness: 0.45, envMapIntensity: 0.3, side: THREE.DoubleSide });
+            return __bronzeCapMat;
+        }
+        function addBronzeNozzleCollar(group, r, zMouth) {
+            // v18: #999 (ARC-09) proportions - a THIN ring and a sparse crown of SMALL dark blocks, all sized from the bore radius r,
+            // anchored on the real nozzle mouth (zMouth = shroud rear edge). Nothing sticks out behind the engine.
+            const m = getBronzeCapMat();
+            const ring = new THREE.Mesh(new THREE.TorusGeometry(r * 0.97, 0.03, 6, 24), m);
+            ring.position.z = zMouth;
+            group.add(ring);
+            const n = r > 0.4 ? 12 : 10, bg = new THREE.BoxGeometry(r * 0.14, r * 0.4, r * 0.45);
+            for (let k = 0; k < n; k++) {
+                const a = k / n * Math.PI * 2;
+                const b = new THREE.Mesh(bg, m);
+                b.position.set(Math.cos(a) * r * 1.05, Math.sin(a) * r * 1.05, zMouth + r * 0.08);
+                b.rotation.z = a + Math.PI / 2;
+                group.add(b);
+            }
+        }
+
+        function addVectorPetalNozzle(x, y, z, baseRadius, length, petalCount, casingMat, petalMat, throatMat, hotCoreMat, glowMat, mouthAbs) {
             const group = new THREE.Group();
             group.position.set(x, y, z);
 
@@ -3414,12 +3437,24 @@ const __$G=typeof globalThis!=="undefined"?globalThis:typeof window!=="undefined
             // so it still meets the hull; the throat/petals/flame start at its rear edge (zExit).
             const collarLen = length * 0.28 + 0.45;
             const zFront = -length / 2 - 0.45;
-            const zExit = zFront + collarLen;
+            const zExit0 = zFront + collarLen;
+            // v19: optional absolute z where the nozzle MOUTH must be (ARC-01: just behind the hull's trailing edge).
+            // If the short collar ends inside the hull, extend the shroud rearwards so the cover and the jet start in clear space.
+            let zExit = zExit0;
+            if (mouthAbs !== undefined && mouthAbs - z > zExit0 + 0.001) zExit = mouthAbs - z;
 
             const shroud = new THREE.Mesh(new THREE.CylinderGeometry(baseRadius * 0.94, baseRadius * 1.05, collarLen, 20, 1, true), casingMat);
             shroud.rotation.x = Math.PI / 2;
             shroud.position.z = zFront + collarLen / 2;
             group.add(shroud);
+
+            if (zExit > zExit0 + 0.001) {
+                const ext = zExit - zExit0;
+                const sleeve = new THREE.Mesh(new THREE.CylinderGeometry(baseRadius * 0.94, baseRadius * 0.94, ext + 0.02, 20, 1, true), casingMat);
+                sleeve.rotation.x = Math.PI / 2;
+                sleeve.position.z = zExit0 + ext / 2;
+                group.add(sleeve);
+            }
 
             // Stator turbine disc
             const turbine = new THREE.Mesh(new THREE.CylinderGeometry(baseRadius * 0.45, baseRadius * 0.45, 0.1, 16), casingMat);
@@ -3431,6 +3466,7 @@ const __$G=typeof globalThis!=="undefined"?globalThis:typeof window!=="undefined
             const choke = new THREE.Mesh(new THREE.TorusGeometry(baseRadius * 0.88, 0.045, 8, 24), throatMat);
             choke.position.z = zExit - 0.05;
             group.add(choke);
+            addBronzeNozzleCollar(group, baseRadius, zExit);   // v17: cover sits exactly on the nozzle mouth
 
             // Radial Articulated Vectoring Petals
             const petalLength = length * 0.48;
@@ -3441,6 +3477,7 @@ const __$G=typeof globalThis!=="undefined"?globalThis:typeof window!=="undefined
                 petal.rotation.z = theta + Math.PI / 2;
                 petal.rotation.x = Math.sin(theta) * -0.16;
                 petal.rotation.y = Math.cos(theta) * 0.16;
+                petal.visible = false;   // v16: original petals replaced by the bronze cover
                 group.add(petal);
 
                 state.vectorPetals.push({
@@ -3463,8 +3500,9 @@ const __$G=typeof globalThis!=="undefined"?globalThis:typeof window!=="undefined
                 state.flamePlumes.push(m);
                 return m;
             };
-            mkFlame(baseRadius * 0.42, length * 1.4, hotCoreMat, zExit);
-            mkFlame(baseRadius * 0.85, 5.2, glowMat, zExit);
+            // v11: the flame is the shared #999-style jet (JetFX); this nozzle only registers its exit point
+            if (!state.jetSpecs) state.jetSpecs = [];
+            state.jetSpecs.push({ x: x, y: y, z: z + zExit, r: baseRadius });
 
             // Register the REAL nozzle exit so the exhaust particles spawn exactly inside this nozzle.
             if (!state.engineNozzles) state.engineNozzles = [];
@@ -3501,434 +3539,109 @@ const __$G=typeof globalThis!=="undefined"?globalThis:typeof window!=="undefined
             }
         }
 
-        function renderArcShipModel(index) {
-            // Strict recursive memory leak cleanup
-            disposeObjectTree(state.shipGroup);
-            state.plasmaCannons = [];
-            state.vectorPetals = [];
-            state.flamePlumes = [];
-            state.engineNozzles = [];
-            state.shipGroup.userData.warshipReactor = null;
-
-            const traitRandom = createSeededRandom(state.shipSeed + (index + 1) * 977);
-            const palette = SECTOR_CONFIGS['deep-space'].palette;
-            const hullColor = new THREE.Color(0x172033).lerp(
-                new THREE.Color(palette[Math.floor(traitRandom() * palette.length)]),
-                randomBetween(traitRandom, 0.12, 0.32)
-            );
-            const accentColor = palette[Math.floor(traitRandom() * palette.length)];
-            const cockpitColor = palette[Math.floor(traitRandom() * palette.length)];
-            
-            const hullMat = new THREE.MeshStandardMaterial({ color: hullColor, metalness: 0.92, roughness: 0.18 });
-            const plateMat = new THREE.MeshStandardMaterial({ color: 0x0c1322, metalness: 0.96, roughness: 0.14 });
-            const accentMat = new THREE.MeshStandardMaterial({ color: accentColor, metalness: 0.88, roughness: 0.22 });
-            const titaniumMat = new THREE.MeshStandardMaterial({ color: 0x475569, metalness: 0.98, roughness: 0.16 });
-            const coilMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.95, roughness: 0.12, emissive: accentColor, emissiveIntensity: 0.35 });
-            const plasmaMat = new THREE.MeshBasicMaterial({ color: accentColor, transparent: true, opacity: 0.95 });
-            const cockpitMat = new THREE.MeshStandardMaterial({
-                color: cockpitColor, metalness: 0.1, roughness: 0.1, transparent: true, opacity: 0.8, emissive: cockpitColor, emissiveIntensity: 0.55
-            });
-            const coreGlowMat = new THREE.MeshBasicMaterial({ color: cockpitColor });
-            if (!state.flameTex) {
-                const fc = document.createElement('canvas');
-                fc.width = 4; fc.height = 64;
-                const fg = fc.getContext('2d');
-                const grad = fg.createLinearGradient(0, 0, 0, 64);   // top = cone apex (transparent), bottom = nozzle (opaque)
-                grad.addColorStop(0, '#000000');
-                grad.addColorStop(0.25, '#6a6a6a');
-                grad.addColorStop(0.6, '#d8d8d8');
-                grad.addColorStop(1, '#ffffff');
-                fg.fillStyle = grad;
-                fg.fillRect(0, 0, 4, 64);
-                state.flameTex = new THREE.CanvasTexture(fc);       // created once, reused on every rebuild
+        // ========================================================
+        // v11: ONE exhaust for every ship = the #999 (v26) jet: soft shader cone (2 layers) + glow sprite + round fading sparks.
+        // The nozzle builders only register their exit point in state.jetSpecs; installJets() builds the flame once the hull is done.
+        // ========================================================
+        const JetFX = (function () {
+            const plumeVS = `varying vec2 vUv;varying vec3 vN;varying vec3 vV;
+              void main(){vUv=uv;vN=normalize(normalMatrix*normal);vec4 mv=modelViewMatrix*vec4(position,1.0);vV=normalize(-mv.xyz);gl_Position=projectionMatrix*mv;}`;
+            const plumeFS = `uniform vec3 uColor;uniform float uCore;uniform float uTime;uniform float uPhase;varying vec2 vUv;varying vec3 vN;varying vec3 vV;
+              void main(){float t=1.0-vUv.y;float fall=pow(max(t,0.0),1.35);float f=pow(abs(dot(normalize(vN),normalize(vV))),1.4);f=0.30+0.70*f;
+              float flick=0.88+0.12*sin(uTime*38.0+vUv.y*14.0+uPhase);
+              vec3 c=mix(uColor,vec3(1.0),uCore);gl_FragColor=vec4(c*(0.55+0.9*uCore),fall*f*flick*(0.55+0.4*uCore));}`;
+            let glowTex = null, dotTex = null;
+            function textures() {
+                if (glowTex) return;
+                const mk = (size, stops) => {
+                    const c = document.createElement('canvas'); c.width = c.height = size;
+                    const g = c.getContext('2d'), h = size / 2, rg = g.createRadialGradient(h, h, 0, h, h, h);
+                    stops.forEach(s => rg.addColorStop(s[0], 'rgba(255,255,255,' + s[1] + ')'));
+                    g.fillStyle = rg; g.fillRect(0, 0, size, size);
+                    return new THREE.CanvasTexture(c);
+                };
+                glowTex = mk(128, [[0, 1], [0.25, 0.7], [0.6, 0.2], [1, 0]]);     // white: tinted by the ship's own jet colour
+                dotTex = mk(32, [[0, 1], [0.4, 0.7], [1, 0]]);
             }
-            state.thrusterMaterial = new THREE.MeshBasicMaterial({
-                color: engineTint(state.engineColor), transparent: true, opacity: 1.0, toneMapped: false,
-                alphaMap: state.flameTex, blending: THREE.AdditiveBlending, depthWrite: false
-            });
-            // Flame core: engine colour only slightly warmed toward white (was a fixed pale peach)
-            const hotCoreMat = new THREE.MeshBasicMaterial({ color: engineTint(state.engineColor).lerp(new THREE.Color(0xffffff), 0.22), transparent: true, opacity: 0.9, toneMapped: false, blending: THREE.AdditiveBlending, depthWrite: false });
-            state.hotCoreMat = hotCoreMat;
-            const missileMat = new THREE.MeshPhysicalMaterial({ color: 0x2a0f5c, metalness: 1.0, roughness: 0.12, clearcoat: 1, clearcoatRoughness: 0.04, envMapIntensity: 2.6, emissive: 0x3a1a8a, emissiveIntensity: 0.3 });
-            const missileFinMat = new THREE.MeshPhysicalMaterial({ color: 0x120826, metalness: 1.0, roughness: 0.16, clearcoat: 1, envMapIntensity: 2.2, emissive: 0x2a0f5c, emissiveIntensity: 0.25 });
-            const glowStripMat = new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.95 });
-
-            {
-                // ========================================================
-                // ARC-01 SOVEREIGNTY ARCHITECT FLAGSHIP (CRANKED-ARROW AERO-FIGHTER)
-                // True 6th-Generation stealth aerospace design derived directly from user blueprint:
-                // 1. Shortened muscular stealth nose (zero "giraffe" elongation)
-                // 2. Prominent forward diamond canards (matching user red markup)
-                // 3. Expansive cranked-arrow lambda main wings with diamond tips
-                // 4. Flush ventral weapon bay with deployable kinetic railguns
-                // 5. Quintuple vector thrusters nestled in the rear lambda notch
-                // ========================================================
-                const edgeCol = 0xffd700; // Sovereign Gold aerodynamic contour lines
-                const arcEnv = getArcStudioEnv();
-                const gen6PlateMat = new THREE.MeshPhysicalMaterial({ color: 0x111e38, metalness: 0.92, roughness: 0.16, clearcoat: 1, clearcoatRoughness: 0.05, envMap: arcEnv, envMapIntensity: 2.6 });
-                const rimBlackMat = new THREE.MeshPhysicalMaterial({ color: 0x010102, metalness: 0.9, roughness: 0.14, clearcoat: 1, clearcoatRoughness: 0.04, envMap: arcEnv, envMapIntensity: 1.6 });
-                const gen6HullMat = new THREE.MeshPhysicalMaterial({ color: 0x172848, metalness: 0.92, roughness: 0.16, clearcoat: 1, clearcoatRoughness: 0.05, envMap: arcEnv, envMapIntensity: 2.6 });
-                const gen6GoldMat = new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 0.98, roughness: 0.12, emissive: 0x8a5500, emissiveIntensity: 0.45 });
-                const gen6GlassMat = new THREE.MeshStandardMaterial({
-                    color: 0x162235,
-                    metalness: 0.95,
-                    roughness: 0.05,
-                    emissive: 0xca8a04,
-                    emissiveIntensity: 0.38,
-                    transparent: true,
-                    opacity: 0.92
-                });
-
-                // 1. PRIMARY GEN-6 BLENDED LIFTING-BODY MONOCOQUE (Thickness 0.18, height 0.0)
-                // Continuous faceted 24-point polygon matching the user's red sketch:
-                // Shortened nose -> Wide forward diamond canards -> Chiseled waist -> Cranked lambda wings -> Lambda notch
-                addPlanform([
-                    [0, -6.0],          // Shortened muscular stealth nose tip
-                    [0.45, -5.2],       // Fore chine strake
-                    [1.15, -4.2],       // Forward canard root leading edge
-                    [2.3, -2.5],        // FORWARD DIAMOND CANARD TIP (Sketched in red)
-                    [2.1, -1.8],        // Canard diamond outer facet
-                    [1.55, -1.2],       // Canard trailing edge reflex into waist
-                    [1.7, 0.4],         // Muscular intake shoulder
-                    [3.6, 2.0],         // Main wing crank inflection point
-                    [5.2, 3.4],         // CRANKED LAMBDA WINGTIP (Sketched in red)
-                    [4.4, 4.0],         // Lambda wing trailing reflex notch
-                    [2.4, 4.4],         // Inboard lambda wing root
-                    [1.75, 4.9],        // Engine bay outer flank
-                    [0.85, 5.1],        // Diffuser tunnel boundary
-                    [-0.85, 5.1],       // Symmetrical port boundary
-                    [-1.75, 4.9],
-                    [-2.4, 4.4],
-                    [-4.4, 4.0],
-                    [-5.2, 3.4],
-                    [-3.6, 2.0],
-                    [-1.7, 0.4],
-                    [-1.55, -1.2],
-                    [-2.1, -1.8],
-                    [-2.3, -2.5],
-                    [-1.15, -4.2],
-                    [-0.45, -5.2]
-                ], 0.34, rimBlackMat, -0.10, edgeCol);
-
-                // BLACK RIM: only the outer border of the wings/body outline is black
-                {
-                    const rimPts = [[0,-6.0],[0.45,-5.2],[1.15,-4.2],[2.3,-2.5],[2.1,-1.8],[1.55,-1.2],[1.7,0.4],[3.6,2.0],[5.2,3.4],[4.4,4.0],[2.4,4.4],[1.75,4.9],[0.85,5.1],[-0.85,5.1],[-1.75,4.9],[-2.4,4.4],[-4.4,4.0],[-5.2,3.4],[-3.6,2.0],[-1.7,0.4],[-1.55,-1.2],[-2.1,-1.8],[-2.3,-2.5],[-1.15,-4.2],[-0.45,-5.2]];
-                    const rimMat = new THREE.MeshPhysicalMaterial({ color: 0x020203, metalness: 0.9, roughness: 0.25, clearcoat: 1.0, clearcoatRoughness: 0.08 });
-                    for (let i = 0; i < 0; i++) {   // black rim removed on request
-                        const [x1, z1] = rimPts[i], [x2, z2] = rimPts[(i + 1) % rimPts.length];
-                        const dx = x2 - x1, dz = z2 - z1, len = Math.hypot(dx, dz);
-                        const bar = new THREE.Mesh(new THREE.BoxGeometry(0.13, 0.37, len + 0.06), rimMat);
-                        bar.position.set((x1 + x2) / 2, -0.10, (z1 + z2) / 2);
-                        bar.rotation.y = Math.atan2(dx, dz);
-                        state.shipGroup.add(bar);
-                    }
-                }
-
-                // 2. DORSAL MUSCULAR STEALTH CHINES & S-DUCT INTAKE FAIRINGS (Thickness 0.12, height 0.14)
-                addPlanform([
-                    [0, -5.4],
-                    [0.4, -4.0],
-                    [0.8, -2.2],
-                    [1.3, 0.2],
-                    [1.4, 2.8],
-                    [0.75, 4.6],
-                    [-0.75, 4.6],
-                    [-1.4, 2.8],
-                    [-1.3, 0.2],
-                    [-0.8, -2.2],
-                    [-0.4, -4.0]
-                ], 0.26, gen6HullMat, 0.15, edgeCol);
-
-                const bodyMat = new THREE.MeshPhysicalMaterial({ color: 0x111e38, metalness: 0.92, roughness: 0.16, clearcoat: 1, clearcoatRoughness: 0.05, envMap: arcEnv, envMapIntensity: 2.6 });
-                const fus = new THREE.Mesh(new THREE.SphereGeometry(1, 40, 24), bodyMat);
-                fus.scale.set(0.95, 0.34, 5.3); fus.position.set(0, -0.04, 0); state.shipGroup.add(fus);
-                [-1, 1].forEach(s => {
-                    const nac = new THREE.Mesh(new THREE.SphereGeometry(1, 28, 18), bodyMat);
-                    nac.scale.set(0.5, 0.36, 2.9); nac.position.set(s * 1.1, 0.0, 1.7); state.shipGroup.add(nac);
-                });
-                const pChrome = new THREE.MeshPhysicalMaterial({ color: 0x2a3144, metalness: 1, roughness: 0.24, clearcoat: 1, clearcoatRoughness: 0.06, envMap: arcEnv, envMapIntensity: 1.5 });
-                const pDark = new THREE.MeshStandardMaterial({ color: 0x06080f, metalness: 0.6, roughness: 0.45 });
-                const pAdd = (geo, mat, x, y, z, sx, sy, sz, rx, ry) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); if (sx !== undefined) m.scale.set(sx, sy, sz); if (rx) m.rotation.x = rx; if (ry) m.rotation.y = ry; state.shipGroup.add(m); return m; };
-                const zCyl = (r, l) => new THREE.CylinderGeometry(r, r, l, 16).rotateX(Math.PI / 2);
-                for (let i = 0; i < 6; i++) pAdd(new THREE.BoxGeometry(1.05 - i * 0.1, 0.09, 0.5), pChrome, 0, 0.33, 0.6 + i * 0.62);
-                pAdd(new THREE.BoxGeometry(0.03, 0.55, 0.4), pChrome, 0, 0.62, 4.0, 1, 1, 1, -0.3);
-                pAdd(new THREE.SphereGeometry(0.13, 16, 12), gen6GoldMat, 0, 0.3, -3.4);
-                pAdd(zCyl(0.025, 1.0), pChrome, 0, -0.02, -6.45);
-                pAdd(new THREE.BoxGeometry(0.12, 0.45, 3.2), pChrome, 0, -0.38, 1.2);
-                pAdd(new THREE.BoxGeometry(0.9, 0.06, 2.0), pDark, 0, -0.34, -1.2);
-                pAdd(new THREE.BoxGeometry(1.5, 0.1, 0.5), pChrome, 0, 0.26, 4.15);
-                [-1, 1].forEach(s => {
-                    pAdd(new THREE.SphereGeometry(1, 16, 12), pDark, s * 1.1, 0, -0.95, 0.3, 0.22, 0.14);
-                    [[3.3, 2.1, 1.1, 0.12], [2.1, 1.5, 0.8, 0.09]].forEach(([x, z, l, r]) => {
-                        pAdd(zCyl(r, l), pChrome, s * x, -0.38, z);
-                        pAdd(new THREE.ConeGeometry(r, 0.34, 16).rotateX(-Math.PI / 2), pChrome, s * x, -0.38, z - l / 2 - 0.17);
-                        pAdd(new THREE.BoxGeometry(0.06, 0.2, 0.5), pDark, s * x, -0.28, z);
+            function build(group, specs) {
+                textures();
+                const plumes = [], glows = [], emitters = [];
+                specs.forEach((sp, n) => {
+                    const rad = sp.r * (sp.r >= 0.35 ? 0.7 : 0.8), len = 2.2 + sp.r * 6.5, tag = (n % 2) * 1.7 + n * 0.45;
+                    const grp = new THREE.Group(); grp.position.set(sp.x, sp.y, sp.z); group.add(grp);
+                    [[1.0, 0.0], [0.55, 0.3]].forEach(([k, core]) => {
+                        const geo = new THREE.ConeGeometry(rad * k, len, 18, 1, true);
+                        geo.rotateX(Math.PI / 2); geo.translate(0, 0, len / 2);
+                        const mat = new THREE.ShaderMaterial({
+                            uniforms: { uColor: { value: new THREE.Color(0xffffff) }, uCore: { value: core }, uTime: { value: 0 }, uPhase: { value: tag } },
+                            vertexShader: plumeVS, fragmentShader: plumeFS, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide
+                        });
+                        const m = new THREE.Mesh(geo, mat); m.renderOrder = 5; m.frustumCulled = false; grp.add(m); plumes.push({ mesh: m, mat: mat, tag: tag });
                     });
-                    pAdd(zCyl(0.05, 1.4), gen6GoldMat, s * 5.1, 0.0, 3.5);
-                    for (let k = 0; k < 5; k++) pAdd(new THREE.BoxGeometry(0.05, 0.2, 0.1), gen6GoldMat, s * 1.3, 0.3, 1.0 + k * 0.38);
-                    
+                    const gs = 0.5 + sp.r * 1.7;   // v18: tighter core glow (was 0.9+3.2r: five overlapping sprites made a yellow haze)
+                    const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: 0xffffff, opacity: 0.6, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, depthTest: true }));
+                    sprite.position.set(sp.x, sp.y, sp.z + 0.08); sprite.scale.set(gs, gs, 1); sprite.renderOrder = 6; group.add(sprite); glows.push({ sp: sprite, base: gs });
+                    emitters.push([sp.x, sp.y, sp.z + 0.06, rad * 0.6, len]);
                 });
-                const neonP = new THREE.MeshBasicMaterial({ color: 0x9b6bff });
-                const neonC = new THREE.MeshBasicMaterial({ color: 0x35e0ff });
-                let sd = 7; const rnd = () => (sd = (sd * 16807) % 2147483647) / 2147483647;
-                [-1, 1].forEach(s => {
-                    pAdd(new THREE.BoxGeometry(0.04, 0.03, 4.6), neonP, s * 0.62, 0.3, 0.4);
-                    pAdd(new THREE.BoxGeometry(0.03, 0.03, 2.4), neonC, s * 1.1, 0.37, 1.8);
-                    pAdd(new THREE.BoxGeometry(0.28, 0.16, 1.2), pChrome, s * 0.62, 0.34, -2.6);
-                    for (let k = 0; k < 6; k++) pAdd(new THREE.BoxGeometry(1.8, 0.025, 0.03), pChrome, s * 3.1, 0.085, 2.4 + k * 0.3);
-                    [2.6, 3.0, 3.4, 3.8].forEach(x => { const z0 = 1.07 + (x - 2.5) * 0.85 + 0.15, len = 3.95 - z0; pAdd(new THREE.BoxGeometry(0.03, 0.025, len), pChrome, s * x, 0.085, z0 + len / 2); });
-                    [[2.8, 2.2], [3.4, 2.9], [3.0, 3.5]].forEach(([x, z]) => pAdd(new THREE.BoxGeometry(0.7, 0.05, 0.45), gen6HullMat, s * x, 0.1, z));
-                    for (let k = 0; k < 10; k++) {
-                        const x = 2.4 + rnd() * 1.6, zmin = 1.0 + (x - 2.4) * 0.85 + 0.3, z = zmin + rnd() * (3.9 - zmin);
-                        pAdd(new THREE.BoxGeometry(0.1 + rnd() * 0.2, 0.03 + rnd() * 0.05, 0.1 + rnd() * 0.2), rnd() > 0.7 ? gen6HullMat : pChrome, s * x, 0.1, z);
-                    }
-                    for (let k = 0; k < 4; k++) pAdd(new THREE.BoxGeometry(0.45, 0.02, 0.04), pDark, s * 0.4, 0.325, 4.0 + k * 0.1);
-                });
-                pAdd(new THREE.CylinderGeometry(0.3, 0.3, 0.04, 24), pChrome, 0, 0.52, 2.5, 1, 1, 1, -0.35);
-                pAdd(new THREE.CylinderGeometry(0.03, 0.03, 0.25, 8), pDark, 0, 0.42, 2.5);
-                pAdd(new THREE.SphereGeometry(0.2, 16, 12), pDark, 0, -0.5, -2.4, 1, 0.7, 1.8);
-                // 3. CLEAN INTEGRATED BOW: remove the detached radome and protruding gold sensor
-                // so the nose terminates at the blended monocoque instead of growing loose artifacts.
-
-                // 3b. DELTA HEAD COVER (v26): the console (glass canopy, arch, gold chines, pilot hood) is removed.
-                // One solid triangular armored wedge with a raised central ridge covers the whole head, nose to collar.
-                {
-                    const N = [0, 0.27, -5.35], F = [0, 0.42, -4.7], P = [0, 0.80, -2.9], K = [0, 0.62, -0.8];
-                    const A = [0.55, 0.27, -4.0], B = [0.82, 0.27, -3.0], C = [0.98, 0.27, -0.8];
-                    const mx = v => [-v[0], v[1], v[2]];
-                    const T = [];
-                    const tri = (p, q, r) => T.push(p[0], p[1], p[2], q[0], q[1], q[2], r[0], r[1], r[2]);
-                    tri(N, F, A); tri(F, P, A); tri(A, P, B); tri(B, P, C); tri(P, K, C);                                   // starboard slope
-                    tri(N, mx(A), F); tri(F, mx(A), P); tri(mx(A), mx(B), P); tri(mx(B), mx(C), P); tri(P, mx(C), K);       // port slope
-                    tri(C, K, mx(C));                                                                                       // rear cap
-                    const coverGeo = new THREE.BufferGeometry();
-                    coverGeo.setAttribute('position', new THREE.Float32BufferAttribute(T, 3));
-                    coverGeo.computeVertexNormals();
-                    const coverMat = gen6HullMat.clone(); coverMat.flatShading = true; coverMat.side = THREE.DoubleSide;
-                    state.shipGroup.add(new THREE.Mesh(coverGeo, coverMat));
-                    state.shipGroup.add(new THREE.LineSegments(new THREE.EdgesGeometry(coverGeo, 12),
-                        new THREE.LineBasicMaterial({ color: 0xffd700, transparent: true, opacity: 0.9 })));
+                const PER = isMobileView ? 64 : 90, tot = emitters.length * PER;
+                const pGeo = new THREE.BufferGeometry();
+                const pPos = new Float32Array(tot * 3), pCol = new Float32Array(tot * 3), pT = new Float32Array(tot), pOff = new Float32Array(tot * 2);
+                for (let e = 0; e < emitters.length; e++) for (let i = 0; i < PER; i++) {
+                    const k = e * PER + i; pT[k] = Math.random(); const a = Math.random() * Math.PI * 2, rr = Math.sqrt(Math.random()) * emitters[e][3];
+                    pOff[k * 2] = Math.cos(a) * rr; pOff[k * 2 + 1] = Math.sin(a) * rr;
                 }
-
-                // 5. PROMINENT FORWARD DIAMOND CANARDS DETAIL (Upper faceted strakes & aero slots)
-                [-1, 1].forEach(side => {
-                    // Outward-raked diamond canard core plate
-                    addFin([[0,0],[1.6,0.6],[1.3,1.0],[0.2,0.6]], 0.05, gen6HullMat,
-                           side * 1.1, 0.05, -3.2, side * 0.12, edgeCol);
-
-                    // Luminous leading-edge streak on forward canard
-                    const canardEdge = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.03, 2.05), glowStripMat);
-                    canardEdge.position.set(side * 1.72, 0.08, -3.35);
-                    canardEdge.rotation.y = side * 0.6;
-                    state.shipGroup.add(canardEdge);
-
-                    // Diamond tip optical sensor pod
-                    const pod = new THREE.Mesh(new THREE.OctahedronGeometry(0.12, 0), gen6GoldMat);
-                    pod.scale.set(0.5, 0.8, 1.6);
-                    pod.position.set(side * 2.3, 0.06, -2.5);
-                    state.shipGroup.add(pod);
-                });
-
-                // 6. CRANKED LAMBDA MAIN WING & WINGTIP DETAILS
-                [-1, 1].forEach(side => {
-                    // Cranked leading edge glow contour
-                    const crankEdgeA = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.03, 2.8), glowStripMat);
-                    crankEdgeA.position.set(side * 2.6, 0.06, 1.2);
-                    crankEdgeA.rotation.y = side * Math.PI / 3.4;
-                    state.shipGroup.add(crankEdgeA);
-
-                    const crankEdgeB = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.03, 2.6), glowStripMat);
-                    crankEdgeB.position.set(side * 4.4, 0.06, 2.7);
-                    crankEdgeB.rotation.y = side * Math.PI / 4.2;
-                    state.shipGroup.add(crankEdgeB);
-
-                    // Downward-raked diamond winglet tip
-                    addFin([[0,0],[1.4,0],[1.1,-0.6],[0.2,-0.6]], 0.04, gen6PlateMat,
-                           side * 5.15, -0.02, 3.4, side * 0.38, edgeCol);
-
-                    // Titanium trailing elevon actuators
-                    for (let e = 0; e < 2; e++) {
-                        const elevon = new THREE.Mesh(new THREE.BoxGeometry(0.65, 0.03, 0.28), titaniumMat);
-                        elevon.position.set(side * (3.2 + e * 0.9), 0.08, 3.5 + e * 0.2);
-                        elevon.rotation.x = 0.06;
-                        state.shipGroup.add(elevon);
-                    }
-
-                    addNavLight(side * 5.2, 0.1, 3.4, side < 0 ? 0xff2244 : 0x22ff88);
-                });
-
-                // 7. FLUSH VENTRAL WEAPON BAYS WITH DEPLOYABLE KINETIC RAILGUNS
-                // Smooth conformal belly doors with concealed heavy magnetic railguns
-                [-1, 1].forEach(side => {
-                    // Ventral bay door
-                    const bayDoor = new THREE.Mesh(new THREE.BoxGeometry(0.38, 0.04, 2.6), gen6PlateMat);
-                    bayDoor.position.set(side * 0.55, -0.16, 0.4);
-                    state.shipGroup.add(bayDoor);
-
-                    const baySeam = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.05, 2.5), gen6GoldMat);
-                    baySeam.position.set(side * 0.74, -0.16, 0.4);
-                    state.shipGroup.add(baySeam);
-
-                    // Deployable heavy magnetic kinetic railguns inside the bays
-                    addPlasmaCannon(side * 0.55, -0.12, 0.2, 0, 0, 0, 1.25, gen6PlateMat, coilMat, plasmaMat, 0xffd700);
-
-                    // Internal anti-matter cluster torpedoes
-                    addAdvancedMissile(side * 0.55, -0.22, 0.4, 2.2, missileMat, missileFinMat, null);
-                });
-                // 7b. VISIBLE BELLY MISSILE RACK: the hull belly plate sits at y=-0.39, so the missiles hang below it on pylons
-                [-1, 1].forEach(side => {
-                    addAdvancedMissile(side * 0.62, -0.58, 0.35, 2.3, missileMat, missileFinMat, gen6PlateMat).scale.set(1.6, 1.6, 1);
-                    addAdvancedMissile(side * 1.3, -0.5, 0.75, 2.0, missileMat, missileFinMat, gen6PlateMat).scale.set(1.6, 1.6, 1);
-                });
-
-                                // ========================================================
-                // 8. BAT UPGRADE — VOLUME, COLLAR PANEL, ARCHES, SHOULDER CANNONS, TALL TWIN TAILS
-                // Adapted from AEGIS-7 (cannons / nacelles / spine) and DARKSTAR (tall tails / ring arches)
-                // ========================================================
-                const batArmor = new THREE.MeshStandardMaterial({ color: 0x101b30, metalness: 0.9, roughness: 0.28, envMap: arcEnv, envMapIntensity: 2.0 });
-                const batArmorLt = new THREE.MeshStandardMaterial({ color: 0x1a2a46, metalness: 0.92, roughness: 0.24, envMap: arcEnv, envMapIntensity: 2.0 });
-                const batGoldGlow = new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 0.6, roughness: 0.2, emissive: 0xffb300, emissiveIntensity: 1.1 });
-
-                // 8a. STEPPED WING SKIN — a second, smaller armored layer on top of the lambda wings
-                const batWingTop = [[0,-6.0],[0.45,-5.2],[1.15,-4.2],[3.3,-2.5],[2.9,-1.8],[1.55,-1.2],[1.7,0.4],[3.6,2.0],[5.2,3.4],[4.4,4.0],[2.4,4.4],[1.75,4.9],[0.85,5.1],[-0.85,5.1],[-1.75,4.9],[-2.4,4.4],[-4.4,4.0],[-5.2,3.4],[-3.6,2.0],[-1.7,0.4],[-1.55,-1.2],[-2.9,-1.8],[-3.3,-2.5],[-1.15,-4.2],[-0.45,-5.2]]
-                    .map(([x, z]) => [x * 0.8, (z - 0.3) * 0.84 + 0.3]);
-                addPlanform(batWingTop, 0.07, gen6HullMat, 0.075, 0xffd700);
-
-                // 8a-2. (v33) black rim + blade fins along the head removed on request
-
-                // 8b. RAISED DORSAL BACK — two stacked decks behind the canopy
-                addPlanform([[0,-0.6],[0.55,-0.3],[0.95,0.6],[1.0,2.2],[0.7,3.1],[-0.7,3.1],[-1.0,2.2],[-0.95,0.6],[-0.55,-0.3]],
-                            0.18, batArmor, 0.3, 0xffd700);
-                addPlanform([[0,-0.2],[0.4,0.3],[0.62,1.8],[0.42,2.7],[-0.42,2.7],[-0.62,1.8],[-0.4,0.3]],
-                            0.1, batArmorLt, 0.44, 0xffd700);
-
-                // 8c. NECK / COLLAR PANEL — sloped armor shield right behind the canopy
-                const collar = new THREE.Mesh(new THREE.BoxGeometry(1.7, 0.22, 0.95), batArmorLt);
-                collar.position.set(0, 0.5, 0.0);
-                collar.rotation.x = -0.14;
-                state.shipGroup.add(collar);
-                addEdges(collar.geometry, collar.position.clone(), collar.rotation.clone(), 0xffd700);
-                const collarTrim = new THREE.Mesh(new THREE.BoxGeometry(1.74, 0.03, 0.06), batGoldGlow);
-                collarTrim.position.set(0, 0.63, -0.5);
-                collarTrim.rotation.x = -0.14;
-                state.shipGroup.add(collarTrim);
-                [-1, 1].forEach(side => {
-                    const collarWing = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.2, 0.8), batArmor);
-                    collarWing.position.set(side * 1.0, 0.46, 0.15);
-                    collarWing.rotation.set(-0.1, side * -0.35, side * -0.18);
-                    state.shipGroup.add(collarWing);
-                    addEdges(collarWing.geometry, collarWing.position.clone(), collarWing.rotation.clone(), 0xffd700);
-                });
-
-                // 8d. RING ARCHES over the spine (spine ribs) — gives the back real depth
-                [0.75, 1.2, 1.65, 2.1].forEach((az, ai) => {
-                    const arch = new THREE.Mesh(new THREE.TorusGeometry(0.82 - ai * 0.04, 0.04, 8, 28, Math.PI), batGoldGlow);
-                    arch.position.set(0, 0.36, az);
-                    arch.scale.set(1, 0.55, 1);
-                    state.shipGroup.add(arch);
-                });
-
-                // 8e. S-DUCT NACELLES with glowing vent strips
-                [-1, 1].forEach(side => {
-                    const nacelle = new THREE.Mesh(new THREE.SphereGeometry(1, 20, 14), batArmor);
-                    nacelle.scale.set(0.55, 0.38, 2.4);
-                    nacelle.position.set(side * 1.2, 0.18, 1.1);
-                    state.shipGroup.add(nacelle);
-                    const vent = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.03, 2.3), batGoldGlow);
-                    vent.position.set(side * 1.2, 0.565, 1.15);
-                    state.shipGroup.add(vent);
-                    const intakeLip = new THREE.Mesh(new THREE.TorusGeometry(0.3, 0.03, 8, 20), batGoldGlow);
-                    intakeLip.scale.set(1, 0.7, 1);
-                    intakeLip.position.set(side * 1.2, 0.18, -1.05);
-                    state.shipGroup.add(intakeLip);
-                });
-
-                // 8f. SHOULDER CANNONS on armored barbette rings (from AEGIS-7)
-                [-1, 1].forEach(side => {
-                    const barbette = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.42, 0.22, 14), batArmorLt);
-                    barbette.position.set(side * 1.2, 0.68, 0.45);
-                    state.shipGroup.add(barbette);
-                    addPlasmaCannon(side * 1.2, 0.84, 0.3, 0, 0, 0, 1.0, batArmor, coilMat, plasmaMat, 0xffd700);
-                    // Wing-mounted torpedo pylons
-                    addAdvancedMissile(side * 2.9, -0.2, 1.4, 1.7, missileMat, missileFinMat, null);
-                    addAdvancedMissile(side * 3.9, -0.18, 2.3, 1.5, missileMat, missileFinMat, null);
-                });
-
-                // 8g. KEEL for underside volume
-                addPlanform([[0,-4.2],[0.32,-2.0],[0.36,3.8],[-0.36,3.8],[-0.32,-2.0]], 0.26, batArmor, -0.26, 0xffd700);
-
-                // 8h. TALL TWIN VERTICAL TAILS (replace the old low V-tail)
-                [-1, 1].forEach(side => {
-                    addFin([[0,0],[2.1,0],[1.45,2.1],[0.45,2.1]], 0.07, batArmor,
-                           side * 1.3, 0.34, 2.05, side * -0.13, 0xffd700);
-                    // Tail tip beacon + luminous rudder stripe
-                    addNavLight(side * 1.62, 2.42, 2.55, side < 0 ? 0xff2244 : 0x22ff88);
-                    const rud = new THREE.Mesh(new THREE.BoxGeometry(0.03, 1.5, 0.05), batGoldGlow);
-                    rud.position.set(side * 1.55, 1.25, 3.05);
-                    rud.rotation.set(0.3, 0, side * -0.13);
-                    state.shipGroup.add(rud);
-                });
-
-                // 9. QUINTUPLE (5X) VECTOR THRUSTER ARRAY - spaced so no nozzle touches its neighbour.
-                // Rule: centre-to-centre distance >= r1 + r2 + 0.2 (petal flare + clearance). Tune ENGINE_LAYOUT only.
-                const ENGINE_LAYOUT = [
-                    { x: 1.98, y: 0.02,  z: 4.95, r: 0.34, len: 1.3, petals: 10 },
-                    { x: 1.04, y: -0.07, z: 5.1, r: 0.38, len: 1.4, petals: 12 }
-                ];
-                [-1, 1].forEach(side => ENGINE_LAYOUT.forEach(e => {
-                    addVectorPetalNozzle(side * e.x, e.y, e.z, e.r, e.len, e.petals, gen6PlateMat, titaniumMat, gen6GoldMat, hotCoreMat, state.thrusterMaterial);
-                }));
-                // Center Super-Drive Core Nozzle
-                addVectorPetalNozzle(0, -0.04, 5.3, 0.44, 1.6, 14, gen6PlateMat, titaniumMat, gen6GoldMat, hotCoreMat, state.thrusterMaterial);
-            }
-
-            // Crystals removed: fleet standard = no core crystal / no orbiting shards
-            state.shipGroup.userData.crystalOrbit = null; state.shipGroup.userData.coreCrystal = null;
-
-            // Serial Plate & Sovereign Council Halo
-            const PLATES = {
-                5: { y: 0.22, z: 3.6, w: 1.2, code: 'ARC-01' }
-            };
-            const plateCfg = PLATES[5];
-            addSerialPlate(plateCfg.y, plateCfg.z, plateCfg.w, plateCfg.code, state.isSovereign ? 0xffd700 : accentColor, false);   // tail model plate
-
-            state.shipGroup.userData.sovereignHalo = null;
-            state.shipGroup.userData.coinOrbit = null;
-            const goldHex = 0xffd700;
-
-            // (sovereign gold halo ring removed: saves GPU, the soft beat rings remain)
-
-            const coinCount = state.tbaBalance > 0 ? Math.min(24, 3 + Math.floor(Math.log10(state.tbaBalance * 1000 + 1) * 6)) : 0;
-            if (coinCount > 0) {
-                const orbit = new THREE.Group();
-                const coinGeo = new THREE.CylinderGeometry(0.16, 0.16, 0.035, 18);
-                const coinMat = new THREE.MeshStandardMaterial({ color: goldHex, metalness: 1.0, roughness: 0.25, emissive: 0x8a5a00, emissiveIntensity: 0.6 });
-                const coinOrbitRadius = index >= 5 ? (index === 6 ? 7.8 : 6.8) : 5.0;
-                for (let k = 0; k < coinCount; k++) {
-                    const a = (k / coinCount) * Math.PI * 2;
-                    const coin = new THREE.Mesh(coinGeo, coinMat);
-                    coin.position.set(Math.cos(a) * coinOrbitRadius, Math.sin(a * 3) * 0.35, Math.sin(a) * coinOrbitRadius);
-                    coin.rotation.set(0, -a, Math.PI / 2);
-                    orbit.add(coin);
+                pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+                pGeo.setAttribute('color', new THREE.BufferAttribute(pCol, 3));
+                const pMat = new THREE.PointsMaterial({ size: 0.22, map: dotTex, vertexColors: true, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false });
+                const sparks = new THREE.Points(pGeo, pMat); sparks.frustumCulled = false; sparks.renderOrder = 7; group.add(sparks);
+                const col = new THREE.Color(0xffffff);
+                let stretch = 1.6;
+                function setColor(c) {
+                    col.copy(c);
+                    plumes.forEach(p => p.mat.uniforms.uColor.value.copy(c));
+                    glows.forEach(g => g.sp.material.color.copy(c));
                 }
-                orbit.rotation.z = 0.12;
-                state.shipGroup.add(orbit);
-                state.shipGroup.userData.coinOrbit = orbit;
+                function update(dt, t) {
+                    const target = state.inFall ? 4.0 : (state.turbo ? 2.5 : 1.6);        // jets stretch on turbo / warp, ease back after
+                    stretch += (target - stretch) * Math.min(1, dt * 2.5);
+                    const widen = 1 + (stretch - 1) * 0.12;
+                    for (let i = 0; i < plumes.length; i++) {
+                        const p = plumes[i]; p.mat.uniforms.uTime.value = t;
+                        p.mesh.scale.z = stretch * (1 + 0.06 * Math.sin(t * 23 + p.tag * 1.9) + 0.03 * Math.sin(t * 17 + p.tag)) * (1 + 0.3 * Math.pow(Math.max(0, Math.sin(t * 0.6)), 3));
+                        p.mesh.scale.x = p.mesh.scale.y = widen;
+                    }
+                    for (let i = 0; i < glows.length; i++) { const g = glows[i]; const s = g.base * (1 + 0.07 * Math.sin(t * 19 + i * 1.3)) * (1 + 0.25 * (stretch - 1)); g.sp.scale.set(s, s, 1); }
+                    for (let e = 0; e < emitters.length; e++) {
+                        const em = emitters[e];
+                        for (let i = 0; i < PER; i++) {
+                            const k = e * PER + i;
+                            let tt = pT[k] + dt * (em[3] > 0.2 ? 0.5 : 0.85) * (1 + 0.45 * (stretch - 1)); if (tt > 1) tt -= 1; pT[k] = tt;
+                            pPos[k * 3] = em[0] + pOff[k * 2] * (1 - tt * 0.6); pPos[k * 3 + 1] = em[1] + pOff[k * 2 + 1] * (1 - tt * 0.6); pPos[k * 3 + 2] = em[2] + tt * em[4] * stretch;
+                            const f = Math.pow(1 - tt, 1.6);
+                            pCol[k * 3] = col.r * f; pCol[k * 3 + 1] = col.g * f; pCol[k * 3 + 2] = col.b * f;
+                        }
+                    }
+                    pGeo.attributes.position.needsUpdate = true; pGeo.attributes.color.needsUpdate = true;
+                }
+                return { update: update, setColor: setColor };
             }
+            return { build: build };
+        })();
 
-            const ENGINE_LAYOUTS = {
-                5: [[-1.4, 0.02, 4.3], [-0.7, -0.02, 4.5], [0, -0.04, 4.7], [0.7, -0.02, 4.5], [1.4, 0.02, 4.3]]
-            };
-            // Use the actual nozzle positions (x, y, exit z, radius); fall back to the old table only if none were built.
-            state.engineLayout = (state.engineNozzles && state.engineNozzles.length) ? state.engineNozzles : ENGINE_LAYOUTS[5];
-
-            const baseScale = randomBetween(traitRandom, 0.92, 1.1);
-            state.shipGroup.scale.setScalar(baseScale);
-            state.shipGroup.userData.baseScale = baseScale;
-            state.shipGroup.rotation.set(0, 0, 0);
-            
-            createEngineParticles();
+        // Builds the shared jet on whatever ship was just built and removes the old square-ish exhaust particles.
+        function installJets() {
+            const ud = state.shipGroup.userData;
+            if (state.engineParticles) {
+                state.shipGroup.remove(state.engineParticles);
+                if (state.engineParticles.geometry) state.engineParticles.geometry.dispose();
+                if (state.engineParticles.material) state.engineParticles.material.dispose();
+                state.engineParticles = null;
+            }
+            ud.jetfx = JetFX.build(state.shipGroup, state.jetSpecs || []);
+            ud.jetfx.setColor(engineTint(state.engineColor));
         }
+
+
 
         // ========================================================
         // FLEET SHIPS - #1111 T-REX | #2222 EAGLE | #3333 PHANTOM | #4444 REAPER | #5555 TITAN
@@ -4008,7 +3721,7 @@ const __$G=typeof globalThis!=="undefined"?globalThis:typeof window!=="undefined
         }
 
         function addSerialPlate(y, z, width, code, edgeColor) {
-            const label = state.tokenId ? '#' + String(state.tokenId).slice(0, 10) : code;
+            const label = '#' + FLEET_TOKEN;   // standalone build: plate always shows this ship's token
             const c = document.createElement('canvas');
             c.width = 320; c.height = 96;
             const g = c.getContext('2d');
@@ -4179,6 +3892,7 @@ const __$G=typeof globalThis!=="undefined"?globalThis:typeof window!=="undefined
             const choke = new THREE.Mesh(new THREE.TorusGeometry(baseRadius * 0.88, 0.045, 8, 24), throatMat);
             choke.position.z = length / 2 - 0.05;
             group.add(choke);
+            addBronzeNozzleCollar(group, baseRadius, length / 2);   // v17: cover sits exactly on the nozzle mouth (= jet exit)
 
             // Radial Articulated Vectoring Petals
             const petalLength = length * 0.48;
@@ -4189,6 +3903,7 @@ const __$G=typeof globalThis!=="undefined"?globalThis:typeof window!=="undefined
                 petal.rotation.z = theta + Math.PI / 2;
                 petal.rotation.x = Math.sin(theta) * -0.16;
                 petal.rotation.y = Math.cos(theta) * 0.16;
+                petal.visible = false;   // v16: original petals replaced by the bronze cover
                 group.add(petal);
 
                 state.vectorPetals.push({
@@ -4199,35 +3914,9 @@ const __$G=typeof globalThis!=="undefined"?globalThis:typeof window!=="undefined
                 });
             }
 
-            if (state.modernFlame) {
-                // 5555 exhaust: white-hot core + tapered flame, both apex rearwards (+Z)
-                const hcGeo = new THREE.ConeGeometry(baseRadius * 0.5, length * 1.5, 14);
-                hcGeo.rotateX(Math.PI / 2);
-                const hotCore = new THREE.Mesh(hcGeo, hotCoreMat);
-                hotCore.position.z = length / 2 + length * 0.75 - 0.1;
-                group.add(hotCore);
-
-                const plumeLen = 4.4;
-                const pg = new THREE.ConeGeometry(baseRadius * 0.85, plumeLen, 14);
-                pg.rotateX(Math.PI / 2);
-                pg.translate(0, 0, plumeLen / 2);            // pivot = nozzle, scale.z stretches the flame away from the ship
-                const plume = new THREE.Mesh(pg, glowMat);
-                plume.position.z = length / 2;
-                group.add(plume);
-                if (state.shipGroup.userData.g6Plumes) state.shipGroup.userData.g6Plumes.push(plume);
-            } else {
-            // Shock diamond core
-            const hotCore = new THREE.Mesh(new THREE.ConeGeometry(baseRadius * 0.42, length * 1.4, 16), hotCoreMat);
-            hotCore.rotation.x = -Math.PI / 2;
-            hotCore.position.z = length / 2 + length * 0.6;
-            group.add(hotCore);
-
-            // External ion plume cone
-            const plume = new THREE.Mesh(new THREE.ConeGeometry(baseRadius * 0.82, 3.2, 16), glowMat);
-            plume.rotation.x = -Math.PI / 2;
-            plume.position.z = length / 2 + 1.6;
-            group.add(plume);
-            }
+            // v11: the flame is the shared #999-style jet (JetFX); this nozzle only registers its exit point
+            if (!state.jetSpecs) state.jetSpecs = [];
+            state.jetSpecs.push({ x: x, y: y, z: z + length / 2, r: baseRadius });
 
             state.shipGroup.add(group);
             return group;
@@ -4323,7 +4012,8 @@ const __$G=typeof globalThis!=="undefined"?globalThis:typeof window!=="undefined
                 gold:   new THREE.MeshStandardMaterial({ color: 0xff6a00, metalness: 0.95, roughness: 0.2, emissive: 0xb53a00, emissiveIntensity: 0.4 }),
                 glow:   new THREE.MeshBasicMaterial({ color: 0xff5a14, transparent: true, opacity: 0.95 }),
                 canopy: new THREE.MeshStandardMaterial({ color: 0x5a1c06, metalness: 0.35, roughness: 0.06, emissive: 0xff5a14, emissiveIntensity: 0.5, transparent: true, opacity: 0.84 }),
-                missile:new THREE.MeshStandardMaterial({ color: 0xcfd8e3, metalness: 0.55, roughness: 0.35 })
+                missile:new THREE.MeshStandardMaterial({ color: 0xcfd8e3, metalness: 0.55, roughness: 0.35 }),
+                bronze: new THREE.MeshStandardMaterial({ color: 0x22140a, metalness: 0.35, roughness: 0.9, envMapIntensity: 0.05, side: THREE.DoubleSide })
             };
             state.shipGroup.userData.g6Glow = M.glow;
             state.shipGroup.userData.g6Plumes = plumes;
@@ -4410,20 +4100,15 @@ const __$G=typeof globalThis!=="undefined"?globalThis:typeof window!=="undefined
                 [0.2, 0.5, 0.78].forEach(f => cylZ(r * 1.08 + 0.02, r * 1.08 + 0.02, 0.16, 14, x, y, zFront + len * f, M.armor));
                 box(r * 1.5, 0.045, 0.5, x, y + r * 1.1, zFront + len * 0.36, M.glow);
                 cylZ(r * 0.8, r * 0.95, 0.9, 14, x, y, zRear - 0.15, M.dark, true);
-                ringZ(r * 0.9, 0.045, x, y, zRear, M.gold);
+                ringZ(r * 0.9, 0.045, x, y, zRear, M.bronze);
                 ringZ(r * 0.6, 0.03, x, y, zRear - 0.04, M.glow);
                 if (big) for (let k = 0; k < (r > 0.7 ? 12 : 8); k++) {
                     const a = (k / (r > 0.7 ? 12 : 8)) * Math.PI * 2, rr = r * 1.0;
-                    box(0.07, 0.34, 0.5, x + Math.cos(a) * rr, y + Math.sin(a) * rr, zRear + 0.1, M.armor, 0, 0, a + Math.PI / 2);
+                    box(0.07, 0.34, 0.5, x + Math.cos(a) * rr, y + Math.sin(a) * rr, zRear + 0.1, M.bronze, 0, 0, a + Math.PI / 2);
                 }
-                put(place(new THREE.ConeGeometry(r * 0.5, len * 0.5, 12), x, y, zRear + len * 0.22, Math.PI / 2), ctx.hotCoreMat);
-                const pg = new THREE.ConeGeometry(r * 0.85, plumeLen, 14);
-                pg.rotateX(Math.PI / 2);              // apex points rearwards (+Z)
-                pg.translate(0, 0, plumeLen / 2);     // pivot = nozzle, so scale.z stretches the flame away from the ship
-                const pm = new THREE.Mesh(pg, state.thrusterMaterial);
-                pm.position.set(x, y, zRear);
-                state.shipGroup.add(pm);
-                plumes.push(pm);
+                // v11: flame = shared #999-style jet (JetFX); only the nozzle exit is registered here
+                if (!state.jetSpecs) state.jetSpecs = [];
+                state.jetSpecs.push({ x: x, y: y, z: zRear, r: r });
             };
 
             // ===== 1. FUSELAGE: long chined forebody + thick aft cone (fighter proportions) ============
@@ -5256,6 +4941,8 @@ const __$G=typeof globalThis!=="undefined"?globalThis:typeof window!=="undefined
 
                     // Wing Pylons with Anti-Matter Cluster Torpedoes
                     addAdvancedMissile(side * 2.2, -0.25, 0.5, 2.2, missileMat, plateMat, plateMat);
+                    addAdvancedMissile(side * 3.3, -0.22, 2.2, 1.6, missileMat, plateMat, plateMat);   // extra outer wing missile
+                    addAdvancedMissile(side * 0.42, -0.3, 1.2, 1.9, missileMat, plateMat, null);   // extra belly missile
 
                     const intake = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.4, 1.6), plateMat);
                     intake.position.set(side * 0.9, -0.25, -0.8);
@@ -5476,6 +5163,9 @@ const __$G=typeof globalThis!=="undefined"?globalThis:typeof window!=="undefined
                 [-1, 1].forEach(side => {
                     addFin([[-0.4,0],[1.2,0],[1.6,1.3],[0.5,1.3]], 0.08, hullMat, side * 1.5, 0.2, 2.8, side * -0.4, edgeCol);
                     addMissile(side * 2.3, -0.22, 0.6, 1.5, missileMat, accentMat);
+                    addAdvancedMissile(side * 1.4, -0.22, 0.9, 2.0, missileMat, plateMat, plateMat);   // extra inboard wing missile
+                    addAdvancedMissile(side * 3.0, -0.22, 2.1, 1.7, missileMat, plateMat, plateMat);   // extra outer wing missile
+                    addAdvancedMissile(side * 0.42, -0.3, 0.4, 2.0, missileMat, plateMat, null);   // extra belly missile
                     // 2D pitch-vectoring petal nozzle (same family as #1111); nozzle exit stays at z = 4.4
                     addVectorPetalNozzle(side * 0.5, 0.0, 3.8, 0.38, 1.2, 10, plateMat, titaniumMat, accentMat, hotCoreMat, state.thrusterMaterial);
                     addNavLight(side * 3.4, 0, 2.6, side < 0 ? 0xff2418 : 0x22ff88);
@@ -5623,7 +5313,7 @@ const __$G=typeof globalThis!=="undefined"?globalThis:typeof window!=="undefined
                 const nozzleRings = index === 0
                     ? [[-0.9, 0.1, 3.76, 0.37], [0.9, 0.1, 3.76, 0.37]]
                     : (index === 2
-                        ? [[-0.95, -0.05, 4.2, 0.32], [0.95, -0.05, 4.2, 0.32], [0, 0.08, 4.8, 0.36]]
+                        ? [[-0.95, -0.05, 3.65, 0.32], [0.95, -0.05, 3.65, 0.32], [0, 0.08, 4.2, 0.46]]
                         : [[-1.95, 0.08, 3.18, 0.29], [-0.5, 0, 4.4, 0.3], [0.5, 0, 4.4, 0.3], [1.95, 0.08, 3.18, 0.29]]);
                 nozzleRings.forEach(([x, y, z, radius]) => addNozzleRing(x, y, z, radius, panelDetail));
                 const secondaryColor = index === 7 ? 0x42e8ff : (index === 2 ? 0xff9b28 : 0x98fff2);
@@ -5720,7 +5410,7 @@ const __$G=typeof globalThis!=="undefined"?globalThis:typeof window!=="undefined
             const ENGINE_LAYOUTS = {
                 0: [[-0.5, 0.0, 4.4], [0.5, 0.0, 4.4]],
                 1: [[-0.62, -0.05, 4.3], [0.62, -0.05, 4.3]],
-                2: [[-0.95, -0.05, 4.2], [0.95, -0.05, 4.2], [0, 0.08, 4.8]],
+                2: [[-0.95, -0.05, 3.65], [0.95, -0.05, 3.65], [0, 0.08, 4.2]],
                 3: [[-0.5, 0.0, 4.4], [0.5, 0.0, 4.4]],
                 4: [[-0.9, 0.0, 3.6], [0.9, 0.0, 3.6]],
                 5: [[-1.4, 0.02, 4.3], [-0.7, -0.02, 4.5], [0, -0.04, 4.7], [0.7, -0.02, 4.5], [1.4, 0.02, 4.3]],
@@ -5748,17 +5438,14 @@ const __$G=typeof globalThis!=="undefined"?globalThis:typeof window!=="undefined
         };
         })();
 
-        // Ship dispatcher: ARC-01 is the default craft; a #1111-#5555 hash selects a fleet ship.
+        // Standalone fleet-ship build (ARC-01 renderer removed from this file).
         function renderSelectedShipModel(index) {
             const ud = state.shipGroup.userData;
-            if (FLEET_TOKEN) {
-                state.flamePlumes = []; state.engineNozzles = [];
-                ud.warshipReactor = null;
-                FleetShips.build(index);
-            } else {
-                ud.g6Plumes = null; ud.g6Strobes = null; ud.g6Glow = null; state.modernFlame = false;
-                renderArcShipModel(index);
-            }
+            state.jetSpecs = []; ud.jetfx = null;
+            state.flamePlumes = []; state.engineNozzles = [];
+            ud.warshipReactor = null;
+            FleetShips.build(index);
+            installJets();
         }
 
         // Two soft concentric rings under the ship that breathe with the music
@@ -6347,6 +6034,7 @@ const __$G=typeof globalThis!=="undefined"?globalThis:typeof window!=="undefined
                     if (state.thrusterMaterial) state.thrusterMaterial.color.copy(engineTint(state.engineColor));
                     if (state.hotCoreMat) state.hotCoreMat.color.copy(engineTint(state.engineColor).lerp(new THREE.Color(0xffffff), 0.22));
                     if (state.engineParticles) state.engineParticles.material.color.copy(engineTint(state.engineColor));
+                    { const jf = state.shipGroup.userData.jetfx; if (jf) jf.setColor(engineTint(state.engineColor)); }
                     
                     document.querySelectorAll('.engine-color-btn').forEach(b => {
                         b.classList.remove('border-2', 'border-cyan-400');
@@ -6830,6 +6518,7 @@ const __$G=typeof globalThis!=="undefined"?globalThis:typeof window!=="undefined
                     shards.rotation.y -= delta * 0.6; 
                     shards.children.forEach((c, i) => { c.rotation.y += delta * (1 + i * 0.15); }); 
                 }
+                { const jf = state.shipGroup.userData.jetfx; if (jf) jf.update(delta, elapsedTime); }   // v11: shared #999-style jets
                 if (state.flamePlumes.length) {
                     const target = state.inFall ? 2.0 : (state.turbo ? 1.5 : 1.0);
                     state.flameStretch += (target - state.flameStretch) * Math.min(1, delta * 2.5);
