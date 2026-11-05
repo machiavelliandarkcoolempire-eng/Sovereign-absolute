@@ -1,34 +1,36 @@
 # SOVEREIGN MEDIA STATION
 
-## Sovereign Infrastructure · STANDARD 3D NFT · SPACECRAFT 3D NFT
+## Sovereign Media Station — On-chain Identity, Media Infrastructure & Interactive Digital Experiences
 
-**Production-Ready High-Performance Web3 Architecture**  
-**Your Token. Your Media. Your Choice.**
+**YOUR TOKEN. YOUR MEDIA. YOUR CHOICE.**
 
-SOVEREIGN MEDIA STATION is an integrated media-identity infrastructure built on Base. It combines the THE IMPERIAL SOVEREIGN DEED ERC-721 smart contract, holder-controlled media identity updates, the dashboard, THE SOVEREIGN PROTOCOL metadata gateway/API, media upload and delivery infrastructure, and interactive digital products. ERC-6551 Token Bound Accounts are an optional supporting integration, not the core architecture.
+**Sovereign Protocol is an integrated Web3 platform on Base that connects on-chain ownership to changeable digital identity, media delivery and interactive 3D presentation.** It brings together the smart contract, the holder dashboard, the metadata gateway/API, the media workflow and browser-based 3D products as one connected system.
 
-This is not a static-image-only NFT concept. Sovereign Protocol connects on-chain ownership with playable, game-like 3D experiences, self-contained HTML viewers, RPC-powered token inspection, changeable identity references, external-service integrations, and holder-directed media presentation.
+> **Sovereign turns a token from a static collectible into a configurable digital identity and media container — with the infrastructure to manage it, deliver it and bring it to life.**
 
-The project is designed around one central principle:
+---
 
-> **The token holder decides what their token represents, what media it references, how its identity evolves, and which external services they choose to use. The infrastructure exists to enable those choices—not to make those choices on the holder’s behalf.**
+## Why Sovereign
 
-## Executive Summary
+**Infrastructure, not just a collection.** Sovereign is a service layer for token-linked media. It works for the holder of any Sovereign token, and it can display media from any NFT project on any chain.
 
-Sovereign Protocol brings together three connected layers:
+**Unlimited media changes. Zero contract fees.** Holders change Front, Back and Video through `updateIdentity` as many times as they like. There is no update limit, no contract fee and no NOVA required — the holder pays only network gas. The Base URI metadata gateway delivers every change to marketplaces and viewers, so the token is never locked to its first image.
 
-1. **Smart Contract — Ownership, Identity and On-chain Operations**  
-   An ERC-721 collection on Base with holder-directed identity and media references, configurable metadata routing, token information functions, and ERC-6551 Token Bound Account integration.
+**Any project. Any chain. Any media.** A holder can point Front, Back and Video to any URL. The contract places no restriction on the source and does not verify ownership of the referenced asset. The choice of what to display belongs entirely to the holder. What a marketplace shows is always the holder's **THE IMPERIAL SOVEREIGN DEED** token, with its own name and token number, presenting the media the holder chose.
 
-2. **Infrastructure — Dashboard, API, RPC and Media Pipeline**  
-   The dashboard connects contract operations with media upload and identity configuration. The metadata gateway reads token data from Base, resolves the configured media references, builds marketplace-compatible metadata, and supports multiple RPC endpoints. The HTML product viewers can include RPC configuration for read-only blockchain information without requiring a wallet connection just to experience the local 3D scene.
+**Modular, yet one system.** The contract, gateway, dashboard and 3D viewers each do one job, and together they run as a single working product.
 
-3. **Products — STANDARD and SPACECRAFT**  
-   STANDARD presents the Crystal Energy Core digital-art experience. SPACECRAFT presents ARC-01 and the Sovereignty Fleet through interactive, game-like 3D scenes, cinematic environments, propulsion effects, HUD elements, and spacetime-inspired transitions.
+**Ownership is the holder's from mint.** The contract has no function to transfer, burn, freeze or pause a holder's token. A holder who wants a fully independent metadata endpoint can route `tokenURI` to it through NOVA.
 
-The result is an integrated Web3 architecture where **ownership, identity, media delivery and presentation are connected but remain distinct**. From mint onward, the token holder can update the token’s Front URI, Back URI and Video URI through `updateIdentity`, with no limit on the number of updates. The metadata gateway and Base URI provide the metadata-delivery path that allows those changing references to be resolved and presented. NOVA is a separate metadata-routing capability; it does not unlock the holder’s initial right to update media references.
+**Pricing built for promotions.** Mint, Nova and Council prices are adjustable through `setParams`. This was planned before deployment so the project can run campaigns and make access easier. Price changes apply only to new mints and new Nova activations; an existing token is never affected.
 
-### Live Links
+**Three live screens, one token.** The dashboard shows the holder's flip card, STANDARD 3D and SPACECRAFT 3D side by side, each with its own full-screen mode.
+
+**A growing fleet.** Eight spacecraft are completed and two are in final finishing, with a 15-model roadmap.
+
+---
+
+## Live Links
 
 - **Dashboard:** https://sovereign-council.xyz
 - **OpenSea Collection:** https://opensea.io/collection/sovereign-protocol
@@ -36,49 +38,64 @@ The result is an integrated Web3 architecture where **ownership, identity, media
 - **Base Contract:** https://basescan.org/address/0x06040F2e5301B2616491E113962A84d372b8f600
 - **Dashboard & Product Repository:** https://github.com/machiavelliandarkcoolempire-eng/Sovereign-absolute
 - **Metadata Gateway Repository:** https://github.com/machiavelliandarkcoolempire-eng/fluffy-rotary-phone
+- **Backend API (metadata gateway, live):** https://fluffy-rotary-phone-bice.vercel.app/
+
+---
+
+## What Customers and Partners Can Get
+
+| Opportunity | What it provides | Value |
+|---|---|---|
+| **Token-linked identity** | Holder-directed Front, Back and Video references recorded on-chain | A digital identity that evolves without replacing the token |
+| **Media and metadata infrastructure** | Dashboard, metadata gateway/API, media-reference handling, RPC-supported inspection | One connected workflow to manage and present token-linked media |
+| **Interactive digital experiences** | STANDARD and SPACECRAFT browser-based 3D viewers | Richer ways to showcase digital assets, products, stories and brands |
+| **Custom integration / licensing** | The existing architecture as a base for a partner-specific deployment | A starting point for teams that want to use or adapt the infrastructure |
+
+*Commercial licensing, deployment scope, support, pricing and any sales commission are agreed separately and documented before a deal is represented as available.*
+
+## Who Should Look at Sovereign
+
+- **Web3 protocols and product teams** exploring token-linked identity, metadata routing or media presentation.
+- **Digital-asset brands and creators** who want token-associated media that can evolve after minting.
+- **Creative technology and 3D studios** that need an on-chain-connected presentation layer.
+- **Marketplaces and platform integrators** evaluating metadata and media workflows.
+- **Commercial partners and sales representatives** who can introduce the platform to buyers and structure qualified deals.
 
 ---
 
 ## Current Implementation and Roadmap
 
-This section separates capabilities present in the project from future expansion targets. The distinction is about product status—not about the ambition or scope of the architecture.
+### Implemented
 
-### Implemented / Present in the Current Project
+- **Base ERC-721 collection:** Sovereign Protocol (`SOV`), maximum supply 5,555, ERC-2981 royalties, EIP-4906 metadata update events.
+- **Holder-directed identity:** From mint onward, the owner uses `updateIdentity` to change Front URI, Back URI and Video URI, with no limit on the number of updates. Each update emits `MetadataUpdate` so marketplaces can refresh.
+- **Metadata routing:** Tokens use the project Base URI / metadata gateway by default. When a token has ABSOLUTE SOVEREIGNTY status and both DNA and HIDDEN are non-empty, `tokenURI` returns the holder-supplied HIDDEN string, allowing an independently operated metadata endpoint or domain.
+- **Token Bound Accounts:** ERC-6551 contract and dashboard workflows.
+- **Multifunctional dashboard:** Token inspection and interfaces for identity, media and contract operations.
+- **Interactive product viewers:** HTML experiences for ARC-01, fleet ships, STANDARD / Sovereign Awakening and the Sovereign Council.
+- **Self-contained 3D delivery:** Viewers are distributed as HTML files with their principal rendering code and assets packaged in, reducing dependence on external downloads for the core scene.
+- **RPC-powered inspection:** Viewers and the dashboard can read supported token data from Base.
+- **Irys upload workflow:** WebUploader integration using the Ethereum adapter and Ethers v6 provider/signer flow.
+- **Metadata API:** Reads Deed data from Base, resolves holder-configured media, builds marketplace metadata (`image`, `animation_url`, `external_url`, attributes), parses DNA traits, caches responses, rate-limits requests and exposes a health endpoint.
+- **Media-aware metadata:** Identifies image, video, audio, HTML and 3D-related formats and maps them into marketplace fields.
+- **ARC-01 flagship experience** and **STANDARD / Crystal Energy Core** experience.
+- **Marketplace presentation:** The collection and ARC-01 / Deed #1 are listed on OpenSea.
 
-- **Base ERC-721 collection:** Sovereign Protocol contract deployment and token collection identified by the project’s contract address.
-- **Holder-directed token identity:** From mint onward, the token owner can use `updateIdentity` to change Front URI, Back URI and Video URI. The function is not activated by NOVA and has no update limit: a holder can change them as many times as they like. DNA and HIDDEN are configured separately through NOVA.
-- **Metadata routing:** Tokens use the project Base URI / metadata gateway by default. When both DNA and HIDDEN satisfy the contract condition (both values greater than zero), the contract switches the token metadata route to the string supplied for `tokenURI`, allowing the holder to point to an independently operated metadata endpoint or domain.
-- **Token Bound Account integration:** ERC-6551 TBA-related contract and dashboard workflows.
-- **Multifunctional dashboard:** Token inspection and interfaces for identity, media and contract-related operations.
-- **Interactive product viewers:** Separate HTML experiences for ARC-01, fleet ships, STANDARD/Sovereign Awakening, and the Sovereign Council/dashboard.
-- **Self-contained 3D delivery:** Product experiences are distributed as HTML files with their principal rendering code and assets packaged into the viewer, reducing dependence on external asset downloads for the core scene.
-- **RPC-powered inspection:** The on-chain product variant and dashboard can use RPC access to read supported token data from Base.
-- **Irys upload initialization:** The dashboard repository includes a WebUploader integration using the Ethereum adapter and Ethers v6 provider/signer flow.
-- **Metadata API:** The metadata gateway reads Deed data from Base, resolves holder-configured media, builds marketplace metadata, maps media into image and animation fields, parses DNA traits, uses caching logic, and exposes a health endpoint.
-- **Media-aware metadata:** The gateway can identify supported image, video, audio, HTML and 3D-related media formats and map available references into marketplace metadata fields.
-- **ARC-01 flagship experience:** A cinematic spacecraft viewer with interactive, game-like visual scenes and propulsion/warp-themed effects.
-- **STANDARD / Crystal Energy Core:** A browser-based 3D artwork experience with crystal geometry, particle rings, lighting, ambient audio and audio-responsive visual effects.
-- **Marketplace presentation:** The Sovereign Protocol collection and ARC-01 / Deed #1 listing are available through the linked OpenSea pages.
+### Cross-Chain Media Display
 
-### Architecture Capabilities
+The Front, Back and Video URIs set through `updateIdentity` can reference media from any chain or any project, with no restriction on source: Bitcoin-based media, Ethereum NFTs, assets from other chains, and files hosted anywhere on the internet. The system fetches and displays the referenced media. It does not verify that the holder owns the original asset and does not certify that the media is genuine. The holder chooses what to display; the Base token remains a Sovereign Protocol token with its own name and token number.
 
-**Cross-chain media display through `updateIdentity`.** The Front URI, Back URI and Video URI set through `updateIdentity` can reference media from any chain or any project, with no restriction on source. Bitcoin-based media, Ethereum NFTs, assets from other chains and files hosted anywhere on the internet can all be referenced. The system only fetches and displays the referenced media. It does not verify that the holder owns the original asset, and it does not certify whether the referenced media is genuine. The holder chooses what to display; the Base token remains a Sovereign Protocol token and keeps its own name and token number.
+DNA and HIDDEN are separate flexible string fields configured through NOVA. They hold the holder's own identity references and route the token's metadata to the holder's own endpoint. The external service decides how any such reference is interpreted.
 
-DNA and HIDDEN are separate flexible string fields, configured through NOVA. They are used for the holder's own identity references and for routing the token's metadata to the holder's own endpoint when the NOVA condition is met. The external service determines how any such reference is interpreted.
+### Roadmap
 
-The dashboard shows three media screens at the same time: Mode 1 (the holder’s image and video, as a flip card), Mode 2 (STANDARD 3D) and Mode 3 (SPACECRAFT 3D). Each screen has its own full-screen button.
-
-### Roadmap / Planned Expansion
-
-- **Sovereignty Fleet:** Eight spacecraft are completed, with two additional spacecraft in the final finishing and decorative stage.
-- **Current lineup:** Ten spacecraft units are documented in the SPACECRAFT section below.
-- **Continued product evolution:** Additional spacecraft identities, scenes and presentation experiences can expand the product family while retaining the shared token, metadata and viewer architecture.
-
-The current production status is **8 completed spacecraft and 2 nearing completion**. The 15-model target is a broader roadmap total, not a claim that all 15 models are already completed.
+- **Sovereignty Fleet:** Eight spacecraft are completed; two more are in the final finishing and decorative stage.
+- **Expansion target:** 15 spacecraft models in total. This is a roadmap goal, not a claim that all 15 are complete.
+- **Continued evolution:** Additional spacecraft identities, scenes and presentation experiences on the shared token, metadata and viewer architecture.
 
 ---
 
-## 1. Project Architecture at a Glance
+## 1. Architecture at a Glance
 
     SOVEREIGN PROTOCOL
              |
@@ -106,360 +123,220 @@ The current production status is **8 completed spacecraft and 2 nearing completi
                  Interactive Viewers
                Live Media / 3D / Video
 
-The architecture separates responsibilities while allowing the components to work together.
+Each part has one responsibility, and together they work as one system.
 
-- **Smart contract:** Records ownership and executes the on-chain functions defined by its code.
-- **Dashboard:** Gives users an interface for invoking supported contract functions and managing identity and media references.
-- **API and metadata infrastructure:** Reads the relevant on-chain fields and builds the metadata representation consumed by marketplaces and viewers.
-- **Irys and Arweave integration:** Supports the media-upload workflow and the use of returned transaction identifiers or URLs.
-- **Product viewers:** Present digital artwork and interactive 3D experiences, with optional read-only blockchain information.
-
-The dashboard is not a separate product unrelated to the contract. It is the user-facing operational interface through which the contract and supporting infrastructure become useful to token holders.
+- **Smart contract:** Registry of ownership and identity strings. It stores references; it does not render media.
+- **Dashboard:** The user-facing interface for contract functions, identity and media references.
+- **API and metadata gateway:** Reads on-chain fields and builds the metadata that marketplaces and viewers consume.
+- **Irys and Arweave:** Media upload and the use of returned transaction identifiers or URLs.
+- **Product viewers:** Interactive 3D experiences with optional read-only blockchain information.
 
 ---
 
 ## 2. Smart Contract — Sovereign Ownership and Dynamic Identity
 
-### Contract Information
-
 | Property | Details |
 |---|---|
 | Contract | **SovereignInfrastructure** |
-| Network | Base Mainnet |
-| Chain ID | **8453** |
+| Network | Base Mainnet (Chain ID **8453**) |
 | Standard | ERC-721 |
-| Collection name | Sovereign Protocol |
-| Symbol | SOV |
+| Collection | Sovereign Protocol (`SOV`) |
 | Maximum supply | 5,555 tokens |
-| Royalty standard | ERC-2981 |
-| Token-bound account architecture | ERC-6551 integration |
-| Metadata update signalling | EIP-4906 interface support |
+| Royalty | ERC-2981, 7% |
+| Token-bound accounts | ERC-6551 integration |
+| Metadata update signalling | EIP-4906 |
 | Contract address | **0x06040F2e5301B2616491E113962A84d372b8f600** |
 
-### 2.1 Ownership Means Control Over the Holder’s Own Token
+### 2.1 Ownership Belongs to the Holder
 
-Sovereign Protocol is built around the distinction between **infrastructure administration** and **individual token ownership**.
+Sovereign separates **infrastructure administration** from **individual token ownership**.
 
-The Architect and authorized contract administrator have specific infrastructure-level powers defined by the contract. Those powers are not equivalent to ownership of every token held by other wallets.
+- **Token holder:** Decides the media, identity values and metadata route for their own token.
+- **Smart contract:** Enforces its encoded rules and records on-chain state. It has no function to transfer, burn, freeze or pause a holder's token.
+- **Architect and operators:** Build, maintain and support the infrastructure, including the metadata gateway, the dashboard and the viewers.
 
-The intended division of responsibility is:
-
-- **Token holder:** Decides how their token’s supported identity fields and media references are used, within the available contract functions and applicable external services.
-- **Smart contract:** Enforces the rules encoded in its functions and records the relevant on-chain state.
-- **Architect and infrastructure operators:** Build, maintain, improve and support the ecosystem’s infrastructure.
-
-The Architect’s role is to provide infrastructure, maintenance, development, assistance and support—not to make the holder’s personal creative decisions.
-
-A holder may choose an artwork, photograph, video, 3D model, external API, personal project or brand identity as the content associated with their token. The holder makes that choice; the system does not automatically select content for them.
+A holder may choose an artwork, photograph, video, 3D model, external API, personal project or brand identity as the content for their token. The holder makes that choice; the system never selects content for them.
 
 ### 2.2 Dynamic Token Identity
 
-Sovereign Protocol separates the token’s on-chain collection identity from its configurable media and identity references.
-
-The contract includes these principal functions. `updateIdentity` is available to the token owner from mint onward; it is independent of NOVA and can be called as many times as the holder likes, with no update limit:
-
 | Function | Purpose |
 |---|---|
-| **THE_SOVEREIGN_AWAKENING** | Public minting of Sovereign Protocol tokens |
-| **ARCHITECT_MINT** | 300 reserved mints, to be given away to build awareness of the project (up to 50 per call) |
-| **updateIdentity** | Updates a token’s front, back and video references |
-| **THE_SOVEREIGN_NOVA** | Sets the token’s identity DNA and hidden metadata URI |
-| **tokenURI** | Returns the token’s metadata URI according to the contract’s rules |
-| **getDeedData** | Retrieves token ownership, identity and related data |
-| **deployTBA** | Deploys and initializes a token-bound account through the configured ERC-6551 infrastructure |
-| **getTBA** | Derives the token-bound account address |
-| **setBaseURI** | Changes the collection’s base metadata URI |
-| **setParams** | Sets the mint, Nova and Council prices, so promotions can be run |
-| **setArchitect** | Changes the designated Architect address, subject to the contract’s rules |
+| **THE_SOVEREIGN_AWAKENING** | Public minting |
+| **ARCHITECT_MINT** | 300 reserved mints, given away to build awareness of the project (up to 50 per call) |
+| **updateIdentity** | Updates a token's Front, Back and Video references. Owner-only, available from mint, unlimited, no contract fee |
+| **THE_SOVEREIGN_NOVA** | Sets the token's DNA and HIDDEN identity values |
+| **tokenURI** | Returns the token's metadata URI according to the contract's rules |
+| **getDeedData** | Returns ownership, identity and related data |
+| **deployTBA** / **getTBA** | Deploys / derives the ERC-6551 token-bound account |
+| **setBaseURI** | Sets the Base URI that points to the metadata gateway |
+| **setParams** | Sets mint, Nova and Council prices so promotions can be run |
+| **setArchitect** | Changes the designated Architect address |
 
-Identity is not restricted to a single permanent visual interpretation. A token holder can update supported identity and media references as their creative work, business, brand or personal project evolves.
+A token is never defined forever by its first image. The same token serves as a continuing identity container as the holder's creative work, business, brand or project evolves.
 
-The holder can therefore use the same token as a continuing identity container rather than treating its first image as the end of its utility.
+### 2.3 DNA and HIDDEN: Programmable Identity
 
-### 2.3 Identity DNA and HIDDEN: Programmable Identity
+DNA and HIDDEN are flexible string fields. The contract accepts strings; the holder decides what they mean within their own application.
 
-**DNA and HIDDEN are flexible string fields—not a fee for purchasing personal freedom.**
+Potential uses:
 
-Their usefulness comes from what the holder chooses to associate with them.
+- Connect a token to a personal website, creator profile or brand.
+- Reference a project, artwork collection or portfolio.
+- Link an identity to an external API or metadata service.
+- Reference URLs or records used in the holder's own verification workflow.
+- Associate digital artwork with a physical-world product, brand or commercial project.
+- Support a provenance, access, membership or claim workflow implemented by an external system.
 
-Potential applications include:
+For example, a creator could develop an original alien-dog character, associate it with a token, and use it across artwork, NFT media, a website, merchandise, toys and other real-world products. A business could connect a token to its own website or verification service, where the external system defines how a claim, entitlement or licence is validated.
 
-- Connecting a token to a personal website, creator profile or brand.
-- Referencing a project, artwork collection or creative portfolio.
-- Linking an identity to an external API or metadata service.
-- Referencing URLs or records used in a holder’s own identity-verification workflow.
-- Associating a digital artwork with a physical-world product, brand or commercial project.
-- Maintaining a changing identity as a project evolves.
-- Using an external reference as part of a provenance, access, membership or claim workflow implemented by the relevant external system.
+### 2.4 Media Updates and NOVA
 
-For example, a creator could develop an original alien-dog character, associate its digital identity with a token, and use the character in artwork, NFT media, a website, merchandise, toys or other real-world products. DNA can serve as a flexible identity reference within that creator’s chosen architecture.
+**`updateIdentity`** changes Front, Back and Video. It is available to the owner from mint onward, is not gated by NOVA, has no update limit and charges no contract fee. Each update is one on-chain transaction, so the holder pays only network gas.
 
-A business could also use identity references to connect a token with its own website or verification service. A URL can be part of such a system; the external system defines how it validates a claim, entitlement, licence or real-world ownership record.
-
-**The important architectural property is flexibility:** the contract accepts strings, while the holder decides what those strings mean within their own application.
-
-### 2.4 Updating DNA, HIDDEN and Media Identity
-
-The **updateIdentity** function updates the token’s Front URI, Back URI and Video URI. The token owner has this ability from mint onward; it is not gated by NOVA. The contract sets no limit on how many times these references can be changed, and charges no fee for it. Each update is a separate on-chain transaction, so the holder pays only network gas.
-
-**SOVEREIGN NOVA is a separate operation.** It records the token’s DNA and HIDDEN identity values and routes the token’s metadata to the holder’s own endpoint. It is not needed for updating Front, Back or Video.
-
-**What the holder receives after Nova:**
+**SOVEREIGN NOVA** is a separate operation. It records DNA and HIDDEN and routes the token's metadata to the holder's own endpoint.
 
 > **STATUS: ABSOLUTE SOVEREIGNTY**
 
-After Nova the token carries the ABSOLUTE SOVEREIGNTY status. The Nova fee is paid once per token. From then on the holder can resubmit Nova for that token at no Nova fee (network gas only), including to change the values or to clear them and return to the project route. Council tokens already hold this status from mint.
+After Nova the token carries ABSOLUTE SOVEREIGNTY status. The Nova fee is paid once per token. Afterwards the holder can resubmit Nova at no Nova fee (network gas only) to change the values or clear them and return to the project route. Council tokens hold this status from mint.
 
-**Pricing.** Prices are set for promotions and can be adjusted by the Architect with `setParams`. The standard mint price is **0.05 ETH**. The mint is currently running a promotional price of **0.02 ETH**, and Nova is currently **0.1 ETH**. Price changes apply to new mints and new Nova activations. They do not touch any holder’s wallet or token.
+**Pricing.** Prices are adjustable by the Architect through `setParams` for promotions. The standard mint price is **0.05 ETH**. The mint currently runs at a promotional **0.02 ETH**, and Nova is currently **0.1 ETH**. Council tokens (#111–#999 in steps of 111, and every multiple of 1111 up to #5555) are priced separately. Changes apply to new mints and new Nova activations only.
 
-Nova is an identity and metadata configuration mechanism. It should not be described as a purchase of freedom or as a transfer of control over other people’s tokens.
+### 2.5 Two Metadata Routes
 
-### 2.5 Metadata URI and External Services
+1. **Project route — Base URI and the Sovereign gateway.** The gateway reads each token's current Front, Back and Video from the chain and builds marketplace-ready metadata. This route is what makes unlimited media changes appear on marketplaces and in viewers.
+2. **Holder route — `tokenURI` string.** When the token has ABSOLUTE SOVEREIGNTY and both DNA and HIDDEN are non-empty, the contract bypasses the Base URI and returns the HIDDEN string, which can be a URL or domain operated by the holder.
 
-The metadata architecture has two routing modes:
+NOVA changes **where metadata is obtained**. It does not activate `updateIdentity`.
 
-1. **Project metadata route — Base URI and THE SOVEREIGN PROTOCOL gateway/API.** Tokens that have not activated the NOVA routing condition use the project’s Base URI. The gateway/API reads the on-chain identity and media references, resolves the current values and builds metadata for consuming applications. This route is intentionally part of the system that supports ongoing changes to a token’s media identity; it is not a restriction on the holder’s ability to update those references.
-2. **Holder-directed metadata route — `tokenURI` string.** When both DNA and HIDDEN are greater than zero under the contract’s NOVA condition, the contract bypasses the project Base URI and uses the string configured for `tokenURI`. That string is designed to accept a URL or domain, including an endpoint operated by the token holder.
+External APIs can provide dynamic metadata and media. If a holder's personal API becomes unavailable, the holder or service operator can restore it, change the configured URI or clear the values to return to the project route.
 
-NOVA therefore changes **where the token’s metadata is obtained**. It does not activate `updateIdentity` or create the holder’s initial media-update rights. The Front, Back and Video references remain a separate holder-authorized function.
-
-External APIs can provide dynamic metadata and media for a token. If a holder configures a personal API and that API becomes unavailable, the holder or relevant service operator can restore the service, change the configured URI or adopt another arrangement.
-
-Media referenced through `updateIdentity` can come from any chain or project. The system displays it without verifying ownership or authenticity. The smart contract does not turn a referenced external asset into an asset owned by the token holder. For example, linking to an image of an existing CryptoPunk does not transfer ownership of that original Ethereum NFT. The Base token remains a Sovereign Protocol token and keeps its own name and token number; the external image is only the media it displays.
+Linking to an image of an existing CryptoPunk, for example, does not transfer ownership of that Ethereum NFT. The Base token stays a Sovereign Protocol token with its own name and token number; the external image is only the media it displays.
 
 ### 2.6 Token Bound Accounts
 
-Sovereign Protocol includes integration with ERC-6551 Token Bound Accounts.
-
-A TBA provides a token-associated account address through the configured ERC-6551 registry and implementation infrastructure. It can serve as a foundation for applications that associate assets or activity with a particular token.
-
-The dashboard supports inspecting the relevant TBA address and related token information. A TBA gives the ecosystem a token-associated account layer that can be used by compatible applications and workflows.
+ERC-6551 integration gives each token an associated account address through the configured registry and implementation. The dashboard supports inspecting the TBA address and related token information, and compatible applications can build on this account layer.
 
 ### 2.7 Design Decisions Made Before Deployment
 
-These were part of the design before the contract was deployed. They are product decisions, not limitations.
-
-1. **The metadata gateway exists so holders can change their media freely.** The Base URI points to the Sovereign Protocol gateway, which reads each token’s current Front, Back and Video from the chain. Because of this, a holder can change their image, video or back media any number of times, and the new media appears in marketplaces and viewers.
-2. **300 Architect mints are for giveaways.** They were reserved before deployment to be handed out to build awareness of the project. They are a distribution tool and place no restriction on holders.
-3. **Prices are adjustable for promotions.** Prices were designed to be adjustable so the project can run promotions and make access easier. The mint is currently on promotion. The contract has no function to move, burn or take any holder’s token, and none that touches a holder’s wallet.
-4. **After mint, the token belongs to the holder.** The holder decides the media, the identity values and the metadata route. A holder who wants their own backend or their own metadata API can do it with Nova. The Architect does not take part in those decisions.
+1. **The metadata gateway exists so holders can change their media freely.** The Base URI points to the Sovereign gateway, which reads each token's current Front, Back and Video from the chain. A holder can change image, video or back media any number of times, and the new media appears in marketplaces and viewers.
+2. **300 Architect mints are for giveaways.** They were reserved to build awareness of the project.
+3. **Prices are adjustable for promotions.** This was designed in from the start and the marketing was planned before deployment. The mint is currently on promotion.
+4. **After mint, the token belongs to the holder.** The holder decides the media, the identity values and the metadata route.
 
 ---
 
 ## 3. Infrastructure — Dashboard, API, RPC and Media Pipeline
 
-The infrastructure is the operational layer that connects users, smart-contract functions, media storage, metadata references and products.
-
-It is not merely a minting page. It is designed as a multifunctional interface for interacting with the protocol.
-
 ### 3.1 The Dashboard: Pen, Media Workstation and Display
 
-The dashboard serves three conceptual roles.
+- **The pen — create and write identity.** Enter media references, DNA and HIDDEN and submit the matching contract transactions.
+- **The media workstation — upload and prepare content.** Upload through the integrated Irys workflow, receive a transaction identifier, and use it in the token's identity configuration.
+- **The display — present and inspect media.** Present images, video and interactive 3D, including front/back and different proportions.
 
-**The pen — create and write identity**
-
-Users enter the information they want to associate with their token, including media references, identity DNA and HIDDEN URI. The dashboard provides an interface for submitting the corresponding supported contract transactions.
-
-**The media workstation — upload and prepare content**
-
-Users can upload media through the integrated Irys workflow, receive a transaction identifier or reference, and use the resulting reference in their token’s identity configuration.
-
-**The display — present and inspect media**
-
-The dashboard and viewer components can present images, video and interactive 3D content, including front/back media arrangements and different presentation formats.
-
-Together, these roles form a connected user workflow: prepare media, obtain a reference, write the reference to the token’s on-chain identity and present the resulting experience.
+The workflow: prepare media, obtain a reference, write it to the token's on-chain identity, present the result.
 
 ### 3.2 Irys and Arweave Media Workflow
 
-The media-transmission interface integrates an Irys upload workflow with a stated maximum payload capacity of **500 MB per upload**.
+The Irys integration supports a stated maximum of **500 MB per upload**.
 
-The intended process is:
+1. Select an image, video, audio file or other supported media.
+2. The dashboard sends it through the Irys integration.
+3. The upload returns a transaction identifier or media reference.
+4. Choose how to use the returned reference.
+5. Submit the identity update transaction to the contract.
+6. The dashboard or viewer presents the configured content.
 
-1. The user selects an image, video, audio file or other supported media type.
-2. The dashboard sends the media through the configured Irys integration.
-3. The upload process returns a transaction identifier or media reference.
-4. The user chooses how the returned reference should be used.
-5. The user submits the relevant identity update transaction to the smart contract.
-6. The dashboard or viewer uses the configured reference to present the associated content.
-
-For example, a creator can upload a newly produced dog-character artwork, obtain its media reference, and submit that reference through **updateIdentity** as the front image URI. The creator can also configure a back reference or video reference where supported.
-
-**Uploading content and updating the NFT are separate actions.** Obtaining an Irys transaction ID does not, by itself, change the smart contract. The holder submits the relevant on-chain transaction to update the token’s identity.
+A creator can upload new artwork, obtain its reference and submit it through `updateIdentity` as the Front URI, and optionally set a Back or Video reference. Uploading and updating the token are separate actions: an Irys transaction ID does not by itself change the contract.
 
 ### 3.3 API and Metadata Gateway
 
-The API and metadata gateway provide the service layer between the project Base URI, the on-chain media references, metadata consumers and the presentation experience. It is an intentional part of the architecture for repeatedly resolving updated identity/media references and delivering the corresponding metadata.
+The gateway sits between the Base URI, the on-chain references, metadata consumers and the viewers. It:
 
-The current metadata API implementation:
-
-- Reads Deed data from the configured Base contract.
-- Uses multiple RPC endpoints for on-chain reads.
-- Retrieves owner, active status, sovereignty status, front/back/video references, DNA, HIDDEN and TBA information through **getDeedData**.
-- Resolves configured media references and identifies supported media types.
-- Builds marketplace-compatible metadata, including **image**, **animation_url**, **external_url** and attributes.
+- Reads Deed data from the Base contract through multiple RPC endpoints.
+- Retrieves owner, active status, sovereignty status, Front/Back/Video, DNA, HIDDEN and TBA through `getDeedData`.
+- Resolves media references and identifies supported media types.
+- Builds marketplace-compatible metadata: `image`, `animation_url`, `external_url` and attributes.
 - Converts DNA trait strings into metadata attributes.
-- Includes response caching, request-rate limiting and a health endpoint.
+- Provides response caching, request-rate limiting and a health endpoint.
 
-This layer lets media references be presented through marketplace metadata without requiring the smart contract itself to host arbitrary files or render a 3D scene.
-
-The architecture intentionally allows holders to update media references repeatedly while the project metadata route continues to resolve and deliver the current metadata. When the NOVA routing condition is met, the holder can instead direct `tokenURI` to a URL or domain for an independently operated metadata API. A creator can use an endpoint associated with their artwork; a business can maintain a project metadata service; and a viewer or marketplace can request the resulting metadata for presentation.
+This lets media be presented through marketplace metadata without the contract hosting files or rendering a 3D scene.
 
 ### 3.4 RPC-Powered HTML Products
 
-The product viewers are delivered as HTML experiences, with principal rendering code and assets packaged into the viewer. RPC configuration can be included for reading supported on-chain data from Base.
-
-This architecture combines local real-time rendering with optional network-connected token inspection:
-
-- **Local 3D experience:** Renders in the browser without requiring a wallet connection simply to view the scene.
-- **Read-only blockchain information:** Uses internet access and a configured RPC endpoint.
-- **Wallet transactions:** Require an appropriate wallet/provider flow and authorization; read-only access does not itself sign a transaction.
-- **External media:** Can be loaded using the configured media references and the viewer’s supported formats.
-
-The result is a portable, browser-based digital product that can provide an interactive 3D experience while keeping blockchain inspection and signed ownership operations distinct.
+- **Local 3D experience:** Renders in the browser with no wallet needed to view the scene.
+- **Read-only blockchain information:** Uses internet access and a configured Base RPC endpoint.
+- **Wallet transactions:** Require a wallet/provider flow and authorization; read-only access never signs a transaction.
+- **External media:** Loaded from configured references in the formats the viewer supports.
 
 ### 3.5 Three Simultaneous Live Media Screens
 
-The dashboard presents **three media screens running at the same time**. Each one can be expanded to full screen with its OPEN FULL SCREEN button.
+The dashboard runs three screens at once, each with an OPEN FULL SCREEN button.
 
-- **Mode 1:** the holder’s own Front, Back and Video, shown as a flip card.
+- **Mode 1:** the holder's Front, Back and Video as a flip card.
 - **Mode 2:** the STANDARD 3D experience.
-- **Mode 3:** the SPACECRAFT 3D experience for that token (for example, Deed #1 shows ARC-01).
+- **Mode 3:** the SPACECRAFT 3D experience for that token (Deed #1 shows ARC-01).
 
-Modes 2 and 3 show the project’s own 3D files.
-
-The screens are intended to allow multiple content views to be presented at the same time rather than forcing the user to choose only one active display.
-
-Supported presentation concepts include:
-
-- Images and artwork.
-- Video.
-- Interactive 3D scenes.
-- Front/back media and flip-card presentation.
-- Different viewing proportions, including 1:1, 9:16 and 3:4, where supported by the relevant viewer.
-- Token-related visual experiences alongside blockchain information.
-
-Running three screens at once uses more battery, memory and bandwidth, so smoother playback comes from a recent device and a good connection.
-
-The user determines the content and references they configure. The infrastructure provides the tools to present those choices.
+Supported presentation includes images, video, interactive 3D, flip-card front/back and proportions of 1:1, 9:16 and 3:4 where the viewer supports them. Running three screens at once uses more battery, memory and bandwidth, so a recent device and a good connection give the smoothest playback.
 
 ### 3.6 Holder-Controlled Operations
 
-The dashboard is designed to make the contract’s available operations accessible through a user-facing interface.
-
-The intended workflow covers token inspection, minting where available, TBA interaction, identity DNA and HIDDEN configuration, and media identity updates.
-
-The dashboard invokes supported operations; authorization and transaction rules remain enforced by the smart contract.
+The dashboard covers token inspection, minting, TBA interaction, DNA and HIDDEN configuration and media identity updates. It invokes the contract's operations; authorization stays enforced by the smart contract.
 
 ---
 
 ## 4. Products — Two Connected Digital Product Families
 
-Sovereign Protocol’s infrastructure supports multiple kinds of digital experiences. The project’s product layer includes two principal families:
+1. **STANDARD** — Crystal Energy Core and related digital-art experiences.
+2. **SPACECRAFT** — ARC-01 Sovereignty Architect Flagship and the Sovereignty Fleet.
 
-1. **STANDARD — Crystal Energy Core and related digital-art experiences**
-2. **SPACECRAFT — ARC-01 Sovereignty Architect Flagship and the Sovereignty Fleet**
-
-These products are not the same thing as the infrastructure. They are creative experiences built to use the ecosystem’s identity and presentation capabilities.
+These are creative experiences built on the ecosystem's identity and presentation capabilities.
 
 ---
 
 ## 5. STANDARD — Crystal Energy Core · Sovereign Awakening
 
-### Product Concept
+**CRYSTAL ENERGY CORE — SOVEREIGN AWAKENING** is a real-time, browser-based 3D digital-art experience built around a luminous crystal, rotating particle rings, layered depth, lighting and ambient audio. It is distributed as a single HTML file with its principal 3D components and assets packaged inside.
 
-**CRYSTAL ENERGY CORE — SOVEREIGN AWAKENING** is a real-time, browser-based 3D digital-art experience built around a luminous crystal, rotating particle rings, layered depth, lighting effects and ambient audio.
-
-The experience is designed to be distributed as a single HTML file with the principal 3D rendering components and embedded assets packaged inside it.
-
-### Interactive Experience
-
-The product includes these presentation elements:
-
-- A three-dimensional crystal that rotates continuously.
+- A continuously rotating three-dimensional crystal.
 - Particle rings with distinct foreground and background layers.
 - Lighting and bloom effects.
-- Ambient audio that the viewer can enable or disable.
-- Audio-reactive visual effects that change selected particle and ring properties according to measured sound intensity.
+- Ambient audio the viewer can enable or disable.
+- Audio-reactive effects that change particle and ring properties with measured sound intensity.
 - Interactive camera controls.
 - Read-only access to supported on-chain token information through embedded RPC configuration.
 
-The audio-reactive effects create a relationship between sound and the artwork’s visual behaviour. They are sound-level-responsive effects that change the presentation in real time.
-
-### Real-Time and Offline Use
-
-The 3D scene is designed to render locally in the browser. Embedded rendering assets reduce the need to download the main 3D libraries or audio files from external services.
-
-The experience does not require a wallet connection simply to view and interact with the local artwork.
-
-Its local and online capabilities are distinct:
-
-- **Local 3D experience:** Designed to operate without a wallet and with the principal assets embedded in the HTML file.
-- **Blockchain information:** Requires internet access and a working RPC endpoint.
-- **Wallet transactions:** Are not implied by the read-only blockchain viewer.
-- **Offline use:** The local artwork can render without live RPC data, while online blockchain information requires connectivity.
-
-The product combines a locally rendered digital-art experience with optional network-connected token inspection.
+**Real-time and offline use.** The scene renders locally and needs no wallet to view or interact. The artwork renders without live RPC data; blockchain information needs internet access and a working RPC endpoint. Wallet transactions are not part of the read-only viewer.
 
 ---
 
 ## 6. SPACECRAFT — ARC-01 Sovereignty Architect Flagship & Fleet
 
-### Product Concept
+**ARC-01** is the Sovereignty Architect Flagship: an interactive spacecraft experience in a cinematic science-fiction environment. Its visual direction combines metallic black and gold, high-contrast lighting, propulsion effects, HUD elements, planetary environments and a simulated transition through spacetime.
 
-**ARC-01** is the Sovereignty Architect Flagship: an interactive spacecraft experience presented through a cinematic science-fiction environment.
+### The Spacetime Narrative
 
-Its visual direction combines metallic black and gold, high-contrast lighting, propulsion effects, HUD-style interface elements, planetary environments and a simulated transition through spacetime.
+ARC-01 uses Einstein–Rosen bridges, wormholes, spacetime geometry and gravitational singularities as the foundation of its art direction, in five stages:
 
-The accompanying fleet extends the visual universe into additional spacecraft identities and 3D experiences.
+1. **Flat spacetime and sub-light cruise.** The ship cruises through a conventional environment of planets and debris with propulsion active.
+2. **Plasma cannon breach and gravitational singularity.** A plasma-firing sequence creates a concentrated energy effect and a simulated spacetime disruption — the opening of a wormhole.
+3. **Traversing the wormhole throat.** A tunnel of rotating energy rings, neon light and spatial distortion represents a compressed spacetime route.
+4. **White-hole emergence and restabilization.** The ship emerges into a new environment, warp effects fade and flight stabilizes.
+5. **New-sector calibration and reset.** A new space environment begins another cycle.
 
-### ARC-01 and the Spacetime Narrative
-
-The ARC-01 experience uses concepts associated with Einstein–Rosen bridges, wormholes, spacetime geometry and gravitational singularities as the foundation for its science-fiction art direction.
-
-Its intended sequence comprises five stages.
-
-**1. Flat spacetime and sub-light cruise**
-
-The spacecraft cruises through a conventional space environment containing planets and debris. Its propulsion systems remain active while the experience prepares for a warp sequence.
-
-**2. Plasma cannon breach and gravitational singularity**
-
-A plasma-firing sequence introduces a concentrated energy effect and a simulated spacetime disruption. The visual narrative represents a singularity and the opening of a wormhole.
-
-**3. Traversing the wormhole throat**
-
-The ship enters a tunnel-like environment built from rotating energy rings, neon light and spatial distortion. The visual concept represents a transition through a compressed spacetime route rather than ordinary flight across the entire distance.
-
-**4. White-hole emergence and restabilization**
-
-The spacecraft emerges into a new environment. Warp effects fade, and the presentation returns toward a stable flight state.
-
-**5. New-sector calibration and reset**
-
-The experience transitions into a new space environment and begins another cycle.
-
-These stages are a fictional, interactive visualization inspired by theoretical physics. The product uses the concepts as a creative and cinematic framework.
+These stages are a fictional, interactive visualization inspired by theoretical physics, used as a cinematic framework.
 
 ### Interaction and Presentation
 
-The ARC-01 product experience is designed around an interactive 3D scene, including spacecraft movement, propulsion and weapon effects, camera controls, HUD elements and cinematic environmental transitions.
-
-The product’s presentation combines:
-
 - A recognizable flagship silhouette.
 - Metallic materials and high-contrast lighting.
-- Multiple propulsion effects.
+- Multiple propulsion effects, weapon effects and HUD elements.
 - Space environments and particle effects.
-- Interactive flight and visual effects.
-- A browser-based 3D viewing experience.
-- Plasma- and warp-themed controls shown in the viewer interface.
+- Interactive flight and camera controls.
+- Plasma- and warp-themed controls in the viewer interface.
 
-### Fleet and Expansion
+### Fleet
 
-The broader SPACECRAFT product family includes the flagship and a planned collection of additional spacecraft designs.
-
-The current SPACECRAFT lineup documents **ten distinct units**. Eight spacecraft are completed, while two additional spacecraft are in the final finishing and decorative stage.
+The current lineup documents **ten distinct units**: eight completed and two in the final finishing and decorative stage.
 
 | Unit | Designation | Spacecraft Name | Viewer Link |
 |---|---|---|---|
@@ -474,25 +351,19 @@ The current SPACECRAFT lineup documents **ten distinct units**. Eight spacecraft
 | **UNIT #4444** | **PX-44** | **SOVEREIGNTY BLACK STAR PLASMA REAPER** | [Open](https://gateway.irys.xyz/A3SNa932kAP2FKmYyzZnePq6zic74sK66LBaP3zr5VT1#4444) |
 | **UNIT #5555** | **TX-01** | **SOVEREIGNTY TITAN SLAYER** | [Open](https://gateway.irys.xyz/A3SNa932kAP2FKmYyzZnePq6zic74sK66LBaP3zr5VT1#5555) |
 
-The broader creative roadmap targets **15 spacecraft models**. This is a long-term expansion target; it should not be confused with the ten units currently documented above.
-
-The fleet is part of the same overall product architecture: distinct digital products can be presented through interactive viewers while using the wider infrastructure’s media and token-information capabilities.
+The roadmap targets **15 spacecraft models** in total; ten are documented above.
 
 ---
 
 ## 7. Product Delivery and User Experience
 
-The project brings together three experiences that are often treated separately.
+Three experiences that are usually separate come together here.
 
-**Ownership:** The smart contract records the token and exposes the operations defined by its rules.
+- **Ownership:** The contract records the token and exposes its operations.
+- **Identity:** Holders configure media and identity references through owner-authorized functions.
+- **Presentation:** Browser-based products display artwork, video and interactive 3D without requiring a wallet connection for ordinary viewing.
 
-**Identity:** Holders can configure supported media and identity references and update them through the relevant owner-authorized functions.
-
-**Presentation:** Browser-based products display artwork, video or interactive 3D content without making wallet connection a prerequisite for ordinary viewing.
-
-This separation matters. A viewer can display an artwork without signing a blockchain transaction. A read-only RPC call can retrieve public token information without taking custody of a wallet. An identity update, by contrast, requires the appropriate on-chain transaction.
-
-The products can therefore provide a rich viewing experience while keeping ownership operations distinct from ordinary media presentation.
+A viewer can display artwork without signing a transaction. A read-only RPC call retrieves public token information without taking custody of a wallet. An identity update requires an on-chain transaction.
 
 ---
 
@@ -504,7 +375,7 @@ The products can therefore provide a rich viewing experience while keeping owner
 - **Smart contract on BaseScan:** https://basescan.org/address/0x06040F2e5301B2616491E113962A84d372b8f600
 - **Dashboard and product repository:** https://github.com/machiavelliandarkcoolempire-eng/Sovereign-absolute
 - **Metadata gateway repository:** https://github.com/machiavelliandarkcoolempire-eng/fluffy-rotary-phone
-- **Backend API (metadata gateway, live):** https://fluffy-rotary-phone-bice.vercel.app/
+- **Backend API (live):** https://fluffy-rotary-phone-bice.vercel.app/
 
 ### Product Viewer Links
 
@@ -524,13 +395,13 @@ The products can therefore provide a rich viewing experience while keeping owner
 
 SH-22 Shadow Blade (#222) and TD-33 Thunder Black Star (#333) are in the finishing stage; links will be added once they are published.
 
-### Relevant Implementation Files
+### Implementation Files
 
 - **index.html** — Sovereign dashboard and browser interface.
 - **index.js** — Irys WebUploader initialization using the Ethereum adapter and Ethers v6.
 - **ARC-01.html** — ARC-01 flagship 3D experience.
 - **ARC-09.html** — ARC-09 White Star 3D experience.
-- **SHIP_111.html**, **SHIP_1111.html**, **SHIP_2222.html**, **SHIP_3333.html**, **SHIP_4444.html**, **SHIP_5555.html** — fleet product experiences.
+- **SHIP_111.html**, **SHIP_1111.html**, **SHIP_2222.html**, **SHIP_3333.html**, **SHIP_4444.html**, **SHIP_5555.html** — fleet experiences.
 - **SOVEREIGN_AWAKENING.html** — STANDARD / Crystal Energy Core experience.
 - **SOVEREIGN_AWAKENING_onchain.html** — on-chain-aware Sovereign Awakening variant.
 - **SOVEREIGN_COUNCIL.html** — Sovereign Council experience.
@@ -540,37 +411,14 @@ SH-22 Shadow Blade (#222) and TD-33 Thunder Black Star (#333) are in the finishi
 
 ## 9. Architectural Principles
 
-### Holder-Directed Identity
-
-From mint onward, the holder can update Front URI, Back URI and Video URI through `updateIdentity`, as many times as they like, with no update limit and no contract fee. The holder chooses the media references associated with their token. NOVA is not required for these updates.
-
-### Infrastructure as a Service Layer
-
-The Architect’s role is to develop, maintain and support the ecosystem. Contract administration and infrastructure maintenance are distinct from ownership of another user’s token.
-
-### Dynamic Media
-
-A token’s presentation can evolve through updated identity fields and metadata references. The token does not need to be defined forever by its initial image.
-
-### Separation of Storage, Contract and Presentation
-
-The storage service holds media; the contract records ownership and the holder-configured Front, Back and Video references; the project Base URI and metadata gateway resolve and serve metadata; NOVA can switch `tokenURI` to a holder-specified URL/domain when DNA and HIDDEN are both greater than zero; and the viewer presents the experience.
-
-### Real-Time Digital Products
-
-The STANDARD and SPACECRAFT product families use browser-based rendering to deliver interactive digital artwork and 3D experiences. Their HTML delivery model supports portability while RPC connectivity adds read-only access to supported on-chain information.
-
-### Optional Blockchain Inspection
-
-The products can display supported read-only blockchain data without requiring wallet connection for ordinary viewing.
-
-### User Choice Over External Services
-
-A holder can configure external identity, media or metadata services. The holder or relevant service operator decides how to maintain or change those services as needed.
-
-### Cross-Chain Media Display
-
-The Front URI, Back URI and Video URI set through `updateIdentity` can reference media from any chain or any project without restriction. Sovereign Protocol fetches and displays the referenced media. It does not verify ownership of the original asset and does not certify that the referenced media is genuine. Display is the function; verification, if any, belongs to the holder or an external service.
+- **Holder-directed identity.** From mint onward the holder updates Front, Back and Video through `updateIdentity`, as many times as they like, with no update limit and no contract fee. NOVA is not required.
+- **Infrastructure as a service layer.** The Architect develops, maintains and supports the ecosystem. Infrastructure maintenance is distinct from ownership of any holder's token.
+- **Dynamic media.** A token's presentation evolves through updated identity fields and metadata references.
+- **Separation of storage, contract and presentation.** Storage holds media; the contract records ownership and the holder's references; the Base URI and gateway serve metadata; NOVA can switch `tokenURI` to a holder-specified endpoint; the viewer presents the experience.
+- **Real-time digital products.** STANDARD and SPACECRAFT render in the browser; the HTML delivery model keeps them portable, and RPC adds read-only on-chain information.
+- **Optional blockchain inspection.** Read-only data without a wallet connection for ordinary viewing.
+- **User choice over external services.** A holder can configure external identity, media or metadata services and change them at any time.
+- **Cross-chain media display.** Front, Back and Video can reference media from any chain or project without restriction. Sovereign displays it; verification, if any, belongs to the holder or an external service.
 
 ---
 
@@ -579,22 +427,20 @@ The Front URI, Back URI and Video URI set through `updateIdentity` can reference
 Sovereign Protocol is a connected Web3 architecture that combines:
 
 - An ERC-721 smart contract on Base.
-- Holder-controlled identity and configurable metadata references.
-- Identity DNA and HIDDEN URI functionality.
+- Holder-controlled identity with unlimited, fee-free media updates.
+- DNA and HIDDEN identity fields with optional holder-operated metadata routing through NOVA.
 - ERC-6551 Token Bound Account integration.
-- A multifunctional dashboard for interacting with contract operations.
-- An Irys media-upload workflow with a stated 500 MB payload capacity.
+- A multifunctional dashboard for contract operations.
+- An Irys media-upload workflow with a stated 500 MB capacity.
 - RPC-powered token inspection in supported viewers.
-- API and metadata infrastructure that reads Deed state and builds marketplace-compatible metadata.
+- A metadata gateway that reads Deed state and builds marketplace-compatible metadata.
 - A dashboard with three simultaneous media screens, each with a full-screen option.
 - STANDARD digital-art experiences, including Crystal Energy Core.
 - SPACECRAFT experiences, including ARC-01 and the wider fleet.
-- Real-time browser-based 3D presentation with game-like interaction and optional read-only blockchain information.
-- Cross-chain media display through `updateIdentity`: media from any chain or project can be referenced and shown, without ownership verification.
-- Holder-configured DNA and HIDDEN references for identity and metadata routing.
+- Cross-chain media display: media from any chain or project can be referenced and shown.
 
-The infrastructure and products are designed to work together: the contract provides the on-chain foundation, the dashboard gives holders an operational interface, the media infrastructure connects content to identity, and the products turn those capabilities into interactive digital experiences.
+The contract provides the on-chain foundation, the dashboard gives holders an operational interface, the media infrastructure connects content to identity, and the products turn those capabilities into interactive experiences.
 
-**Sovereign Protocol is built around a clear division of responsibility: the holder directs their token’s identity; the contract enforces its encoded rules; and the infrastructure exists to support the holder’s choices.**
+**The holder directs their token's identity; the contract enforces its encoded rules; and the infrastructure exists to support the holder's choices.**
 
 **YOUR TOKEN. YOUR MEDIA. YOUR CHOICE.**
