@@ -26,7 +26,7 @@
 
 **Three live screens, one token.** The dashboard shows the holder's flip card, STANDARD 3D and SPACECRAFT 3D side by side, each with its own full-screen mode.
 
-**A growing fleet.** Eight spacecraft are completed and two are in final finishing, with a 15-model roadmap.
+**A growing fleet.** Twelve spacecraft are in the fleet, with a 15-model roadmap.
 
 ---
 
@@ -89,7 +89,7 @@ DNA and HIDDEN are separate flexible string fields configured through NOVA. They
 
 ### Roadmap
 
-- **Sovereignty Fleet:** Eight spacecraft are completed; two more are in the final finishing and decorative stage.
+- **Sovereignty Fleet:** Twelve spacecraft are in the fleet.
 - **Expansion target:** 15 spacecraft models in total. This is a roadmap goal, not a claim that all 15 are complete.
 - **Continued evolution:** Additional spacecraft identities, scenes and presentation experiences on the shared token, metadata and viewer architecture.
 
@@ -336,22 +336,24 @@ These stages are a fictional, interactive visualization inspired by theoretical 
 
 ### Fleet
 
-The current lineup documents **ten distinct units**: eight completed and two in the final finishing and decorative stage.
+The fleet has **twelve spacecraft**, all listed below with their designations and viewer links.
 
 | Unit | Designation | Spacecraft Name | Viewer Link |
 |---|---|---|---|
 | **UNIT #1** | **ARC-01** | **SOVEREIGNTY ARCHITECT FLAGSHIP** | [Open](https://gateway.irys.xyz/A3SNa932kAP2FKmYyzZnePq6zic74sK66LBaP3zr5VT1) |
 | **UNIT #111** | **DS-01** | **SOVEREIGNTY GOLDEN DRAGON** | [Open](https://gateway.irys.xyz/GjajqvigutVM9msryzDv6e5diiYbGnE9Yi6GdiXStGLB#111) |
-| **UNIT #222** | **SH-22** | **SOVEREIGNTY SHADOW BLADE** | In finishing stage |
-| **UNIT #333** | **TD-33** | **SOVEREIGNTY THUNDER BLACK STAR** | In finishing stage |
+| **UNIT #222** | **SH-22** | **SOVEREIGNTY SHADOW BLADE** | [Open](https://gateway.irys.xyz/FmZH96LgwksCDWTDnqvXWaWavhtEhTK5x3gXjt5GDv6D#222) |
+| **UNIT #333** | **TD-33** | **SOVEREIGNTY THUNDER BLACK STAR** | [Open](https://gateway.irys.xyz/FmZH96LgwksCDWTDnqvXWaWavhtEhTK5x3gXjt5GDv6D#333) |
+| **UNIT #444** | **D-04** | **SOVEREIGNTY DARKNESS** | [Open](https://gateway.irys.xyz/FmZH96LgwksCDWTDnqvXWaWavhtEhTK5x3gXjt5GDv6D#444) |
+| **UNIT #555** | **ARC-555** | **SOVEREIGNTY ARCHITECT FLAGSHIP BLACK BIRDS** | [Open](https://gateway.irys.xyz/6ztszd3crfqCqySukNzsN5BAPvkLKazYKrZdxdsmUdH4) |
 | **UNIT #999** | **ARC-09** | **SOVEREIGNTY ARCHITECT FLAGSHIP WHITE STAR** | [Open](https://gateway.irys.xyz/GjajqvigutVM9msryzDv6e5diiYbGnE9Yi6GdiXStGLB) |
-| **UNIT #1111** | **S-22** | **SOVEREIGNTY T-REX** | [Open](https://gateway.irys.xyz/A3SNa932kAP2FKmYyzZnePq6zic74sK66LBaP3zr5VT1#1111) |
-| **UNIT #2222** | **SO-57** | **SOVEREIGNTY EAGLE** | [Open](https://gateway.irys.xyz/GjajqvigutVM9msryzDv6e5diiYbGnE9Yi6GdiXStGLB#2222) |
+| **UNIT #1111** | **S-22** | **SOVEREIGNTY T-REX** | [Open](https://gateway.irys.xyz/FmZH96LgwksCDWTDnqvXWaWavhtEhTK5x3gXjt5GDv6D) |
+| **UNIT #2222** | **SO-57** | **SOVEREIGNTY EAGLE** | [Open](https://gateway.irys.xyz/A3SNa932kAP2FKmYyzZnePq6zic74sK66LBaP3zr5VT1#2222) |
 | **UNIT #3333** | **GT-03** | **SOVEREIGNTY PHANTOM APEX** | [Open](https://gateway.irys.xyz/A3SNa932kAP2FKmYyzZnePq6zic74sK66LBaP3zr5VT1#3333) |
 | **UNIT #4444** | **PX-44** | **SOVEREIGNTY BLACK STAR PLASMA REAPER** | [Open](https://gateway.irys.xyz/A3SNa932kAP2FKmYyzZnePq6zic74sK66LBaP3zr5VT1#4444) |
 | **UNIT #5555** | **TX-01** | **SOVEREIGNTY TITAN SLAYER** | [Open](https://gateway.irys.xyz/A3SNa932kAP2FKmYyzZnePq6zic74sK66LBaP3zr5VT1#5555) |
 
-The roadmap targets **15 spacecraft models** in total; ten are documented above.
+The roadmap targets **15 spacecraft models** in total; twelve are in the fleet today and documented above.
 
 ---
 
@@ -385,15 +387,17 @@ A viewer can display artwork without signing a transaction. A read-only RPC call
 **SPACECRAFT**
 
 - **ARC-01 Sovereignty Architect Flagship:** https://gateway.irys.xyz/A3SNa932kAP2FKmYyzZnePq6zic74sK66LBaP3zr5VT1
-- **S-22 Sovereignty T-Rex (#1111):** https://gateway.irys.xyz/A3SNa932kAP2FKmYyzZnePq6zic74sK66LBaP3zr5VT1#1111
+- **DS-01 Sovereignty Golden Dragon (#111):** https://gateway.irys.xyz/GjajqvigutVM9msryzDv6e5diiYbGnE9Yi6GdiXStGLB#111
+- **SH-22 Sovereignty Shadow Blade (#222):** https://gateway.irys.xyz/FmZH96LgwksCDWTDnqvXWaWavhtEhTK5x3gXjt5GDv6D#222
+- **TD-33 Sovereignty Thunder Black Star (#333):** https://gateway.irys.xyz/FmZH96LgwksCDWTDnqvXWaWavhtEhTK5x3gXjt5GDv6D#333
+- **D-04 Sovereignty Darkness (#444):** https://gateway.irys.xyz/FmZH96LgwksCDWTDnqvXWaWavhtEhTK5x3gXjt5GDv6D#444
+- **ARC-555 Sovereignty Architect Flagship Black Birds (#555):** https://gateway.irys.xyz/6ztszd3crfqCqySukNzsN5BAPvkLKazYKrZdxdsmUdH4
+- **ARC-09 Sovereignty Architect Flagship White Star (#999):** https://gateway.irys.xyz/GjajqvigutVM9msryzDv6e5diiYbGnE9Yi6GdiXStGLB
+- **S-22 Sovereignty T-Rex (#1111):** https://gateway.irys.xyz/FmZH96LgwksCDWTDnqvXWaWavhtEhTK5x3gXjt5GDv6D
+- **SO-57 Sovereignty Eagle (#2222):** https://gateway.irys.xyz/A3SNa932kAP2FKmYyzZnePq6zic74sK66LBaP3zr5VT1#2222
 - **GT-03 Sovereignty Phantom Apex (#3333):** https://gateway.irys.xyz/A3SNa932kAP2FKmYyzZnePq6zic74sK66LBaP3zr5VT1#3333
 - **PX-44 Sovereignty Black Star Plasma Reaper (#4444):** https://gateway.irys.xyz/A3SNa932kAP2FKmYyzZnePq6zic74sK66LBaP3zr5VT1#4444
 - **TX-01 Sovereignty Titan Slayer (#5555):** https://gateway.irys.xyz/A3SNa932kAP2FKmYyzZnePq6zic74sK66LBaP3zr5VT1#5555
-- **DS-01 Sovereignty Golden Dragon (#111):** https://gateway.irys.xyz/GjajqvigutVM9msryzDv6e5diiYbGnE9Yi6GdiXStGLB#111
-- **ARC-09 Sovereignty Architect Flagship White Star (#999):** https://gateway.irys.xyz/GjajqvigutVM9msryzDv6e5diiYbGnE9Yi6GdiXStGLB
-- **SO-57 Sovereignty Eagle (#2222):** https://gateway.irys.xyz/GjajqvigutVM9msryzDv6e5diiYbGnE9Yi6GdiXStGLB#2222
-
-SH-22 Shadow Blade (#222) and TD-33 Thunder Black Star (#333) are in the finishing stage; links will be added once they are published.
 
 ### Implementation Files
 
