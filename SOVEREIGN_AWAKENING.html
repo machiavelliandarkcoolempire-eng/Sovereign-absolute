@@ -2410,9 +2410,9 @@
     ];
     const forcedQ = __qs.has('q') ? Math.max(0, Math.min(3, parseInt(__qs.get('q'), 10) || 0)) : -1;
     let qLevel = forcedQ >= 0 ? forcedQ : (lowEnd ? (isCoarse ? 2 : 1) : (isCoarse ? 1 : 0));
-    const RING_PULSE_GAIN = 0.575;  // ring brightness boost at the beat, max 57.5% (0 = pulse system fully off)
-    const RING_PULSE_SIZE = 0.4025;  // particle size boost at the beat, max ~40%
-    const RING_PULSE_SCALE = 0.0253; // whole-ring scale boost at the beat, max ~2.5%
+    const RING_PULSE_GAIN = 1.15;  // ring brightness boost at the beat, max 115% (0 = pulse system fully off)
+    const RING_PULSE_SIZE = 0.80;  // particle size boost at the beat, max ~80%
+    const RING_PULSE_SCALE = 0.05; // whole-ring scale boost at the beat, max ~5%
     const RING_GAIN = 2.4 * (parseFloat(__qs.get('ring')) || 1);     // smoother light output; ?ring remains an optional artistic control
     const RING_ALPHA = 0.90;
 
@@ -2604,7 +2604,7 @@
             coreBrightness: int(80, 125),              // % of the luminance-matched core gain
             haloOpacity: int(20, 40),                  // % (raised baseline range, modulated by the light pulse)
             edgeOpacity: int(28, 45),                  // % (raised baseline range)
-            ringParticles: int(600, 1000),             // count on a full-power device
+            ringParticles: int(900, 1300),             // count on a full-power device
             runeCoverage: int(55, 90),                 // % of rune cells drawn (was fixed 75)
             runeTexture: r() < 0.7 ? 4096 : 2048,      // px
             ringOpacity: 35 + (((fnv1a(contractAddr.toLowerCase() + ':' + tokenId + ':ring-opacity:' + TRAIT_VERSION) -
@@ -3666,9 +3666,9 @@ function colorName(L, C, h) {
 
     /* Frame governor: measures real frame time after a warm-up and steps quality DOWN when the budget is missed (60 fps, or ~90 on high-refresh panels). */
     const GOV = { last: 0, warm: 90, cool: 0, sum: 0, n: 0, buf: [], budget: 16.7, hs: 0, hn: 0 };
-    const dbg = __qs.has('debug') ? (function () {
+    const dbg = __qs.get('fps') !== '0' ? (function () {   // FPS readout shown by default; add ?fps=0 to hide
         const d = document.createElement('div');
-        d.style.cssText = 'position:fixed;left:8px;bottom:8px;z-index:99;font:11px/1.3 monospace;color:#8fe;background:rgba(0,0,0,.55);padding:3px 6px;border-radius:4px;pointer-events:none';
+        d.style.cssText = 'position:fixed;left:16px;top:calc(66px + env(safe-area-inset-top, 0px));z-index:99;font:10px/1.3 monospace;letter-spacing:1.5px;color:var(--accent);background:rgba(5,8,15,.72);border:1px solid rgba(var(--accent-rgb),.55);box-shadow:0 0 12px rgba(var(--accent-rgb),.3);padding:3px 10px;border-radius:999px;pointer-events:none';
         document.body.appendChild(d); return d;
     })() : null;
     function governor(now) {
@@ -3693,7 +3693,7 @@ function colorName(L, C, h) {
                 }
                 if (dbg) {
                     GOV.hs += d; GOV.hn++;
-                    if (GOV.hn >= 30) { dbg.textContent = 'Q' + qLevel + '  ' + (1000 * GOV.hn / GOV.hs).toFixed(0) + ' fps  ' + (GOV.hs / GOV.hn).toFixed(1) + ' ms  dpr ' + getDPR().toFixed(2); GOV.hs = 0; GOV.hn = 0; }
+                    if (GOV.hn >= 30) { dbg.textContent = 'FPS: ' + (1000 * GOV.hn / GOV.hs).toFixed(0); GOV.hs = 0; GOV.hn = 0; }
                 }
             }
         }
