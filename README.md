@@ -204,11 +204,9 @@ After Nova the token carries ABSOLUTE SOVEREIGNTY status. The Nova fee is paid o
 1. **Project route — Base URI and the Sovereign gateway.** The gateway reads each token's current Front, Back and Video from the chain and builds marketplace-ready metadata. This route is what makes unlimited media changes appear on marketplaces and in viewers.
 2. **Holder route — `tokenURI` string.** When the token has ABSOLUTE SOVEREIGNTY and both DNA and HIDDEN are non-empty, the contract bypasses the Base URI and returns the HIDDEN string, which can be a URL or domain operated by the holder.
 
-NOVA changes **where metadata is obtained**. It does not activate `updateIdentity`.
-
-External APIs can provide dynamic metadata and media. If a holder's personal API becomes unavailable, the holder or service operator can restore it, change the configured URI or clear the values to return to the project route.
-
-Linking to an image of an existing CryptoPunk, for example, does not transfer ownership of that Ethereum NFT. The Base token stays a Sovereign Protocol token with its own name and token number; the external image is only the media it displays.
+NOVA changes where metadata is obtained. It does not activate updateIdentity.
+​External APIs can provide dynamic metadata and media. If a personal API becomes unavailable, only the token owner (the wallet holder) can restore their endpoint, update the configured URI, or clear the values on-chain to return to the default project route. No one else—not even the Architect, the protocol, or any third party—can access, modify, or reset a token's NOVA settings.
+​Linking to an image of an existing CryptoPunk, for example, does not transfer ownership of that Ethereum NFT. The Base token remains a Sovereign Protocol token with its own name and token number; the external image is strictly the media it displays.
 
 ### 2.6 Token Bound Accounts
 
