@@ -22,8 +22,6 @@
 
 **Ownership is the holder's from mint.** The contract has no function to transfer, burn, freeze or pause a holder's token. A holder who wants a fully independent metadata endpoint can route `tokenURI` to it through NOVA.
 
-**Pricing built for promotions.** Mint, Nova and Council prices are adjustable through `setParams`. This was planned before deployment so the project can run campaigns and make access easier. Price changes apply only to new mints and new Nova activations; an existing token is never affected.
-
 **Three live screens, one token.** The dashboard shows the holder's flip card, STANDARD 3D and SPACECRAFT 3D side by side, each with its own full-screen mode.
 
 **A growing fleet.** Twelve spacecraft are in the fleet, with a 15-model roadmap.
