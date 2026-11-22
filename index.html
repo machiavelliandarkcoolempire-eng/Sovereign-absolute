@@ -459,7 +459,10 @@
         <article class="min-w-0">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
                 <h3 class="text-[10px] font-mono font-bold text-amber-400 uppercase tracking-widest">MODE 2: 3D STANDARD DEEDS (AUTO-ROTATE)</h3>
-                <button type="button" onclick="togglePreviewFullscreen('previewBackContainer')" aria-controls="previewBackContainer" class="w-full sm:w-auto min-h-[44px] px-4 py-2 text-[10px]">OPEN FULL SCREEN</button>
+                <div class="flex gap-2 w-full sm:w-auto">
+                    <button type="button" data-3d-toggle="previewBackContainer" onclick="toggle3DPlayback('previewBackContainer')" aria-controls="previewBackContainer" aria-pressed="false" class="flex-1 sm:flex-none min-h-[44px] px-4 py-2 text-[10px]">⏸ PAUSE 3D</button>
+                    <button type="button" onclick="togglePreviewFullscreen('previewBackContainer')" aria-controls="previewBackContainer" class="flex-1 sm:flex-none min-h-[44px] px-4 py-2 text-[10px]">OPEN FULL SCREEN</button>
+                </div>
             </div>
             <div id="previewBackContainer" class="preview-slot relative flex items-center justify-center overflow-hidden rounded-xl bg-black p-3" style="aspect-ratio: 4 / 3; min-height: 220px" aria-label="Mode 2 3D standard deeds">
                 <span class="text-[10px] font-mono text-stone-500 text-center uppercase">Search a token ID to load Image & 3D Inspection Canvas.</span>
@@ -470,7 +473,10 @@
         <article class="min-w-0">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
                 <h3 id="mode3Title" class="text-[10px] font-mono font-bold text-amber-400 uppercase tracking-widest">MODE 3: 3D ARC-09 SHOWCASE (AUTO-ROTATE)</h3>
-                <button type="button" onclick="togglePreviewFullscreen('previewVideoContainer')" aria-controls="previewVideoContainer" class="w-full sm:w-auto min-h-[44px] px-4 py-2 text-[10px]">OPEN FULL SCREEN</button>
+                <div class="flex gap-2 w-full sm:w-auto">
+                    <button type="button" data-3d-toggle="previewVideoContainer" onclick="toggle3DPlayback('previewVideoContainer')" aria-controls="previewVideoContainer" aria-pressed="false" class="flex-1 sm:flex-none min-h-[44px] px-4 py-2 text-[10px]">⏸ PAUSE 3D</button>
+                    <button type="button" onclick="togglePreviewFullscreen('previewVideoContainer')" aria-controls="previewVideoContainer" class="flex-1 sm:flex-none min-h-[44px] px-4 py-2 text-[10px]">OPEN FULL SCREEN</button>
+                </div>
             </div>
             <div id="previewVideoContainer" class="preview-slot relative flex items-center justify-center overflow-hidden rounded-xl bg-black p-3" style="aspect-ratio: 4 / 3; min-height: 220px" aria-label="Mode 3 3D council and ship deeds">
                 <span class="text-[10px] font-mono text-stone-500 text-center uppercase">3D Canvas Standalone Viewport Active.</span>
@@ -4679,6 +4685,138 @@ function _autoSpinWhenLoaded(frame) {
     });
 }
 
+// ==============================================================================
+// ⏯ 3D PLAY / PAUSE (กล่อง 2 และ 3) — หยุดลูป render ของ iframe 3D โดยไม่ต้องแก้ไฟล์ 3D
+// iframe อยู่ origin เดียวกัน (repo เดียวกัน) จึงครอบ requestAnimationFrame / performance.now ของมันได้
+// หยุด = เก็บ callback ไว้ในคิว (GPU ไม่ทำงาน) | เล่นต่อ = คืนคิว + ชดเชยเวลา ภาพจึงไม่กระโดด
+// นอกจากปุ่มแล้ว ระบบหยุดอัตโนมัติเมื่อกล่องเลื่อนพ้นจอหรือสลับแท็บ แล้วเล่นต่อเมื่อกลับมา
+// ==============================================================================
+const PREVIEW_3D_DEFAULT_PAUSED = false; // true = เริ่มที่ "หยุด" (ประหยัดแบตสุด) กดเล่นเมื่อต้องการ
+const PREVIEW_3D_HOSTS = ["previewBackContainer", "previewVideoContainer"];
+
+function _installFrameGate(frame) {
+    let win;
+    try {
+        win = frame.contentWindow;
+        if (!win || !win.document || win.location.href === "about:blank") return null;
+    } catch (_) { return null; } // ข้าม origin = ควบคุมไม่ได้
+    if (win.__sovGate) return win.__sovGate;
+    if (typeof win.requestAnimationFrame !== "function" || !win.performance) return null;
+
+    const nativeRaf = win.requestAnimationFrame.bind(win);
+    const nativeCancel = win.cancelAnimationFrame.bind(win);
+    const nativeNow = win.performance.now.bind(win.performance);
+    const g = { paused: false, queue: new Map(), nextId: 1e9, offset: 0, pausedAt: 0 };
+    const now = () => (g.paused ? g.pausedAt : nativeNow()) - g.offset;
+
+    win.performance.now = now;
+    win.requestAnimationFrame = (cb) => {
+        if (g.paused) { const id = g.nextId++; g.queue.set(id, cb); return id; }
+        return nativeRaf((t) => { if (g.paused && t > g.pausedAt) g.pausedAt = t; cb(t - g.offset); });
+    };
+    win.cancelAnimationFrame = (id) => { if (!g.queue.delete(id)) nativeCancel(id); };
+
+    const mediaToggle = (pause) => {
+        try {
+            win.document.querySelectorAll("audio,video").forEach((m) => {
+                if (pause && !m.paused) { m.dataset.sovWasPlaying = "1"; m.pause(); }
+                else if (!pause && m.dataset.sovWasPlaying === "1") { delete m.dataset.sovWasPlaying; m.play().catch(() => {}); }
+            });
+        } catch (_) {}
+    };
+
+    g.setPaused = (p) => {
+        p = Boolean(p);
+        if (p === g.paused) return;
+        if (p) {
+            g.pausedAt = nativeNow();
+            g.paused = true;
+            mediaToggle(true);
+        } else {
+            g.offset += nativeNow() - g.pausedAt;
+            g.paused = false;
+            const pending = Array.from(g.queue.values());
+            g.queue.clear();
+            pending.forEach((cb) => nativeRaf((t) => cb(t - g.offset)));
+            mediaToggle(false);
+        }
+    };
+    win.__sovGate = g;
+    return g;
+}
+
+function _refresh3DUi(host) {
+    const ctl = host && host._ctl;
+    if (!ctl) return;
+    const paused = ctl.manual;
+    const ov = host.querySelector(".sov-play-overlay");
+    if (ov) ov.style.display = paused ? "flex" : "none";
+    const btn = document.querySelector(`[data-3d-toggle="${host.id}"]`);
+    if (btn) {
+        btn.textContent = paused ? "▶ PLAY 3D" : "⏸ PAUSE 3D";
+        btn.setAttribute("aria-pressed", String(paused));
+    }
+}
+
+function _wire3DPlayback(host, frame) {
+    if (host._ctl) {
+        try { host._ctl.io && host._ctl.io.disconnect(); } catch (_) {}
+        clearInterval(host._ctl.timer);
+    }
+    const ctl = {
+        manual: host._ctl ? host._ctl.manual : PREVIEW_3D_DEFAULT_PAUSED,
+        visible: true, gate: null, io: null, timer: null
+    };
+    host._ctl = ctl;
+    const want = () => ctl.manual || !ctl.visible || document.hidden;
+    ctl.apply = () => { if (ctl.gate) ctl.gate.setPaused(want()); _refresh3DUi(host); };
+
+    // ปุ่มเล่นใหญ่ทับกล่อง (โผล่เฉพาะตอนผู้ใช้กดหยุด; ใช้ได้ตอนเต็มจอด้วย)
+    const ov = document.createElement("div");
+    ov.className = "sov-play-overlay";
+    ov.setAttribute("role", "button");
+    ov.tabIndex = 0;
+    ov.textContent = "▶ PLAY 3D";
+    ov.style.cssText = "position:absolute;inset:0;z-index:40;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.4);color:#fcd34d;font:800 15px/1 'Inter',system-ui,sans-serif;letter-spacing:.08em;cursor:pointer;";
+    ov.addEventListener("click", () => window.toggle3DPlayback(host.id));
+    ov.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); window.toggle3DPlayback(host.id); } });
+    host.appendChild(ov);
+
+    const tryAttach = () => {
+        if (ctl.gate) return true;
+        if (!frame.isConnected) return false;
+        const g = _installFrameGate(frame);
+        if (!g) return false;
+        ctl.gate = g;
+        // ถ้าต้องหยุดตั้งแต่เริ่ม รอให้วาดเฟรมแรกก่อน จะได้ไม่ค้างเป็นจอดำ
+        if (want()) setTimeout(ctl.apply, 900); else ctl.apply();
+        return true;
+    };
+    let polls = 0;
+    ctl.timer = setInterval(() => { if (tryAttach() || ++polls > 150) clearInterval(ctl.timer); }, 40);
+    frame.addEventListener("load", tryAttach);
+
+    if (typeof IntersectionObserver === "function") {
+        ctl.io = new IntersectionObserver((entries) => {
+            ctl.visible = entries[entries.length - 1].isIntersecting;
+            ctl.apply();
+        }, { threshold: 0.05 });
+        ctl.io.observe(host);
+    }
+    _refresh3DUi(host);
+}
+
+window.toggle3DPlayback = function (hostId) {
+    const host = document.getElementById(hostId);
+    if (!host || !host._ctl) return;
+    host._ctl.manual = !host._ctl.manual;
+    host._ctl.apply();
+};
+
+document.addEventListener("visibilitychange", () => {
+    PREVIEW_3D_HOSTS.forEach((id) => { const h = document.getElementById(id); if (h && h._ctl) h._ctl.apply(); });
+});
+
 // [V18-LAYOUT] กล่อง 2 = 3D เหรียญมาตรฐาน | กล่อง 3 = 3D เหรียญพิเศษ (สภา 111–999 + ตอง 1111–5555)
 // ไม่พลิก หมุนตลอด โหลด iframe ใหม่เฉพาะเมื่อไฟล์หรือเลขเปลี่ยน กล่องอื่นไม่ถูกแตะ (ไม่รีโหลด WebGL ซ้ำ)
 function ensure3DFrame(host, src) {
@@ -4696,6 +4834,7 @@ function ensure3DFrame(host, src) {
     host.appendChild(f);
     host._frame = f;
     host._frameSrc = src;
+    _wire3DPlayback(host, f);
 }
 
 function renderMediaBox2(src) {
