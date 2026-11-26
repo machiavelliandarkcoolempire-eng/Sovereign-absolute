@@ -4833,6 +4833,7 @@ function ensure3DFrame(host, src) {
     _autoSpinWhenLoaded(f);
     host.appendChild(f);
     host._frame = f;
+    f.addEventListener("load", () => _applyFrameDpr(host)); // iframe โหลดใหม่ระหว่างเต็มจอ ยังคมต่อเนื่อง
     host._frameSrc = src;
     _wire3DPlayback(host, f);
 }
@@ -4892,6 +4893,59 @@ function togglePreviewFullscreen(targetId) {
         showNotification(`Could not open full screen: ${error?.message || error}`, "warning");
     }
 }
+
+// ==============================================================================
+// 🔍 [FULLSCREEN-SHARP] กล่อง 2/3 (iframe 3D): เต็มจอ = พื้นที่ใหญ่ขึ้น ถ้า buffer ของ canvas คงเดิมภาพจะถูกยืด (มัว)
+// แก้ที่ dashboard: ตอนเต็มจอ ให้ iframe เห็น devicePixelRatio สูงขึ้น (อย่างน้อย FS_DPR_BOOST) แล้วสั่ง resize
+// เพื่อให้ canvas วาดใหม่ที่ความละเอียดเต็มจอจริง ไม่แตะไฟล์ 3D | จำกัดด้านยาวของ buffer ไม่เกิน FS_MAX_BUFFER_PX กัน GPU/แรมล้น
+// ออกจากเต็มจอ = คืนค่าเดิมทันที
+// ==============================================================================
+const FS_DPR_BOOST = 2;
+const FS_MAX_BUFFER_PX = 4096;
+
+function _applyFrameDpr(host) {
+    const f = host && host._frame;
+    if (!f || !f.isConnected) return;
+    let w;
+    try {
+        w = f.contentWindow;
+        if (!w || !w.document || w.location.href === "about:blank") return;
+    } catch (_) { return; } // ข้าม origin = ควบคุมไม่ได้
+
+    const fsEl = document.fullscreenElement || document.webkitFullscreenElement || null;
+    const on = fsEl === host;
+    const real = window.devicePixelRatio || 1;
+    const cssMax = on
+        ? Math.max(window.screen.width || 0, window.screen.height || 0, 1)
+        : Math.max(f.clientWidth || 0, f.clientHeight || 0, 1);
+    const boost = on ? Math.max(real, Math.min(FS_DPR_BOOST, FS_MAX_BUFFER_PX / cssMax)) : 0;
+
+    if (!w.__sovDpr) {
+        w.__sovDpr = { boost: 0 };
+        try {
+            Object.defineProperty(w, "devicePixelRatio", {
+                configurable: true,
+                get: () => {
+                    const r = window.devicePixelRatio || 1; // iframe ใช้ DPR เดียวกับหน้าหลัก (ตามซูมเบราว์เซอร์สด)
+                    return w.__sovDpr.boost ? Math.max(r, w.__sovDpr.boost) : r;
+                }
+            });
+        } catch (_) { w.__sovDpr = null; return; }
+    }
+    const changed = Math.abs((w.__sovDpr.boost || 0) - boost) > 0.01;
+    w.__sovDpr.boost = boost;
+    if (!changed) return;
+    // ให้ layout เต็มจอนิ่งก่อน แล้วค่อยสั่งวาดใหม่ (หลายจังหวะ กันเบราว์เซอร์จัด layout ช้า)
+    [80, 350, 1000].forEach((ms) => setTimeout(() => {
+        try { w.dispatchEvent(new w.Event("resize")); } catch (_) {}
+    }, ms));
+}
+
+function _onPreviewFullscreenChange() {
+    PREVIEW_3D_HOSTS.forEach((id) => _applyFrameDpr(document.getElementById(id)));
+}
+document.addEventListener("fullscreenchange", _onPreviewFullscreenChange);
+document.addEventListener("webkitfullscreenchange", _onPreviewFullscreenChange);
 
 // สถานะเริ่มต้น (ยังไม่เลือก token)
 function initMediaBoxes() {
